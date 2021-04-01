@@ -133,40 +133,55 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   }
 
   /**
-   * Gets the value from local or root UI data.
-   * Provide the "root." keyword at the beginning of the valueKey to use root UI data.
-   * @param valueKey
-   * @param userInterfaceData -- Optional, provide if using a different source such as from prevProps
-   * @param getRootUserInterfaceData -- Optional, provide if using a different source such as from prevProps
-   */
-  getValue(
-    valueKey: string,
-    userInterfaceData?: UserInterfaceProps["data"],
-    getRootUserInterfaceData?: () => UserInterfaceProps["data"]
-  ): any {
-    return getValue(
-      valueKey,
-      userInterfaceData || this.props.userInterfaceData,
-      getRootUserInterfaceData || this.props.getRootUserInterfaceData
-    )
-  }
-
-  /**
-   * Sets the value to local or root UI parentRowData.
-   * Provide the "$root." keyword at the beginning of the valueKey to use root UI parentRowData.
-   * @param targetKey
+   * Returns data with a value merged at the provided key path
+   * @param key
    * @param value
    * @param userInterfaceData
    */
-  setValue(targetKey: string, value: any, userInterfaceData?: UserInterfaceProps["data"]) {
-    const pathSegments = targetKey.split(".")
+  getMergedData(
+    key: string,
+    value: any,
+    userInterfaceData?: UserInterfaceProps["data"]
+  ): { mergedData: JSONRecord; isTargetingRoot: boolean } {
+    const pathSegments = key.split(".")
     const isTargetingRoot = pathSegments[0] === "$root"
     if (isTargetingRoot) {
       pathSegments.shift()
     }
     const path = pathSegments.join(".")
     const uiData = isTargetingRoot ? this.props.getRootUserInterfaceData() : userInterfaceData
-    this.props.onChangeData && this.props.onChangeData(set(path, value, uiData), isTargetingRoot)
+    return { mergedData: set(path, value, uiData), isTargetingRoot }
+  }
+
+  /**
+   * Gets the value from local or root UI data.
+   * Provide the "root." keyword at the beginning of the valueKey to use root UI data.
+   * @param key
+   * @param userInterfaceData -- Optional, provide if using a different source such as from prevProps
+   * @param getRootUserInterfaceData -- Optional, provide if using a different source such as from prevProps
+   */
+  getValue(
+    key: string,
+    userInterfaceData?: UserInterfaceProps["data"],
+    getRootUserInterfaceData?: () => UserInterfaceProps["data"]
+  ): JSONRecord | JSONRecord[] | undefined {
+    return getValue(
+      key,
+      userInterfaceData || this.props.userInterfaceData,
+      getRootUserInterfaceData || this.props.getRootUserInterfaceData
+    )
+  }
+
+  /**
+   * Sets the value in local or root UI parentRowData.
+   * Provide the "$root." keyword at the beginning of the valueKey to use root UI parentRowData.
+   * @param key
+   * @param value
+   * @param userInterfaceData
+   */
+  setValue(key: string, value: any, userInterfaceData?: UserInterfaceProps["data"]): void {
+    const { mergedData, isTargetingRoot } = this.getMergedData(key, value, userInterfaceData)
+    this.props.onChangeData && this.props.onChangeData(mergedData, isTargetingRoot)
   }
 
   anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
@@ -178,7 +193,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
 
   static availableEvents: string[] = []
 
-  raiseEvent(eventName: string, eventPayload: EventPayloadType) {
+  raiseEvent(eventName: string, eventPayload: EventPayloadType): void {
     console.log(`BaseInterfaceComponent: Component raised event "${eventName}"`, eventPayload)
     if (this.props.onRaiseEvent) {
       this.props.onRaiseEvent(eventName, eventPayload, this)
