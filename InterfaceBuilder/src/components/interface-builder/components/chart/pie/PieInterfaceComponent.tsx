@@ -3,7 +3,8 @@ import { pieManageForm } from "./pie-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { PieDatum, ResponsivePie } from "@nivo/pie"
 import { InheritedColorProp } from "@nivo/colors"
-import { convertToPieDatum, emptyDataSet, getNivoColorScheme, legends } from "./utils"
+import { convertToPieDatum, emptyDataSet, legends } from "./utils"
+import { getNivoColorScheme } from "../_shared/colors"
 import { get, isEqual } from "lodash/fp"
 import {
   OtherSliceAggregatorFunction,
@@ -154,7 +155,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             animate={true}
             borderColor={borderColor}
             borderWidth={1}
-            colors={getNivoColorScheme(colorScheme)}
+            colors={getNivoColorScheme<PieDatum>(colorScheme)}
             data={this.state.pieData.map((item) => item.pieDatum) || []}
             enableRadialLabels={enableRadialLabels}
             enableSlicesLabels={enableSliceLabels}

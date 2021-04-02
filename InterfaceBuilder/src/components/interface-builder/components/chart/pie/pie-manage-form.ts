@@ -1,5 +1,6 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
+import { nivoColorConfigOptions } from "../_shared/colors"
 
 export const pieManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...PieManageFormDefinition, ...extend)
@@ -160,44 +161,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "set1",
                 bindable: true,
                 data: {
-                  values: [
-                    {
-                      label: "Default",
-                      value: "set1",
-                    },
-                    {
-                      label: "Bold 1",
-                      value: "set2",
-                    },
-                    {
-                      label: "Bold 2",
-                      value: "set3",
-                    },
-                    {
-                      label: "Accent",
-                      value: "set4",
-                    },
-                    {
-                      label: "Pastel",
-                      value: "set5",
-                    },
-                    {
-                      label: "Red, Yellow, Blue",
-                      value: "set6",
-                    },
-                    {
-                      label: "Yellow, Green, Blue",
-                      value: "set7",
-                    },
-                    {
-                      label: "Yellow, Orange, Red",
-                      value: "set8",
-                    },
-                    {
-                      label: "Purple, Blue, Green",
-                      value: "set9",
-                    },
-                  ],
+                  values: nivoColorConfigOptions,
                 },
               },
               {

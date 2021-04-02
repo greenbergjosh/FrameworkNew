@@ -7,6 +7,7 @@ import ButtonExample from "../examples/button"
 import DateStepperExample from "./date-stepper"
 import DateRangeExample from "./date-range"
 import TableExample from "./table"
+import LineChartExample from "./line-chart"
 import PropTokensExample from "./prop-tokens"
 import RadioExample from "./radio"
 import DataBindingExample from "./data-binding"
@@ -60,6 +61,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/data-binding`}>
             <DataBindingExample />
+          </Route>
+          <Route path={`${path}/line-chart`}>
+            <LineChartExample />
           </Route>
         </Switch>
       </Layout>

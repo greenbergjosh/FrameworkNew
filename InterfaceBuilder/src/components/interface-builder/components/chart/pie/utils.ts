@@ -13,31 +13,6 @@ import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 export const emptyDataSet = [{ pieDatum: { id: "None", label: "No data", value: 1 }, slice: {} }]
 
-export function getNivoColorScheme(colorScheme: string): OrdinalColorsInstruction<PieDatum> {
-  switch (colorScheme) {
-    case "set1":
-      return { scheme: "nivo" }
-    case "set2":
-      return { scheme: "category10" }
-    case "set3":
-      return { scheme: "set1" }
-    case "set4":
-      return { scheme: "accent" }
-    case "set5":
-      return { scheme: "pastel1" }
-    case "set6":
-      return { scheme: "red_yellow_blue" }
-    case "set7":
-      return { scheme: "yellow_green_blue" }
-    case "set8":
-      return { scheme: "yellow_orange_red" }
-    case "set9":
-      return { scheme: "purple_blue_green" }
-    default:
-      return { scheme: "nivo" }
-  }
-}
-
 function createSliceData({
   id,
   labelName,

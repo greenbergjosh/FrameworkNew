@@ -1,7 +1,7 @@
 import { DatePicker } from "antd"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { get, set, isEmpty } from "lodash/fp"
-import moment from "moment"
+import moment, { MomentInput } from "moment"
 import React from "react"
 import { getTimeFormat } from "../_shared/common-include-time-form"
 import { dateRangeManageForm } from "./date-range-manage-form"
@@ -111,7 +111,10 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
           ranges={DateRangeInterfaceComponent.standardRanges()}
           showTime={timeFormat}
           style={{ display: "block" }}
-          value={[moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]}
+          value={[
+            moment.utc((startDateValue as MomentInput) || undefined),
+            moment.utc((endDateValue as MomentInput) || undefined),
+          ]}
         />
       </Undraggable>
     )
