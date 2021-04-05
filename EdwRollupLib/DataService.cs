@@ -88,7 +88,7 @@ namespace EdwRollupLib
                 {
                     await _fw.Log("EdwRollupService.InitScheduler", $"{threadGroupName} is paused.");
 #if DEBUG
-                                Console.WriteLine($"{DateTime.Now}: {threadGroupName} is paused.");
+                    Console.WriteLine($"{DateTime.Now}: {threadGroupName} is paused.");
 #endif
                     continue;
                 }
@@ -114,7 +114,7 @@ namespace EdwRollupLib
 
                     await _fw.Log("EdwRollupService.InitScheduler", $"Scheduling {threadGroupName} {period} for {cron}");
 #if DEBUG
-                                Console.WriteLine($"{DateTime.Now}: Scheduling {threadGroupName} {period} for {cron}");
+                    Console.WriteLine($"{DateTime.Now}: Scheduling {threadGroupName} {period} for {cron}");
 #endif
 
                     var trigger = TriggerBuilder.Create()

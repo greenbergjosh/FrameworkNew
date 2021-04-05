@@ -74,7 +74,7 @@ namespace EdwRollupLib
             _reportingSequences = new() { [_rsConfigId] = (rsId, rsTs) };
             if (additionalReportingSequences != null)
             {
-                foreach(var rs in additionalReportingSequences)
+                foreach (var rs in additionalReportingSequences)
                 {
                     _reportingSequences[rs.rsConfigId] = (rs.rsId, rs.rsTs);
                 }
@@ -84,7 +84,7 @@ namespace EdwRollupLib
             edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = _config.GetS("Name") }, _rsConfigId);
             await _fw.EdwWriter.Write(edwBulkEvent);
 
-            await DropStartEvent(new Parameters(startDate, endDate, _config.GetE("Config")), "ImportProcess");
+            await DropStartEvent(new Parameters(startDate, endDate, _config.GetE("Config")), "ImportProcess", null);
             var start = DateTime.Now;
 
             try
@@ -93,20 +93,20 @@ namespace EdwRollupLib
 
                 var withEventsMaker = new WithEventsMaker<Parameters>(DropStartEvent, DropEndEvent, DropErrorEvent);
 
-                var createTargetTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateTargetTable), options);
-                var createFileTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateFileTasks), options);
-                var createExportFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateExportFile), options);
-                var createImportTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateImportTables), options);
-                var importFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ImportFile), options);
-                var createPartitionTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreatePartitionTasks), options);
-                var populateGroupedTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PopulateGroupedTable), options);
-                var gatherPopulatedPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherPopulatedPartition), options);
-                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergeTablesInPartition), options);
-                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable), options);
-                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions), options);
-                var swapMergedTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(SwapMergedTable), options);
-                var cleanupTempTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CleanupTempTables), options);
-                var cleanupFiles = new ActionBlock<Parameters>(withEventsMaker.WithEvents(CleanupFiles), options);
+                var createTargetTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateTargetTable, null), options);
+                var createFileTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateFileTasks, null), options);
+                var createExportFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateExportFile, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
+                var createImportTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateImportTables, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
+                var importFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ImportFile, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
+                var createPartitionTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreatePartitionTasks, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
+                var populateGroupedTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PopulateGroupedTable, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
+                var gatherPopulatedPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherPopulatedPartition, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
+                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergeTablesInPartition, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
+                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
+                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
+                var swapMergedTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(SwapMergedTable, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
+                var cleanupTempTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CleanupTempTables, null), options);
+                var cleanupFiles = new ActionBlock<Parameters>(withEventsMaker.WithEvents(CleanupFiles, null), options);
 
                 var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
 
@@ -147,7 +147,7 @@ namespace EdwRollupLib
             finally
             {
                 var end = DateTime.Now;
-                await DropEndEvent(new Parameters(startDate, endDate, _config.GetE("Config")), end - start, "ImportProcess");
+                await DropEndEvent(new Parameters(startDate, endDate, _config.GetE("Config")), end - start, "ImportProcess", null);
                 _running = false;
 #if DEBUG
                 Console.WriteLine(end - start);
@@ -648,12 +648,13 @@ from datasets.{mergedTableName};";
             return _fw.EdwWriter.Write(edwBulkEvent);
         }
 
-        private async Task DropStartEvent(Parameters input, [CallerMemberName] string step = null)
+        private async Task DropStartEvent(Parameters input, string step, string stepContext)
         {
             var payload = new
             {
                 job = input.Config.GetS("Name"),
                 step,
+                stepContext,
                 eventType = "Start",
                 table = input.Table,
                 partitionIndex = input.PartitionIndex
@@ -663,12 +664,13 @@ from datasets.{mergedTableName};";
             await DropEvent(payload);
         }
 
-        private async Task DropEndEvent(Parameters input, TimeSpan elapsed, [CallerMemberName] string step = null)
+        private async Task DropEndEvent(Parameters input, TimeSpan elapsed, string step, string stepContext)
         {
             var payload = new
             {
                 job = input.Config.GetS("Name"),
                 step,
+                stepContext,
                 eventType = "End",
                 table = input.Table,
                 partitionIndex = input.PartitionIndex,
@@ -679,12 +681,13 @@ from datasets.{mergedTableName};";
             await DropEvent(payload);
         }
 
-        private async Task DropErrorEvent(Exception ex, Parameters input, [CallerMemberName] string step = null, bool alert = true)
+        private async Task DropErrorEvent(Exception ex, Parameters input, string step, string stepContext, bool alert)
         {
             var payload = new
             {
                 job = input.Config.GetS("Name"),
                 step,
+                stepContext,
                 eventType = "Error",
                 table = input.Table,
                 partitionIndex = input.PartitionIndex,

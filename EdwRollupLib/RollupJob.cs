@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Quartz;
 using Utility;
 using Utility.DataLayer;
@@ -64,7 +65,7 @@ namespace EdwRollupLib
 
             var parameters = new Parameters(EdwConfigId, threadGroupId, ThreadGroup.GetS("Name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
 
-            await DropStartEvent(parameters, "ThreadGroupProcess");
+            await DropStartEvent(parameters, "ThreadGroupProcess", null);
 
             var start = DateTime.Now;
 
@@ -77,7 +78,7 @@ namespace EdwRollupLib
                 await _complete.Task;
 
                 var end = DateTime.Now;
-                await DropEndEvent(parameters, end - start, "ThreadGroupProcess");
+                await DropEndEvent(parameters, end - start, "ThreadGroupProcess", null);
 
                 await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} Complete");
 #if DEBUG
@@ -86,7 +87,7 @@ namespace EdwRollupLib
             }
             catch (Exception ex)
             {
-                await DropErrorEvent(ex, parameters, "ThreadGroupProcess", alert: false);
+                await DropErrorEvent(ex, parameters, "ThreadGroupProcess", null, false);
 
                 await FrameworkWrapper.Error($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} Error: {ex}");
 #if DEBUG
@@ -267,52 +268,55 @@ namespace EdwRollupLib
             return FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
         }
 
-        private async Task DropStartEvent(Parameters input, [CallerMemberName] string step = null)
+        private async Task DropStartEvent(Parameters input, string step, string stepContext)
         {
             var payload = new
             {
                 step,
+                stepContext,
                 eventType = "Start",
                 sessionId = input?.SessionId,
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs?.GetS("")
+                rollupArgs = JToken.Parse(input?.RollupArgs?.GetS("") ?? "null")
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonConvert.SerializeObject(payload));
             await DropEvent(payload);
         }
 
-        private async Task DropEndEvent(Parameters input, TimeSpan elapsed, [CallerMemberName] string step = null)
+        private async Task DropEndEvent(Parameters input, TimeSpan elapsed, string step, string stepContext)
         {
             var payload = new
             {
                 step,
+                stepContext,
                 eventType = "End",
                 elapsed = elapsed.TotalSeconds,
                 sessionId = input?.SessionId,
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs?.GetS("")
+                rollupArgs = JToken.Parse(input?.RollupArgs?.GetS("") ?? "null")
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonConvert.SerializeObject(payload));
             await DropEvent(payload);
         }
 
-        private async Task DropErrorEvent(Exception ex, Parameters input, [CallerMemberName] string step = null, bool alert = true)
+        private async Task DropErrorEvent(Exception ex, Parameters input, string step, string stepContext, bool alert)
         {
             var payload = new
             {
                 step,
+                stepContext,
                 eventType = "Error",
                 sessionId = input?.SessionId,
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs?.GetS(""),
+                rollupArgs = JToken.Parse(input?.RollupArgs?.GetS("") ?? "null"),
                 message = ex.ToString()
             };
 
@@ -354,11 +358,11 @@ namespace EdwRollupLib
 
             var withEventsMaker = new WithEventsMaker<Parameters>(DropStartEvent, DropEndEvent, DropErrorEvent);
 
-            var prepareThreadGroup = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PrepareThreadGroup), options);
-            var processReportSequence = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessReportSequence), options);
-            var processRollup = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessRollup), options);
-            var waitForAllRollups = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(WaitForAllRollups), options);
-            var cleanup = new ActionBlock<Parameters>(withEventsMaker.WithEvents(Cleanup), options);
+            var prepareThreadGroup = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PrepareThreadGroup, p => p?.RollupName), options);
+            var processReportSequence = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessReportSequence, p => p?.RollupName), options);
+            var processRollup = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessRollup, p => p?.RollupName), options);
+            var waitForAllRollups = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(WaitForAllRollups, p => p?.RollupName), options);
+            var cleanup = new ActionBlock<Parameters>(withEventsMaker.WithEvents(Cleanup, p => p?.RollupName), options);
 
             prepareThreadGroup.LinkTo(cleanup, parameters => parameters.RsConfigId == default);
             prepareThreadGroup.LinkTo(processReportSequence);

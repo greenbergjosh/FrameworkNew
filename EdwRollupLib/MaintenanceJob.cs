@@ -59,7 +59,7 @@ namespace EdwRollupLib
             edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { maintenanceJobName = Name }, RsConfigId);
             await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
 
-            await _withEventsMaker.WithEvents(ProcessMaintenanceJob)(context);
+            await _withEventsMaker.WithEvents(ProcessMaintenanceJob, null)(context);
         }
 
         private async Task ProcessMaintenanceJob(IJobExecutionContext context)
@@ -73,10 +73,10 @@ namespace EdwRollupLib
 
                 if (Exclusive)
                 {
-                    await _withEventsMaker.WithEvents(AcquireExclusive)(context);
+                    await _withEventsMaker.WithEvents(AcquireExclusive, null)(context);
                 }
 
-                await _withEventsMaker.WithEvents(RunImplementation)(context);
+                await _withEventsMaker.WithEvents(RunImplementation, null)(context);
 
                 await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{nameof(ProcessMaintenanceJob)}", $"{Name} End");
 #if DEBUG
@@ -94,7 +94,7 @@ namespace EdwRollupLib
             {
                 if (Exclusive)
                 {
-                    await _withEventsMaker.WithEvents(ReleaseExclusive)(context);
+                    await _withEventsMaker.WithEvents(ReleaseExclusive, null)(context);
                 }
             }
         }
@@ -212,11 +212,12 @@ namespace EdwRollupLib
             return FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
         }
 
-        private async Task DropStartEvent(IJobExecutionContext context, string step)
+        private async Task DropStartEvent(IJobExecutionContext context, string step, string stepContext)
         {
             var payload = new
             {
                 step,
+                stepContext,
                 eventType = "Start"
             };
 
@@ -224,11 +225,12 @@ namespace EdwRollupLib
             await DropEvent(payload);
         }
 
-        private async Task DropEndEvent(IJobExecutionContext context, TimeSpan elapsed, string step)
+        private async Task DropEndEvent(IJobExecutionContext context, TimeSpan elapsed, string step, string stepContext)
         {
             var payload = new
             {
                 step,
+                stepContext,
                 eventType = "End",
                 elapsed = elapsed.TotalSeconds
             };
@@ -237,7 +239,7 @@ namespace EdwRollupLib
             await DropEvent(payload);
         }
 
-        private async Task DropErrorEvent(Exception ex, IJobExecutionContext context, string step, bool alert)
+        private async Task DropErrorEvent(IJobExecutionContext context, Exception ex, string step, string stepContext, bool alert)
         {
             if (ex is AggregateException aggregateException)
             {
@@ -256,6 +258,7 @@ namespace EdwRollupLib
                 var payload = new
                 {
                     step,
+                    stepContext,
                     eventType = "Error",
                     message = e.Message
                 };
@@ -286,11 +289,12 @@ namespace EdwRollupLib
             }
         }
 
-        private async Task DropStartEvent(object context, string step)
+        private async Task DropStartEvent(object context, string step, string stepContext)
         {
             var payload = new
             {
                 step,
+                stepContext,
                 eventType = "Start",
                 context
             };
@@ -299,11 +303,12 @@ namespace EdwRollupLib
             await DropEvent(payload);
         }
 
-        private async Task DropEndEvent(object context, TimeSpan elapsed, string step)
+        private async Task DropEndEvent(object context, TimeSpan elapsed, string step, string stepContext)
         {
             var payload = new
             {
                 step,
+                stepContext,
                 eventType = "End",
                 elapsed = elapsed.TotalSeconds,
                 context
@@ -313,7 +318,7 @@ namespace EdwRollupLib
             await DropEvent(payload);
         }
 
-        private async Task DropErrorEvent(Exception ex, object context, string step, bool alert)
+        private async Task DropErrorEvent(Exception ex, object context, string step, string stepContext, bool alert)
         {
             if (ex is AggregateException aggregateException)
             {
@@ -332,6 +337,7 @@ namespace EdwRollupLib
                 var payload = new
                 {
                     step,
+                    stepContext,
                     eventType = "Error",
                     context,
                     message = e.Message
