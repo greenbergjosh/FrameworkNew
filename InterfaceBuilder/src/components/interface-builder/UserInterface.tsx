@@ -23,6 +23,7 @@ interface IUserInterfaceProps {
   components: ComponentDefinition[]
   submit?: () => void
   getRootUserInterfaceData?: () => UserInterfaceProps["data"]
+  keyPrefix?: string
 }
 
 export interface DisplayUserInterfaceProps extends IUserInterfaceProps {
@@ -109,6 +110,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
         }
         submit={submit}
         onDrop={this.handleDrop}
+        keyPrefix={this.props.keyPrefix}
       />
     )
 

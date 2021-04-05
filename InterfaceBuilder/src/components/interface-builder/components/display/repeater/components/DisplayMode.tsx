@@ -41,7 +41,7 @@ export function DisplayMode({
       const nextState = [...data, ...initRecords]
       onChange(nextState)
     }
-  }, [data, hasInitialRecord, hasLastItemComponents, lastItemComponents, onChange])
+  }, [])
 
   /* *************************************
    *

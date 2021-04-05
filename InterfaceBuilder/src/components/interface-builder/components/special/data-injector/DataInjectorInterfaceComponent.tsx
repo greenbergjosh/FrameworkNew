@@ -101,6 +101,7 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
             backgroundColor: "rgba(0, 178, 255, 0.05)",
             borderRadius: 5,
             position: "relative",
+            overflow: "scroll",
           }}>
           <legend style={{ all: "unset", color: "rgb(0, 178, 255)", padding: 5 }}>Data Injector</legend>
           <code>

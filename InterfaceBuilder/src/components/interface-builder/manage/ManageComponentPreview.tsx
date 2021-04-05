@@ -27,7 +27,7 @@ export const ManageComponentPreview = ({
     <RenderInterfaceComponent
       Component={Component}
       componentDefinition={{ ...componentDefinition, preview: true }}
-      data={previewData}
+      userInterfaceData={previewData}
       getRootData={() => previewData}
       index={0}
       mode={"preview"}

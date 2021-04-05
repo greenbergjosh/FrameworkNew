@@ -58,7 +58,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
 
     onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
 
-    this.raiseEvent("changed", { value: newValue })
+    this.raiseEvent("valueChanged", { value: newValue })
   }
 
   private filterOption = (input: any, option: any) => {

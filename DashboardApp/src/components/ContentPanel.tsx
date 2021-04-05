@@ -62,6 +62,7 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
             components={(appPageConfig && appPageConfig.layout) || []}
             data={props.data}
             onChangeData={props.onChangeData}
+            keyPrefix={`${appPaths.appRootPath}/${appPaths.pagePath.join("/")}/`}
           />
         )}
       </AdminUserInterfaceContextManagerProvider>

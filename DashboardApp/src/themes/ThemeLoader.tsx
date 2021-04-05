@@ -26,8 +26,9 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
 
   // Keep the app sync'd with the URL
   React.useEffect(() => {
-    const url = `${props.location.hostname}/${props.location.pathname}`
+    const url = `${props.location.host}${props.location.pathname}`
     if (url !== fromStore.appPaths.currentUrl) {
+      // Remove data from the page we navigated from
       setData({})
       dispatch.apps.updateAppPaths()
     }
@@ -43,6 +44,10 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
     return OpgCorporateTheme
   }, [fromStore.appConfig])
 
+  function handleChangeData(newData: any) {
+    setData(newData)
+  }
+
   return (
     <SelectedTheme.Shell
       {...props}
@@ -50,7 +55,7 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
       children={props.children}
       appRootPath={fromStore.appPaths.appRootPath}
       data={data}
-      onChangeData={(newData) => setData(newData)}
+      onChangeData={handleChangeData}
     />
   )
 }

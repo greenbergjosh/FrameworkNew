@@ -1,5 +1,6 @@
-import React from "react"
+import React, { CSSProperties } from "react"
 import { VisibilityStyle } from "components/interface-builder/RenderInterfaceComponent/types"
+import styles from "../styles.scss"
 
 export enum VISIBILITY_MODES {
   disabled = "disabled",
@@ -21,7 +22,7 @@ export enum VISIBILITY_MODES {
  * @param props
  * @constructor
  */
-export const VisibilityIndicator: React.FC<{
+export const VisibilityEditIndicator: React.FC<{
   blocked?: boolean
   hidden?: boolean
   invisible?: boolean
@@ -112,14 +113,17 @@ const InvisibleComponent: React.FC<{
   return (
     <fieldset
       style={{
-        padding: 10,
+        padding: "0 10px 10px 10px",
         border: visibilityStyle.border,
         backgroundColor: visibilityStyle.backgroundColor,
         borderRadius: 5,
         position: "relative",
+        overflow: "scroll",
       }}>
-      <legend style={{ all: "unset", color: visibilityStyle.color, padding: 5 }}>
-        {visibilityStyle.modeTitle} <small>({props.componentTitle})</small>
+      <legend className={styles.legend}>
+        <span style={{ color: visibilityStyle.color }}>
+          {props.componentTitle} <small>({visibilityStyle.modeTitle})</small>
+        </span>
       </legend>
       <div style={{ opacity: 0.5, pointerEvents: visibilityStyle.blockEvents ? "none" : "inherit" }}>
         {props.children}

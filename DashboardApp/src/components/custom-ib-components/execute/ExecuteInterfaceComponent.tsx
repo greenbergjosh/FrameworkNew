@@ -1,4 +1,4 @@
-import React from "react"
+import React, { CSSProperties } from "react"
 import { BaseInterfaceComponent, UserInterfaceContext } from "@opg/interface-builder"
 import { executeManageForm } from "./execute-manage-form"
 import {
@@ -139,17 +139,38 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     this.raiseEvent(eventName, eventPayload)
   }
 
+  /**
+   * Map the query params using paramKVPMaps
+   */
   private getParamsFromParamKVPMaps = (): JSONRecord => {
     const { paramKVPMaps, userInterfaceData } = this.props
+
+    /*
+     * Temporarily merge TransientParams with userInterfaceData
+     * so we can map the paramKVPMaps all at once and extract either data.
+     */
+    const uiDataWithTransientParams = Object.keys(this.state.transientParams).reduce(
+      (acc, key) => {
+        const val = this.state.transientParams[key] //this.getValue(key)
+        const { mergedData } = this.getMergedData(key, val, acc)
+        return mergedData
+      },
+      { ...userInterfaceData } as JSONRecord
+    )
+
+    /* Nothing to map so just merge the TransientParams and return */
     if (!paramKVPMaps || !paramKVPMaps.values || !paramKVPMaps.values.reduce) {
-      return { ...userInterfaceData, ...this.state.transientParams }
+      return uiDataWithTransientParams
     }
+
+    /* Map the query params */
     const params = paramKVPMaps.values.reduce((acc, item) => {
-      const val = this.getValue(item.valueKey)
+      const val = this.getValue(item.valueKey, uiDataWithTransientParams)
       if (val) acc[item.fieldName] = val
       return acc
     }, {} as JSONRecord)
-    return { ...userInterfaceData, ...params, ...this.state.transientParams }
+
+    return params
   }
 
   private handleResults = (data: any) => {
@@ -261,9 +282,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const diagnosticsPanelStyle = !this.props.invisible
+    const fieldsetStyle: CSSProperties = !this.props.invisible
       ? {
-          padding: 10,
+          padding: "0 10px 10px 10px",
           border: "1px dashed rgba(180, 0, 255, 0.5)",
           backgroundColor: "rgba(180, 0, 255, 0.05)",
           borderRadius: 5,
@@ -271,15 +292,23 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           fontSize: 10,
           display: "inline-block",
           width: "100%",
+          overflow: "scroll",
         }
       : {
           fontSize: 10,
         }
+    const legendStyle: CSSProperties = !this.props.invisible
+      ? { all: "unset", color: "#ca78ef", padding: 5, fontSize: 14 }
+      : {
+          all: "unset",
+          color: "rgb(172 177 180)",
+          fontWeight: "bold",
+        }
 
     if (this.props.mode === "edit") {
       return (
-        <div style={diagnosticsPanelStyle}>
-          <div>Execute</div>
+        <fieldset style={fieldsetStyle}>
+          <legend style={legendStyle}>Execute</legend>
           <div>
             <strong>Type:</strong> {this.props.queryType}
           </div>
@@ -293,27 +322,16 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           )}
           <div
             style={{
-              position: "relative",
               padding: 5,
+              marginTop: 10,
+              borderRadius: 3,
               pointerEvents: "none",
+              backgroundColor: "white",
+              overflow: "hidden",
             }}>
             {this.getQueryStrategy()}
-            <div
-              style={{
-                position: "absolute",
-                borderRadius: 5,
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(180, 0, 255, 0.05)",
-                color: "rgb(172 177 180)",
-                zIndex: 100,
-              }}>
-              &nbsp;
-            </div>
           </div>
-        </div>
+        </fieldset>
       )
     }
     return this.getQueryStrategy()
