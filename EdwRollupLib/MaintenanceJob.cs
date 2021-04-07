@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Quartz;
 using Utility;
 using Utility.EDW.Reporting;
+using Utility.GenericEntity;
 
 namespace EdwRollupLib
 {
@@ -18,7 +19,7 @@ namespace EdwRollupLib
         public static FrameworkWrapper FrameworkWrapper { get; set; }
         public string Name { get; set; }
         public bool Exclusive { get; set; }
-        public Guid ImplementationLbmId { get; set; }
+        public IGenericEntity Entity { get; set; }
         public Guid RsConfigId { get; set; }
 
         private Guid _rsId;
@@ -101,21 +102,24 @@ namespace EdwRollupLib
 
         private async Task RunImplementation(IJobExecutionContext context)
         {
-            var lbm = await FrameworkWrapper.Entities.GetEntity(ImplementationLbmId);
+            var implementationLbmId = Guid.Parse(Entity.GetS("Config/implementationLbmId"));
+
+            var lbm = await FrameworkWrapper.Entities.GetEntity(implementationLbmId);
             if (lbm == null)
             {
-                throw new InvalidOperationException($"No LBM with Id: {ImplementationLbmId}");
+                throw new InvalidOperationException($"No LBM with Id: {implementationLbmId}");
             }
 
             if (lbm.GetS("Type") != "LBM.CS")
             {
-                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, LBM {ImplementationLbmId} has type {lbm.GetS("Type")}");
+                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, LBM {implementationLbmId} has type {lbm.GetS("Type")}");
             }
 
-            var (debug, debugDir) = FrameworkWrapper.RoslynWrapper.GetDefaultDebugValues();
-            var lbmContext = new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs));
+            var lbmParameters = Entity.GetE("Config/implementationParameters");
+            var lbmContext = new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs), lbmParameters);
 
-            await FrameworkWrapper.RoslynWrapper.Evaluate(ImplementationLbmId.ToString(), lbm.GetS("Config"), lbmContext, null, debug, debugDir);
+            var (debug, debugDir) = FrameworkWrapper.RoslynWrapper.GetDefaultDebugValues();
+            await FrameworkWrapper.RoslynWrapper.Evaluate(implementationLbmId.ToString(), lbm.GetS("Config"), lbmContext, null, debug, debugDir);
         }
 
         private async Task AcquireExclusive(IJobExecutionContext context)
@@ -239,7 +243,7 @@ namespace EdwRollupLib
             await DropEvent(payload);
         }
 
-        private async Task DropErrorEvent(IJobExecutionContext context, Exception ex, string step, string stepContext, bool alert)
+        private async Task DropErrorEvent(Exception ex, IJobExecutionContext context, string step, string stepContext, bool alert)
         {
             if (ex is AggregateException aggregateException)
             {
@@ -370,6 +374,6 @@ namespace EdwRollupLib
         }
         #endregion
 
-        private record LbmParameters(IJobExecutionContext Context, FrameworkWrapper FrameworkWrapper, WithEventsMaker<object> WithEventsMaker, (Guid rsConfigId, Guid rsId, DateTime rsTs) ReportingSequence);
+        private record LbmParameters(IJobExecutionContext Context, FrameworkWrapper FrameworkWrapper, WithEventsMaker<object> WithEventsMaker, (Guid rsConfigId, Guid rsId, DateTime rsTs) ReportingSequence, IGenericEntity Parameters);
     }
 }

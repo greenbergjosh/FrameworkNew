@@ -145,7 +145,6 @@ namespace EdwRollupLib
 
                 var name = maintenanceTask.GetS("Name");
                 var cronExpression = maintenanceTask.GetS("Config/cron_expression");
-                var implementationLbmId = Guid.Parse(maintenanceTask.GetS("Config/implementation"));
                 var exclusive = maintenanceTask.GetB("Config/exclusive");
 
                 IDictionary<string, object> parameters = new Dictionary<string, object>
@@ -153,7 +152,7 @@ namespace EdwRollupLib
                     ["Name"] = name,
                     ["Exclusive"] = exclusive,
                     ["RsConfigId"] = rsConfigId,
-                    ["ImplementationLbmId"] = implementationLbmId,
+                    ["Entity"] = maintenanceTask,
                     ["Cron"] = cronExpression
                 };
 
