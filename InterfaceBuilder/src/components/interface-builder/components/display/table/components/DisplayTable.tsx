@@ -108,16 +108,7 @@ function getDisplaySettings(columns: SortableGroupableColumnModel[], defaultPage
       return acc
     }, [] as SortDescriptorModel[]),
   }
-  const pageSettings: PageSettingsModel | undefined =
-    defaultPageSize === "All"
-      ? {
-          pageSize: 999999,
-        }
-      : typeof defaultPageSize === "number"
-      ? {
-          pageSize: defaultPageSize,
-        }
-      : undefined
+  const pageSettings = getPageSettings(defaultPageSize)
   const groupSettings: GroupSettingsModel = {
     columns: sortBy("groupOrder", columns).reduce((acc, column) => {
       if (column.field && typeof column.groupOrder !== "undefined") {
@@ -127,4 +118,26 @@ function getDisplaySettings(columns: SortableGroupableColumnModel[], defaultPage
     }, [] as string[]),
   }
   return { sortSettings, pageSettings, groupSettings }
+}
+
+function getPageSettings(defaultPageSize: number | string | undefined): PageSettingsModel | undefined {
+  if (defaultPageSize === "All") {
+    return {
+      pageSize: 999999,
+    }
+  }
+
+  if (typeof defaultPageSize === "number") {
+    return {
+      pageSize: defaultPageSize,
+    }
+  }
+
+  if (typeof defaultPageSize === "string") {
+    const pageSize = Number.parseInt(defaultPageSize, 10)
+
+    if (!isNaN(pageSize)) {
+      return { pageSize }
+    }
+  }
 }
