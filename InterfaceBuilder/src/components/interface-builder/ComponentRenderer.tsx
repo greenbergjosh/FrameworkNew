@@ -56,7 +56,7 @@ export const _ComponentRenderer = ({
 
   const content = components.map((componentDefinition, index) => {
     return (
-      <DataPathContext path={index} key={`${keyPrefix}${componentDefinition.component}-${index}`}>
+      <DataPathContext path={index} key={`${keyPrefix || ""}${componentDefinition.component}-${index}`}>
         {(path) => (
           <DetokenizedComponent
             componentDefinition={componentDefinition}
