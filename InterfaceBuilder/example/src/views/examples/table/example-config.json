@@ -17,9 +17,10 @@
       "components": []
     },
     {
-      "defaultPageSize": "50",
+      "defaultPageSize": "25",
       "enableVirtualization": false,
       "enableAltRow": false,
+      "useSmallPager": true,
       "useSmallFont": false,
       "autoFitColumns": false,
       "defaultCollapseAll": false,
