@@ -6,6 +6,11 @@ import { forOwn } from "lodash"
 import jsonLogic from "json-logic-js"
 
 /**
+ * Add operators and libraries to jsonLogic
+ */
+jsonLogic.add_operation("Math", Math)
+
+/**
  *
  * @param props: {
  *   @property componentDefinition -- The component being data bound (bindings are here)
