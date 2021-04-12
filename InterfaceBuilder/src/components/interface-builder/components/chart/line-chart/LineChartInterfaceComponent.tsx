@@ -6,7 +6,12 @@ import { AxisProps } from "@nivo/axes"
 import { LegendProps } from "@nivo/legends"
 import { emptyDataSet } from "./utils"
 import { get, isEqual } from "lodash/fp"
-import { LineChartInterfaceComponentProps, LineChartInterfaceComponentState, SerieTooltipFunction } from "./types"
+import {
+  LineChartInterfaceComponentProps,
+  LineChartInterfaceComponentState,
+  ScaleType,
+  SerieTooltipFunction,
+} from "./types"
 import { Icon, Spin } from "antd"
 import { parseLBM } from "components/interface-builder/components/_shared/LBM/parseLBM"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
@@ -85,7 +90,27 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { showLegend, height = 350, xScaleType = "point", yScaleType = "linear" } = this.props
+    const {
+      areaBaselineValue = 0,
+      areaOpacity = 0.2,
+      colorScheme,
+      curve = "linear",
+      enableArea = false,
+      enableGridX = true,
+      enableGridY = true,
+      enablePointLabel = false,
+      enablePoints = true,
+      height = 350,
+      lineWidth = 2,
+      pointBorderWidth = 2,
+      pointSize = 6,
+      showLegend = false,
+      width,
+      xFormat,
+      xScaleType = "point",
+      yFormat,
+      yScaleType = "linear",
+    } = this.props
     const legends: LegendProps[] = [
       {
         anchor: "bottom-right",
@@ -131,11 +156,15 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
       legendPosition: "middle",
     }
     const margin = { top: 50, right: showLegend ? 110 : 50, bottom: 50, left: 50 }
-    const xScale = {
-      type: xScaleType,
+    const xScale: ScaleType = {
+      type: xScaleType || "point",
+      min: "auto",
+      max: "auto",
+      stacked: true,
+      reverse: false,
     }
-    const yScale: any = {
-      type: yScaleType,
+    const yScale: ScaleType = {
+      type: yScaleType || "linear",
       min: "auto",
       max: "auto",
       stacked: true,
@@ -144,27 +173,37 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
 
     return (
       <Spin spinning={this.state.loading && this.props.mode === "display"} indicator={<Icon type="loading" />}>
-        <div style={{ height }}>
+        <div style={{ height: height || 350, width }}>
           <ResponsiveLine
-            tooltip={this.state.tooltipFunction}
-            isInteractive={this.state.lineChartData !== emptyDataSet}
-            colors={getNivoColorScheme<Serie[]>(this.props.colorScheme)}
-            data={this.state.lineChartData}
-            margin={margin}
-            xScale={xScale}
-            yScale={yScale}
-            yFormat=" >-.2f"
-            axisTop={null}
-            axisRight={null}
+            areaBaselineValue={areaBaselineValue}
+            areaOpacity={areaOpacity}
             axisBottom={axisBottom}
             axisLeft={axisLeft}
-            pointSize={10}
-            pointColor={{ theme: "background" }}
-            pointBorderWidth={2}
-            pointBorderColor={{ from: "serieColor" }}
-            pointLabelYOffset={-12}
-            useMesh={false}
+            axisRight={null}
+            axisTop={null}
+            colors={getNivoColorScheme<Serie[]>(colorScheme)}
+            curve={curve}
+            data={this.state.lineChartData}
+            enableArea={enableArea}
+            enableGridX={enableGridX}
+            enableGridY={enableGridY}
+            enablePointLabel={enablePointLabel}
+            enablePoints={enablePoints}
+            isInteractive={this.state.lineChartData !== emptyDataSet}
             legends={showLegend ? legends : undefined}
+            lineWidth={lineWidth}
+            margin={margin}
+            pointBorderColor={{ from: "serieColor" }}
+            pointBorderWidth={pointBorderWidth}
+            pointColor={{ theme: "background" }}
+            pointLabelYOffset={-12}
+            pointSize={pointSize}
+            tooltip={this.state.tooltipFunction}
+            useMesh={false}
+            xFormat={xFormat}
+            xScale={xScale}
+            yFormat={yFormat}
+            yScale={yScale}
           />
         </div>
       </Spin>

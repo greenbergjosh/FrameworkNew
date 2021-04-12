@@ -1,10 +1,10 @@
 import { ComponentDefinitionNamedProps } from "components/interface-builder/components/base/BaseInterfaceComponent"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
-import { Serie } from "@nivo/line"
+import { Serie, LineProps } from "@nivo/line"
 import { LinearScale, PointScale } from "@nivo/scales"
+import { DataFormatter } from "@nivo/core"
 
-export type xScaleTypes = PointScale | LinearScale
-export type yScaleTypes = PointScale | LinearScale
+export type ScaleType = PointScale | LinearScale
 
 export interface LineChartInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "line-chart"
@@ -13,14 +13,28 @@ export interface LineChartInterfaceComponentProps extends ComponentDefinitionNam
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   // lineChart props
+  areaBaselineValue?: number
+  areaOpacity?: number
   colorScheme: string
-  useTooltipFunction: boolean
-  tooltipFunctionSrc?: string
-  tooltipFunction?: SerieTooltipFunction
-  showLegend?: boolean
+  curve?: LineProps["curve"]
+  enableArea?: boolean
+  enableGridX?: boolean
+  enableGridY?: boolean
+  enablePointLabel?: boolean
+  enablePoints?: boolean
   height: number
-  xScaleType: xScaleTypes["type"]
-  yScaleType: yScaleTypes["type"]
+  lineWidth?: number
+  pointBorderWidth?: number
+  pointSize?: number
+  showLegend?: boolean
+  tooltipFunction?: SerieTooltipFunction
+  tooltipFunctionSrc?: string
+  useTooltipFunction: boolean
+  width: number
+  xFormat?: string | DataFormatter
+  xScaleType: ScaleType["type"]
+  yFormat?: string | DataFormatter
+  yScaleType: ScaleType["type"]
 }
 
 export interface LineChartInterfaceComponentState {
