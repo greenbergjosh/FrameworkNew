@@ -2,29 +2,10 @@ import { Card } from "antd"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
-import { UserInterfaceProps } from "../../../UserInterface"
 import { cardManageForm } from "./card-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
-
-export interface CardInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "card"
-  components: ComponentDefinition[]
-  onChangeData: UserInterfaceProps["onChangeData"]
-  preconfigured?: boolean
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-
-  bordered?: boolean
-  extra?: string
-  hoverable?: boolean
-  inset?: boolean
-  size?: "small" | "default"
-  title?: string
-}
+import { BaseInterfaceComponent, ComponentDefinition } from "../../base/BaseInterfaceComponent"
+import { set } from "lodash/fp"
+import { CardInterfaceComponentProps } from "components/interface-builder/components/display/card/types"
 
 export class CardInterfaceComponent extends BaseInterfaceComponent<CardInterfaceComponentProps> {
   static getLayoutDefinition() {
@@ -73,11 +54,12 @@ export class CardInterfaceComponent extends BaseInterfaceComponent<CardInterface
             dragDropDisabled={!!preconfigured}
             onChangeData={onChangeData}
             onChangeSchema={(newSchema) => {
-              console.warn(
-                "CardInterfaceComponent.render",
-                "TODO: Cannot alter schema inside ComponentRenderer in Card",
-                { newSchema }
-              )
+              if (this.props.mode === "edit") {
+                const { onChangeSchema, userInterfaceSchema } = this.props
+                onChangeSchema &&
+                  userInterfaceSchema &&
+                  onChangeSchema(set("components", newSchema, userInterfaceSchema))
+              }
             }}
           />
         </DataPathContext>

@@ -104,7 +104,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
               onChangeSchema={(newSchema) => {
                 console.warn(
                   "StringTemplateInterfaceComponent.render",
-                  "TODO: Cannot alter schema inside ComponentRenderer in Card",
+                  "TODO: Cannot alter schema inside ComponentRenderer in StringTemplate",
                   { newSchema }
                 )
               }}
@@ -120,7 +120,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
             onChangeSchema={(newSchema) => {
               console.warn(
                 "StringTemplateInterfaceComponent.render",
-                "TODO: Cannot alter schema inside ComponentRenderer in Card",
+                "TODO: Cannot alter schema inside ComponentRenderer in StringTemplate",
                 { newSchema }
               )
             }}

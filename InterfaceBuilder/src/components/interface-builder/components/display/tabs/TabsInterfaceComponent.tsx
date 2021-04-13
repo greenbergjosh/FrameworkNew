@@ -2,23 +2,14 @@ import { Tabs } from "antd"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
-import { UserInterfaceProps } from "../../../UserInterface"
 import { tabsManageForm } from "./tabs-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
-  ComponentDefinitionNamedProps,
   ComponentDefinitionRecursiveProp,
 } from "../../base/BaseInterfaceComponent"
-
-export interface TabsInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "tabs"
-  defaultActiveKey: string
-  onChangeData: UserInterfaceProps["onChangeData"]
-  tabs?: ComponentDefinition[]
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-}
+import { set } from "lodash/fp"
+import { TabsInterfaceComponentProps } from "components/interface-builder/components/display/tabs/types"
 
 export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterfaceComponentProps> {
   static getLayoutDefinition() {
@@ -50,11 +41,12 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
                     getRootData={getRootUserInterfaceData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
-                      console.warn(
-                        "TabsInterfaceComponent.render",
-                        "TODO: Cannot alter schema inside ComponentRenderer in Tabs",
-                        { newSchema }
-                      )
+                      if (this.props.mode === "edit") {
+                        const { onChangeSchema, userInterfaceSchema } = this.props
+                        onChangeSchema &&
+                          userInterfaceSchema &&
+                          onChangeSchema(set(`tabs.${index}.components`, newSchema, userInterfaceSchema))
+                      }
                     }}
                   />
                 </DataPathContext>

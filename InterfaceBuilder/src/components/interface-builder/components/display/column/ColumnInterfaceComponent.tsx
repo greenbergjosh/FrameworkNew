@@ -1,35 +1,12 @@
 import { Col, Row } from "antd"
-import { merge } from "lodash/fp"
+import { merge, set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
-import { UserInterfaceProps } from "../../../UserInterface"
 import { columnManageForm } from "./column-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
-  getDefaultsFromComponentDefinitions,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, getDefaultsFromComponentDefinitions } from "../../base/BaseInterfaceComponent"
+import { ColumnInterfaceComponentProps } from "./types"
 import styles from "./column.module.scss"
-
-interface ColumnModelColumnInterfaceComponent {
-  title?: string
-  hideTitle?: boolean
-  components: ComponentDefinition[]
-  span?: number
-}
-
-export interface ColumnInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  columns: ColumnModelColumnInterfaceComponent[]
-  component: "column"
-  gutter?: number
-  onChangeData: UserInterfaceProps["onChangeData"]
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  valueKey: string
-  submit?: UserInterfaceProps["submit"]
-}
 
 export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInterfaceComponentProps> {
   static defaultProps = {
@@ -99,11 +76,12 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
                     getRootData={getRootUserInterfaceData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
-                      console.warn(
-                        "ColumnInterfaceComponent.render",
-                        "TODO: Cannot alter schema inside ComponentRenderer in Column",
-                        { newSchema }
-                      )
+                      if (this.props.mode === "edit") {
+                        const { onChangeSchema, userInterfaceSchema } = this.props
+                        onChangeSchema &&
+                          userInterfaceSchema &&
+                          onChangeSchema(set(`columns.${columnIndex}.components`, newSchema, userInterfaceSchema))
+                      }
                     }}
                     submit={submit}
                   />
