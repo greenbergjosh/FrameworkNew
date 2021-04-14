@@ -6,7 +6,7 @@ import { empty as emptyArray, isEmpty as fptsIsEmpty } from "fp-ts/lib/Array"
 import { cloneDeep, matches, sortBy, isEmpty } from "lodash/fp"
 import { Button, Icon, PageHeader, Spin } from "antd"
 import { JSONRecord } from "../../data/JSON"
-import { getDefaultFormValues, QueryForm } from "../Query/QueryForm"
+import { getDefaultFormValues, QueryForm } from "../query/QueryForm"
 import { store } from "../../state/store"
 import { useRematch } from "../../hooks"
 import {

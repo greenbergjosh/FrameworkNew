@@ -11,7 +11,7 @@ import { store } from "../../state/store"
 import ReportBody from "./ReportBody"
 import { ReportOrErrors } from "./reportOrErrors/ReportOrErrors"
 import { ReportProps } from "./types"
-import { QueryParams } from "../Query/QueryParams"
+import { QueryParams } from "../query/QueryParams"
 
 export const Report = (props: ReportProps): JSX.Element => {
   const [fromStore /*dispatch*/] = useRematch((appState) => ({

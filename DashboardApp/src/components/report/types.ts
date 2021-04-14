@@ -1,7 +1,7 @@
 import { JSONRecord } from "../../data/JSON"
 import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../data/Report"
 import { Option } from "fp-ts/lib/Option"
-import { PropsFromQueryParams } from "../Query/QueryParams"
+import { PropsFromQueryParams } from "../query/QueryParams"
 import { EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
 import { GroupSettingsModel, PageSettingsModel, SortSettingsModel } from "@syncfusion/ej2-react-grids"
 

@@ -1,6 +1,6 @@
 import React from "react"
-import { Query } from "../../Query/Query"
-import { QueryChildProps } from "../../Query/types"
+import { Query } from "../../query/Query"
+import { QueryChildProps } from "../../query/types"
 import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
