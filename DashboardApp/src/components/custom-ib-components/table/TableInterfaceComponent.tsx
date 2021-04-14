@@ -35,12 +35,18 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  handleChangeData = (newValue: any): void => {
+    this.setValue(this.props.valueKey, newValue, this.props.userInterfaceData)
+  }
+
   // TODO: Provide TableWrapper with parentData and parameterValues
   //  to support QueryParams component, otherwise, this component
   //  won't respond to things like the querystring Query Params.
   //  For now we just provide default values for parentData and parameterValues.
 
   render(): JSX.Element {
-    return <TableWrapper {...this.props} parentData={{}} parameterValues={some({})} />
+    return (
+      <TableWrapper {...this.props} onChangeData={this.handleChangeData} parentData={{}} parameterValues={some({})} />
+    )
   }
 }

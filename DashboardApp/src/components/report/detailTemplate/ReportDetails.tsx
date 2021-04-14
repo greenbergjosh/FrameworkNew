@@ -88,7 +88,6 @@ export const ReportDetails = ({
   }
 
   const handleChangeDataFromChildren = (form: Formik.FormikProps<Values>) => (value: JSONRecord) => {
-    console.log("ReportDetails.handleChangeData!", value)
     form.setFieldValue("config", JSON.stringify(value, null, 2))
     form.setFieldTouched("config", true)
     if (onChangeData) {

@@ -57,6 +57,10 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  handleChangeData = (newValue: any): void => {
+    this.setValue(this.props.valueKey, newValue, this.props.userInterfaceData)
+  }
+
   render() {
     const {
       abstract,
@@ -141,7 +145,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                     enableVirtualization={enableVirtualization}
                     height={height}
                     defaultPageSize={defaultPageSize}
-                    onChangeData={onChangeData}
+                    onChangeData={this.handleChangeData}
                     rowDetails={rowDetails}
                     userInterfaceData={userInterfaceData}
                     getRootUserInterfaceData={getRootUserInterfaceData}
