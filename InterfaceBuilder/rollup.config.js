@@ -21,6 +21,7 @@ export default {
       lodash: "lodash",
       "react-awesome-query-builder": "reactAwesomeQueryBuilder",
       react: "React",
+      "@nivo/line": "line",
       "@nivo/pie": "pie",
       classnames: "classNames",
       "d3-geo": "d3Geo",
