@@ -94,6 +94,26 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  componentDidUpdate(
+    prevProps: Readonly<ExecuteInterfaceComponentProps>,
+    prevState: Readonly<ExecuteInterfaceComponentState>
+  ): void {
+    if (!this.props.executeImmediately || this.props.mode === "edit" || this.props.mode === "preview") {
+      return
+    }
+    /*
+     * Refresh the fetched results if the data source has changed.
+     * This may happen when the data source is bound to the model.
+     */
+    if (
+      (!this.props.RemoteQuery_isCRUD && prevProps.remoteQuery !== this.props.remoteQuery) ||
+      (!this.props.RemoteUrl_isCRUD && prevProps.remoteUrl !== this.props.remoteUrl) ||
+      (!this.props.RemoteConfig_isCRUD && prevProps.RemoteConfig_entityTypeId !== this.props.RemoteConfig_entityTypeId)
+    ) {
+      this.setState({ submitting: true })
+    }
+  }
+
   /**
    * Start the auto execute timer when the QueryForm mounts
    * @param handleSubmit
