@@ -8,7 +8,7 @@ import { UserInterfaceProps } from "components/interface-builder/UserInterface"
  * Test cases
  * https://regex101.com/r/vfVPMl/1
  */
-const pattern = /\{(?<dataType>date|number)?\(?(?<token>\$\.?[^(){}:]*)\)?:?(?<format>[CcDdEeFfGgMmNnOoPpRrsTtUuXxYy]\d{0,2})?}/gm
+const pattern = /\{(?<dataType>date|number)?\(?(?<token>\$\.?[^(){}:]*)\)?:?(?<format>([CcDdEeFfGgMmNnOoPpRrsTtUuXxYy]|fromNow|toNow)\d{0,2})?}/gm
 
 /**
  *
@@ -23,7 +23,7 @@ export function replaceTokens<T extends DataType>(
   rootValueKey: string,
   mode: UserInterfaceProps["mode"]
 ): T {
-  const regex = /\{(?<dataType>date|number)?\(?(?<token>\$\.?[^(){}:]*)\)?:?(?<format>[CcDdEeFfGgMmNnOoPpRrsTtUuXxYy]\d{0,2})?}/gm
+  const regex = /\{(?<dataType>date|number)?\(?(?<token>\$\.?[^(){}:]*)\)?:?(?<format>([CcDdEeFfGgMmNnOoPpRrsTtUuXxYy]|fromNow|toNow)\d{0,2})?}/gm
 
   const matchReducer = getMatchReducer(rootValueKey, data, mode)
   let match: RegExpExecArray | null
