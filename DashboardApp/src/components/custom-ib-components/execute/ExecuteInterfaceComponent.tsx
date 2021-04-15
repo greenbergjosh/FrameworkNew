@@ -207,7 +207,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             actionType={castProps.RemoteConfig_actionType}
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            deleteRedirectPath={castProps.RemoteConfig_deleteRedirectPath}
+            redirectPath={castProps.RemoteConfig_redirectPath}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             getParams={this.getParamsFromParamKVPMaps}
             mode={this.props.mode}
@@ -220,7 +220,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             remoteConfigStaticId={castProps.RemoteConfig_staticId}
             resultsType={castProps.RemoteConfig_resultsType}
             setParentSubmitting={this.setSubmitting}
-            useDeleteRedirect={castProps.RemoteConfig_useDeleteRedirect}
+            useRedirect={castProps.RemoteConfig_useRedirect}
             userInterfaceData={userInterfaceData}
           />
         )

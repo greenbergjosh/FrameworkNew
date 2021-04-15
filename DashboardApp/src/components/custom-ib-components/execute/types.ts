@@ -140,11 +140,11 @@ export interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInte
 
   // RemoteConfig Settings
   RemoteConfig_actionType: ActionType
-  RemoteConfig_deleteRedirectPath?: string
+  RemoteConfig_redirectPath?: string
   RemoteConfig_entityTypeId?: PersistedConfig["id"]
   RemoteConfig_staticId?: PersistedConfig["id"]
   RemoteConfig_resultsType?: ResultsType
-  RemoteConfig_useDeleteRedirect?: boolean
+  RemoteConfig_useRedirect?: boolean
 }
 
 export interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
@@ -240,12 +240,12 @@ export interface RemoteUrlProps extends RemoteComponentProps, RemoteUrlFromStore
 
 export interface RemoteConfigProps extends RemoteComponentProps {
   actionType: ActionType
-  deleteRedirectPath?: string
+  redirectPath?: string
   entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
   onResults: IExecuteInterfaceComponentProps["onChangeData"]
   remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
   resultsType?: ResultsType
-  useDeleteRedirect?: boolean
+  useRedirect?: boolean
 }
 
 export interface RemoteConfigFromStore extends FromStore {
