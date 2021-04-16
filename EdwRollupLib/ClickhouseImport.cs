@@ -49,6 +49,8 @@ namespace EdwRollupLib
 
         private Dictionary<Guid, (Guid rsId, DateTime rsTs)> _reportingSequences;
 
+        private readonly TaskCompletionSource _complete = new();
+
         public ClickhouseImport(IGenericEntity config, FrameworkWrapper fw)
         {
             _config = config;
@@ -100,30 +102,28 @@ namespace EdwRollupLib
                 var createPartitionTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreatePartitionTasks, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
                 var populateGroupedTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PopulateGroupedTable, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
                 var gatherPopulatedPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherPopulatedPartition, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
-                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergeTablesInPartition, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
-                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
-                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
-                var swapMergedTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(SwapMergedTable, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
+                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergeTablesInPartition, p => $"{p.PartitionIndex}"), options);
+                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable, p => $"{p.PartitionIndex}"), options);
+                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions, p => $"{p.PartitionIndex}"), options);
+                var swapMergedTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(SwapMergedTable, null), options);
                 var cleanupTempTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CleanupTempTables, null), options);
                 var cleanupFiles = new ActionBlock<Parameters>(withEventsMaker.WithEvents(CleanupFiles, null), options);
 
-                var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
-
-                createTargetTable.LinkTo(createFileTasks, linkOptions);
-                createFileTasks.LinkTo(createExportFile, linkOptions);
-                createExportFile.LinkTo(createImportTables, linkOptions);
-                createImportTables.LinkTo(importFile, linkOptions);
-                importFile.LinkTo(createPartitionTasks, linkOptions);
-                createPartitionTasks.LinkTo(populateGroupedTable, linkOptions);
-                populateGroupedTable.LinkTo(gatherPopulatedPartition, linkOptions);
-                gatherPopulatedPartition.LinkTo(DataflowBlock.NullTarget<Parameters>(), linkOptions, (output) => output == default);
-                gatherPopulatedPartition.LinkTo(mergeTablesInPartition, linkOptions);
-                mergeTablesInPartition.LinkTo(mergePartitionIntoFinalTable, linkOptions);
-                mergePartitionIntoFinalTable.LinkTo(gatherCompletedPartitions, linkOptions);
-                gatherCompletedPartitions.LinkTo(DataflowBlock.NullTarget<Parameters>(), linkOptions, (output) => output == default);
-                gatherCompletedPartitions.LinkTo(swapMergedTables, linkOptions);
-                swapMergedTables.LinkTo(cleanupTempTables, linkOptions);
-                cleanupTempTables.LinkTo(cleanupFiles, linkOptions);
+                createTargetTable.LinkTo(createFileTasks);
+                createFileTasks.LinkTo(createExportFile);
+                createExportFile.LinkTo(createImportTables);
+                createImportTables.LinkTo(importFile);
+                importFile.LinkTo(createPartitionTasks);
+                createPartitionTasks.LinkTo(populateGroupedTable);
+                populateGroupedTable.LinkTo(gatherPopulatedPartition);
+                gatherPopulatedPartition.LinkTo(DataflowBlock.NullTarget<Parameters>(), (output) => output == default);
+                gatherPopulatedPartition.LinkTo(mergeTablesInPartition);
+                mergeTablesInPartition.LinkTo(mergePartitionIntoFinalTable);
+                mergePartitionIntoFinalTable.LinkTo(gatherCompletedPartitions);
+                gatherCompletedPartitions.LinkTo(DataflowBlock.NullTarget<Parameters>(), (output) => output == default);
+                gatherCompletedPartitions.LinkTo(swapMergedTables);
+                swapMergedTables.LinkTo(cleanupTempTables);
+                cleanupTempTables.LinkTo(cleanupFiles);
 
                 var clickhouseConfig = _config.GetE("Config/clickhouse");
                 var host = clickhouseConfig.GetS("host");
@@ -136,11 +136,10 @@ namespace EdwRollupLib
                 using (_client = new SshClient(host, user, password))
                 {
                     _client.Connect();
+
                     await createTargetTable.SendAsync(new Parameters(startDate, endDate, _config.GetE("Config")));
 
-                    createTargetTable.Complete();
-
-                    await cleanupFiles.Completion;
+                    await _complete.Task;
                 }
             }
             finally
@@ -634,6 +633,8 @@ from datasets.{mergedTableName};";
 
                 await ExecuteSSHCommand($"sudo rm {importPath}");
             }
+
+            _complete.SetResult();
         }
         #endregion
 
@@ -719,6 +720,7 @@ from datasets.{mergedTableName};";
                 }), "application/json");
             }
 
+            _complete.SetResult();
         }
 
         private async Task<string> ExecuteSSHCommand(string commandText)
