@@ -1182,18 +1182,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+                }
 #if DEBUG
             }
 #endif
@@ -1858,7 +1858,7 @@ namespace UnsubLib
             catch (Exception ex)
             {
                 await _fw.Error(nameof(IsUnsub), $"Search failed: {campaignId}::{digest}::{ex}");
-                throw new Exception("Search failed.");
+                throw;
             }
         }
 
@@ -1876,7 +1876,7 @@ namespace UnsubLib
 
         private static JArray FlexStringArray(IGenericEntity ge, string path)
         {
-            var tok = Jw.TryParse(ge.GetS(path));
+            var tok = Jw.TryParse(ge.GetS(path) ?? "[]");
 
             if (tok is JArray ja) return ja;
 
@@ -1986,7 +1986,7 @@ namespace UnsubLib
             catch (Exception ex)
             {
                 await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex.UnwrapForLog()}");
-                throw new Exception("Search failed.");
+                throw;
             }
 
             if (emailsNotFound.Any())
@@ -2004,7 +2004,7 @@ namespace UnsubLib
                 catch (Exception e)
                 {
                     await _fw.Error(nameof(IsUnsubList), $"Global suppression check failed: {campaignId}::{e.UnwrapForLog()}");
-                    throw new Exception("Search failed.");
+                    throw;
                 }
             }
 
