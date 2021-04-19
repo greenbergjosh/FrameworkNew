@@ -15,7 +15,7 @@ import {
   BusinessAppNavigationItem,
 } from "./types"
 import { DEFAULT_BUSINESS_APPLICATION_CONFIG, DEFAULT_BUSINESS_APPLICATION_PAGE_CONFIG } from "./constants"
-import { NavigationGroupWithChildren, NavigationItem, WithRouteProps } from "../../../../state/navigation"
+import { NavigationGroupWithChildren, NavigationItem } from "../../../../state/navigation"
 
 export interface BusinessApplicationProps {
   applicationId: BusinessApplicationId

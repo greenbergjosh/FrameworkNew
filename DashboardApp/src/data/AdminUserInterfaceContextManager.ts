@@ -45,7 +45,7 @@ export const AdminUserInterfaceContextManagerProvider = ({
 
   const userInterfaceContextManager = React.useMemo(
     () => createUIContext(dispatch, fromStore.reportDataByQuery, fromStore.configs, fromStore.configsById),
-    [dispatch.reports, fromStore.configs, fromStore.configsById, fromStore.reportDataByQuery]
+    [dispatch, fromStore.configs, fromStore.configsById, fromStore.reportDataByQuery]
   )
 
   return children(userInterfaceContextManager)

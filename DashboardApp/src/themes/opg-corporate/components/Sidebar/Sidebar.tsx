@@ -6,7 +6,6 @@ import { AppConfig } from "../../../../state/apps"
 import { VerticalInlineMenu } from "../../../../components/VerticalInlineMenu/VerticalInlineMenu"
 import { IRouteMeta } from "../../../../state/navigation"
 import styles from "./sidebar.module.scss"
-import { throttle, debounce } from "lodash"
 
 export function Sidebar(props: {
   appConfig: AppConfig

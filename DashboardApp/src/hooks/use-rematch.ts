@@ -47,7 +47,7 @@ export function useRematch<Selected>(
     return function onUnmount() {
       unsubscribe()
     }
-  }, [selectedState, ...deps])
+  }, [selectedState, selectState])
 
   return [selectedState, store.dispatch]
 }

@@ -67,6 +67,6 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
   },
 ]
 
-export const tagsManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+export const tagsManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
   return baseManageForm(...selectManageFormDefinition, ...extend)
 }

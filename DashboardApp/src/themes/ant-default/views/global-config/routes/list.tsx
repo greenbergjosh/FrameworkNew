@@ -246,7 +246,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
         ),
       },
     ],
-    [configNameFilterVal, configTypeFilters, dispatch, filtered, fromStore.configTypes]
+    [configNameFilterVal, configTypeFilters, dispatch, filtered, fromStore.configTypes, fromStore.entityTypes]
   )
 
   return (

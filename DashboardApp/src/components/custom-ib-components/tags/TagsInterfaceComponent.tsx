@@ -1,14 +1,10 @@
 import React from "react"
 import { SelectInterfaceComponent } from "../select/SelectInterfaceComponent"
 import { tagsManageForm } from "./tags-manage-form"
-import { TagsProps } from "./types"
 import { MODES } from "../_shared/selectable/types"
+import { LayoutDefinition } from "@opg/interface-builder"
 
 export class TagsInterfaceComponent extends SelectInterfaceComponent {
-  constructor(props: TagsProps) {
-    super(props)
-  }
-
   static defaultProps = {
     allowClear: true,
     createNewLabel: "Create New...",
@@ -22,7 +18,7 @@ export class TagsInterfaceComponent extends SelectInterfaceComponent {
 
   static manageForm = tagsManageForm
 
-  static getLayoutDefinition() {
+  static getLayoutDefinition(): LayoutDefinition {
     return {
       category: "Form",
       name: "tags",

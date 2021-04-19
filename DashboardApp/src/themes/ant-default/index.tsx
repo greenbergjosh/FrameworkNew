@@ -78,19 +78,19 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         navigationDepthComponentRef.current.goTo(0)
       }
     }
-  }, [businessAppId, nestedNavigation, navigationDepthComponentRef.current])
+  }, [businessAppId, nestedNavigation])
 
   const showPrimaryNavigation = React.useCallback(() => {
     if (navigationDepthComponentRef.current) {
       navigationDepthComponentRef.current.goTo(0)
     }
-  }, [navigationDepthComponentRef.current])
+  }, [])
 
   const showNestedNavigation = React.useCallback(() => {
     if (navigationDepthComponentRef.current) {
       navigationDepthComponentRef.current.goTo(1)
     }
-  }, [navigationDepthComponentRef.current])
+  }, [])
 
   console.log("Dashboard/index", "BusinessApp?", { isBusinessApp, nestedNavigation })
 

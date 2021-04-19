@@ -105,7 +105,11 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
         />
       </>
     ),
-    [fromStore.selectedPartner && fromStore.selectedPartner.id]
+    [
+      fromStore.selectedPartner && fromStore.selectedPartner.id,
+      dispatch.importIngestionReport,
+      fromStore.selectedPartner,
+    ]
   )
 
   function sortByPartner<T>(data: T[], comparator: (item: T) => boolean): T[] {

@@ -25,7 +25,7 @@ export function useTaskRemoteData<Args extends VariadicTuple, L, A>(
       .chain(() => getTask(...args))
       .chain((rmtData) => task.fromIO(new IO(() => setRD(([_, current]) => [current, rmtData]))))
       .run()
-  }, [setRD, prev, current, ...args])
+  }, [setRD, prev, current, args, getTask])
 
   const Fold = React.useMemo(() => withRemoteData(current, prev), [current, prev])
 

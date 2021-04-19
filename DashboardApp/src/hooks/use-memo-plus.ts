@@ -11,7 +11,7 @@ import React from "react"
  *
  */
 export function useMemoPlus<A>(getValue: () => A, deps: Array<unknown>): [A, A] {
-  const current = React.useMemo(getValue, deps)
+  const current = React.useMemo(getValue, [deps, getValue])
   const currentRef = React.useRef(current)
   const previousRef = React.useRef(current)
 

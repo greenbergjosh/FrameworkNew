@@ -1,7 +1,5 @@
 import * as Reselect from "reselect"
 import { Action, Dispatch } from "redux"
-import { Parameterizer } from "@rematch/select"
-import { Models } from "@rematch/core"
 
 /**
  * ------------ APP MODELS --------------

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import * as Store from "./store.types"
 
 declare module "./store.types" {
