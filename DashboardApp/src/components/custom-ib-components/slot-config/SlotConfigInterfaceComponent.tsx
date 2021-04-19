@@ -100,7 +100,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
         data={data}
         getRootData={getRootUserInterfaceData}
         dragDropDisabled
-        onChangeData={(newData) => {
+        onChangeData={(newData: any) => {
           onChangeData &&
             onChangeData(
               set(
@@ -110,7 +110,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
               )
             )
         }}
-        onChangeSchema={(newSchema) => {
+        onChangeSchema={(newSchema: any) => {
           console.warn(
             "SlotConfigInterfaceComponent.render",
             "TODO: Cannot alter schema inside ComponentRenderer in SlotConfig",

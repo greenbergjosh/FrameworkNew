@@ -92,7 +92,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
                 data={data}
                 getRootData={getRootUserInterfaceData}
                 onChangeData={this.handleChange}
-                onChangeSchema={(newSchema) => {
+                onChangeSchema={(newSchema: any) => {
                   console.warn(
                     "RemoteComponentInterfaceComponent.render",
                     "TODO: Cannot alter schema inside ComponentRenderer in RemoteComponent",

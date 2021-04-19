@@ -12,13 +12,13 @@ export function decodeJSON<A>(decoder: Decoder<A>, value: unknown): Either<strin
 
 export function map<A, B>(fa: Decoder<A>, f: (a: A) => B): Decoder<B> {
   return {
-    decode: (value) => fa.decode(value).map(f),
+    decode: (value: unknown) => fa.decode(value).map(f),
   }
 }
 
 export function fromType<A>(type: Type<A, any, unknown>): Decoder<A> {
   return {
-    decode: (value) => type.decode(value).mapLeft((errors) => failure(errors).join("\n")),
+    decode: (value: unknown) => type.decode(value).mapLeft((errors) => failure(errors).join("\n")),
   }
 }
 
