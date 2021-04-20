@@ -1,6 +1,6 @@
 import React from "react"
 import { ColumnConfig, TableInterfaceComponentProps } from "../types"
-import { Table } from "@opg/interface-builder"
+import { SortableGroupableColumnModel, Table } from "@opg/interface-builder"
 import { cloneDeep } from "lodash/fp"
 import { getDetailTemplate } from "../../../report/detailTemplate/getDetailTemplate"
 import { getCustomCellFormatter } from "../customFormatters/customCellFormatter"
@@ -37,11 +37,11 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
    * COLUMN TEMPLATES
    * Provide layout components and formatters to columns
    */
-  const enrichedColumns = React.useMemo((): ColumnConfig[] => {
+  const enrichedColumns = React.useMemo((): SortableGroupableColumnModel[] => {
     return columns.map(
-      (column: ColumnConfig): ColumnConfig => {
+      (column): SortableGroupableColumnModel => {
         const template = getDetailTemplate({
-          columnDetails: column.details,
+          columnDetails: (column as ColumnConfig).details,
           columnType: column.type,
           dispatch,
           getRootUserInterfaceData,

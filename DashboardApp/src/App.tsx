@@ -9,7 +9,7 @@ import styles from "./App.module.scss"
 import "./App.scss"
 import "@opg/interface-builder/dist/main.css"
 import { None, Some } from "./data/Option"
-import { useRematch } from "./hooks/use-rematch"
+import { useRematch } from "./hooks"
 import { NotFound } from "./views/not-found"
 import { store } from "./state/store"
 import {
@@ -17,7 +17,9 @@ import {
   ComponentRegistryCache,
   DragDropContext,
   htmlComponents,
+  monacoComponents,
   nivoComponents,
+  syncfusionComponents,
   registerMonacoEditorMount,
   registry,
 } from "@opg/interface-builder"
@@ -63,8 +65,10 @@ export function App(): JSX.Element {
 
   React.useEffect(() => {
     registry.register(wrapLibWithEventManager(antComponents))
-    registry.register(wrapLibWithEventManager(nivoComponents))
     registry.register(wrapLibWithEventManager(htmlComponents))
+    registry.register(wrapLibWithEventManager(monacoComponents))
+    registry.register(wrapLibWithEventManager(nivoComponents))
+    registry.register(wrapLibWithEventManager(syncfusionComponents))
     registry.register({ query: withEventManager(QueryInterfaceComponent) })
     registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
     registry.register({ "path-editor": PathEditorInterfaceComponent })
@@ -97,7 +101,7 @@ export function App(): JSX.Element {
 }
 
 function Routes() {
-  const [fromStore, dispatch] = useRematch((appState) => ({
+  const [fromStore /* , dispatch */] = useRematch((appState) => ({
     profile: appState.iam.profile,
     routes: store.select.navigation.routes(appState),
   }))

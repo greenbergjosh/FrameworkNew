@@ -1,8 +1,8 @@
 import { get, isEmpty, isNull } from "lodash/fp"
-import { formatValue } from "lib/valueFormatter"
+import { formatValue } from "../../lib/valueFormatter"
 import { MatchReducer } from "./types"
-import { CoerceableDataType, DataType } from "lib/valueFormatter/types"
-import { UserInterfaceProps } from "components/interface-builder/UserInterface"
+import { CoerceableDataType, DataType } from "../../lib/valueFormatter/types"
+import { UserInterfaceProps } from "../../globalTypes"
 
 /*
  * Test cases

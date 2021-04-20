@@ -1,4 +1,4 @@
-import { EnrichedColumnDefinition, Table } from "@opg/interface-builder"
+import { SortableGroupableColumnModel, Table } from "@opg/interface-builder"
 import { JSONRecord } from "../../../data/JSON"
 import { Option } from "fp-ts/lib/Option"
 import { ReportDetailsType } from "../../report/detailTemplate/types"
@@ -22,6 +22,6 @@ export interface TableInterfaceComponentState extends Table.TableInterfaceCompon
   deserialize: () => undefined
 }
 
-export interface ColumnConfig extends EnrichedColumnDefinition {
+export interface ColumnConfig extends SortableGroupableColumnModel {
   details: ReportDetailsType
 }
