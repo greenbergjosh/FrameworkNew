@@ -1,0 +1,158 @@
+import React from "react"
+import { EventPayloadType } from "../../services/EventBus"
+import { getValue } from "../../lib/getValue"
+import { JSONRecord } from "../../globalTypes/JSONTypes"
+import { merge, set } from "lodash/fp"
+import { registry } from "../../services/ComponentRegistry"
+import { v4 as uuid } from "uuid"
+import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
+import { BaseInterfaceComponentProps } from "./types"
+
+/* TODO: Create an eventManager HOC to provide an onRaiseEvent prop for all components */
+/**
+ * BaseInterfaceComponent
+ *
+ * Events:
+ * @static availableEvents: string[] - Add event names to raise in the component to this array
+ * @method raiseEvent - Raise events by calling this method with an event name and a payload
+ */
+export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentProps, Y = {}> extends React.Component<
+  T,
+  Y
+> {
+  private _componentId: string | null = null
+
+  public get componentId(): string {
+    if (!this._componentId) {
+      this._componentId = uuid()
+    }
+    return this._componentId
+  }
+
+  static getLayoutDefinition(): LayoutDefinition {
+    return {
+      name: "__Undefined",
+      title: "__Undefined",
+    } as LayoutDefinition
+  }
+
+  static getDefinitionDefaultValue(
+    componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
+  ): { [key: string]: any } {
+    if (
+      componentDefinition &&
+      typeof componentDefinition.valueKey === "string" &&
+      typeof componentDefinition.defaultValue !== "undefined"
+    ) {
+      return set(componentDefinition.valueKey, componentDefinition.defaultValue, {})
+    }
+    return {}
+  }
+
+  static manageForm(...extend: ComponentDefinition[]): ComponentDefinition[] {
+    return extend || []
+  }
+
+  static getManageFormDefaults(): { [key: string]: any } {
+    return getDefaultsFromComponentDefinitions(this.manageForm())
+  }
+
+  getDefaultValue(): unknown {
+    if (typeof this.props.defaultValue !== "undefined") {
+      return this.props.defaultValue
+    }
+    return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
+  }
+
+  /**
+   * Returns data with a value merged at the provided key path
+   * @param key
+   * @param value
+   * @param userInterfaceData
+   */
+  getMergedData(
+    key: string,
+    value: any,
+    userInterfaceData?: UserInterfaceProps["data"]
+  ): { mergedData: JSONRecord; isTargetingRoot: boolean } {
+    const pathSegments = key.split(".")
+    const isTargetingRoot = pathSegments[0] === "$root"
+    if (isTargetingRoot) {
+      pathSegments.shift()
+    }
+    const path = pathSegments.join(".")
+    const uiData = isTargetingRoot ? this.props.getRootUserInterfaceData() : userInterfaceData
+    return { mergedData: set(path, value, uiData), isTargetingRoot }
+  }
+
+  /**
+   * Gets the value from local or root UI data.
+   * Provide the "root." keyword at the beginning of the valueKey to use root UI data.
+   * @param key
+   * @param userInterfaceData -- Optional, provide if using a different source such as from prevProps
+   * @param getRootUserInterfaceData -- Optional, provide if using a different source such as from prevProps
+   */
+  getValue(
+    key: string,
+    userInterfaceData?: UserInterfaceProps["data"],
+    getRootUserInterfaceData?: () => UserInterfaceProps["data"]
+  ): JSONRecord | JSONRecord[] | undefined {
+    return getValue(
+      key,
+      userInterfaceData || this.props.userInterfaceData,
+      getRootUserInterfaceData || this.props.getRootUserInterfaceData
+    )
+  }
+
+  /**
+   * Sets the value in local or root UI parentRowData.
+   * Provide the "$root." keyword at the beginning of the valueKey to use root UI parentRowData.
+   * @param key
+   * @param value
+   * @param userInterfaceData
+   */
+  setValue(key: string, value: any, userInterfaceData?: UserInterfaceProps["data"]): void {
+    const { mergedData, isTargetingRoot } = this.getMergedData(key, value, userInterfaceData)
+    this.props.onChangeData && this.props.onChangeData(mergedData, isTargetingRoot)
+  }
+
+  anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
+    return propsToCheck.some(
+      (prop) =>
+        this.props[prop] !== prevProps[prop] || (this.props[prop] !== undefined && prevProps[prop] === undefined)
+    )
+  }
+
+  static availableEvents: string[] = []
+
+  raiseEvent(eventName: string, eventPayload: EventPayloadType): void {
+    console.log(`BaseInterfaceComponent: Component raised event "${eventName}"`, eventPayload)
+    if (this.props.onRaiseEvent) {
+      this.props.onRaiseEvent(eventName, eventPayload, this)
+    }
+  }
+}
+
+export function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]) {
+  // Iterate over all the definitions to accumulate their defaults
+  return componentDefinitions.reduce((acc, componentDefinition) => {
+    // If there are child lists of in the component's properties
+    const nestedValues: { [key: string]: any } = Object.entries(componentDefinition).reduce((acc2, [key, value]) => {
+      if (Array.isArray(value) && value.length && value[0].component) {
+        // Merge in child list values if they exist
+        return merge(getDefaultsFromComponentDefinitions(value), acc2)
+      }
+
+      return acc2
+    }, {})
+
+    // Check to see if there's a component type for this object
+    const Component = registry.lookup(componentDefinition.component)
+
+    // If this component has a value itself, get it
+    const thisValue = (Component && Component.getDefinitionDefaultValue(componentDefinition)) || {}
+
+    // Combine the existing values with this level's value and any nested values
+    return merge(nestedValues, merge(thisValue, acc))
+  }, {})
+}

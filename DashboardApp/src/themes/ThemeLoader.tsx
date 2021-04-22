@@ -32,7 +32,7 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
       setData({})
       dispatch.apps.updateAppPaths()
     }
-  }, [dispatch, fromStore.appPaths.currentUrl, props.location.hostname, props.location.pathname])
+  }, [dispatch, fromStore.appPaths.currentUrl, props.location.host, props.location.pathname])
 
   const SelectedTheme: ITheme = React.useMemo(() => {
     if (!isEmpty(fromStore.appConfig)) {

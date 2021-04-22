@@ -372,7 +372,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                         <UserInterface
                           contextManager={userInterfaceContextManager}
                           data={tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})}
-                          onChangeData={(value) => {
+                          onChangeData={(value: any) => {
                             console.log("edit", "UserInterface.onChangeData", "new config", value)
                             form.setFieldValue("config", JSON.stringify(value, null, 2))
                             form.setFieldTouched("config", true)

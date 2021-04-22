@@ -9,9 +9,9 @@ import { ConfigType, PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../../data/Report"
 import { AppDispatch, AppState } from "../../../state/store.types"
-import { confirmationType, QueryFormProps } from "../../Query/types"
+import { confirmationType, QueryFormProps } from "../../query/types"
 import { JSONRecord } from "../../../data/JSON"
-import { PropsFromQueryParams } from "../../Query/QueryParams"
+import { PropsFromQueryParams } from "../../query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 
@@ -140,11 +140,11 @@ export interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInte
 
   // RemoteConfig Settings
   RemoteConfig_actionType: ActionType
-  RemoteConfig_deleteRedirectPath?: string
+  RemoteConfig_redirectPath?: string
   RemoteConfig_entityTypeId?: PersistedConfig["id"]
   RemoteConfig_staticId?: PersistedConfig["id"]
   RemoteConfig_resultsType?: ResultsType
-  RemoteConfig_useDeleteRedirect?: boolean
+  RemoteConfig_useRedirect?: boolean
 }
 
 export interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
@@ -240,12 +240,12 @@ export interface RemoteUrlProps extends RemoteComponentProps, RemoteUrlFromStore
 
 export interface RemoteConfigProps extends RemoteComponentProps {
   actionType: ActionType
-  deleteRedirectPath?: string
+  redirectPath?: string
   entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
   onResults: IExecuteInterfaceComponentProps["onChangeData"]
   remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
   resultsType?: ResultsType
-  useDeleteRedirect?: boolean
+  useRedirect?: boolean
 }
 
 export interface RemoteConfigFromStore extends FromStore {

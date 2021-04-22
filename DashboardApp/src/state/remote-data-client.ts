@@ -1,4 +1,3 @@
-/* eslint-disable dot-notation */
 import { isArray } from "lodash/fp"
 import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"

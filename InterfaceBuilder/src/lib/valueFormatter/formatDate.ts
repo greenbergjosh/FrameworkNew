@@ -1,6 +1,7 @@
 import DateTimeFormatOptions = Intl.DateTimeFormatOptions
 import { isDate } from "lodash/fp"
 import { DataType } from "./types"
+import moment from "moment"
 
 type DateTimeFormatter = (value: Date) => string
 
@@ -109,6 +110,8 @@ export const dateTimeFormats: {
     year: "numeric",
     month: "long",
   },
+  fromNow: (d) => moment(d).fromNow(),
+  toNow: (d) => moment(d).toNow(),
   default: (d) => d.toLocaleString(),
 }
 

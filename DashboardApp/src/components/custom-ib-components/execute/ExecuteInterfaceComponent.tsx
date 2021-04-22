@@ -94,6 +94,26 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  componentDidUpdate(
+    prevProps: Readonly<ExecuteInterfaceComponentProps>,
+    prevState: Readonly<ExecuteInterfaceComponentState>
+  ): void {
+    if (!this.props.executeImmediately || this.props.mode === "edit" || this.props.mode === "preview") {
+      return
+    }
+    /*
+     * Refresh the fetched results if the data source has changed.
+     * This may happen when the data source is bound to the model.
+     */
+    if (
+      (!this.props.RemoteQuery_isCRUD && prevProps.remoteQuery !== this.props.remoteQuery) ||
+      (!this.props.RemoteUrl_isCRUD && prevProps.remoteUrl !== this.props.remoteUrl) ||
+      (!this.props.RemoteConfig_isCRUD && prevProps.RemoteConfig_entityTypeId !== this.props.RemoteConfig_entityTypeId)
+    ) {
+      this.setState({ submitting: true })
+    }
+  }
+
   /**
    * Start the auto execute timer when the QueryForm mounts
    * @param handleSubmit
@@ -207,7 +227,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             actionType={castProps.RemoteConfig_actionType}
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            deleteRedirectPath={castProps.RemoteConfig_deleteRedirectPath}
+            redirectPath={castProps.RemoteConfig_redirectPath}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             getParams={this.getParamsFromParamKVPMaps}
             mode={this.props.mode}
@@ -220,7 +240,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             remoteConfigStaticId={castProps.RemoteConfig_staticId}
             resultsType={castProps.RemoteConfig_resultsType}
             setParentSubmitting={this.setSubmitting}
-            useDeleteRedirect={castProps.RemoteConfig_useDeleteRedirect}
+            useRedirect={castProps.RemoteConfig_useRedirect}
             userInterfaceData={userInterfaceData}
           />
         )

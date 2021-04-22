@@ -1,6 +1,6 @@
 import React from "react"
-import { Query } from "../../Query/Query"
-import { QueryChildProps } from "../../Query/types"
+import { Query } from "../../query/Query"
+import { QueryChildProps } from "../../query/types"
 import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
@@ -57,12 +57,12 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
           data={{ ...userInterfaceData, [valueKey]: result.data, [loadingKey]: result.loading }}
           getRootData={getRootUserInterfaceData}
           onChangeData={onChangeData}
-          // onChangeSchema={(newSchema) => {
+          // onChangeSchema={(newSchema: any) => {
           //   if (this.props.mode === "edit") {
           //     this.props.onChangeSchema && this.props.onChangeSchema(newSchema)
           //   }
           // }}
-          onChangeSchema={(newSchema) => {
+          onChangeSchema={(newSchema: any) => {
             console.warn(
               "QueryInterfaceComponent.render",
               "TODO: Cannot alter schema inside ComponentRenderer in Query",

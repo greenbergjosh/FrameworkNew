@@ -133,7 +133,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     const valueSet = new Set<string>()
     this.setState({
       options: values
-        .filter((value) => {
+        .filter((value: JSONRecord) => {
           if (remoteDataFilter && !jsonLogic.apply(remoteDataFilter, value)) {
             return false
           }
@@ -300,9 +300,9 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       return
     }
 
-    const getRawOptions = (props: SelectableProps): JSONRecord[] => {
+    const getRawOptions = (props: SelectableProps): JSONRecord | JSONRecord[] | undefined => {
       const p = props as SelectablePropsUiDataKey
-      return p.optionsKey && this.getValue(p.optionsKey, p.userInterfaceData, p.getRootUserInterfaceData)
+      return p.optionsKey ? this.getValue(p.optionsKey, p.userInterfaceData, p.getRootUserInterfaceData) : undefined
     }
 
     const rawOptions = getRawOptions(this.props)
@@ -426,7 +426,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       rawValue &&
       (Array.isArray(rawValue)
         ? rawValue.map(
-            (value) => cleanText(value, valuePrefix, valueSuffix) //.toLowerCase()
+            (value: string) => cleanText(value, valuePrefix, valueSuffix) //.toLowerCase()
           )
         : cleanText(rawValue, valuePrefix, valueSuffix)) //.toLowerCase()
 

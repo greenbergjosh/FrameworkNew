@@ -67,7 +67,7 @@ export const BusinessApplicationPage = ({
               contextManager={userInterfaceContextManager}
               components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
               data={data}
-              onChangeData={(newData) => setData(newData)}
+              onChangeData={(newData: any) => setData(newData)}
             />
           </div>
         )}

@@ -3,10 +3,13 @@ import { Layout } from "antd"
 import "antd/dist/antd.css"
 import {
   antComponents,
+  ckeditorComponents,
   DragDropContext,
   htmlComponents,
+  monacoComponents,
   nivoComponents,
   registry,
+  syncfusionComponents,
 } from "@opg/interface-builder"
 import "./App.css"
 import "@opg/interface-builder/dist/main.css"
@@ -18,18 +21,20 @@ import { DocsView } from "./views/DocsView"
 import { MainMenu } from "./components/MainMenu"
 import { TableInterfaceComponent } from "./components/custom-ib/table/TableInterfaceComponent"
 
-registry.register(antComponents)
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-registry.register(nivoComponents)
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-registry.register(htmlComponents)
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-registry.register({ table: TableInterfaceComponent })
-
 const App: React.FC = () => {
+  React.useEffect(() => {
+    /* IB Plugins */
+    registry.register(antComponents)
+    registry.register(ckeditorComponents)
+    registry.register(htmlComponents)
+    registry.register(monacoComponents)
+    registry.register(nivoComponents)
+    registry.register(syncfusionComponents)
+
+    /* IB Overrides */
+    registry.register({ table: TableInterfaceComponent })
+  }, [])
+
   return (
     <DragDropContext.HTML5>
       <Router>

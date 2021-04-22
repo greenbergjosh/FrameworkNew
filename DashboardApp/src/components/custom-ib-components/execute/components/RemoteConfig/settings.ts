@@ -229,70 +229,6 @@ export const remoteConfigSettings = [
     },
   },
   {
-    key: "RemoteConfig_useDeleteRedirect",
-    valueKey: "RemoteConfig_useDeleteRedirect",
-    component: "toggle",
-    defaultValue: false,
-    label: "Redirect After Delete",
-    bindable: true,
-    visibilityConditions: {
-      and: [
-        {
-          "==": [
-            {
-              var: ["queryType"],
-            },
-            "remote-config",
-          ],
-        },
-        {
-          "==": [
-            {
-              var: ["RemoteConfig_actionType"],
-            },
-            "delete",
-          ],
-        },
-      ],
-    },
-  },
-  {
-    key: "RemoteConfig_deleteRedirectPath",
-    valueKey: "RemoteConfig_deleteRedirectPath",
-    label: "Redirect Path",
-    component: "input",
-    defaultValue: "/dashboard/apps/",
-    bindable: true,
-    visibilityConditions: {
-      and: [
-        {
-          "==": [
-            {
-              var: ["queryType"],
-            },
-            "remote-config",
-          ],
-        },
-        {
-          "==": [
-            {
-              var: ["RemoteConfig_actionType"],
-            },
-            "delete",
-          ],
-        },
-        {
-          "==": [
-            {
-              var: ["RemoteConfig_useDeleteRedirect"],
-            },
-            true,
-          ],
-        },
-      ],
-    },
-  },
-  {
     center: false,
     headerSize: "",
     textType: "warning",
@@ -338,6 +274,70 @@ export const remoteConfigSettings = [
                 "delete",
               ],
             },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteConfig_useRedirect",
+    valueKey: "RemoteConfig_useRedirect",
+    component: "toggle",
+    defaultValue: false,
+    label: "Redirect After Execute",
+    bindable: true,
+    visibilityConditions: {
+      and: [
+        {
+          "==": [
+            {
+              var: ["queryType"],
+            },
+            "remote-config",
+          ],
+        },
+        {
+          "!==": [
+            {
+              var: ["RemoteConfig_actionType"],
+            },
+            "fetch",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteConfig_redirectPath",
+    valueKey: "RemoteConfig_redirectPath",
+    label: "Redirect Path",
+    component: "input",
+    defaultValue: "/dashboard/apps/",
+    bindable: true,
+    visibilityConditions: {
+      and: [
+        {
+          "==": [
+            {
+              var: ["queryType"],
+            },
+            "remote-config",
+          ],
+        },
+        {
+          "!==": [
+            {
+              var: ["RemoteConfig_actionType"],
+            },
+            "fetch",
+          ],
+        },
+        {
+          "==": [
+            {
+              var: ["RemoteConfig_useRedirect"],
+            },
+            true,
           ],
         },
       ],

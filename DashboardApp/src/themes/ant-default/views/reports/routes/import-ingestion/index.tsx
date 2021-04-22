@@ -7,8 +7,8 @@ import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import { Helmet } from "react-helmet"
 import { FilteredMenu } from "../../../../../../components/FilteredMenu"
-import { Query } from "../../../../../../components/Query/Query"
-import { QueryProps } from "../../../../../../components/Query/types"
+import { Query } from "../../../../../../components/query/Query"
+import { QueryProps } from "../../../../../../components/query/types"
 import { useRematch } from "../../../../../../hooks"
 import { PartnerStatus } from "../../../../../../state/import-ingestion-report"
 import { store } from "../../../../../../state/store"
@@ -105,7 +105,11 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
         />
       </>
     ),
-    [fromStore.selectedPartner && fromStore.selectedPartner.id]
+    [
+      fromStore.selectedPartner && fromStore.selectedPartner.id,
+      dispatch.importIngestionReport,
+      fromStore.selectedPartner,
+    ]
   )
 
   function sortByPartner<T>(data: T[], comparator: (item: T) => boolean): T[] {

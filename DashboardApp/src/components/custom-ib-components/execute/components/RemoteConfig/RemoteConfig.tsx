@@ -5,9 +5,9 @@ import React from "react"
 import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { QueryForm } from "../../../../Query/QueryForm"
+import { QueryForm } from "../../../../query/QueryForm"
 import { LoadStatusCode, LOADSTATUSCODES, OnSubmitType, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
-import { QueryParams } from "../../../../Query/QueryParams"
+import { QueryParams } from "../../../../query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
@@ -20,7 +20,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     actionType,
     buttonLabel,
     buttonProps,
-    deleteRedirectPath,
+    redirectPath,
     entityTypeId,
     getParams,
     mode,
@@ -33,7 +33,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     remoteConfigStaticId,
     resultsType,
     setParentSubmitting,
-    useDeleteRedirect,
+    useRedirect,
     userInterfaceData,
   } = props
 
@@ -73,8 +73,13 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
+    /*
+     * Type: Report.Query
+     * Name: ExecuteComponent.RemoteConfig.Query
+     * GUID: 97d37ff4-0585-415d-a3af-4bfb9c22b055
+     */
     const queryConfigId = "97d37ff4-0585-415d-a3af-4bfb9c22b055" as PersistedConfig["id"]
-    return getQueryConfig({ fromStore, loadById: fromStore.loadByType, persistedConfigId: queryConfigId })
+    return getQueryConfig({ fromStore, loadById: fromStore.loadById, persistedConfigId: queryConfigId })
   }, [fromStore])
 
   /* *************************************
@@ -133,16 +138,16 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    */
   React.useEffect(() => {
     if (
-      useDeleteRedirect &&
-      loadStatus === LOADSTATUSCODES.deleted &&
-      deleteRedirectPath &&
-      !isEmpty(deleteRedirectPath)
+      useRedirect &&
+      (loadStatus === LOADSTATUSCODES.deleted ||
+        loadStatus === LOADSTATUSCODES.created ||
+        loadStatus === LOADSTATUSCODES.updated) &&
+      redirectPath &&
+      !isEmpty(redirectPath)
     ) {
-      // Wipe out userInterfaceData from this view so it doesn't conflict on the next view
-      onChangeData && onChangeData({})
-      dispatch.navigation.navigate(deleteRedirectPath)
+      dispatch.navigation.navigate(redirectPath)
     }
-  }, [dispatch.navigation, loadStatus, useDeleteRedirect, deleteRedirectPath, onChangeData])
+  }, [dispatch.navigation, loadStatus, useRedirect, redirectPath, onChangeData])
 
   /* *************************************
    *

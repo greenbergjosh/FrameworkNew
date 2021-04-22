@@ -1,6 +1,6 @@
 import React from "react"
 import { Helmet } from "react-helmet"
-import { Report } from "../../../../../../components/Report/Report"
+import { Report } from "../../../../../../components/report/Report"
 import { WithRouteProps } from "../../../../../../state/navigation"
 
 type ReportQueryId = string
