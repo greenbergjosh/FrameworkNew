@@ -240,7 +240,7 @@ namespace EdwRollupLib
                     var group = context.Request.Query["group"].ToString();
                     await _scheduler.PauseJob(new JobKey(jobName, group));
                     await _scheduler.PauseTrigger(new TriggerKey(jobName, group));
-                    Console.WriteLine($"{DateTime.Now}: Paused {jobName}");
+                    Console.WriteLine($"{DateTime.Now}: Paused {jobName} {group}");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/resume" && context.Request.Method == WebRequestMethods.Http.Post)
@@ -249,7 +249,7 @@ namespace EdwRollupLib
                     var group = context.Request.Query["group"].ToString();
                     await _scheduler.ResumeJob(new JobKey(jobName, group));
                     await _scheduler.ResumeTrigger(new TriggerKey(jobName, group));
-                    Console.WriteLine($"{DateTime.Now}: Resumed {jobName}");
+                    Console.WriteLine($"{DateTime.Now}: Resumed {jobName} {group}");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/delete" && context.Request.Method == WebRequestMethods.Http.Post)
@@ -257,7 +257,7 @@ namespace EdwRollupLib
                     var jobName = context.Request.Query["job"].ToString();
                     var group = context.Request.Query["group"].ToString();
                     await _scheduler.DeleteJob(new JobKey(jobName, group));
-                    Console.WriteLine($"{DateTime.Now}: Deleted {jobName}");
+                    Console.WriteLine($"{DateTime.Now}: Deleted {jobName} {group}");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/reset" && context.Request.Method == WebRequestMethods.Http.Post)
@@ -267,6 +267,25 @@ namespace EdwRollupLib
                     await InitScheduler();
                     Console.WriteLine($"{DateTime.Now}: Reset");
                     await context.WriteSuccessRespAsync(_defaultResponse);
+                }
+                else if (path == "/trigger" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    var jobName = context.Request.Query["job"].ToString();
+                    var group = context.Request.Query["group"].ToString();
+                    var jobKey = new JobKey(jobName, group);
+                    var jobDetail = await _scheduler.GetJobDetail(jobKey);
+                    var activeJobs = (await _scheduler.GetCurrentlyExecutingJobs()).Select(jec => jec.JobDetail);
+                    if (activeJobs.Contains(jobDetail))
+                    {
+                        await context.WriteFailureRespAsync(JsonConvert.SerializeObject(new { result = "failure", message = "Job is already running." }));
+                    }
+                    else
+                    {
+                        var existingTrigger = (await _scheduler.GetTriggersOfJob(jobKey)).First();
+                        await _scheduler.TriggerJob(jobKey, existingTrigger.JobDataMap);
+                        Console.WriteLine($"{DateTime.Now}: Triggered {jobName} {group}");
+                        await context.WriteSuccessRespAsync(_defaultResponse);
+                    }
                 }
                 else
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
