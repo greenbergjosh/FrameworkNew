@@ -287,6 +287,31 @@ namespace EdwRollupLib
                         await context.WriteSuccessRespAsync(_defaultResponse);
                     }
                 }
+                else if (path == "/crontester" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    var expression = context.Request.Query["cron_expression"].ToString();
+
+                    try
+                    {
+                        var cron = new CronExpression(expression);
+
+                        var next5 = new List<DateTimeOffset>();
+
+                        var current = DateTimeOffset.Now;
+                        for (var i = 0; i < 5; i++)
+                        {
+                            var next = cron.GetNextValidTimeAfter(current);
+                            next5.Add(next.Value);
+                            current = next.Value;
+                        }
+
+                        await context.WriteSuccessRespAsync(JsonConvert.SerializeObject(new { result = "success", trigger_times = next5 }));
+                    }
+                    catch (FormatException fex)
+                    {
+                        await context.WriteFailureRespAsync(JsonConvert.SerializeObject(new { result = "failure", message = fex.Message }));
+                    }
+                }
                 else
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
             }
