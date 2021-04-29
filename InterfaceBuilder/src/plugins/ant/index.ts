@@ -3,6 +3,7 @@ import { ButtonInterfaceComponent } from "./button/ButtonInterfaceComponent"
 import { CardInterfaceComponent } from "./card/CardInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./checkbox/CheckboxInterfaceComponent"
 import { CollapseInterfaceComponent } from "./collapse/CollapseInterfaceComponent"
+import { ColorPickerInterfaceComponent } from "./color-picker/ColorPickerInterfaceComponent"
 import { ColumnInterfaceComponent } from "./column/ColumnInterfaceComponent"
 import { DataDictionaryInterfaceComponent } from "./data-dictionary/DataDictionaryInterfaceComponent"
 import { DataMapInterfaceComponent } from "./data-map/DataMapInterfaceComponent"
@@ -46,6 +47,7 @@ const plugin: ComponentRegistryCache = {
   card: CardInterfaceComponent,
   checkbox: CheckboxInterfaceComponent,
   collapse: CollapseInterfaceComponent,
+  "color-picker": ColorPickerInterfaceComponent,
   column: ColumnInterfaceComponent,
   "bulk-text-input": BulkTextInputInterfaceComponent,
   "data-map": DataMapInterfaceComponent,
