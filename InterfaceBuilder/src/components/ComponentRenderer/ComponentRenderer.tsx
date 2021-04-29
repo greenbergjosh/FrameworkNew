@@ -61,26 +61,24 @@ export const _ComponentRenderer = ({
   // console.log("ComponentRenderer.render", { components, data })
 
   return (
-    <div>
-      <ComponentRendererModeContext.Provider value={mode}>
-        {mode === "edit" && !dragDropDisabled ? (
-          <DataPathContext>
-            {(path) => (
-              <Droppable
-                data={components}
-                allowDrop={!componentLimit || components.length < componentLimit}
-                droppableId={path || UI_ROOT}
-                onDrop={onDrop}
-                type="INTERFACE_COMPONENT">
-                {(/*{ isOver }*/) => content}
-              </Droppable>
-            )}
-          </DataPathContext>
-        ) : (
-          content
-        )}
-      </ComponentRendererModeContext.Provider>
-    </div>
+    <ComponentRendererModeContext.Provider value={mode}>
+      {mode === "edit" && !dragDropDisabled ? (
+        <DataPathContext>
+          {(path) => (
+            <Droppable
+              data={components}
+              allowDrop={!componentLimit || components.length < componentLimit}
+              droppableId={path || UI_ROOT}
+              onDrop={onDrop}
+              type="INTERFACE_COMPONENT">
+              {(/*{ isOver }*/) => content}
+            </Droppable>
+          )}
+        </DataPathContext>
+      ) : (
+        content
+      )}
+    </ComponentRendererModeContext.Provider>
   )
 }
 
