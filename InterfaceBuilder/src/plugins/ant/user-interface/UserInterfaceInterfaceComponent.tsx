@@ -41,11 +41,11 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
     return {
       category: "Special",
       name: "user-interface",
-      title: "Layout Creator",
+      title: "User Interface",
       icon: "build",
       componentDefinition: {
         component: "user-interface",
-        label: "Layout Creator",
+        label: "User Interface",
       },
     }
   }
@@ -68,7 +68,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { defaultValue, mode, userInterfaceData, valueKey, submit } = this.props
+    const { defaultValue, /*mode,*/ userInterfaceData, valueKey, submit } = this.props
     const { data } = this.state
     return (
       <UserInterface
