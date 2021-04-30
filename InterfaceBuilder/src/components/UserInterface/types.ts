@@ -4,4 +4,5 @@ export interface UserInterfaceState extends DropHelperResult {
   clipboardComponent: null | DraggedItemProps
   error: null | string
   fullscreen: boolean
+  collapsed: boolean
 }
