@@ -46,6 +46,9 @@ export default {
       "@syncfusion/ej2-base": "ej2Base",
       "@syncfusion/ej2-react-grids": "ej2ReactGrids",
       "@syncfusion/ej2-react-inputs": "ej2ReactInputs",
+      nanoid: "nanoid$1",
+      tinycolor2: "tinycolor",
+      "react-colorful": "reactColorful",
     },
   },
   external: [
