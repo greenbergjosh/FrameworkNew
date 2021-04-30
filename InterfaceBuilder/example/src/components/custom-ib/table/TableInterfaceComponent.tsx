@@ -18,7 +18,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
   static getLayoutDefinition = Table.TableInterfaceComponent.getLayoutDefinition
   static manageForm = tableManageForm
 
-  render() {
+  render(): JSX.Element {
     return (
       <div style={{ border: "solid 2px red", borderRadius: 5 }}>
         <Table.TableInterfaceComponent {...this.props} />

@@ -8,8 +8,11 @@ import DateStepperExample from "./date-stepper"
 import DateRangeExample from "./date-range"
 import TableExample from "./table"
 import LineChartExample from "./line-chart"
+import ContainerExample from "./container"
+import NumberExample from "./number"
 import PropTokensExample from "./prop-tokens"
 import RadioExample from "./radio"
+import StringTemplateExample from "./string-template"
 import DataBindingExample from "./data-binding"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
@@ -64,6 +67,15 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/line-chart`}>
             <LineChartExample />
+          </Route>
+          <Route path={`${path}/container`}>
+            <ContainerExample />
+          </Route>
+          <Route path={`${path}/string-template`}>
+            <StringTemplateExample />
+          </Route>
+          <Route path={`${path}/number`}>
+            <NumberExample />
           </Route>
         </Switch>
       </Layout>

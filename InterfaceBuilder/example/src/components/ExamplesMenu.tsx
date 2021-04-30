@@ -55,6 +55,15 @@ export const ExamplesMenu: React.FC = () => {
         <Menu.Item key="/examples/line-chart">
           <Link to="/examples/line-chart">Line Chart</Link>
         </Menu.Item>
+        <Menu.Item key="/examples/container">
+          <Link to="/examples/container">Container</Link>
+        </Menu.Item>
+        <Menu.Item key="/examples/string-template">
+          <Link to="/examples/string-template">String Template</Link>
+        </Menu.Item>
+        <Menu.Item key="/examples/number">
+          <Link to="/examples/number">Number</Link>
+        </Menu.Item>
       </Menu.SubMenu>
     </Menu>
   )
