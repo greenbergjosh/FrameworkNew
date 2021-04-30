@@ -10,7 +10,7 @@ import {
 } from "./types"
 import { QuoteIcon } from "./components/QuoteIcon"
 import { DataPathContext } from "../../../contexts/DataPathContext"
-import { isEmpty, set } from "lodash/fp"
+import { isEmpty } from "lodash/fp"
 import { Card } from "antd"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { parseLBM } from "../../../lib/parseLBM"
@@ -31,6 +31,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
       deserialize(value?: string) {
         return tryCatch(() => value && JSON.parse(value)).toUndefined()
       },
+      data: {},
     }
   }
 
@@ -75,22 +76,45 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  handleChangeData = (nextState: object): void => {
-    const { /*components,*/ onChangeData, /*preconfigured,*/ userInterfaceData, valueKey } = this.props
-    const serializedData = this.props.serialize
-      ? this.props.serialize(nextState as JSONRecord) // First from parent component, if provided
-      : this.state.serialize(nextState as JSONRecord) // Else from local config
+  componentDidUpdate(
+    prevProps: Readonly<StringTemplateInterfaceComponentProps>,
+    prevState: Readonly<StringTemplateInterfaceComponentState>
+  ): void {
+    const prevValue = this.getValue(prevProps.valueKey) as string | undefined
+    const value = this.getValue(this.props.valueKey) as string | undefined
 
-    onChangeData && onChangeData(set(valueKey, serializedData, userInterfaceData))
-  }
+    if (
+      prevProps.valueKey === this.props.valueKey &&
+      prevProps.serialize === this.props.serialize &&
+      prevProps.deserialize === this.props.deserialize &&
+      prevState.serialize === this.state.serialize &&
+      prevState.deserialize === this.state.deserialize &&
+      prevValue === value
+    ) {
+      return
+    }
 
-  render(): JSX.Element {
-    const { components, preconfigured, userInterfaceData, getRootUserInterfaceData, valueKey, showBorder } = this.props
-    const value = userInterfaceData[valueKey]
     const data =
       value && this.props.deserialize
         ? this.props.deserialize(value) // First from parent component, if provided
         : this.state.deserialize(value) // Else from local config
+
+    this.setState({ data })
+  }
+
+  handleChangeFromSubcomponents = (changeData: JSONRecord): void => {
+    const nextData = { ...this.state.data, ...changeData }
+
+    this.setState({ data: nextData })
+    const serializedData = this.props.serialize
+      ? this.props.serialize(nextData) // First from parent component, if provided
+      : this.state.serialize(nextData) // Else from local config
+
+    this.setValue(this.props.valueKey, serializedData)
+  }
+
+  render(): JSX.Element {
+    const { components, preconfigured, getRootUserInterfaceData, showBorder } = this.props
 
     return (
       <DataPathContext path="components">
@@ -98,10 +122,10 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
           <Card size="small" style={{ marginTop: 8, marginBottom: 16 }}>
             <ComponentRenderer
               components={components || ([] as ComponentDefinition[])}
-              data={data}
+              data={this.state.data}
               getRootData={getRootUserInterfaceData}
               dragDropDisabled={!!preconfigured}
-              onChangeData={this.handleChangeData}
+              onChangeData={this.handleChangeFromSubcomponents}
               onChangeSchema={(newSchema) => {
                 console.warn(
                   "StringTemplateInterfaceComponent.render",
@@ -114,10 +138,10 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
         ) : (
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
-            data={data}
+            data={this.state.data}
             getRootData={getRootUserInterfaceData}
             dragDropDisabled={!!preconfigured}
-            onChangeData={this.handleChangeData}
+            onChangeData={this.handleChangeFromSubcomponents}
             onChangeSchema={(newSchema) => {
               console.warn(
                 "StringTemplateInterfaceComponent.render",
