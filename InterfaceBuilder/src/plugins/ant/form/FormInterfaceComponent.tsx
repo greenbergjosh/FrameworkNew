@@ -12,6 +12,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "../../../globalTypes"
+import { GripperPanel } from "components/GripperPanel/GripperPanel"
 
 interface FormColumnLayout {
   labelCol?: ColProps
@@ -80,34 +81,44 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
       orientation,
       userInterfaceData,
       getRootUserInterfaceData,
+      mode,
     } = this.props
 
     const formLayout = formColumnLayout ? merge(defaultFormLayout, formColumnLayout) : defaultFormLayout
 
     return (
-      <Form style={{ padding: "5px" }} layout={orientation} {...formLayout}>
-        <DataPathContext path="components">
-          <ComponentRenderer
-            components={components || ([] as ComponentDefinition[])}
-            data={userInterfaceData}
-            getRootData={getRootUserInterfaceData}
-            onChangeData={onChangeData}
-            onChangeSchema={(newSchema) => {
-              if (this.props.mode === "edit") {
-                const { onChangeSchema, userInterfaceSchema } = this.props
-                console.warn("FormInterfaceComponent.render", {
-                  newSchema,
-                  onChangeSchema: this.props.onChangeSchema,
-                  userInterfaceSchema: this.props.userInterfaceSchema,
-                })
-                onChangeSchema &&
-                  userInterfaceSchema &&
-                  onChangeSchema(set("components", newSchema, userInterfaceSchema))
-              }
-            }}
-          />
-        </DataPathContext>
-      </Form>
+      <EditWrapper mode={mode}>
+        <Form style={{ padding: "5px" }} layout={orientation} {...formLayout}>
+          <DataPathContext path="components">
+            <ComponentRenderer
+              components={components || ([] as ComponentDefinition[])}
+              data={userInterfaceData}
+              getRootData={getRootUserInterfaceData}
+              onChangeData={onChangeData}
+              onChangeSchema={(newSchema) => {
+                if (this.props.mode === "edit") {
+                  const { onChangeSchema, userInterfaceSchema } = this.props
+                  console.warn("FormInterfaceComponent.render", {
+                    newSchema,
+                    onChangeSchema: this.props.onChangeSchema,
+                    userInterfaceSchema: this.props.userInterfaceSchema,
+                  })
+                  onChangeSchema &&
+                    userInterfaceSchema &&
+                    onChangeSchema(set("components", newSchema, userInterfaceSchema))
+                }
+              }}
+            />
+          </DataPathContext>
+        </Form>
+      </EditWrapper>
     )
   }
+}
+
+const EditWrapper: React.FunctionComponent<{ mode: string }> = (props) => {
+  if (props.mode === "edit") {
+    return <GripperPanel title="Form">{props.children}</GripperPanel>
+  }
+  return <>{props.children}</>
 }
