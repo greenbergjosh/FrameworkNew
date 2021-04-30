@@ -43,6 +43,29 @@ const dataTab = {
         valueKey: "targetKey",
       },
     },
+    {
+      key: "useOnClick",
+      valueKey: "useOnClick",
+      label: "onClick",
+      component: "toggle",
+      defaultValue: false,
+      bindable: true,
+    },
+    {
+      key: "onClickSrc",
+      valueKey: "onClickSrc",
+      label: "onClick Function",
+      defaultTheme: "vs-dark",
+      defaultLanguage: "javascript",
+      hidden: false,
+      hideLabel: false,
+      component: "code-editor",
+      height: 200,
+      bindable: true,
+      visibilityConditions: {
+        "===": [true, { var: "useOnClick" }],
+      },
+    },
   ],
 }
 
