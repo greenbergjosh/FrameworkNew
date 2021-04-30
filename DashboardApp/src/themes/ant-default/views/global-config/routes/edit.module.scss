@@ -1,0 +1,14 @@
+/*
+* :global {...} disables module BEM class name transformations
+* For more info, see: https://github.com/css-modules/css-modules
+*/
+:global {
+  :local(.antTabsNoOverflowHiddenHack) {
+    // Prevent ant tabs from putting "overflow: hidden" in the css
+    // ancestry of UserInterface because it uses css "position: sticky"
+    // to allow the componentMenu to stick relative to the the viewport.
+    &.ant-tabs {
+      overflow: unset !important;
+    }
+  }
+}

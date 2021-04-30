@@ -23,6 +23,7 @@ import { CodeEditor, ComponentDefinition, EditorLangCodec, UserInterface } from 
 import { InProgressRemoteUpdateDraft, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"
+import styles from "./edit.module.scss"
 
 interface Props {
   configId: string
@@ -357,7 +358,9 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                   label="Config"
                   required={true}
                   validateStatus={form.errors.config ? "error" : "success"}>
-                  <Tabs defaultActiveKey={configComponents && configComponents.length ? "form" : "editor"}>
+                  <Tabs
+                    defaultActiveKey={configComponents && configComponents.length ? "form" : "editor"}
+                    className={styles.antTabsNoOverflowHiddenHack}>
                     <Tabs.TabPane
                       key={"form"}
                       tab={"Properties"}
