@@ -25,6 +25,20 @@ const numberInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "value",
                 bindable: true,
               },
+              {
+                key: "min",
+                valueKey: "min",
+                label: "Min",
+                component: "number-input",
+                bindable: true,
+              },
+              {
+                key: "max",
+                valueKey: "max",
+                label: "Max",
+                component: "number-input",
+                bindable: true,
+              },
             ],
           },
           {
