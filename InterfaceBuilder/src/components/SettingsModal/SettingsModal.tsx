@@ -1,8 +1,8 @@
 import { Col, Modal, Row, Typography } from "antd"
 import React from "react"
 import { registry } from "../../services/ComponentRegistry"
-import { ManageComponentForm } from "./ManageComponentForm"
-import { ManageComponentPreview } from "./ManageComponentPreview"
+import { Settings } from "./components/Settings"
+import { Preview } from "./components/Preview"
 import { isEmpty } from "lodash/fp"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
 
@@ -14,7 +14,7 @@ export interface ManageComponentModalProps {
   userInterfaceData: UserInterfaceProps["data"]
 }
 
-export const ManageComponentModal = ({
+export const SettingsModal = ({
   componentDefinition: propComponentDefinition,
   onCancel,
   onConfirm,
@@ -70,7 +70,7 @@ export const ManageComponentModal = ({
             )}
             <Typography.Title level={4}>Definition</Typography.Title>
             {layoutDefinition && componentDefinition && manageForm && (
-              <ManageComponentForm
+              <Settings
                 componentDefinition={componentDefinition as ComponentDefinition}
                 onChangeDefinition={(newDefinition) => {
                   console.log("ManageComponentModal.onChangeDefinition", newDefinition)
@@ -96,7 +96,7 @@ export const ManageComponentModal = ({
             </Typography.Title>
             {Component && layoutDefinition && (
               <div style={{ overflow: "auto", backgroundColor: "white", padding: 1, flex: "1 1 auto" }}>
-                <ManageComponentPreview
+                <Preview
                   Component={Component}
                   componentDefinition={componentDefinition as ComponentDefinition}
                   layoutDefinition={layoutDefinition}

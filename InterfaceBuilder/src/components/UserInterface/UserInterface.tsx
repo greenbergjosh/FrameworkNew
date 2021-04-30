@@ -4,8 +4,8 @@ import { get, getOr, set } from "lodash/fp"
 import React from "react"
 import { ComponentRenderer, UI_ROOT } from "../ComponentRenderer"
 import { DraggableContext, DraggableContextProps } from "../../contexts/DraggableContext"
-import { InterfaceComponentChoices } from "./InterfaceComponentChoices"
-import { ManageComponentModal } from "../ManageComponent/ManageComponentModal"
+import { ComponentMenu } from "./components/ComponentMenu"
+import { SettingsModal } from "../SettingsModal/SettingsModal"
 import { ComponentRegistryContext, registry } from "../../services/ComponentRegistry"
 import { UserInterfaceContext } from "../../contexts/UserInterfaceContext"
 import { DataPathContext } from "../../contexts/DataPathContext"
@@ -196,7 +196,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                         </Layout>
                       </Layout>
 
-                      <ManageComponentModal
+                      <SettingsModal
                         getRootUserInterfaceData={this.getRootData}
                         userInterfaceData={data}
                         componentDefinition={
