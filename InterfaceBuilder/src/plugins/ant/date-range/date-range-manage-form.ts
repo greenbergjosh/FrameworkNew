@@ -1,6 +1,6 @@
 import { commonIncludeTimeForm } from "../_shared/common-include-time-form"
-import { baseManageForm } from "components/BaseInterfaceComponent/baseManageForm"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const dateRangeManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...dateRangeManageFormDefinition, ...extend)

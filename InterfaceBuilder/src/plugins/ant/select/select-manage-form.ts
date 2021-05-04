@@ -1,6 +1,6 @@
-import { baseManageForm } from "components/BaseInterfaceComponent/baseManageForm"
 import { baseSelectDataComponents } from "../_shared/selectable/selectable-manage-form"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
   {

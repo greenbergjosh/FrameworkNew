@@ -1,6 +1,6 @@
-import { baseManageForm } from "../../../components/BaseInterfaceComponent/baseManageForm"
 import { colorOptions } from "../../../plugins/nivo/_shared/colors"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const thermometerManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...thermometerManageFormDefinition, ...extend)

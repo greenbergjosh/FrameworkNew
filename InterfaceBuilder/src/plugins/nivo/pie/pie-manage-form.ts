@@ -1,6 +1,6 @@
-import { baseManageForm } from "../../../components/BaseInterfaceComponent/baseManageForm"
 import { nivoColorConfigOptions } from "../_shared/nivoColors"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const pieManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...PieManageFormDefinition, ...extend)

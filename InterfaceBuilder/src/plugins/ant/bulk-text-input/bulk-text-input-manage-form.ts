@@ -1,6 +1,6 @@
-import { baseManageForm } from "components/BaseInterfaceComponent/baseManageForm"
 import { separator } from "./codec"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const bulkTextInputManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...bulkTextInputManageFormDefinition, ...extend)

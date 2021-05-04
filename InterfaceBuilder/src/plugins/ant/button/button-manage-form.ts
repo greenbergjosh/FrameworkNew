@@ -1,6 +1,6 @@
 import { getIconSelectConfig } from "../_shared/icon-select-form-config"
-import { baseManageForm } from "components/BaseInterfaceComponent/baseManageForm"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const buttonManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...buttonManageFormDefinition, ...extend)

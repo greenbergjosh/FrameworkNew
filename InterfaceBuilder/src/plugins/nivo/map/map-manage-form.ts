@@ -1,6 +1,6 @@
-import { baseManageForm } from "../../../components/BaseInterfaceComponent/baseManageForm"
 import { colorOptions } from "../../../plugins/nivo/_shared/colors"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const mapManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...mapManageFormDefinition, ...extend)

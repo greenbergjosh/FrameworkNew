@@ -1,5 +1,5 @@
-import { baseManageForm } from "components/BaseInterfaceComponent/baseManageForm"
 import { ComponentDefinition } from "../../../globalTypes"
+import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
 export const numberInputManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...numberInputManageFormDefinition, ...extend)

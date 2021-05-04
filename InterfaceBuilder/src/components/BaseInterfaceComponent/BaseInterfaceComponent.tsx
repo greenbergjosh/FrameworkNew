@@ -1,11 +1,11 @@
 import React from "react"
 import { EventPayloadType } from "../../services/EventBus"
 import { getValue } from "../../lib/getValue"
-import { merge, set, isUndefined } from "lodash/fp"
-import { registry } from "../../services/ComponentRegistry"
+import { isUndefined, set } from "lodash/fp"
 import { v4 as uuid } from "uuid"
 import { ComponentDefinition, LayoutDefinition } from "../../globalTypes"
 import { BaseInterfaceComponentProps, GetMergedData, GetValue, SetValue } from "./types"
+import { getDefaultsFromComponentDefinitions } from "./componentDefinitionUtils"
 
 /* TODO: Create an eventManager HOC to provide an onRaiseEvent prop for all components */
 /**
@@ -38,6 +38,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   static getDefinitionDefaultValue(
     componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
   ): { [key: string]: any } {
+    /* Set the default value if provided */
     if (
       componentDefinition &&
       typeof componentDefinition.valueKey === "string" &&
@@ -131,32 +132,4 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
       this.props.onRaiseEvent(eventName, eventPayload, this)
     }
   }
-}
-
-/**
- * Returns a collection of the default values from each of this component's schema properties.
- * @param componentDefinitions
- */
-export function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]) {
-  // Iterate over all the definitions to accumulate their defaults
-  return componentDefinitions.reduce((acc, componentDefinition) => {
-    // If there are child lists of in the component's properties
-    const nestedValues: { [key: string]: any } = Object.entries(componentDefinition).reduce((acc2, [key, value]) => {
-      if (Array.isArray(value) && value.length && value[0].component) {
-        // Merge in child list values if they exist
-        return merge(getDefaultsFromComponentDefinitions(value), acc2)
-      }
-
-      return acc2
-    }, {})
-
-    // Check to see if there's a component type for this object
-    const Component = registry.lookup(componentDefinition.component)
-
-    // If this component has a value itself, get it
-    const thisValue = (Component && Component.getDefinitionDefaultValue(componentDefinition)) || {}
-
-    // Combine the existing values with this level's value and any nested values
-    return merge(nestedValues, merge(thisValue, acc))
-  }, {})
 }

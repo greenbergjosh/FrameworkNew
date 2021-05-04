@@ -1,38 +1,22 @@
-import { mergeWith } from "lodash/fp"
 import { ComponentDefinition } from "../../globalTypes"
+import { hydrateDefinition } from "./componentDefinitionUtils"
 
-interface HasKey {
-  key: string
-}
-const mergeHandler = (value: any, srcValue: any, key?: any) => {
-  if (Array.isArray(value) && Array.isArray(srcValue)) {
-    const { items, remaining } = srcValue.reduce(
-      (acc: { items: HasKey[]; remaining: HasKey[] }, item) => {
-        const mergeableIndex: number = acc.remaining.findIndex((i) => !!i.key && i.key === item.key)
-        if (mergeableIndex >= 0) {
-          acc.items.push(mergeWith(mergeHandler, acc.remaining[mergeableIndex], item) as HasKey)
-          acc.remaining.splice(mergeableIndex, 1)
-        } else {
-          acc.items.push(item)
-        }
-        return acc
-      },
-      { items: [], remaining: [...value] }
-    )
-    // console.log("base-component-form.mergeHandler", "both array", {
-    //   items,
-    //   remaining,
-    //   result: items.concat(remaining),
-    // })
-    return items.concat(remaining)
-  }
-  // console.log("base-component-form.mergeHandler", "non-array", { value, srcValue, key })
+/**
+ * extendBaseManageForm
+ *
+ * Example use...
+ * export const buttonManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
+ *   return baseManageForm(...buttonManageFormDefinition, ...extend)
+ * }
+ * @param overrideDefinitions
+ */
+export const baseManageForm = (...overrideDefinitions: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
+  return overrideDefinitions.length
+    ? hydrateDefinition(overrideDefinitions, baseComponentDefinition)
+    : baseComponentDefinition
 }
 
-export const baseManageForm = (...extend: Partial<ComponentDefinition>[]) =>
-  extend.length ? (mergeHandler(extend, baseManageFormDefinition) as ComponentDefinition[]) : baseManageFormDefinition
-
-const baseManageFormDefinition: ComponentDefinition[] = [
+const baseComponentDefinition: ComponentDefinition[] = [
   {
     key: "base",
     component: "form",
@@ -120,6 +104,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
             label: "Style",
             components: [
               {
+                key: "instructions",
                 center: false,
                 headerSize: "h2",
                 closable: false,
@@ -142,6 +127,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 },
               },
               {
+                key: "not-supported",
                 center: false,
                 headerSize: "h2",
                 closable: false,
@@ -164,6 +150,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 },
               },
               {
+                key: "style",
                 valueKey: "style",
                 label: "SCSS",
                 defaultTheme: "vs-dark",

@@ -27,13 +27,11 @@ export { UserInterfaceContext } from "./contexts/UserInterfaceContext"
 /**
  * Components
  */
-export {
-  BaseInterfaceComponent,
-  getDefaultsFromComponentDefinitions,
-} from "./components/BaseInterfaceComponent/BaseInterfaceComponent"
+export { BaseInterfaceComponent } from "./components/BaseInterfaceComponent/BaseInterfaceComponent"
 export { ComponentRenderer } from "./components/ComponentRenderer/ComponentRenderer"
 export { ConfirmableDeleteButton } from "./components/ConfirmableDeleteButton"
-export { baseManageForm } from "./components/BaseInterfaceComponent/baseManageForm"
+export { baseManageForm } from "./components/BaseInterfaceComponent/base-manage-form"
+export { getDefaultsFromComponentDefinitions } from "./components/BaseInterfaceComponent/componentDefinitionUtils"
 
 /**
  * Services

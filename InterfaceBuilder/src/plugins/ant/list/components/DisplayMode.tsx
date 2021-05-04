@@ -1,4 +1,3 @@
-import { getDefaultsFromComponentDefinitions } from "../../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { get, set } from "lodash/fp"
 import { Droppable, DroppableTargetProps, DraggedItemProps } from "../../../../components/DragAndDrop"
 import classNames from "classnames"
@@ -7,6 +6,7 @@ import React from "react"
 import { DisplayModeProps } from "../types"
 import DraggableListItem from "./DraggableListItem"
 import { repeatedInterleave } from "../../../../plugins/ant/list/util"
+import { getDefaultsFromComponentDefinitions } from "../../../../components/BaseInterfaceComponent/componentDefinitionUtils"
 
 export default function DisplayMode({
   addItemLabel,
