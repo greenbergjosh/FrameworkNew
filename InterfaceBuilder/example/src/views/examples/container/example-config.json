@@ -1,0 +1,79 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "",
+      "hideLabel": true,
+      "label": "Container",
+      "component": "container",
+      "classNames": ["container"],
+      "components": [
+        {
+          "invisible": false,
+          "hidden": false,
+          "valueKey": "",
+          "hideLabel": false,
+          "component": "container",
+          "classNames": ["container"],
+          "style": "&.container { \n    order: 0;\n    flex: 0 1 auto;\n    align-self: auto;\n    border: solid 1px rgba(255, 0, 0, 0.3);\n    padding: 5px;\n}",
+          "components": [
+            {
+              "center": false,
+              "headerSize": "h2",
+              "closable": false,
+              "banner": false,
+              "description": "",
+              "showIcon": false,
+              "textType": "text",
+              "invisible": false,
+              "hidden": false,
+              "stringTemplate": "Flex Item One",
+              "valueKey": "data",
+              "label": "Text",
+              "hideLabel": true,
+              "component": "text",
+              "components": []
+            }
+          ]
+        },
+        {
+          "invisible": false,
+          "hidden": false,
+          "valueKey": "",
+          "hideLabel": false,
+          "component": "container",
+          "classNames": ["container"],
+          "components": [
+            {
+              "center": false,
+              "headerSize": "h2",
+              "closable": false,
+              "banner": false,
+              "description": "",
+              "showIcon": false,
+              "textType": "text",
+              "invisible": false,
+              "hidden": false,
+              "stringTemplate": "Flex Item Two",
+              "valueKey": "data",
+              "label": "Text",
+              "hideLabel": true,
+              "component": "text",
+              "components": []
+            }
+          ],
+          "style": "&.container {\n    order: 0;\n    flex: 1 1 auto;\n    align-self: auto;\n    background-color: rgba(255, 0, 0, 0.1);\n    padding: 5px;\n    border: solid 1px rgba(255, 0, 0, 0.3);\n    border-left: none;\n}"
+        }
+      ],
+      "style": "&.container {\n    display: flex;\n    flex-direction: row;\n    flex-wrap: nowrap;\n    justify-content: flex-start;\n    align-content: stretch;\n    align-items: flex-start;\n    margin-top: 10px;\n    margin-bottom: 10px;\n}"
+    }
+  ]
+}

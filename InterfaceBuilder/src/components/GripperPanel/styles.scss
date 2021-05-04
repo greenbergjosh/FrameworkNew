@@ -1,0 +1,36 @@
+@import "../../styles/colors";
+
+.gripperPanel {
+  border: none;
+  width: 100%;
+}
+
+.gripperBar {
+  height: 16px;
+  background-color: $ib-invisible;
+  border-radius: 5px 5px 0 0;
+  line-height: 16px;
+}
+
+.gripperBarTitle {
+  font-size: 12px;
+  display: inline-block;
+  padding-left: 3px;
+}
+
+.gripperBarIcon {
+  font-size: 12px;
+  display: inline-block;
+  margin-right: 5px;
+
+  i {
+    width: 0.3em;
+  }
+}
+
+.gripperPanelContent {
+  border-left: dashed 1px $ib-invisible;
+  border-right: dashed 1px $ib-invisible;
+  border-bottom: dashed 1px $ib-invisible;
+  border-top: solid 1px $ib-invisible;
+}

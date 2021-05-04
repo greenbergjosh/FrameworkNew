@@ -1,0 +1,106 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "showBorder": true,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "styles.flex",
+      "label": "Flex",
+      "hideLabel": false,
+      "component": "string-template",
+      "serializeSrc": "return function (value) {\n    var flexGrow = typeof value.flexGrow !== \"undefined\" ? value.flexGrow : 0;\n    var flexShrink = typeof value.flexShrink !== \"undefined\" ? value.flexShrink : 0;\n    var flexBasis = typeof value.flexBasis !== \"undefined\" ? value.flexBasis : \"auto\";\n\n    return flexGrow + \" \" + flexShrink + \" \" + flexBasis\n}",
+      "deserializeSrc": "return function (value) {\n    if (typeof value === \"string\" && value.trim().length > 0) {\n        var res = value.trim().match(/(\\d+)\\s(\\d+)\\s(\\w+)/i)\n        if(!res) { return defaultReturn }\n        var ret = {}\n        res[1] ? ret.flexGrow = res[1] : void 0;\n        res[2] ? ret.flexShrink = res[2] : void 0;\n        res[3] ? ret.flexBasis = res[3] : void 0;\n    }\n}",
+      "components": [
+        {
+          "key": "flexGrow",
+          "valueKey": "flexGrow",
+          "label": "Flex Grow",
+          "component": "number-input",
+          "size": "small",
+          "invisible": false,
+          "hidden": false,
+          "hideLabel": false,
+          "defaultValue": 0,
+          "min": 0,
+          "bindable": true,
+          "help": "Number which determines how much the flex item will grow relative to the rest of the flex items in the flex container when positive free space is distributed."
+        },
+        {
+          "key": "flexShrink",
+          "valueKey": "flexShrink",
+          "label": "Flex Shrink",
+          "component": "number-input",
+          "size": "small",
+          "invisible": false,
+          "hidden": false,
+          "hideLabel": false,
+          "defaultValue": 1,
+          "min": 0,
+          "bindable": true,
+          "help": "Number which determines how much the flex item will shrink relative to the rest of the flex items in the flex container when negative free space is distributed."
+        },
+        {
+          "size": "small",
+          "allowClear": true,
+          "placeholder": null,
+          "invisible": false,
+          "hidden": false,
+          "data": {
+            "values": [
+              {
+                "label": "Auto",
+                "value": "auto"
+              },
+              {
+                "label": "Inherit",
+                "value": "inherit"
+              },
+              {
+                "label": "Initial",
+                "value": "initial"
+              },
+              {
+                "label": "None",
+                "value": "none"
+              },
+              {
+                "label": "Revert",
+                "value": "revert"
+              },
+              {
+                "label": "Unset",
+                "value": "unset"
+              }
+            ]
+          },
+          "dataHandlerType": "local",
+          "multiple": false,
+          "valueKey": "flexBasis",
+          "label": "Flex Basis",
+          "hideLabel": false,
+          "key": "flexBasis",
+          "defaultValue": "auto",
+          "component": "select",
+          "bindable": true,
+          "help": "The initial width or height (depending on main axis) of the flex item, before free space is distributed according to the flex factors."
+        }
+      ]
+    }
+  ]
+}

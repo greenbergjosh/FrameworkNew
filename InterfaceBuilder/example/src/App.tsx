@@ -21,20 +21,18 @@ import { DocsView } from "./views/DocsView"
 import { MainMenu } from "./components/MainMenu"
 import { TableInterfaceComponent } from "./components/custom-ib/table/TableInterfaceComponent"
 
+/* IB Plugins */
+registry.register(antComponents)
+registry.register(ckeditorComponents)
+registry.register(htmlComponents)
+registry.register(monacoComponents)
+registry.register(nivoComponents)
+registry.register(syncfusionComponents)
+
+/* IB Overrides */
+registry.register({ table: TableInterfaceComponent })
+
 const App: React.FC = () => {
-  React.useEffect(() => {
-    /* IB Plugins */
-    registry.register(antComponents)
-    registry.register(ckeditorComponents)
-    registry.register(htmlComponents)
-    registry.register(monacoComponents)
-    registry.register(nivoComponents)
-    registry.register(syncfusionComponents)
-
-    /* IB Overrides */
-    registry.register({ table: TableInterfaceComponent })
-  }, [])
-
   return (
     <DragDropContext.HTML5>
       <Router>

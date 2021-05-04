@@ -21,6 +21,7 @@ export interface ComponentDefinitionNamedProps {
   [key: string]: unknown
 
   onRaiseEvent?: ((eventName: string, eventPayload: EventPayloadType, source: any) => void) | undefined
+  classNames?: string[]
 }
 
 export interface ComponentDefinitionRecursiveProp {

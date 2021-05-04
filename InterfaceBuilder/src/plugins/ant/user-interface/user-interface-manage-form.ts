@@ -17,7 +17,7 @@ const userInterfaceManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Layout Creator",
+                defaultValue: "User Interface",
                 bindable: true,
               },
               {

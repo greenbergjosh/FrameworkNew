@@ -1,11 +1,11 @@
-import { Col, Divider, Layout, Row, Typography } from "antd"
+import { Icon, Layout, Tooltip, Typography } from "antd"
 import classNames from "classnames"
 import { get, getOr, set } from "lodash/fp"
 import React from "react"
 import { ComponentRenderer, UI_ROOT } from "../ComponentRenderer"
 import { DraggableContext, DraggableContextProps } from "../../contexts/DraggableContext"
-import { InterfaceComponentChoices } from "./InterfaceComponentChoices"
-import { ManageComponentModal } from "../ManageComponent/ManageComponentModal"
+import { ComponentMenu } from "./components/ComponentMenu"
+import { SettingsModal } from "../SettingsModal/SettingsModal"
 import { ComponentRegistryContext, registry } from "../../services/ComponentRegistry"
 import { UserInterfaceContext } from "../../contexts/UserInterfaceContext"
 import { DataPathContext } from "../../contexts/DataPathContext"
@@ -15,6 +15,8 @@ import { DraggedItemProps, DroppableTargetProps } from "../../components/DragAnd
 import "./userInterface.module.scss"
 import rainy_window_png from "../../images/rainy-window.png"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
+import styles from "./components/styles.scss"
+import { GripperPanel } from "components/GripperPanel/GripperPanel"
 
 export class UserInterface extends React.Component<UserInterfaceProps, UserInterfaceState> {
   state = {
@@ -24,6 +26,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     itemToAdd: null,
     itemToEdit: null,
     fullscreen: false,
+    collapsed: true,
   } as UserInterfaceState
 
   handleDrop = (draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps): void => {
@@ -46,6 +49,14 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     console.error("UserInterface.componentDidCatch", error, info)
     this.setState({ error: error.toString() })
+  }
+
+  handleComponentMenuCollapse = (collapsed: boolean) => {
+    this.setState({ collapsed })
+  }
+
+  handleSiderToggleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    this.setState({ collapsed: !this.state.collapsed })
   }
 
   getRootData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
@@ -153,7 +164,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     )
 
     return (
-      <div className={classNames("user-iterface-builder", { fullscreen })}>
+      <div className={classNames("user-interface-builder", { fullscreen })}>
         <DataPathContext>
           {(parentPath) => (
             <DataPathContext reset>
@@ -161,42 +172,41 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                 <DraggableContext.Provider value={draggableContextHandlers}>
                   {mode === "edit" ? (
                     <>
-                      <Layout>
-                        <Layout.Sider style={{ background: "#fff" }}>
-                          <Row>
-                            <Col span={19}>
-                              <Typography.Title level={4}>Components</Typography.Title>
-                            </Col>
-                            <Col span={5}>
-                              {/*<Tooltip
-                                title={`${fullscreen ? "Exit" : "Enter"} Full Screen Designer`}>
-                                <Button
-                                  type="link"
-                                  icon={`fullscreen${fullscreen ? "-exit" : ""}`}
-                                  size="large"
-                                  style={{ fontSize: 28 }}
-                                  onClick={() => this.setState({ fullscreen: !fullscreen })}
-                                />
-                              </Tooltip>*/}
-                            </Col>
-                          </Row>
-                          <Divider />
-                          <InterfaceComponentChoices />
+                      <Layout className={styles.uiEditor}>
+                        <Layout.Sider
+                          width={175}
+                          collapsedWidth={32}
+                          className={styles.componentMenuPanel}
+                          collapsible
+                          trigger={null}
+                          collapsed={this.state.collapsed}
+                          onCollapse={this.handleComponentMenuCollapse}>
+                          {/*
+                           * Position sticky to make the component menu stay in the viewport.
+                           */}
+                          <div style={{ position: "sticky", top: 20 }}>
+                            <div
+                              className={classNames(
+                                styles.componentMenuToggleBar,
+                                this.state.collapsed ? styles.collapsed : undefined
+                              )}
+                              onClick={this.handleSiderToggleClick}>
+                              <Tooltip title="Drag & Drop Components">
+                                <Icon type="setting" className={styles.icon} />
+                              </Tooltip>
+                              {!this.state.collapsed && (
+                                <Typography.Text className={styles.title}>Drag &amp; Drop Components</Typography.Text>
+                              )}
+                            </div>
+                            {!this.state.collapsed && <ComponentMenu />}
+                          </div>
                         </Layout.Sider>
-                        <Layout>
-                          <Layout.Content
-                            style={{
-                              margin: "24px 16px",
-                              padding: 24,
-                              background: "#fff",
-                              minHeight: 280,
-                            }}>
-                            {contentWithContext}
-                          </Layout.Content>
-                        </Layout>
+                        <GripperPanel title="User Interface">
+                          <Layout.Content className={styles.uiEditorContent}>{contentWithContext}</Layout.Content>
+                        </GripperPanel>
                       </Layout>
 
-                      <ManageComponentModal
+                      <SettingsModal
                         getRootUserInterfaceData={this.getRootData}
                         userInterfaceData={data}
                         componentDefinition={

@@ -40,7 +40,7 @@ export function DisplayTable({
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
   let dataArray: JSONRecord[] = []
   if (valueKey) {
-    const val = getValue(valueKey)
+    const val = getValue(valueKey) as JSONRecord
     if (val && !isEmpty(val)) {
       if (isArray(val)) {
         dataArray = val

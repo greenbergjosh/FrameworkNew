@@ -2,10 +2,15 @@ import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
 import React from "react"
 import { buttonManageForm } from "./button-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { ButtonInterfaceComponentProps, ButtonInterfaceComponentState } from "../../../plugins/ant/button/types"
+import {
+  ButtonInterfaceComponentProps,
+  ButtonInterfaceComponentState,
+  OnClickFunction,
+} from "../../../plugins/ant/button/types"
 import { EVENTS } from "../../../plugins/html/data-injector/types"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
+import { parseLBM } from "lib/parseLBM"
 
 export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   ButtonInterfaceComponentProps,
@@ -41,7 +46,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
 
   // eslint-disable-next-line no-unused-vars
   handleClick = (e: React.MouseEvent<HTMLInputElement>): void => {
-    const { requireConfirmation, onChangeData, paramKVPMaps, disabled } = this.props
+    const { requireConfirmation, onChangeData, paramKVPMaps, disabled, useOnClick, onClickSrc } = this.props
     const { isShowingConfirmation } = this.state
 
     if (disabled) {
@@ -50,14 +55,32 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
     }
 
     if (requireConfirmation && !isShowingConfirmation) {
+      /*
+       * Show Confirmation Dialog
+       */
       this.setState({ isShowingConfirmation: true })
     } else {
+      /*
+       * Execute button actions
+       */
+
+      // Execute Configured Event Handler
+      const onClickFunction = useOnClick ? parseLBM<OnClickFunction>(onClickSrc) : undefined
+      if (useOnClick && onClickFunction && this.props.mode !== "edit") {
+        onClickFunction(this.props, {
+          setValue: this.setValue.bind(this),
+          getValue: this.getValue.bind(this),
+        })
+      }
+
+      // Copy data per KVP maps, and raise event
       if (onChangeData) {
         const eventPayload: JSONRecord = {}
 
-        paramKVPMaps.values.forEach((map) => {
-          eventPayload[map.targetKey] = this.getValue(map.sourceKey)
-        })
+        paramKVPMaps &&
+          paramKVPMaps.values.forEach((map) => {
+            eventPayload[map.targetKey] = this.getValue(map.sourceKey)
+          })
         this.raiseEvent(EVENTS.VALUE_CHANGED, eventPayload)
       }
 

@@ -1,6 +1,6 @@
 import React from "react"
 import { ComponentRenderer } from "components/ComponentRenderer"
-import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
+import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface ManageComponentFormProps {
   componentDefinition: ComponentDefinition
@@ -10,7 +10,7 @@ export interface ManageComponentFormProps {
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
-export const ManageComponentForm = ({
+export const Settings = ({
   componentDefinition,
   manageForm,
   onChangeDefinition,

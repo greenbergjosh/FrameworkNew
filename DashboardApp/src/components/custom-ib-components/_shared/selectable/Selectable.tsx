@@ -300,7 +300,9 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       return
     }
 
-    const getRawOptions = (props: SelectableProps): JSONRecord | JSONRecord[] | undefined => {
+    const getRawOptions = (
+      props: SelectableProps
+    ): string | number | boolean | JSONRecord | JSONRecord[] | null | undefined => {
       const p = props as SelectablePropsUiDataKey
       return p.optionsKey ? this.getValue(p.optionsKey, p.userInterfaceData, p.getRootUserInterfaceData) : undefined
     }

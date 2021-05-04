@@ -1,0 +1,8 @@
+$ib-red: #c70039; // disabled
+$ib-blue: #00b2ff; // invisible
+$ib-grey: #b6b6b6; // blocked
+
+$ib-invisible: rgba($ib-blue, 0.5);
+$ib-invisible-solid: mix($ib-blue, #fff, 50%);
+$ib-invisible-background: rgba($ib-blue, 0.1);
+$ib-invisible-background-solid: mix($ib-blue, #fff, 10%);

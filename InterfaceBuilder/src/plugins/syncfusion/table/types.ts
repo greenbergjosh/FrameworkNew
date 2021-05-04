@@ -1,6 +1,11 @@
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { EnrichedColumnDefinition } from "./StandardGrid/types"
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import {
+  IBaseInterfaceComponent,
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  UserInterfaceProps,
+} from "../../../globalTypes"
 
 interface ColumnSortOptions {
   allowSorting?: boolean
@@ -74,10 +79,6 @@ export interface DisplayTableProps extends Partial<TableInterfaceComponentDispla
   userInterfaceData: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   preview?: boolean
-  getValue: (
-    valueKey: string,
-    userInterfaceData?: UserInterfaceProps["data"],
-    getRootUserInterfaceData?: () => UserInterfaceProps["data"]
-  ) => JSONRecord | JSONRecord[] | undefined
+  getValue: IBaseInterfaceComponent["getValue"]
   setValue: (targetKey: string, value: any, userInterfaceData?: UserInterfaceProps["data"]) => void
 }

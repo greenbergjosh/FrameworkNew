@@ -1,8 +1,8 @@
 import { Form } from "antd"
 import React from "react"
-import { RenderInterfaceComponent } from "../ComponentRenderer"
-import { BaseInterfaceComponent } from "../BaseInterfaceComponent/BaseInterfaceComponent"
-import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
+import { RenderInterfaceComponent } from "../../ComponentRenderer"
+import { BaseInterfaceComponent } from "../../BaseInterfaceComponent/BaseInterfaceComponent"
+import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface ManageComponentPreviewProps {
   Component: typeof BaseInterfaceComponent
@@ -11,7 +11,7 @@ export interface ManageComponentPreviewProps {
   userInterfaceData: UserInterfaceProps["data"]
 }
 
-export const ManageComponentPreview = ({
+export const Preview = ({
   Component,
   componentDefinition,
   layoutDefinition,
