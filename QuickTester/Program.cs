@@ -12,7 +12,7 @@ namespace QuickTester
     {
         private async static Task Main(string[] _args)
         {
-            await ClickhouseImport.ImportTest();
+            await ClickhouseImportTest.ImportTest();
             return;
             //var ge = JsonWrapper.GenericEntityFromFile(@"json.txt").GetAwaiter().GetResult();
             //string q = ClickhouseQueryGenerator.generateClickhouseQuery(ge);

@@ -481,8 +481,7 @@ from (
                     sql.Append(@$"
     from datasets.{previousTableName}
     where {partitionSelector} = '{partitionIndex}'
-        and email != ''
-    limit 100");
+        and email != ''");
                 }
                 else
                 {
