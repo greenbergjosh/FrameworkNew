@@ -1,8 +1,8 @@
 import { DraggableListItemProps } from "../types"
-import { get, set } from "lodash/fp"
 import { Draggable } from "../../../../components/DragAndDrop"
 import { ListItem } from "./ListItem"
 import React from "react"
+import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 
 export default function DraggableListItem({
   data,
@@ -10,24 +10,18 @@ export default function DraggableListItem({
   interleave,
   component,
   listId, //: string
-  onChangeData,
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
+  getValue,
+  setValue,
   valueKey,
-}: DraggableListItemProps) {
-  /* Event Handlers */
-
+}: DraggableListItemProps): JSX.Element {
   function handleDeleteClick(): void {
-    const existingData = get(valueKey, userInterfaceData) || []
-
-    onChangeData &&
-      onChangeData(
-        set(valueKey, [...existingData.slice(0, index), ...existingData.slice(index + 1)], userInterfaceData)
-      )
+    const existingData = getValue(valueKey, userInterfaceData) as JSONRecord[]
+    const value = [...existingData.slice(0, index), ...existingData.slice(index + 1)]
+    setValue(valueKey, value, userInterfaceData)
   }
-
-  /* Render */
 
   return (
     <Draggable
@@ -45,11 +39,12 @@ export default function DraggableListItem({
         <ListItem
           data={data}
           getRootUserInterfaceData={getRootUserInterfaceData}
+          getValue={getValue}
+          setValue={setValue}
           index={index}
           interleave={interleave}
           component={component}
           key={`${index}`}
-          onChangeData={onChangeData}
           unwrapped={unwrapped}
           userInterfaceData={userInterfaceData}
           valueKey={valueKey}

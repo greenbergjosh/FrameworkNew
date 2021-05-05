@@ -1,5 +1,5 @@
-import { get, set } from "lodash/fp"
-import { Droppable, DroppableTargetProps, DraggedItemProps } from "../../../../components/DragAndDrop"
+import { get } from "lodash/fp"
+import { DraggedItemProps, Droppable, DroppableTargetProps } from "../../../../components/DragAndDrop"
 import classNames from "classnames"
 import { Button, Empty } from "antd"
 import React from "react"
@@ -15,13 +15,14 @@ export default function DisplayMode({
   description,
   interleave,
   listId,
-  onChangeData,
   orientation,
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
+  getValue,
+  setValue,
   valueKey,
-}: DisplayModeProps) {
+}: DisplayModeProps): JSX.Element {
   const finalComponents = repeatedInterleave(interleave, components, data.length)
 
   /********************************
@@ -42,17 +43,14 @@ export default function DisplayMode({
             ]),
           ]
         : []
-    onChangeData &&
-      onChangeData(
-        set(
-          valueKey,
-          [
-            ...(get(valueKey, userInterfaceData) || []),
-            ...(unwrapped ? entriesToAdd.map((entry) => Object.values(entry)[0]) : entriesToAdd),
-          ],
-          userInterfaceData
-        )
-      )
+    setValue(
+      valueKey,
+      [
+        ...(getValue(valueKey, userInterfaceData) || []),
+        ...(unwrapped ? entriesToAdd.map((entry) => Object.values(entry)[0]) : entriesToAdd),
+      ],
+      userInterfaceData
+    )
   }
 
   function handleItemRearrange(draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps): void {
@@ -66,34 +64,28 @@ export default function DisplayMode({
 
     const existingData = get(valueKey, userInterfaceData) || []
 
-    if (onChangeData) {
-      if (draggedItem.index < dropTarget.dropIndex) {
-        onChangeData(
-          set(
-            valueKey,
-            [
-              ...existingData.slice(0, draggedItem.index),
-              ...existingData.slice(draggedItem.index + 1, dropTarget.dropIndex),
-              existingData[draggedItem.index],
-              ...existingData.slice(dropTarget.dropIndex),
-            ],
-            userInterfaceData
-          )
-        )
-      } else if (draggedItem.index > dropTarget.dropIndex) {
-        onChangeData(
-          set(
-            valueKey,
-            [
-              ...existingData.slice(0, dropTarget.dropIndex),
-              existingData[draggedItem.index],
-              ...existingData.slice(dropTarget.dropIndex, draggedItem.index),
-              ...existingData.slice(draggedItem.index + 1),
-            ],
-            userInterfaceData
-          )
-        )
-      }
+    if (draggedItem.index < dropTarget.dropIndex) {
+      setValue(
+        valueKey,
+        [
+          ...existingData.slice(0, draggedItem.index),
+          ...existingData.slice(draggedItem.index + 1, dropTarget.dropIndex),
+          existingData[draggedItem.index],
+          ...existingData.slice(dropTarget.dropIndex),
+        ],
+        userInterfaceData
+      )
+    } else if (draggedItem.index > dropTarget.dropIndex) {
+      setValue(
+        valueKey,
+        [
+          ...existingData.slice(0, dropTarget.dropIndex),
+          existingData[draggedItem.index],
+          ...existingData.slice(dropTarget.dropIndex, draggedItem.index),
+          ...existingData.slice(draggedItem.index + 1),
+        ],
+        userInterfaceData
+      )
     }
   }
 
@@ -124,11 +116,12 @@ export default function DisplayMode({
                     key={index}
                     data={data}
                     getRootUserInterfaceData={getRootUserInterfaceData}
+                    getValue={getValue}
+                    setValue={setValue}
                     index={index}
                     interleave={interleave}
                     component={iteratedComponent}
                     listId={listId}
-                    onChangeData={onChangeData}
                     unwrapped={unwrapped}
                     userInterfaceData={userInterfaceData}
                     valueKey={valueKey}

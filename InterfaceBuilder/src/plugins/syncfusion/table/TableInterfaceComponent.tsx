@@ -58,10 +58,6 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  handleChangeData = (newValue: any): void => {
-    this.setValue(this.props.valueKey, newValue, this.props.userInterfaceData)
-  }
-
   render(): JSX.Element {
     const {
       abstract,
@@ -78,7 +74,6 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
       enableVirtualization,
       height,
       defaultPageSize,
-      onChangeData,
       rowDetails,
       userInterfaceData,
       getRootUserInterfaceData,
@@ -100,9 +95,10 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
              */
             return (
               <AbstractTable
-                onChangeData={onChangeData}
                 userInterfaceData={userInterfaceData}
                 getRootUserInterfaceData={getRootUserInterfaceData}
+                getValue={this.getValue.bind(this)}
+                setValue={this.setValue.bind(this)}
                 valueKey={valueKey}
               />
             )
@@ -115,11 +111,12 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                */
               return (
                 <EditTable
-                  onChangeData={onChangeData}
                   onChangeSchema={this.props.onChangeSchema}
                   rowDetails={rowDetails}
                   userInterfaceData={userInterfaceData}
                   getRootUserInterfaceData={getRootUserInterfaceData}
+                  getValue={this.getValue.bind(this)}
+                  setValue={this.setValue.bind(this)}
                   userInterfaceSchema={this.props.userInterfaceSchema}
                   valueKey={valueKey}
                 />
@@ -146,7 +143,6 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                     enableVirtualization={enableVirtualization}
                     height={height}
                     defaultPageSize={defaultPageSize}
-                    onChangeData={this.handleChangeData}
                     rowDetails={rowDetails}
                     userInterfaceData={userInterfaceData}
                     getRootUserInterfaceData={getRootUserInterfaceData}

@@ -1,31 +1,26 @@
 import React from "react"
-import { get, set } from "lodash/fp"
+import { set } from "lodash/fp"
 import { Typography } from "antd"
 import { ComponentRenderer } from "../../../../components/ComponentRenderer/ComponentRenderer"
 import { DataPathContext } from "../../../../contexts/DataPathContext"
 import { editComponents } from "../config/edit-components"
-import { TableInterfaceComponentEditModeProps } from "../types"
-import { UserInterfaceProps } from "../../../../globalTypes"
-
-interface EditTableProps extends Partial<TableInterfaceComponentEditModeProps> {
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-}
+import { EditTableProps } from "../types"
 
 /**
  * Edit Table
  * User may define the columns with data types, etc.
  */
 export function EditTable({
-  onChangeData,
   onChangeSchema,
   rowDetails,
   userInterfaceData,
   getRootUserInterfaceData,
+  getValue,
+  setValue,
   userInterfaceSchema,
   valueKey,
 }: EditTableProps): JSX.Element {
-  const dataArray = get(valueKey!, userInterfaceData) || []
+  const dataArray = getValue(valueKey!, userInterfaceData) || []
   const data = { columns: dataArray }
 
   return (
@@ -36,14 +31,6 @@ export function EditTable({
         getRootData={getRootUserInterfaceData}
         mode="display"
         onChangeData={(newData) => {
-          // console.log("TableInterfaceComponent.render", "onChangeData", {
-          //   abstract,
-          //   "edit",
-          //   data,
-          //   newData,
-          //   onChangeSchema,
-          //   userInterfaceSchema,
-          // })
           onChangeSchema && userInterfaceSchema && onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
         }}
         onChangeSchema={(newData) => {
@@ -65,16 +52,10 @@ export function EditTable({
             components={rowDetails}
             data={data}
             getRootData={getRootUserInterfaceData}
-            onChangeData={(newData) => onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))}
+            onChangeData={(newData) => {
+              setValue(valueKey!, newData, userInterfaceData)
+            }}
             onChangeSchema={(newSchema) => {
-              // console.log("TableInterfaceComponent.render", "onChangeSchema X2", {
-              //   abstract,
-              //   "edit",
-              //   data,
-              //   newSchema,
-              //   onChangeSchema,
-              //   userInterfaceSchema,
-              // })
               onChangeSchema && userInterfaceSchema && onChangeSchema(set("rowDetails", newSchema, userInterfaceSchema))
             }}
           />

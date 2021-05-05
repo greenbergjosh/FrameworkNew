@@ -44,7 +44,6 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       components,
       emptyText,
       interleave,
-      onChangeData,
       orientation,
       preconfigured,
       unwrapped,
@@ -68,10 +67,11 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   components={components}
                   data={data}
                   getRootUserInterfaceData={getRootUserInterfaceData}
+                  getValue={this.getValue.bind(this)}
+                  setValue={this.setValue.bind(this)}
                   description={emptyText}
                   interleave={interleave}
                   listId={this.listId}
-                  onChangeData={onChangeData}
                   orientation={orientation}
                   unwrapped={unwrapped}
                   userInterfaceData={userInterfaceData}
@@ -86,10 +86,11 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   components={components}
                   data={[]}
                   getRootUserInterfaceData={() => null}
+                  getValue={() => null}
+                  setValue={() => null}
                   description={emptyText}
                   interleave={interleave}
                   listId={this.listId}
-                  onChangeData={() => null}
                   orientation={orientation}
                   unwrapped={unwrapped}
                   userInterfaceData={userInterfaceData}
@@ -104,8 +105,9 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   components={components}
                   data={data}
                   getRootUserInterfaceData={getRootUserInterfaceData}
+                  getValue={this.getValue.bind(this)}
+                  setValue={this.setValue.bind(this)}
                   interleave={interleave}
-                  onChangeData={onChangeData}
                   preconfigured={preconfigured}
                   userInterfaceData={userInterfaceData}
                   valueKey={valueKey}

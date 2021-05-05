@@ -27,11 +27,11 @@ export function DisplayTable({
   enableVirtualization,
   height,
   defaultPageSize,
-  onChangeData,
   rowDetails,
   userInterfaceData,
   getRootUserInterfaceData,
   getValue,
+  setValue,
   valueKey,
   preview = false,
   showToolbar,
@@ -78,7 +78,9 @@ export function DisplayTable({
                 components={rowDetails}
                 getRootUserInterfaceData={getRootUserInterfaceData}
                 mode="display"
-                onChangeData={onChangeData}
+                onChangeData={(newData) => {
+                  setValue(valueKey!, newData, userInterfaceData)
+                }}
                 parentRowData={parentData}
               />
             )

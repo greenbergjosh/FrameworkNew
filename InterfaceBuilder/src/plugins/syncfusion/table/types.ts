@@ -1,9 +1,9 @@
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { EnrichedColumnDefinition } from "./StandardGrid/types"
 import {
-  IBaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
+  IBaseInterfaceComponent,
   UserInterfaceProps,
 } from "../../../globalTypes"
 
@@ -74,11 +74,34 @@ export function visiblityConditionType(type: string): JSONRecord {
   }
 }
 
-export interface DisplayTableProps extends Partial<TableInterfaceComponentDisplayModeProps> {
-  columns: EnrichedColumnDefinition[]
-  userInterfaceData: UserInterfaceProps["data"]
+export interface TableProps {
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  preview?: boolean
   getValue: IBaseInterfaceComponent["getValue"]
-  setValue: (targetKey: string, value: any, userInterfaceData?: UserInterfaceProps["data"]) => void
+  onChangeSchema?: (newSchema: ComponentDefinition) => void
+  rowDetails?: ComponentDefinition[]
+  setValue: IBaseInterfaceComponent["setValue"]
+  userInterfaceData: UserInterfaceProps["data"]
+  userInterfaceSchema?: ComponentDefinition
+  valueKey: string
 }
+
+export interface DisplayTableProps extends TableProps {
+  allowAdding?: boolean
+  allowDeleting?: boolean
+  allowEditing?: boolean
+  autoFitColumns?: boolean
+  columns: EnrichedColumnDefinition[]
+  defaultCollapseAll?: boolean
+  defaultPageSize?: number | string
+  enableAltRow?: boolean
+  enableVirtualization?: boolean
+  height?: number
+  preview?: boolean
+  showToolbar?: boolean
+  useSmallFont?: boolean
+  useSmallPager?: boolean
+}
+
+export interface AbstractTableProps extends TableProps {}
+
+export interface EditTableProps extends TableProps {}

@@ -1,4 +1,9 @@
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import {
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  IBaseInterfaceComponent,
+  UserInterfaceProps,
+} from "../../../globalTypes"
 
 /**
  * Interleave:
@@ -31,10 +36,11 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
 export interface ModeProps {
   data: any
   interleave?: InterleaveType
-  onChangeData: UserInterfaceProps["onChangeData"]
   unwrapped?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getValue: IBaseInterfaceComponent["getValue"]
+  setValue: IBaseInterfaceComponent["setValue"]
   valueKey: string
 }
 

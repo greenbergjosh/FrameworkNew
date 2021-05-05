@@ -1,36 +1,24 @@
 import { ListItemProps } from "../types"
-import { get, set } from "lodash/fp"
 import { ComponentRenderer } from "../../../../components/ComponentRenderer/ComponentRenderer"
 import React from "react"
+import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 
 export function ListItem({
   data,
   index,
   interleave,
   component,
-  onChangeData,
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
+  setValue,
   valueKey,
-}: ListItemProps) {
-  /* Event Handlers */
-
-  const handleChangeData = (index: number) => (newData: object) => {
-    const data = get(valueKey, userInterfaceData) || []
-
-    console.log("ListInterfaceComponent.onChangeData", {
-      data,
-      newData,
-    })
-
-    return (
-      onChangeData &&
-      onChangeData(set(`${valueKey}.${index}`, unwrapped ? Object.values(newData)[0] : newData, userInterfaceData))
-    )
+}: ListItemProps): JSX.Element {
+  const handleChangeData = (index: number) => (newData: JSONRecord) => {
+    const path = `${valueKey}.${index}` // <-- valid lodash set() path for an array
+    const value = unwrapped ? Object.values(newData)[0] : newData
+    setValue(path, value, userInterfaceData)
   }
-
-  /* Render */
 
   return (
     <ComponentRenderer

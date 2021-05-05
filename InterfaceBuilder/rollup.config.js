@@ -38,6 +38,7 @@ export default {
       "@monaco-editor/react": "monacoEditor",
       "react-monaco-editor": "MonacoEditor",
       "react-simple-maps": "reactSimpleMaps",
+      "styled-components": "styled",
       moment: "moment",
       "js-file-download": "fileDownload",
       uuid: "uuid",

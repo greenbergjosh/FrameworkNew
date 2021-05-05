@@ -1,7 +1,7 @@
 import { ComponentDefinition } from "../../../globalTypes"
 import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-manage-form"
 
-export const listManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+export const listManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
   return baseManageForm(...listManageFormDefinition, ...extend)
 }
 
