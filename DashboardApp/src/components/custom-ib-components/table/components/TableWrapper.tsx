@@ -23,16 +23,6 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
     reportDataByQuery: appState.reports.reportDataByQuery,
   }))
 
-  /* **********************************************************************
-   *
-   * EVENT HANDLERS
-   */
-
-  /* **********************************************************************
-   *
-   * PROPERTY WATCHERS
-   */
-
   /*
    * COLUMN TEMPLATES
    * Provide layout components and formatters to columns
@@ -46,7 +36,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
           dispatch,
           getRootUserInterfaceData,
           onChangeData,
-          parameterValues: parameterValues.toUndefined(),
+          parameterValues: parameterValues && parameterValues.toUndefined(),
           parentData,
         })
         const formatter = getCustomCellFormatter({
@@ -55,7 +45,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
           columnType: column.type,
           configsById: fromStore.configsById,
           formatter: column.formatter,
-          queryParams: parameterValues.toUndefined(),
+          queryParams: parameterValues && parameterValues.toUndefined(),
         })
         const customAggregateFunction = getCustomAggregateFunction(
           column.customAggregateId,
