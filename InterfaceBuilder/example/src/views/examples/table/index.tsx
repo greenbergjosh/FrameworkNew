@@ -15,7 +15,7 @@ config.components[1].columns[1].formatter = cellFormatter
 // @ts-ignore
 config.components[1].columns[5] = columnConfigWithCustomAggregateFunction
 
-const TableExample = () => {
+const TableExample = (): JSX.Element => {
   const [data, setData] = React.useState(initialData)
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 

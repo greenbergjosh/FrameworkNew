@@ -2,7 +2,7 @@ import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/int
 import {
   Breadcrumb,
   Card,
-  Divider,
+  // Divider,
   Layout,
   PageHeader,
   Tabs,
@@ -15,7 +15,7 @@ import { Helmet } from "react-helmet"
 import React from "react"
 import "./code.css"
 
-const { Title, Text } = Typography
+const { /*Title,*/ Text } = Typography
 const { TabPane } = Tabs
 
 export function ExampleViewer(props: {
@@ -26,7 +26,7 @@ export function ExampleViewer(props: {
   onChangeSchema: (newSchema: ComponentDefinition[]) => void
   title: string
   description: string | React.ReactNode
-}) {
+}): JSX.Element {
   return (
     <>
       <Breadcrumb style={{ margin: "16px 0" }}>

@@ -20,7 +20,7 @@ import { ExamplesIntroView } from "./ExamplesIntroView"
 import { ExamplesMenu } from "../../components/ExamplesMenu"
 
 export function ExamplesView(): JSX.Element {
-  const { path, url } = useRouteMatch()
+  const { path /*, url*/ } = useRouteMatch()
 
   return (
     <Layout>

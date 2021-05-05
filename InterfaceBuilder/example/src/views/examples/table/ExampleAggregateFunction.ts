@@ -1,4 +1,5 @@
 import { v4 as uuid } from "uuid"
+import { EnrichedColumnDefinition, JSONRecord } from "@opg/interface-builder"
 
 /**
  * When assigned to a column via the Table columns configuration,
@@ -9,11 +10,14 @@ import { v4 as uuid } from "uuid"
  * @param columns - Type is Syncfusion Grid Column, see https://ej2.syncfusion.com/react/documentation/api/grid/column/
  * @param columnCounts - The column's row count
  * @param options - The options configured for this Custom Aggregate
- * @param data - The row's data
- * @param aggregateColumn - The configuration for this column
  */
-const customAggregateFunction = (columns: any, columnCounts: any, options: any) => {
-  return function (data: any, aggregateColumn: any) {
+const customAggregateFunction = (
+  columns: EnrichedColumnDefinition,
+  columnCounts: number,
+  options: JSONRecord
+) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+  return function (data: any /*, aggregateColumn: unknown*/): number | null {
     console.log("Report.CustomAggregate.DivideTwoSums")
 
     // When a report is exported, it runs the group aggregate function
@@ -47,7 +51,7 @@ const customAggregateFunction = (columns: any, columnCounts: any, options: any) 
     }
 
     // Do aggregate logic here
-    if (!denominator || denominator == 0 || !numerator || numerator == 0) {
+    if (!denominator || denominator === 0 || !numerator || numerator === 0) {
       return 0
     }
 

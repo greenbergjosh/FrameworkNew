@@ -28,7 +28,6 @@ export const QuickStartView: React.FC = (): JSX.Element => {
           </a>
         </p>
         <h3 className="code-line" data-line-start={6} data-line-end={7}>
-          <a id="Requirements_6" />
           Requirements
         </h3>
         <ul>
@@ -40,7 +39,6 @@ export const QuickStartView: React.FC = (): JSX.Element => {
           </li>
         </ul>
         <h2 className="code-line" data-line-start={10} data-line-end={11}>
-          <a id="Install_10" />
           Install
         </h2>
         <pre>
@@ -49,7 +47,6 @@ export const QuickStartView: React.FC = (): JSX.Element => {
           </code>
         </pre>
         <h2 className="code-line" data-line-start={15} data-line-end={16}>
-          <a id="Usage_15" />
           Usage
         </h2>
         <blockquote>
@@ -71,7 +68,6 @@ export const QuickStartView: React.FC = (): JSX.Element => {
           </code>
         </pre>
         <h2 className="code-line" data-line-start={51} data-line-end={52}>
-          <a id="Demo_51" />
           Demo
         </h2>
         <pre>
@@ -81,11 +77,9 @@ export const QuickStartView: React.FC = (): JSX.Element => {
           </code>
         </pre>
         <h2 className="code-line" data-line-start={57} data-line-end={58}>
-          <a id="Contributing_to_the_project_57" />
           Contributing to the project
         </h2>
         <h3 className="code-line" data-line-start={59} data-line-end={60}>
-          <a id="Dev_environment_59" />
           Dev environment
         </h3>
         <blockquote>
@@ -105,7 +99,6 @@ export const QuickStartView: React.FC = (): JSX.Element => {
           </code>
         </pre>
         <h3 className="code-line" data-line-start={70} data-line-end={71}>
-          <a id="Publish_70" />
           Publish
         </h3>
         <blockquote>
@@ -140,7 +133,6 @@ export const QuickStartView: React.FC = (): JSX.Element => {
           </code>
         </pre>
         <h2 className="code-line" data-line-start={82} data-line-end={83}>
-          <a id="License_82" />
           License
         </h2>
         <p className="has-line-data" data-line-start={84} data-line-end={85}>
