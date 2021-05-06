@@ -54,6 +54,20 @@ export interface EnrichedColumnDefinition extends Omit<ColumnModel, "template"> 
   customFormat?: string // Custom date or numeric format, typically
   removeCellPadding?: boolean
   skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
+  units: {
+    source: "milliseconds" | "seconds" | "minutes" | "hours" | "days" | "weeks" | "months" | "years"
+    target:
+      | "milliseconds"
+      | "seconds"
+      | "minutes"
+      | "hours"
+      | "days"
+      | "weeks"
+      | "months"
+      | "years"
+      | "durationLargestUnit"
+      | "durationMixed"
+  }
   precision?: number // integer
   visibilityConditions?: JSONObject // Must be JSON Logic
   cellFormatter?: string
@@ -74,3 +88,5 @@ export type CustomAggregateFunction = (
   columnCounts: { [p: string]: number },
   options?: any
 ) => CustomSummaryType
+
+export type ColumnOptions = { options: Partial<ColumnModel>; keysToDelete: string[] }

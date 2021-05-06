@@ -13,7 +13,7 @@ config.components[1].columns[1].formatter = cellFormatter
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-config.components[1].columns[5] = columnConfigWithCustomAggregateFunction
+config.components[1].columns[6] = columnConfigWithCustomAggregateFunction
 
 const TableExample = (): JSX.Element => {
   const [data, setData] = React.useState(initialData)

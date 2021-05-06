@@ -17,7 +17,8 @@ export const count = (columns: EnrichedColumnDefinition[], data: JSONRecord[]) =
             (column.type === "string" && typeof rowValue === "string" && rowValue) ||
             (column.type === "boolean" && typeof rowValue === "boolean") ||
             (column.type === "date" && rowValue) ||
-            (column.type === "datetime" && rowValue)
+            (column.type === "datetime" && rowValue) ||
+            (column.type === "duration" && rowValue)
           ) {
             if (!acc[column.field]) {
               acc[column.field] = 0

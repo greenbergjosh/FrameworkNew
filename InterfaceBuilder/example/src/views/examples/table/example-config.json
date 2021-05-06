@@ -88,6 +88,13 @@
           "type": "dateTime",
           "headerText": "Last Seen",
           "field": "last_seen_date"
+        },
+        {
+          "precision": 0,
+          "units": { "source": "seconds", "target": "durationMixed" },
+          "type": "duration",
+          "headerText": "Duration",
+          "field": "Duration"
         }
       ],
       "rowDetails": []

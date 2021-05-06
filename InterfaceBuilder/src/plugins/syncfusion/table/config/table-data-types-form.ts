@@ -71,6 +71,118 @@ export const tableDataTypes = [
   },
   {
     option: {
+      label: "Duration",
+      value: "duration",
+    },
+    form: [
+      {
+        key: "units.source",
+        valueKey: "units.source",
+        component: "select",
+        label: "Source Units",
+        defaultValue: "seconds",
+        dataHandlerType: "local",
+        data: {
+          values: [
+            {
+              label: "Milliseconds",
+              value: "milliseconds",
+            },
+            {
+              label: "Seconds",
+              value: "seconds",
+            },
+            {
+              label: "Minutes",
+              value: "minutes",
+            },
+            {
+              label: "Hours",
+              value: "hours",
+            },
+            {
+              label: "Days",
+              value: "days",
+            },
+            {
+              label: "Weeks",
+              value: "weeks",
+            },
+            {
+              label: "Months",
+              value: "months",
+            },
+            {
+              label: "Years",
+              value: "years",
+            },
+          ],
+        },
+      },
+      {
+        key: "units.target",
+        valueKey: "units.target",
+        component: "select",
+        label: "Display Units",
+        defaultValue: "durationMixed",
+        dataHandlerType: "local",
+        data: {
+          values: [
+            {
+              label: 'Mixed (e.g., "3h 22m 55s", etc.)',
+              value: "durationMixed",
+            },
+            {
+              label: 'Largest Unit (e.g., "3 years")',
+              value: "largestUnit",
+            },
+            {
+              label: "Milliseconds",
+              value: "milliseconds",
+            },
+            {
+              label: "Seconds",
+              value: "seconds",
+            },
+            {
+              label: "Minutes",
+              value: "minutes",
+            },
+            {
+              label: "Hours",
+              value: "hours",
+            },
+            {
+              label: "Days",
+              value: "days",
+            },
+            {
+              label: "Weeks",
+              value: "weeks",
+            },
+            {
+              label: "Months",
+              value: "months",
+            },
+            {
+              label: "Years",
+              value: "years",
+            },
+          ],
+        },
+      },
+      {
+        key: "precision",
+        valueKey: "precision",
+        label: "Precision",
+        help: "Set the decimal precision of the display units",
+        component: "number-input",
+        defaultValue: 0,
+      },
+    ],
+  },
+  {
+    option: {
       label: "Layout",
       value: "layout",
     },
