@@ -1,4 +1,4 @@
-@import "../../../styles/colors";
+@import "../../styles/colors";
 
 /*
  * :global {...} is used by rollup-plugin-postcss-modules
@@ -24,9 +24,7 @@
 
 .uiEditorContent {
   margin: 0;
-  padding: 13px;
   background: #fff;
-  min-height: 260px;
 }
 
 /*
@@ -57,11 +55,11 @@
 }
 
 .componentMenuWrapper {
-  background-color: lighten($ib-invisible-background-solid, 0.5);
+  background-color: lighten($ib-invisible, 45%);
   border-radius: 0 0 0 5px;
   padding: 10px 0 10px 15px;
-  border-left: solid 1px $ib-invisible;
-  border-bottom: solid 1px $ib-invisible;
+  border-left: solid 1px $ib-invisible-solid;
+  border-bottom: solid 1px $ib-invisible-solid;
 }
 
 .componentTag {

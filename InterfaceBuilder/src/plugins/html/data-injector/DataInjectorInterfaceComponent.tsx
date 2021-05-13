@@ -98,13 +98,10 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
         <fieldset
           style={{
             padding: 10,
-            border: "1px dashed rgba(0, 178, 255, 0.5)",
             backgroundColor: "rgba(0, 178, 255, 0.05)",
-            borderRadius: 5,
             position: "relative",
             overflow: "scroll",
           }}>
-          <legend style={{ all: "unset", color: "rgb(0, 178, 255)", padding: 5 }}>Data Injector</legend>
           <code>
             {this.props.valueKey}: {value}
           </code>

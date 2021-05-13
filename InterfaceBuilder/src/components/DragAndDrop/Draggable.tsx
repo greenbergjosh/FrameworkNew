@@ -1,6 +1,5 @@
 import React from "react"
 import { DragSource } from "react-dnd"
-import { DraggableContext } from "../../contexts/DraggableContext"
 import { DroppableContext } from "../../contexts/DroppableContext"
 import { shallowPropCheck } from "../../lib/shallowPropCheck"
 import { DraggableProps } from "./types"
@@ -16,74 +15,32 @@ function collect(connect: any, monitor: any) {
 
 const DraggableComponent = DragSource(({ type }) => type, dragHandlers, collect)(DraggableInner)
 
-export const Draggable = React.memo(
-  ({
-    canCopy,
-    canDelete,
-    canEdit,
-    canPaste,
-    children,
-    data,
+export const Draggable = React.memo(({ children, data, draggableId, index, title, type }: DraggableProps) => {
+  const innerRef = React.useRef(null)
+  const droppableContext = React.useContext(DroppableContext)
+  const draggableItem = {
     draggableId,
-    editable,
     index,
-    onCopy,
-    onDelete,
-    onEdit,
-    onPaste,
-    title,
+    item: data,
+    parentDroppableId: droppableContext && droppableContext.droppableId,
     type,
-  }: DraggableProps) => {
-    const innerRef = React.useRef(null)
-    const droppableContext = React.useContext(DroppableContext)
-    const draggableContext = React.useContext(DraggableContext)
+  }
 
-    const finalCanCopy = typeof canCopy !== "undefined" ? canCopy : draggableContext ? draggableContext.canCopy : void 0
-    const finalCanDelete =
-      typeof canDelete !== "undefined" ? canDelete : draggableContext ? draggableContext.canDelete : void 0
-    const finalCanEdit = typeof canEdit !== "undefined" ? canEdit : draggableContext ? draggableContext.canEdit : void 0
-    const finalCanPaste =
-      typeof canPaste !== "undefined" ? canPaste : draggableContext ? draggableContext.canPaste : void 0
-    const finalOnCopy = typeof onCopy !== "undefined" ? onCopy : draggableContext ? draggableContext.onCopy : void 0
-    const finalOnDelete =
-      typeof onDelete !== "undefined" ? onDelete : draggableContext ? draggableContext.onDelete : void 0
-    const finalOnEdit = typeof onEdit !== "undefined" ? onEdit : draggableContext ? draggableContext.onEdit : void 0
-    const finalOnPaste = typeof onPaste !== "undefined" ? onPaste : draggableContext ? draggableContext.onPaste : void 0
-
-    const draggableItem = {
-      draggableId,
-      index,
-      item: data,
-      parentDroppableId: droppableContext && droppableContext.droppableId,
-      type,
-    }
-
-    return (
-      <DraggableComponent
-        canCopy={finalCanCopy}
-        canDelete={finalCanDelete}
-        canEdit={finalCanEdit}
-        canPaste={finalCanPaste}
-        data={data}
-        draggableId={draggableId}
-        draggableItem={draggableItem}
-        editable={editable}
-        index={index}
-        innerRef={innerRef}
-        makeRoomForPlaceholder={
-          !!droppableContext && droppableContext.placeholder !== null && droppableContext.placeholder.index <= index
-        }
-        onCopy={finalOnCopy}
-        onDelete={finalOnDelete}
-        onEdit={finalOnEdit}
-        onPaste={finalOnPaste}
-        orientation={(droppableContext && droppableContext.orientation) || "vertical"}
-        parentDroppableId={droppableContext && droppableContext.droppableId}
-        title={title}
-        type={type}>
-        {children}
-      </DraggableComponent>
-    )
-  },
-  shallowPropCheck(["data", "draggableId", "index", "type"])
-)
+  return (
+    <DraggableComponent
+      data={data}
+      draggableId={draggableId}
+      draggableItem={draggableItem}
+      index={index}
+      innerRef={innerRef}
+      makeRoomForPlaceholder={
+        !!droppableContext && droppableContext.placeholder !== null && droppableContext.placeholder.index <= index
+      }
+      orientation={(droppableContext && droppableContext.orientation) || "vertical"}
+      parentDroppableId={droppableContext && droppableContext.droppableId}
+      title={title}
+      type={type}>
+      {children}
+    </DraggableComponent>
+  )
+}, shallowPropCheck(["data", "draggableId", "index", "type"]))

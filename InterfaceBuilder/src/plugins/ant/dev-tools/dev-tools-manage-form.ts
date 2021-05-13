@@ -23,7 +23,6 @@ export const devToolsManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "hideLabel",
                 defaultValue: true,
-                hidden: true,
               },
               {
                 key: "valueKey",

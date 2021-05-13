@@ -20,12 +20,12 @@ const emptyManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hidden: true,
               },
               {
-                key: "valueKey",
-                hidden: true,
-              },
-              {
                 key: "hideLabel",
                 defaultValue: true,
+              },
+              {
+                key: "valueKey",
+                hidden: true,
               },
               {
                 key: "message",

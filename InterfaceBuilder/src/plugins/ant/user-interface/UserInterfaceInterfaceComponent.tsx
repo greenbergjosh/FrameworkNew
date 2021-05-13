@@ -9,6 +9,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "../../../globalTypes"
+import { Tooltip } from "antd"
 
 export interface UserInterfaceInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "user-interface"
@@ -20,6 +21,7 @@ export interface UserInterfaceInterfaceComponentProps extends ComponentDefinitio
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   submit: UserInterfaceProps["submit"]
+  hideMenu: boolean
 }
 
 interface UserInterfaceInterfaceComponentState {
@@ -35,6 +37,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
     defaultValue: [],
     mode: "edit",
     valueKey: "layout",
+    hideMenu: false,
   }
 
   static getLayoutDefinition(): LayoutDefinition {
@@ -70,6 +73,27 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
   render(): JSX.Element {
     const { defaultValue, /*mode,*/ userInterfaceData, valueKey, submit } = this.props
     const { data } = this.state
+    if (this.props.mode === "edit") {
+      return (
+        <Tooltip title="User Interface may not be used in edit mode." trigger="click">
+          <div>
+            <div style={{ pointerEvents: "none" }}>
+              <UserInterface
+                components={get(valueKey, userInterfaceData) || defaultValue}
+                data={data}
+                mode="edit"
+                onChangeData={this.handleChangeData}
+                onChangeSchema={this.handleChangeSchema}
+                submit={submit}
+                getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+                hideMenu={this.props.hideMenu}
+                title={this.props.label}
+              />
+            </div>
+          </div>
+        </Tooltip>
+      )
+    }
     return (
       <UserInterface
         components={get(valueKey, userInterfaceData) || defaultValue}
@@ -79,6 +103,8 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
         onChangeSchema={this.handleChangeSchema}
         submit={submit}
         getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+        hideMenu={this.props.hideMenu}
+        title={this.props.label}
       />
     )
   }

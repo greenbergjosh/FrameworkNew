@@ -21,6 +21,10 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
                 bindable: true,
               },
               {
+                key: "hideLabel",
+                defaultValue: true,
+              },
+              {
                 key: "valueKey",
                 defaultValue: "qbData",
                 bindable: true,

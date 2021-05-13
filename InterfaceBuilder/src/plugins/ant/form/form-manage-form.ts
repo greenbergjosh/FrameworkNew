@@ -20,6 +20,10 @@ const formManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "Form",
               },
               {
+                key: "hideLabel",
+                defaultValue: true,
+              },
+              {
                 key: "valueKey",
                 hidden: true,
               },

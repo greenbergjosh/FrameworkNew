@@ -1,6 +1,5 @@
 import React from "react"
 import { set } from "lodash/fp"
-import { Typography } from "antd"
 import { ComponentRenderer } from "../../../../components/ComponentRenderer/ComponentRenderer"
 import { DataPathContext } from "../../../../contexts/DataPathContext"
 import { editComponents } from "../config/edit-components"
@@ -25,6 +24,10 @@ export function EditTable({
 
   return (
     <>
+      {/* **************************
+       *
+       * Columns Editor
+       */}
       <ComponentRenderer
         components={editComponents}
         data={userInterfaceSchema}
@@ -45,8 +48,18 @@ export function EditTable({
           //   onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
         }}
       />
-      <Typography.Title level={4}>Row Details</Typography.Title>
-      <div style={{ marginLeft: 15 }}>
+      {/* **************************
+       *
+       * Row Details
+       */}
+      <fieldset
+        style={{
+          padding: 5,
+          border: "1px dashed #a3a3a3",
+          borderRadius: 5,
+          position: "relative",
+        }}>
+        <legend style={{ all: "unset", padding: 5 }}>Row Details</legend>
         <DataPathContext path="rowDetails">
           <ComponentRenderer
             components={rowDetails}
@@ -60,7 +73,7 @@ export function EditTable({
             }}
           />
         </DataPathContext>
-      </div>
+      </fieldset>
     </>
   )
 }

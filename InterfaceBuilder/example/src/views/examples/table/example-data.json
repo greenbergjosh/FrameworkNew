@@ -20,7 +20,7 @@
           "PathOnlyRevenue": 77958.892,
           "first_seen_date": "2020-03-03T01:09:14",
           "last_seen_date": "2020-12-24T02:51:06",
-          "Duration": 246977235
+          "Duration": 1
         },
         {
           "ExpensePerLead": 0,
@@ -37,7 +37,7 @@
           "PathOnlyRevenue": 52.69,
           "first_seen_date": "2020-03-03T01:09:14",
           "last_seen_date": "2020-12-24T02:51:06",
-          "Duration": 246977235
+          "Duration": 15
         },
         {
           "ExpensePerLead": 0,
@@ -54,7 +54,7 @@
           "PathOnlyRevenue": 1255.4484,
           "first_seen_date": "2020-03-03T01:09:14",
           "last_seen_date": "2020-12-24T02:51:06",
-          "Duration": 246977235
+          "Duration": 0.5
         },
         {
           "ExpensePerLead": 0.00138456428779,

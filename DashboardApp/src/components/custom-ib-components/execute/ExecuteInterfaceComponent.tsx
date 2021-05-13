@@ -304,10 +304,8 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   render(): JSX.Element {
     const fieldsetStyle: CSSProperties = !this.props.invisible
       ? {
-          padding: "0 10px 10px 10px",
-          border: "1px dashed rgba(180, 0, 255, 0.5)",
+          padding: "5px 10px 10px 10px",
           backgroundColor: "rgba(180, 0, 255, 0.05)",
-          borderRadius: 5,
           color: "rgb(172 177 180)",
           fontSize: 10,
           display: "inline-block",
@@ -328,7 +326,6 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     if (this.props.mode === "edit") {
       return (
         <fieldset style={fieldsetStyle}>
-          <legend style={legendStyle}>Execute</legend>
           <div>
             <strong>Type:</strong> {this.props.queryType}
           </div>

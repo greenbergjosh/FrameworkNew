@@ -1,10 +1,10 @@
 import React from "react"
 import { forIn } from "lodash"
-import { hasTokens, replaceTokens } from "../../lib/tokenReplacer"
-import { registry } from "../../services/ComponentRegistry"
+import { hasTokens, replaceTokens } from "../../../lib/tokenReplacer"
+import { registry } from "../../../services/ComponentRegistry"
 import { RenderInterfaceComponent } from "./RenderInterfaceComponent"
-import { RenderInterfaceComponentProps } from "./types"
-import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
+import { RenderInterfaceComponentProps } from "../types"
+import { ComponentDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export function DetokenizedComponent(props: {
   componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
@@ -49,7 +49,6 @@ export function DetokenizedComponent(props: {
       }
       newDef[key] = newValue
     })
-    // console.log("replacePropTokens", { componentDefinition, newDef })
     return newDef
   }, [componentDefinition, data, mode])
 

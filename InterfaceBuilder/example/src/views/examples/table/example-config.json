@@ -32,7 +32,7 @@
       "abstract": false,
       "valueKey": "reports[\"CoregRollup:DemographicsSummary\"].result",
       "label": "Table",
-      "hideLabel": false,
+      "hideLabel": true,
       "component": "table",
       "columns": [
         {

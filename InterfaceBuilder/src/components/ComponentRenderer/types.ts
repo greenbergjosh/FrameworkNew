@@ -20,14 +20,6 @@ export interface RenderInterfaceComponentState {
   error: null | string
 }
 
-export type VisibilityStyle = {
-  color?: string
-  backgroundColor?: string
-  border?: string
-  modeTitle: string
-  blockEvents: boolean
-}
-
 export interface ComponentModifierProps {
   componentDefinition: ComponentDefinition
 }

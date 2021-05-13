@@ -8,6 +8,7 @@ export const commonDateForm: ComponentDefinition[] = [
     component: "select",
     defaultValue: "short",
     dataHandlerType: "local",
+    size: "small",
     data: {
       values: [
         {
@@ -44,6 +45,7 @@ export const commonDateForm: ComponentDefinition[] = [
     label: "Custom Format",
     component: "input",
     defaultValue: "MM/dd/yyyy hh:mm:ss a",
+    size: "small",
     visibilityConditions: {
       "===": ["custom", { var: "skeletonFormat" }],
     },
