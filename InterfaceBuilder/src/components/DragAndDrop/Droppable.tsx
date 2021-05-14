@@ -4,7 +4,7 @@ import { DroppableContext} from "../../contexts/DroppableContext"
 import { shallowPropCheck } from "../../lib/shallowPropCheck"
 import { DroppablePlaceholderState, DroppableProps } from "./types"
 import { DroppableInner } from "./components/DroppableInner"
-import { dropHandlers } from "./lib/dropHandlers.js"
+import { dropHandlers } from "./lib/dropHandlers"
 import "./dnd.module.scss"
 
 function collect(connect: DropTargetConnector, monitor: DropTargetMonitor) {

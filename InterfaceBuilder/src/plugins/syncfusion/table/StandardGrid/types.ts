@@ -9,6 +9,7 @@ import {
 } from "@syncfusion/ej2-react-grids"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
+import { DurationUnits } from "../../../../lib/valueFormatter/types"
 
 export interface StandardGridComponentProps {
   allowAdding?: boolean
@@ -54,20 +55,7 @@ export interface EnrichedColumnDefinition extends Omit<ColumnModel, "template"> 
   customFormat?: string // Custom date or numeric format, typically
   removeCellPadding?: boolean
   skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
-  units: {
-    source: "milliseconds" | "seconds" | "minutes" | "hours" | "days" | "weeks" | "months" | "years"
-    target:
-      | "milliseconds"
-      | "seconds"
-      | "minutes"
-      | "hours"
-      | "days"
-      | "weeks"
-      | "months"
-      | "years"
-      | "durationLargestUnit"
-      | "durationMixed"
-  }
+  units: DurationUnits
   precision?: number // integer
   visibilityConditions?: JSONObject // Must be JSON Logic
   cellFormatter?: string

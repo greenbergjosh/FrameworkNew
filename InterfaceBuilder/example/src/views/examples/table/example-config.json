@@ -91,7 +91,7 @@
         },
         {
           "precision": 0,
-          "units": { "source": "seconds", "target": "durationMixed" },
+          "units": { "source": "seconds", "target": "durationMixedUnit" },
           "type": "duration",
           "headerText": "Duration",
           "field": "Duration"

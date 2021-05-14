@@ -3,7 +3,7 @@ import { RenderInterfaceComponentProps, RenderInterfaceComponentState } from "..
 import { EditMode } from "components/ComponentRenderer/components/EditMode"
 import { PreviewMode } from "components/ComponentRenderer/components/PreviewMode"
 import { DisplayMode } from "components/ComponentRenderer/components/DisplayMode"
-import { ErrorMode } from "components/ComponentRenderer/components/ErrorMode.js"
+import { ErrorMode } from "components/ComponentRenderer/components/ErrorMode"
 
 export class RenderInterfaceComponent extends React.Component<
   RenderInterfaceComponentProps,

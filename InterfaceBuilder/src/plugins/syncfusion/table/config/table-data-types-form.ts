@@ -127,18 +127,18 @@ export const tableDataTypes = [
         valueKey: "units.target",
         component: "select",
         label: "Display Units",
-        defaultValue: "durationMixed",
+        defaultValue: "durationMixedUnit",
         dataHandlerType: "local",
         size: "small",
         data: {
           values: [
             {
               label: 'Mixed (e.g., "3h 22m 55s", etc.)',
-              value: "durationMixed",
+              value: "durationMixedUnit",
             },
             {
               label: 'Largest Unit (e.g., "3 years")',
-              value: "largestUnit",
+              value: "durationLargestUnit",
             },
             {
               label: "Milliseconds",
