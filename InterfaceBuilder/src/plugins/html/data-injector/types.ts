@@ -16,6 +16,7 @@ export interface DataInjectorInterfaceComponentProps extends ComponentDefinition
   numberValue: number
   stringValue: string
   dataType: "json" | "number" | "string" | "boolean"
+  height: number
 }
 
 export interface DataInjectorInterfaceComponentState {
