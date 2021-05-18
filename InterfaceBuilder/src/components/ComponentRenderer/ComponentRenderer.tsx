@@ -4,7 +4,7 @@ import { deepDiff } from "../../lib/deepDiff"
 import { DataPathContext } from "../../contexts/DataPathContext"
 import { Droppable } from "../DragAndDrop"
 import { shallowPropCheck } from "../../lib/shallowPropCheck"
-import { DetokenizedComponent } from "./DetokenizedComponent"
+import { DetokenizedComponent } from "./components/DetokenizedComponent"
 import { ComponentRendererProps } from "./types"
 import { ComponentRendererModeContext } from "../../contexts/ComponentRendererModeContext"
 import { ComponentDefinition } from "../../globalTypes"
@@ -24,10 +24,8 @@ export const _ComponentRenderer = ({
   onDrop,
   keyPrefix,
 }: ComponentRendererProps): JSX.Element => {
-  // const { componentRegistry } = React.useContext(ComponentRegistryContext)
   const contextMode = React.useContext(ComponentRendererModeContext)
   const mode = propMode || contextMode
-
   const handleChangeSchema = React.useCallback(
     (index: number) => (newComponentDefinition: ComponentDefinition) => {
       if (mode === "edit") {

@@ -31,6 +31,7 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
   valueKey: string
   preconfigured?: boolean
   unwrapped?: boolean
+  style: string
 }
 
 export interface ModeProps {

@@ -45,7 +45,12 @@
       "allowClear": true,
       "placeholder": null,
       "component": "radio",
-      "defaultValue": "2"
+      "defaultValue": "2",
+      "bindable": true,
+      "bindings": {
+        "label": { "var" : ["labelValue"] }
+      },
+      "visibilityConditions": { "var": [ "$.blockIt" ] }
     }
   ]
 }

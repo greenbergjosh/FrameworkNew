@@ -1,7 +1,7 @@
 import { Serie } from "@nivo/line"
 import { LegendProps } from "@nivo/legends"
 
-export const emptyDataSet: Serie[] = [{ id: "None", data: [] }]
+export const emptyDataSet: Serie[] = [{ id: "None", data: [{ x: 0, y: 0 }] }]
 
 export const legends: LegendProps[] = [
   {

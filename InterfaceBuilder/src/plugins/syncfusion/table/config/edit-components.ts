@@ -11,6 +11,7 @@ export const editComponents: ComponentDefinition[] = [
     key: "columns",
     valueKey: "columns",
     label: "Columns",
+    hideLabel: true,
     addItemLabel: "Add Column",
     component: "list",
     emptyText: "No Configured Columns",
@@ -19,21 +20,26 @@ export const editComponents: ComponentDefinition[] = [
     components: [
       {
         key: "column",
-        component: "card",
+        component: "container",
+        label: "Column",
+        hideLabel: true,
         preconfigured: true,
         size: "small",
+        style: "&.container { padding: 5px; }",
         components: [
           {
             key: "header",
             valueKey: "headerText",
             label: "Header",
             component: "input",
+            size: "small",
           },
           {
             key: "field",
             valueKey: "field",
             label: "Field",
             component: "input",
+            size: "small",
             visibilityConditions: {
               "!==": [
                 "layout",
@@ -49,6 +55,7 @@ export const editComponents: ComponentDefinition[] = [
             label: "Type",
             component: "select",
             dataHandlerType: "local",
+            size: "small",
             data: {
               values: tableDataTypes.map((type) => type.option),
             },

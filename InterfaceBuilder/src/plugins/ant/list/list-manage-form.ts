@@ -83,6 +83,10 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
             ],
           },
+          {
+            key: "style",
+            components: [],
+          },
         ],
       },
     ],

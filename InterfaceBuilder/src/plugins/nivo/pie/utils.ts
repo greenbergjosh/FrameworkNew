@@ -25,9 +25,9 @@ function createSliceData({
 }): PieDatum {
   return {
     id,
-    value,
     label: labelName,
     sliceLabel: labelValue,
+    value,
   }
 }
 

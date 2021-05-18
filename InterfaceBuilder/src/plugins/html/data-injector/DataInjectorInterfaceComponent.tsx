@@ -6,6 +6,7 @@ import { set } from "lodash/fp"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
+import JSONEditor from "plugins/ant/dev-tools/components/JSONEditor"
 
 export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   DataInjectorInterfaceComponentProps,
@@ -89,27 +90,16 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  handleChange = (userInterfaceData: any): void => {
+    const { onChangeData } = this.props
+    onChangeData && onChangeData(userInterfaceData)
+  }
+
   render(): JSX.Element | null {
     if (this.props.mode === "edit") {
-      const rawValue = this.getValueByType()
-      const value = this.props.dataType === "json" ? JSON.stringify(rawValue) : rawValue.toString()
+      const rawValue = this.getValueByType() as JSONRecord
 
-      return (
-        <fieldset
-          style={{
-            padding: 10,
-            border: "1px dashed rgba(0, 178, 255, 0.5)",
-            backgroundColor: "rgba(0, 178, 255, 0.05)",
-            borderRadius: 5,
-            position: "relative",
-            overflow: "scroll",
-          }}>
-          <legend style={{ all: "unset", color: "rgb(0, 178, 255)", padding: 5 }}>Data Injector</legend>
-          <code>
-            {this.props.valueKey}: {value}
-          </code>
-        </fieldset>
-      )
+      return <JSONEditor data={rawValue} onChange={this.handleChange} height={this.props.height || 100} />
     }
     return null
   }

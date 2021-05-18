@@ -1,4 +1,4 @@
-import { Alert, Collapse } from "antd"
+import { Alert, Collapse, Typography } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import { get, set } from "lodash/fp"
@@ -81,7 +81,12 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const remoteConfig = loadById(remoteId)
+
       if (remoteConfig) {
+        if (remoteConfig.type === "App.Page") {
+          return <Alert type="warning" message='Remote component must not be an "App.Page"' />
+        }
+
         const layout = tryCatch(() => JSON5.parse(remoteConfig.config.getOrElse("")).layout).toNullable()
         if (Array.isArray(layout)) {
           const content = (

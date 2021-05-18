@@ -19,6 +19,10 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hidden: true,
               },
               {
+                key: "hideLabel",
+                defaultValue: true,
+              },
+              {
                 key: "valueKey",
                 defaultValue: "remote",
                 bindable: true,

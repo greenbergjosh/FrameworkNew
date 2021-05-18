@@ -1,12 +1,11 @@
 import React from "react"
 import styles from "../styles.scss"
 import { Button, Tooltip } from "antd"
-import { ComponentModifierProps, RenderInterfaceComponentProps } from "../../types"
-import { DataBinding } from "../DataBinding"
+import { ComponentModifierProps, RenderInterfaceComponentProps } from "../../ComponentRenderer/types"
 import { EditDataBindingModal } from "./EditDataBindingModal"
 import { isEmpty, isPlainObject, set } from "lodash/fp"
-import { JSONRecord } from "../../../../globalTypes/JSONTypes"
-import { UserInterfaceProps } from "../../../../globalTypes"
+import { JSONRecord } from "../../../globalTypes/JSONTypes"
+import { UserInterfaceProps } from "../../../globalTypes"
 
 /**
  *
@@ -35,22 +34,6 @@ export const EditDataBinding: React.FC<
   const [rawRules, setRawRules] = React.useState<JSONRecord>(initialRawRules)
 
   /**
-   * Forward modified componentDefinition
-   */
-  const childrenWithComposedProps = React.useMemo(
-    () =>
-      React.Children.map(props.children, (child) => {
-        if (React.isValidElement(child)) {
-          /* Apply the bound props */
-          return React.cloneElement(child, props.componentDefinition)
-        }
-        /* Not a valid element, so just return it */
-        return child
-      }),
-    [props.children, props.componentDefinition]
-  )
-
-  /**
    * Set state from props and do basic jsonLogic validation.
    */
   const validJsonLogic = React.useMemo<JSONRecord>(() => {
@@ -62,7 +45,7 @@ export const EditDataBinding: React.FC<
   }, [rawRules])
 
   if (!props.componentDefinition.bindable) {
-    return <>{childrenWithComposedProps}</>
+    return <>{props.children}</>
   }
 
   const handleCancelEvent = (e: React.MouseEvent<HTMLDivElement, MouseEvent> | React.FocusEvent<HTMLDivElement>) => {
@@ -107,13 +90,7 @@ export const EditDataBinding: React.FC<
           onFocusCapture={handleCancelEvent}
           onMouseOverCapture={handleCancelEvent}
           onClickCapture={handleOpenModal}>
-          <DataBinding
-            componentDefinition={props.componentDefinition}
-            onChangeData={props.onChangeData}
-            onChangeSchema={props.onChangeSchema}
-            userInterfaceData={props.userInterfaceData}>
-            {childrenWithComposedProps}
-          </DataBinding>
+          {props.children}
           {isBinding && (
             <div className={styles.controlMask}>
               <div className={styles.controlMaskLabel}>Bound Value</div>

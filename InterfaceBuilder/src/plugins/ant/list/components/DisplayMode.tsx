@@ -96,6 +96,9 @@ export default function DisplayMode({
 
   return (
     <>
+      <Button onClick={handleAddClick} size="small" icon="plus" type="link" style={{ marginTop: 5, marginBottom: 10 }}>
+        {addItemLabel}
+      </Button>
       <div
         className={classNames("ui-list", {
           "ui-list-horizontal": orientation === "horizontal",
@@ -134,9 +137,6 @@ export default function DisplayMode({
           <Empty description={description} />
         )}
       </div>
-      <Button style={{ display: "block", marginTop: "10px", marginBottom: "10px" }} onClick={handleAddClick}>
-        {addItemLabel}
-      </Button>
     </>
   )
 }

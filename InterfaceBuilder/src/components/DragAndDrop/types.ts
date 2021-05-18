@@ -1,6 +1,5 @@
 import React from "react"
 import { ConnectDragSource, ConnectDropTarget } from "react-dnd"
-import { DraggableContextProps } from "../../contexts/DraggableContext"
 import { DroppableContextType } from "../../contexts/DroppableContext"
 import { ComponentDefinition } from "../../globalTypes"
 
@@ -38,7 +37,7 @@ export interface UndraggableProps {
   wrap?: boolean | "shrink"
 }
 
-export interface DraggableInnerProps extends DraggableContextProps {
+export interface DraggableInnerProps {
   children: (props: DraggableChildProps) => JSX.Element
   connectDragSource: ConnectDragSource
   data: unknown
@@ -58,9 +57,10 @@ export interface DraggableInnerProps extends DraggableContextProps {
 export interface DraggableChildProps {
   data: unknown
   isDragging: boolean
+  draggableItem: DraggedItemProps
 }
 
-export interface DraggableProps extends DraggableContextProps {
+export interface DraggableProps {
   children: (props: DraggableChildProps) => JSX.Element
   data: unknown
   draggableId: string

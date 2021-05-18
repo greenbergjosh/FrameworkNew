@@ -2,9 +2,9 @@ import { Icon, Menu, Tag } from "antd"
 import { Dictionary } from "lodash"
 import { groupBy } from "lodash/fp"
 import React from "react"
-import { Draggable } from "../../DragAndDrop"
-import { ComponentRegistryCache, ComponentRegistryContext } from "../../../services/ComponentRegistry"
-import { LayoutDefinition } from "../../../globalTypes"
+import { Draggable } from "../DragAndDrop"
+import { ComponentRegistryCache, ComponentRegistryContext } from "../../services/ComponentRegistry"
+import { LayoutDefinition } from "../../globalTypes"
 import styles from "./styles.scss"
 
 interface InterfaceComponentChoicesProps {}

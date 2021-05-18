@@ -2,34 +2,18 @@ import React from "react"
 import { ComponentModifierProps } from "components/ComponentRenderer"
 import { Form, Icon, Tooltip } from "antd"
 import { isEmpty } from "lodash/fp"
-import { LayoutDefinition } from "../../../globalTypes"
+import { LayoutDefinition } from "../../globalTypes"
 
 export const FormField: React.FC<
   ComponentModifierProps & {
     layoutDefinition: LayoutDefinition
   }
 > = (props): JSX.Element => {
-  /**
-   * Forward modified componentDefinition
-   */
-  const childrenWithComposedProps = React.useMemo(
-    () =>
-      React.Children.map(props.children, (child) => {
-        if (React.isValidElement(child)) {
-          /* Apply the bound props */
-          return React.cloneElement(child, { componentDefinition: props.componentDefinition })
-        }
-        /* Not a valid element, so just return it */
-        return child
-      }),
-    [props.children, props.componentDefinition]
-  )
-
   /*
    * No label
    */
   if (props.componentDefinition.hideLabel || isEmpty(props.componentDefinition.label)) {
-    return <>{childrenWithComposedProps}</>
+    return <>{props.children}</>
   }
 
   const helpIcon = isEmpty(props.componentDefinition.help) ? null : (
@@ -52,7 +36,7 @@ export const FormField: React.FC<
             {props.componentDefinition.label} {helpIcon}
           </>
         }>
-        {childrenWithComposedProps}
+        {props.children}
       </Form.Item>
     )
   }
@@ -65,7 +49,7 @@ export const FormField: React.FC<
       <label>
         {props.componentDefinition.label} {helpIcon}
       </label>
-      {childrenWithComposedProps}
+      {props.children}
     </div>
   )
 }

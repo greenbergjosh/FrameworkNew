@@ -1,33 +1,16 @@
 import jsonLogic from "json-logic-js"
 import React from "react"
 import { ComponentModifierProps } from "components/ComponentRenderer"
-import { tryCatch } from "../../../../lib/Option"
-import { VisibilityEditIndicator } from "./VisibilityEditIndicator"
-import { LayoutDefinition, UserInterfaceProps } from "../../../../globalTypes"
+import { tryCatch } from "../../lib/Option"
+import { LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
 
-export const Visibility: React.FC<
+export const DisplayVisibility: React.FC<
   ComponentModifierProps & {
     layoutDefinition: LayoutDefinition
     mode: UserInterfaceProps["mode"]
     userInterfaceData: UserInterfaceProps["data"]
   }
 > = (props): JSX.Element | null => {
-  /**
-   * Forward modified componentDefinition
-   */
-  const childrenWithComposedProps = React.useMemo(
-    () =>
-      React.Children.map(props.children, (child) => {
-        if (React.isValidElement(child)) {
-          /* Apply the bound props */
-          return React.cloneElement(child, { componentDefinition: props.componentDefinition })
-        }
-        /* Not a valid element, so just return it */
-        return child
-      }),
-    [props.children, props.componentDefinition]
-  )
-
   /**
    * Determine if blocked via JsonLogic visibility conditions
    */
@@ -50,21 +33,6 @@ export const Visibility: React.FC<
     return false
   }
 
-  /* Edit: Show the component with an indication
-   * of it's visibility in display mode.
-   */
-  if (props.mode === "edit" && props.componentDefinition) {
-    return (
-      <VisibilityEditIndicator
-        title={props.layoutDefinition.title}
-        invisible={props.componentDefinition.invisible}
-        hidden={props.componentDefinition.hidden}
-        blocked={isBlocked()}>
-        {childrenWithComposedProps}
-      </VisibilityEditIndicator>
-    )
-  }
-
   /* Disabled: User has chosen to make this component
    * not in the DOM and not functioning.
    */
@@ -83,10 +51,10 @@ export const Visibility: React.FC<
    * but it is still in the DOM and functioning.
    */
   if (props.componentDefinition.invisible) {
-    return <div style={{ display: "none" }}>{childrenWithComposedProps}</div>
+    return <div style={{ display: "none" }}>{props.children}</div>
   }
 
   /* Normal
    */
-  return <>{childrenWithComposedProps}</>
+  return <>{props.children}</>
 }

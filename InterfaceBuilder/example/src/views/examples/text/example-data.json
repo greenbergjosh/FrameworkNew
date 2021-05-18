@@ -4,7 +4,7 @@
     "myMoney": 12.34,
     "myNumber": 35670234.123478,
     "myNegativeNumber": -35670234.123478,
-    "myStringNumber": "654.321",
+    "myStringNumber": "35670234.123478",
     "myDate": "2021-01-28T20:34:06.347Z",
     "myObject": {
       "foo": "bar"

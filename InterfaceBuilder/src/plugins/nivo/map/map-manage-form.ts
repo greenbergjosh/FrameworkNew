@@ -22,6 +22,10 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
+                key: "hideLabel",
+                defaultValue: true,
+              },
+              {
                 key: "valueKey",
                 defaultValue: "value",
                 bindable: true,

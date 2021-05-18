@@ -160,7 +160,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             data={this.state.pieData.map((item) => item.pieDatum) || []}
             enableRadialLabels={enableRadialLabels}
             enableSlicesLabels={enableSliceLabels}
-            isInteractive={this.state.pieData != emptyDataSet}
+            isInteractive={this.state.pieData !== emptyDataSet}
             innerRadius={donut ? 0.5 : undefined}
             legends={showLegend ? legends : undefined}
             margin={margin}

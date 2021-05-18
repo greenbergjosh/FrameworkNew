@@ -9,6 +9,8 @@ interface IUserInterfaceProps {
   submit?: () => void
   getRootUserInterfaceData?: () => UserInterfaceProps["data"]
   keyPrefix?: string
+  hideMenu?: boolean
+  title?: string
 }
 
 export interface DisplayUserInterfaceProps extends IUserInterfaceProps {

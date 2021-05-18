@@ -52,7 +52,9 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
 
     if (!isEqual(prevValue, nextValue) || this.anyPropsChanged(prevProps, ["valueKey"])) {
       const lineChartData: Serie[] = (this.getValue(this.props.valueKey) as unknown) as Serie[]
-      this.setState({ lineChartData, loading: false })
+      if (lineChartData) {
+        this.setState({ lineChartData, loading: false })
+      }
     }
 
     if (this.anyPropsChanged(prevProps, ["useTooltipFunction", "tooltipFunction", "tooltipFunctionSrc"])) {
@@ -66,7 +68,9 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
     }
 
     const lineChartData: Serie[] = (this.getValue(this.props.valueKey) as unknown) as Serie[]
-    this.setState({ lineChartData, loading: false })
+    if (lineChartData) {
+      this.setState({ lineChartData, loading: false })
+    }
   }
 
   private createTooltipFunction(): void {
