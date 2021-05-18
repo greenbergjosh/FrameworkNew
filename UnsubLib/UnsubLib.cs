@@ -2033,7 +2033,8 @@ namespace UnsubLib
                 new UnsubFileProviders.Ad1Media(),
                 new UnsubFileProviders.SuppMeNow(),
                 new UnsubFileProviders.WeOpt(),
-                new UnsubFileProviders.SiteMath()
+                new UnsubFileProviders.SiteMath(),
+                new UnsubFileProviders.UnsubscribeMe()
             };
 
             try
