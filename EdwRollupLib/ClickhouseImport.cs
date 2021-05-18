@@ -227,7 +227,7 @@ SETTINGS index_granularity = 8192;";
 
             if (result.GetS("result") != "success")
             {
-                throw new DataException($"Error exporting table: {tableName} error: {result.GetS("err")}");
+                throw new DataException($"Error exporting table: {tableName} result: {result.GetS("")}");
             }
 
             return parameters;
@@ -719,7 +719,7 @@ from datasets.{mergedTableName};";
                 }), "application/json");
             }
 
-            _complete.SetResult();
+            _complete.SetException(ex);
         }
 
         private async Task<string> ExecuteSSHCommand(string commandText)
