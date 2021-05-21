@@ -24,9 +24,6 @@ export function DisplayTable(
 ): JSX.Element {
   return (
     <StandardGrid
-      allowAdding={false}
-      allowDeleting={false}
-      allowEditing={false}
       ref={ref}
       columns={columns}
       contextData={contextData}

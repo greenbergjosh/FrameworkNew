@@ -12,7 +12,7 @@ import { ColumnModel } from "@syncfusion/ej2-grids"
 export function getDateOptions(
   type: ColumnModel["type"],
   skeletonFormat: EnrichedColumnDefinition["skeletonFormat"],
-  customFormat: EnrichedColumnDefinition["customFormat"],
+  customFormat: EnrichedColumnDefinition["customFormat"]
 ): ColumnOptions {
   if (skeletonFormat === "custom") {
     const format: DateFormatOptions = { type, format: customFormat }

@@ -132,9 +132,6 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                   spinning={this.state.loading}
                   indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
                   <DisplayTable
-                    allowAdding={allowAdding}
-                    allowDeleting={allowDeleting}
-                    allowEditing={allowEditing}
                     columns={columns}
                     defaultCollapseAll={defaultCollapseAll}
                     autoFitColumns={autoFitColumns}

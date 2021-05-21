@@ -22,9 +22,6 @@ export type SortableGroupableColumnModel = EnrichedColumnDefinition & ColumnSort
 
 export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   abstract?: boolean
-  allowAdding?: boolean
-  allowDeleting?: boolean
-  allowEditing?: boolean
   columns: SortableGroupableColumnModel[]
   component: "table"
   showToolbar?: boolean
@@ -86,9 +83,6 @@ export interface TableProps {
 }
 
 export interface DisplayTableProps extends TableProps {
-  allowAdding?: boolean
-  allowDeleting?: boolean
-  allowEditing?: boolean
   autoFitColumns?: boolean
   columns: EnrichedColumnDefinition[]
   defaultCollapseAll?: boolean

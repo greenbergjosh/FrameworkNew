@@ -15,7 +15,7 @@ export function getStyleOptions(
   maxWidth: EnrichedColumnDefinition["maxWidth"],
   customFormat: EnrichedColumnDefinition["customFormat"],
   customAttributes: EnrichedColumnDefinition["customAttributes"],
-  useSmallFont?: boolean,
+  useSmallFont?: boolean
 ): Partial<ColumnModel> {
   const classNames: string[] = []
 

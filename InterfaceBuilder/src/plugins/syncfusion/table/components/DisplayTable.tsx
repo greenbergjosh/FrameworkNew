@@ -53,9 +53,6 @@ export function DisplayTable({
 
   return (
     <StandardGrid
-      allowAdding={allowAdding}
-      allowDeleting={allowAdding}
-      allowEditing={allowEditing}
       columns={columns}
       contextData={userInterfaceData}
       data={preview ? [] : dataArray}

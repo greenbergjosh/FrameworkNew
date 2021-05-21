@@ -8,7 +8,7 @@ import { ColumnModel } from "@syncfusion/ej2-react-grids"
  */
 export function getDisableHtmlEncodeOptions(
   disableHtmlEncode: EnrichedColumnDefinition["disableHtmlEncode"],
-  allowHTMLText: EnrichedColumnDefinition["allowHTMLText"],
+  allowHTMLText: EnrichedColumnDefinition["allowHTMLText"]
 ): Partial<ColumnModel> | undefined {
   // Default should be to NOT allow HTML rendering. That's a terrible practice.
   const isDisableHtmlEncode =

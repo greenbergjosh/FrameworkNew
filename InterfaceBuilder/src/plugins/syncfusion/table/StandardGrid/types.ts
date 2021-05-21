@@ -12,9 +12,6 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { DurationUnits } from "../../../../lib/valueFormatter/types"
 
 export interface StandardGridComponentProps {
-  allowAdding?: boolean
-  allowDeleting?: boolean
-  allowEditing?: boolean
   autoFitColumns?: boolean
   useSmallFont?: boolean
   enableAltRow?: boolean
