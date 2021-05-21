@@ -47,22 +47,9 @@ export const EditPanel: React.FC<EditPanelProps> = (props): JSX.Element => {
       </div>
       {props.visibilityMode === "disabled" ? (
         <Tooltip title="This component is disabled. Enable it to make changes." trigger="click">
-          <div>
-            <div style={{ pointerEvents: "none", cursor: "default" }}>
-              <div className={styles.editPanelContent}>{props.children}</div>
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "rgba(0,0,0, 0.05",
-                  cursor: "default",
-                  zIndex: 999,
-                }}
-              />
-            </div>
+          <div style={{ position: "relative", cursor: "default" }}>
+            <div className={styles.editPanelContent}>{props.children}</div>
+            <div className={styles.disabledMask} />
           </div>
         </Tooltip>
       ) : (
