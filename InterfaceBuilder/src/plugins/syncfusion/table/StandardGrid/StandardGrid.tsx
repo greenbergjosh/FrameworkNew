@@ -5,7 +5,6 @@ import {
   ColumnChooser,
   DetailRow,
   Edit,
-  EditMode,
   ExcelExport,
   Filter,
   Freeze,
@@ -42,9 +41,6 @@ let grid: GridComponent | null = null
 
 const StandardGrid = (
   {
-    allowAdding,
-    allowDeleting,
-    allowEditing,
     autoFitColumns,
     useSmallFont = false,
     enableAltRow = false,

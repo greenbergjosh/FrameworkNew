@@ -61,9 +61,6 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
   render(): JSX.Element {
     const {
       abstract,
-      allowAdding,
-      allowDeleting,
-      allowEditing,
       columns,
       showToolbar,
       useSmallPager,

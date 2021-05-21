@@ -17,8 +17,6 @@ import { RowDetail } from "./RowDetail"
  * View the actual grid with data.
  */
 export function DisplayTable({
-  allowAdding,
-  allowEditing,
   columns,
   defaultCollapseAll,
   autoFitColumns,
