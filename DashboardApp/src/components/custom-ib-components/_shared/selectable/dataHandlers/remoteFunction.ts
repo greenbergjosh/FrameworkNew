@@ -1,6 +1,6 @@
 import { tryCatch } from "fp-ts/lib/Option"
 import { isEmpty } from "lodash/fp"
-import { UserInterfaceProps } from "@opg/interface-builder"
+import { ComponentRenderMetaProps, UserInterfaceProps } from "@opg/interface-builder"
 import { RemoteFunctionType, SelectableOption } from "../types"
 import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager.type"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
@@ -33,7 +33,8 @@ export function loadRemoteFunction(
 
 export function getOptions(
   userInterfaceData: UserInterfaceProps["data"],
-  getRootUserInterfaceData: () => UserInterfaceProps["data"],
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"],
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"],
   remoteFunction: RemoteFunctionType
 ): SelectableOption[] {
   if (isEmpty(userInterfaceData) && isEmpty(getRootUserInterfaceData())) {
@@ -41,11 +42,12 @@ export function getOptions(
     return []
   }
   try {
-    const options = remoteFunction(userInterfaceData, getRootUserInterfaceData())
+    const options = remoteFunction(userInterfaceData, getRootUserInterfaceData(), setRootUserInterfaceData)
     console.log("Selectable.remoteFunction.getOptions", {
       remoteFunction,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       options,
     })
     return options

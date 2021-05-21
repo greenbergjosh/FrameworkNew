@@ -10,7 +10,8 @@ export function DetokenizedComponent(props: {
   componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
   data: UserInterfaceProps["data"]
   dragDropDisabled?: boolean
-  getRootData: () => UserInterfaceProps["data"]
+  getRootData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootData: UserInterfaceProps["setRootUserInterfaceData"]
   index: number
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
@@ -23,6 +24,7 @@ export function DetokenizedComponent(props: {
     data,
     dragDropDisabled,
     getRootData,
+    setRootData,
     index,
     mode,
     onChangeData,
@@ -59,6 +61,7 @@ export function DetokenizedComponent(props: {
       userInterfaceData={data}
       dragDropDisabled={dragDropDisabled}
       getRootData={getRootData}
+      setRootData={setRootData}
       index={index}
       mode={mode}
       onChangeData={onChangeData}

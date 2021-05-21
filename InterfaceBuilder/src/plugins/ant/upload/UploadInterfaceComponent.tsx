@@ -24,7 +24,6 @@ export interface UploadInterfaceComponentProps extends ComponentDefinitionNamedP
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   userInterfaceSchema?: any
   valueKey: string
 

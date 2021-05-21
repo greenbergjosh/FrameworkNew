@@ -28,6 +28,7 @@ export function DisplayTable({
   rowDetails,
   userInterfaceData,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   getValue,
   setValue,
   valueKey,
@@ -72,6 +73,7 @@ export function DisplayTable({
               <RowDetail
                 components={rowDetails}
                 getRootUserInterfaceData={getRootUserInterfaceData}
+                setRootUserInterfaceData={setRootUserInterfaceData}
                 mode="display"
                 onChangeData={(newData) => {
                   setValue(valueKey!, newData, userInterfaceData)

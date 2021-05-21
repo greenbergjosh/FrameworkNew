@@ -8,7 +8,6 @@ export interface ColorPickerInterfaceComponentProps extends ComponentDefinitionN
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder?: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   size: InputProps["size"]
 }

@@ -22,7 +22,6 @@ export interface ICollapseInterfaceComponentProps extends ComponentDefinitionNam
   sections: SectionDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   accordion?: boolean
 }
@@ -58,7 +57,14 @@ export class CollapseInterfaceComponent extends BaseInterfaceComponent<CollapseI
   static manageForm = collapseManageForm
 
   render(): JSX.Element {
-    const { accordion, onChangeData, sections, userInterfaceData, getRootUserInterfaceData } = this.props
+    const {
+      accordion,
+      onChangeData,
+      sections,
+      userInterfaceData,
+      getRootUserInterfaceData,
+      setRootUserInterfaceData,
+    } = this.props
     return (
       <Collapse accordion={accordion}>
         {sections.map((section, sectionIndex) => (
@@ -68,6 +74,7 @@ export class CollapseInterfaceComponent extends BaseInterfaceComponent<CollapseI
                 components={section.components}
                 data={userInterfaceData}
                 getRootData={getRootUserInterfaceData}
+                setRootData={setRootUserInterfaceData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   if (this.props.mode === "edit") {

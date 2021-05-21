@@ -1,18 +1,9 @@
 import { Divider } from "antd"
-import { DividerProps } from "antd/lib/divider"
 import React from "react"
 import { dividerManageForm } from "./divider-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
-
-export interface DividerInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "divider"
-  dashed?: boolean
-  orientation?: DividerProps["type"]
-  text?: string
-  textAlignment?: DividerProps["orientation"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-}
+import { LayoutDefinition } from "../../../globalTypes"
+import { DividerInterfaceComponentProps } from "./types"
 
 export class DividerInterfaceComponent extends BaseInterfaceComponent<DividerInterfaceComponentProps> {
   static defaultProps = {

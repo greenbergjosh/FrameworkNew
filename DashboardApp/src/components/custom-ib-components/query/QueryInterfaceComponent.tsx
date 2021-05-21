@@ -47,6 +47,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       remoteDataFilter,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       valueKey,
     } = this.props
 
@@ -56,6 +57,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
           components={components}
           data={{ ...userInterfaceData, [valueKey]: result.data, [loadingKey]: result.loading }}
           getRootData={getRootUserInterfaceData}
+          setRootData={setRootUserInterfaceData}
           onChangeData={onChangeData}
           // onChangeSchema={(newSchema: any) => {
           //   if (this.props.mode === "edit") {
@@ -78,6 +80,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         return (
           <Query
             dataKey={valueKey}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}
@@ -89,6 +93,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         return (
           <Query
             dataKey={valueKey}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}
@@ -100,6 +106,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         return (
           <Query
             dataKey={valueKey}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}

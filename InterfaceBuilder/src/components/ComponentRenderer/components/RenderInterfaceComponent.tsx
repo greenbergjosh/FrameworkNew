@@ -22,6 +22,7 @@ export class RenderInterfaceComponent extends React.Component<
       componentDefinition,
       dragDropDisabled,
       getRootData,
+      setRootData,
       index,
       mode,
       path,
@@ -43,7 +44,8 @@ export class RenderInterfaceComponent extends React.Component<
           layoutDefinition={Component && Component.getLayoutDefinition()}
           mode={mode}
           path={path}
-          rootUserInterfaceData={getRootData.bind(this)}
+          getRootUserInterfaceData={getRootData.bind(this)}
+          setRootUserInterfaceData={setRootData.bind(this)}
           submit={submit}
           Component={Component}
           error={this.state.error}
@@ -60,7 +62,8 @@ export class RenderInterfaceComponent extends React.Component<
             onChangeSchema={onChangeSchema}
             layoutDefinition={Component.getLayoutDefinition()}
             userInterfaceData={userInterfaceData}
-            rootUserInterfaceData={getRootData.bind(this)}
+            getRootUserInterfaceData={getRootData.bind(this)}
+            setRootUserInterfaceData={setRootData.bind(this)}
             mode={mode}
             submit={submit}
             Component={Component}
@@ -74,7 +77,8 @@ export class RenderInterfaceComponent extends React.Component<
             onChangeSchema={onChangeSchema}
             layoutDefinition={Component.getLayoutDefinition()}
             userInterfaceData={userInterfaceData}
-            rootUserInterfaceData={getRootData.bind(this)}
+            getRootUserInterfaceData={getRootData.bind(this)}
+            setRootUserInterfaceData={setRootData.bind(this)}
             mode={mode}
             submit={submit}
             Component={Component}
@@ -92,7 +96,8 @@ export class RenderInterfaceComponent extends React.Component<
             index={index}
             mode={mode}
             path={path}
-            rootUserInterfaceData={getRootData.bind(this)}
+            getRootUserInterfaceData={getRootData.bind(this)}
+            setRootUserInterfaceData={setRootData.bind(this)}
             submit={submit}
             Component={Component}
           />

@@ -38,7 +38,6 @@ export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedP
   onChangeData: UserInterfaceProps["onChangeData"]
   rowDetails?: ComponentDefinition[]
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -72,7 +71,8 @@ export function visiblityConditionType(type: string): JSONRecord {
 }
 
 export interface TableProps {
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   getValue: IBaseInterfaceComponent["getValue"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   rowDetails?: ComponentDefinition[]

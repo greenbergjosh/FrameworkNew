@@ -73,16 +73,32 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   getMergedData: GetMergedData = (key, value, userInterfaceData) => {
     const pathSegments = key.split(".")
     const isTargetingRoot = pathSegments[0] === "$root"
-    if (isTargetingRoot) {
+    const isTargetingLocalRoot = pathSegments[0] === "$"
+
+    // Remove "$root" and "$" since they can't be part of the path
+    if (isTargetingRoot || isTargetingLocalRoot) {
       pathSegments.shift()
     }
     const path = pathSegments.join(".")
-    const uiData = isTargetingRoot
-      ? this.props.getRootUserInterfaceData()
-      : !isUndefined(userInterfaceData)
-      ? userInterfaceData
-      : this.props.userInterfaceData
-    return { mergedData: set(path, value, uiData), isTargetingRoot }
+
+    let mergedData
+    if (isTargetingRoot) {
+      // The target is "$root" so get the data from root.
+      const uiData = this.props.getRootUserInterfaceData()
+      mergedData = set(path, value, uiData)
+    } else {
+      // Get the local data.
+      const uiData = isUndefined(userInterfaceData) ? this.props.userInterfaceData : userInterfaceData
+      if (isTargetingLocalRoot) {
+        // If the target is local root, then we replace all data at the local root.
+        mergedData = { ...uiData, ...value }
+      } else {
+        // Otherwise we replace it at the path.
+        mergedData = set(path, value, uiData)
+      }
+    }
+
+    return { mergedData, isTargetingRoot }
   }
 
   /**
@@ -109,7 +125,13 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
    */
   setValue: SetValue = (key, value, userInterfaceData) => {
     const { mergedData, isTargetingRoot } = this.getMergedData(key, value, userInterfaceData)
-    this.props.onChangeData && this.props.onChangeData(mergedData, isTargetingRoot)
+    if (isTargetingRoot) {
+      // Put newData in the root context
+      this.props.setRootUserInterfaceData(mergedData)
+    } else {
+      // Put newData in the local context
+      this.props.onChangeData && this.props.onChangeData(mergedData)
+    }
   }
 
   anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {

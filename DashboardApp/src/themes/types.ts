@@ -17,6 +17,8 @@ export interface ContentPanelProps {
   pagePath?: string // May be human readable snake-case URI, or GUID
   data: UserInterfaceProps["data"]
   onChangeData: UserInterfaceProps["onChangeData"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
 }
 
 export interface ITheme {

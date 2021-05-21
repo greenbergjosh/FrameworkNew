@@ -10,6 +10,7 @@ export function DisplayMode({
   components,
   data,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   description,
   hasInitialRecord,
   hasLastItemComponents,
@@ -81,6 +82,7 @@ export function DisplayMode({
             components={components}
             data={data}
             getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             hasInitialRecord={hasInitialRecord}
             hasLastItemComponents={hasLastItemComponents}
             lastItemComponents={lastItemComponents}

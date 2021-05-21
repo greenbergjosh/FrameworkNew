@@ -1,4 +1,4 @@
-import { Alert, Collapse, Typography } from "antd"
+import { Alert, Collapse } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import { get, set } from "lodash/fp"
@@ -22,7 +22,8 @@ export interface RemoteComponentInterfaceComponentProps extends ComponentDefinit
   onChangeData: UserInterfaceProps["onChangeData"]
   startCollapsed?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   valueKey?: string
   mode: UserInterfaceProps["mode"]
 }
@@ -72,6 +73,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
       startCollapsed,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       valueKey,
     } = this.props
     if (this.context) {
@@ -96,6 +98,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
                 mode="display"
                 data={data}
                 getRootData={getRootUserInterfaceData}
+                setRootData={setRootUserInterfaceData}
                 onChangeData={this.handleChange}
                 onChangeSchema={(newSchema: any) => {
                   console.warn(

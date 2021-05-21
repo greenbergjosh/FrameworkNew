@@ -20,7 +20,8 @@ interface ModeProps {
   onChangeSchema: ((newComponentDefinition: ComponentDefinition) => void) | undefined
   userInterfaceData: UserInterfaceProps["data"]
   layoutDefinition: LayoutDefinition
-  rootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   mode: UserInterfaceProps["mode"]
   submit: (() => void) | undefined
   Component: typeof BaseInterfaceComponent
@@ -57,7 +58,8 @@ export function ErrorMode(props: ErrorModeProps): JSX.Element {
       componentDefinition={props.componentDefinition}
       onChangeData={props.onChangeData}
       onChangeSchema={props.onChangeSchema}
-      userInterfaceData={props.userInterfaceData}>
+      userInterfaceData={props.userInterfaceData}
+      getRootUserInterfaceData={props.getRootUserInterfaceData}>
       {({ boundComponentDefinition }) => (
         <DraggableWrapper
           componentDefinition={boundComponentDefinition}

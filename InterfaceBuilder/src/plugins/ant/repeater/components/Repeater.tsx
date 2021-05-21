@@ -10,6 +10,7 @@ export function Repeater({
   components,
   data,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   hasInitialRecord,
   hasLastItemComponents,
   lastItemComponents,
@@ -143,6 +144,7 @@ export function Repeater({
           components={components}
           itemData={itemData}
           getRootUserInterfaceData={getRootUserInterfaceData}
+          setRootUserInterfaceData={setRootUserInterfaceData}
           hasNextSibling={sortableItems.length - 1 > index}
           index={index}
           isDraggable={true}
@@ -164,6 +166,7 @@ export function Repeater({
           components={lastItemComponents}
           itemData={lastItemData}
           getRootUserInterfaceData={getRootUserInterfaceData}
+          setRootUserInterfaceData={setRootUserInterfaceData}
           hasNextSibling={false}
           index={lastItemIndex}
           isDraggable={false}

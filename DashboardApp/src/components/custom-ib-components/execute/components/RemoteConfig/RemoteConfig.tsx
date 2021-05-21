@@ -23,6 +23,8 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     redirectPath,
     entityTypeId,
     getParams,
+    getRootUserInterfaceData,
+    setRootUserInterfaceData,
     mode,
     onChangeData,
     onResults,
@@ -168,6 +170,8 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     <QueryParams queryConfig={queryConfig} parentData={params}>
       {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
         <QueryForm
+          getRootUserInterfaceData={getRootUserInterfaceData}
+          setRootUserInterfaceData={setRootUserInterfaceData}
           layout={queryConfig.layout}
           onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
           onMount={(queryFormValues) =>

@@ -18,7 +18,6 @@ export interface UserInterfaceInterfaceComponentProps extends ComponentDefinitio
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   submit: UserInterfaceProps["submit"]
   hideMenu: boolean
@@ -86,6 +85,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
                 onChangeSchema={this.handleChangeSchema}
                 submit={submit}
                 getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+                setRootUserInterfaceData={this.props.setRootUserInterfaceData}
                 hideMenu={this.props.hideMenu}
                 title={this.props.label}
               />
@@ -103,6 +103,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
         onChangeSchema={this.handleChangeSchema}
         submit={submit}
         getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+        setRootUserInterfaceData={this.props.setRootUserInterfaceData}
         hideMenu={this.props.hideMenu}
         title={this.props.label}
       />

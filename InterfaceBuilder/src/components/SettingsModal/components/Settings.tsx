@@ -7,7 +7,8 @@ export interface ManageComponentFormProps {
   manageForm: ComponentDefinition | ComponentDefinition[]
   onChangeDefinition: (componentDefinition: ComponentDefinition) => void
   layoutDefinition: LayoutDefinition
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
 }
 
 export const Settings = ({
@@ -15,12 +16,14 @@ export const Settings = ({
   manageForm,
   onChangeDefinition,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
 }: ManageComponentFormProps) => {
   return (
     <ComponentRenderer
       components={Array.isArray(manageForm) ? manageForm : [manageForm]}
       data={componentDefinition}
       getRootData={getRootUserInterfaceData}
+      setRootData={setRootUserInterfaceData}
       onChangeData={onChangeDefinition}
       onChangeSchema={(newSchema: any) => {
         console.warn(

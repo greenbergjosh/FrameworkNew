@@ -223,6 +223,8 @@ export function ShowGlobalConfig({
                         <UserInterface
                           contextManager={userInterfaceContextManager}
                           data={jsonData}
+                          getRootUserInterfaceData={() => jsonData}
+                          setRootUserInterfaceData={() => void 0}
                           mode="display"
                           components={configComponents}
                         />

@@ -19,7 +19,8 @@ interface PreviewModeProps {
   onChangeSchema: ((newComponentDefinition: ComponentDefinition) => void) | undefined
   userInterfaceData: UserInterfaceProps["data"]
   layoutDefinition: LayoutDefinition
-  rootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   mode: UserInterfaceProps["mode"]
   submit: (() => void) | undefined
   Component: typeof BaseInterfaceComponent
@@ -31,7 +32,8 @@ export function PreviewMode(props: PreviewModeProps): JSX.Element {
       componentDefinition={props.componentDefinition}
       onChangeData={props.onChangeData}
       onChangeSchema={props.onChangeSchema}
-      userInterfaceData={props.userInterfaceData}>
+      userInterfaceData={props.userInterfaceData}
+      getRootUserInterfaceData={props.getRootUserInterfaceData}>
       {({ boundComponentDefinition }) => (
         <DisplayVisibility
           componentDefinition={boundComponentDefinition}
@@ -42,7 +44,8 @@ export function PreviewMode(props: PreviewModeProps): JSX.Element {
             <props.Component
               {...boundComponentDefinition}
               userInterfaceData={props.userInterfaceData}
-              getRootUserInterfaceData={props.rootUserInterfaceData}
+              getRootUserInterfaceData={props.getRootUserInterfaceData}
+              setRootUserInterfaceData={props.setRootUserInterfaceData}
               mode={props.mode}
               onChangeData={props.onChangeData}
               onChangeSchema={props.onChangeSchema}

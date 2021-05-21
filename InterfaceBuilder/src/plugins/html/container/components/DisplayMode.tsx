@@ -19,6 +19,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
             components={props.components}
             data={props.userInterfaceData}
             getRootData={props.getRootUserInterfaceData}
+            setRootData={props.setRootUserInterfaceData}
             onChangeData={props.onChangeData}
             onChangeSchema={() => void 0}
           />

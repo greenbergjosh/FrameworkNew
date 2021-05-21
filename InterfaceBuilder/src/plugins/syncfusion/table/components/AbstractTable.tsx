@@ -12,6 +12,7 @@ import { AbstractTableProps } from "../types"
 export function AbstractTable({
   userInterfaceData,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   getValue,
   setValue,
   valueKey,
@@ -24,6 +25,7 @@ export function AbstractTable({
       components={editComponents}
       data={data}
       getRootData={getRootUserInterfaceData}
+      setRootData={setRootUserInterfaceData}
       dragDropDisabled
       onChangeData={(newData) => {
         setValue(valueKey!, newData.columns, userInterfaceData)

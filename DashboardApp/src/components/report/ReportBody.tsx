@@ -27,6 +27,7 @@ import DisplayTable from "./DisplayTable"
 
 const ReportBody = ({
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   isChildReport,
   parameterValues,
   parentData,
@@ -202,12 +203,21 @@ const ReportBody = ({
       dispatch,
       columnDetails: reportConfig.details,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       parameterValues: parameterValues.toUndefined(),
       parentData,
       handleChangeData: onChangeData,
       columnType: "layout",
     })
-  }, [dispatch, onChangeData, reportConfig.details, parameterValues, parentData, getRootUserInterfaceData])
+  }, [
+    dispatch,
+    onChangeData,
+    reportConfig.details,
+    parameterValues,
+    parentData,
+    getRootUserInterfaceData,
+    setRootUserInterfaceData,
+  ])
 
   const sortSettings: SortSettingsModel = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -256,6 +266,7 @@ const ReportBody = ({
           dispatch,
           columnDetails: column.details,
           getRootUserInterfaceData,
+          setRootUserInterfaceData,
           parameterValues: parameterValues.toUndefined(),
           parentData,
           handleChangeData: onChangeData,
@@ -295,6 +306,7 @@ const ReportBody = ({
     parameterValues,
     parentData,
     getRootUserInterfaceData,
+    setRootUserInterfaceData,
   ]) // Even though we are in display mode, we still need to update columns.
 
   /* **********************************************************************
@@ -322,6 +334,8 @@ const ReportBody = ({
             style={{ padding: "15px" }}
             title={title && `Report: ${title}`}>
             <QueryForm
+              getRootUserInterfaceData={getRootUserInterfaceData}
+              setRootUserInterfaceData={setRootUserInterfaceData}
               layout={queryConfig.layout}
               parameters={unsatisfiedByParentParams}
               parameterValues={parameterValues.getOrElse(record.empty)}

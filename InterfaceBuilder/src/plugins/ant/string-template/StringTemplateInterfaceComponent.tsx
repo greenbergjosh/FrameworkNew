@@ -114,7 +114,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { components, preconfigured, getRootUserInterfaceData, showBorder } = this.props
+    const { components, preconfigured, getRootUserInterfaceData, setRootUserInterfaceData, showBorder } = this.props
 
     return (
       <DataPathContext path="components">
@@ -124,6 +124,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
               components={components || ([] as ComponentDefinition[])}
               data={this.state.data}
               getRootData={getRootUserInterfaceData}
+              setRootData={setRootUserInterfaceData}
               dragDropDisabled={!!preconfigured}
               onChangeData={this.handleChangeFromSubcomponents}
               onChangeSchema={(newSchema) => {
@@ -140,6 +141,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
             components={components || ([] as ComponentDefinition[])}
             data={this.state.data}
             getRootData={getRootUserInterfaceData}
+            setRootData={setRootUserInterfaceData}
             dragDropDisabled={!!preconfigured}
             onChangeData={this.handleChangeFromSubcomponents}
             onChangeSchema={(newSchema) => {

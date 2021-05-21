@@ -14,6 +14,7 @@ export function EditTable({
   rowDetails,
   userInterfaceData,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   getValue,
   setValue,
   userInterfaceSchema,
@@ -32,6 +33,7 @@ export function EditTable({
         components={editComponents}
         data={userInterfaceSchema}
         getRootData={getRootUserInterfaceData}
+        setRootData={setRootUserInterfaceData}
         mode="display"
         onChangeData={(newData) => {
           onChangeSchema && userInterfaceSchema && onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
@@ -65,6 +67,7 @@ export function EditTable({
             components={rowDetails}
             data={data}
             getRootData={getRootUserInterfaceData}
+            setRootData={setRootUserInterfaceData}
             onChangeData={(newData) => {
               setValue(valueKey!, newData, userInterfaceData)
             }}

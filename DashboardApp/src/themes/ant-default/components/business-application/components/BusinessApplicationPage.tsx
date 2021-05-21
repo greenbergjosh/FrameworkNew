@@ -63,6 +63,8 @@ export const BusinessApplicationPage = ({
         {(userInterfaceContextManager) => (
           <div style={{ backgroundColor, padding }}>
             <UserInterface
+              getRootUserInterfaceData={() => data}
+              setRootUserInterfaceData={(newData: UserInterfaceProps["data"]) => setData(newData)}
               mode="display"
               contextManager={userInterfaceContextManager}
               components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}

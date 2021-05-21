@@ -210,6 +210,8 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     const {
       buttonLabel,
       buttonProps,
+      getRootUserInterfaceData,
+      setRootUserInterfaceData,
       onChangeData,
       outboundValueKey,
       remoteQuery,
@@ -230,6 +232,8 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             redirectPath={castProps.RemoteConfig_redirectPath}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             getParams={this.getParamsFromParamKVPMaps}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             mode={this.props.mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
@@ -253,6 +257,8 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             executeQuery={this.context!.executeQuery}
             executeQueryUpdate={this.context!.executeQueryUpdate}
             getParams={this.getParamsFromParamKVPMaps}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             isCRUD={castProps.RemoteQuery_isCRUD}
             loadById={this.context!.loadById}
             mode={this.props.mode}
@@ -276,6 +282,8 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             buttonProps={buttonProps}
             executeHTTPRequestQuery={this.context!.executeHTTPRequestQuery}
             getParams={this.getParamsFromParamKVPMaps}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             isCRUD={castProps.RemoteUrl_isCRUD}
             loadById={this.context!.loadById}
             mode={this.props.mode}

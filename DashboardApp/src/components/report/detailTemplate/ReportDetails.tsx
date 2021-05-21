@@ -8,7 +8,12 @@ import { Identity } from "fp-ts/lib/Identity"
 import { isWhitespace } from "../../../lib/string"
 import { JSONRecord } from "../../../data/JSON"
 import { none, some, tryCatch } from "fp-ts/lib/Option"
-import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
+import {
+  ComponentDefinition,
+  ComponentRenderMetaProps,
+  UserInterface,
+  UserInterfaceProps,
+} from "@opg/interface-builder"
 import { mapData } from "./mapData"
 import { ReportDetailsType, Values } from "./types"
 
@@ -20,13 +25,15 @@ export interface ReportDetailsProps {
   parameterValues?: JSONRecord
   parentData?: JSONRecord
   layout: ComponentDefinition[]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
 }
 
 export const ReportDetails = ({
   details,
   dispatch,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   rowData,
   onChangeData,
   parameterValues,
@@ -121,6 +128,7 @@ export const ReportDetails = ({
                 components={layout}
                 onChangeData={handleChangeDataFromChildren(form)}
                 getRootUserInterfaceData={getRootUserInterfaceData}
+                setRootUserInterfaceData={setRootUserInterfaceData}
                 data={dataResolver({
                   ...(parentData || record.empty),
                   ...(parameterValues || record.empty),

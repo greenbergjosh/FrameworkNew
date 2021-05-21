@@ -57,12 +57,14 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
       <AdminUserInterfaceContextManagerProvider>
         {(userInterfaceContextManager) => (
           <UserInterface
-            mode="display"
-            contextManager={userInterfaceContextManager}
             components={(appPageConfig && appPageConfig.layout) || []}
+            contextManager={userInterfaceContextManager}
             data={props.data}
-            onChangeData={props.onChangeData}
+            getRootUserInterfaceData={props.getRootUserInterfaceData}
+            setRootUserInterfaceData={props.setRootUserInterfaceData}
             keyPrefix={`${appPaths.appRootPath}/${appPaths.pagePath.join("/")}/`}
+            mode="display"
+            onChangeData={props.onChangeData}
           />
         )}
       </AdminUserInterfaceContextManagerProvider>

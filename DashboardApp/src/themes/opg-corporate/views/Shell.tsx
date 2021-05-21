@@ -7,6 +7,7 @@ import { Header } from "../components/Header/Header"
 import { Sidebar } from "../components/Sidebar/Sidebar"
 import { WithRouteProps } from "../../../state/navigation"
 import { ThemeProps } from "../../types"
+import { UserInterfaceProps } from "@opg/interface-builder"
 
 export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
@@ -51,6 +52,10 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
               pagePath={props.pagePath}
               appConfig={props.appConfig}
               data={props.data}
+              getRootUserInterfaceData={() => props.data}
+              setRootUserInterfaceData={(newData: UserInterfaceProps["data"]) =>
+                props.onChangeData && props.onChangeData(newData)
+              }
               onChangeData={props.onChangeData}
             />
           </Spin>

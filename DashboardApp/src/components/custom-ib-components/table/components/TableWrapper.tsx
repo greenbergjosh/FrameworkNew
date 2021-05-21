@@ -9,7 +9,14 @@ import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 
 export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
-  const { columns, getRootUserInterfaceData, onChangeData, parameterValues, parentData } = props
+  const {
+    columns,
+    getRootUserInterfaceData,
+    setRootUserInterfaceData,
+    onChangeData,
+    parameterValues,
+    parentData,
+  } = props
 
   /* **********************************************************************
    *
@@ -35,6 +42,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
           columnType: column.type,
           dispatch,
           getRootUserInterfaceData,
+          setRootUserInterfaceData,
           onChangeData,
           parameterValues: parameterValues && parameterValues.toUndefined(),
           parentData,
@@ -56,7 +64,16 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
         return { ...cloneDeep(column), template, formatter, customAggregateFunction }
       }
     )
-  }, [onChangeData, dispatch, fromStore.configsById, columns, parameterValues, parentData, getRootUserInterfaceData])
+  }, [
+    onChangeData,
+    dispatch,
+    fromStore.configsById,
+    columns,
+    parameterValues,
+    parentData,
+    getRootUserInterfaceData,
+    setRootUserInterfaceData,
+  ])
 
   return <Table.TableInterfaceComponent {...props} columns={enrichedColumns} />
 }

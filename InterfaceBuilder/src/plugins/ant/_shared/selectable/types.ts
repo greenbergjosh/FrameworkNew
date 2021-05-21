@@ -43,7 +43,6 @@ export interface ISelectableProps extends ComponentDefinitionNamedProps {
   disabled?: boolean
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   valuePrefix?: string
   valueSuffix?: string

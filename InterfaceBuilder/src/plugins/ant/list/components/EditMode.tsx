@@ -10,6 +10,7 @@ export default function EditMode({
   preconfigured,
   userInterfaceData,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   setValue,
   valueKey,
 }: EditModeProps): JSX.Element {
@@ -20,6 +21,7 @@ export default function EditMode({
         componentLimit={interleave === "none" ? 1 : 0}
         data={data}
         getRootData={getRootUserInterfaceData}
+        setRootData={setRootUserInterfaceData}
         dragDropDisabled={!!preconfigured}
         onChangeData={(newData) => {
           setValue(valueKey, newData, userInterfaceData)

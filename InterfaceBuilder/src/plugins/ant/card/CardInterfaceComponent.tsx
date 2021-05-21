@@ -37,6 +37,7 @@ export class CardInterfaceComponent extends BaseInterfaceComponent<CardInterface
       title,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
     } = this.props
     return (
       <Card
@@ -52,6 +53,7 @@ export class CardInterfaceComponent extends BaseInterfaceComponent<CardInterface
             components={components || ([] as ComponentDefinition[])}
             data={userInterfaceData}
             getRootData={getRootUserInterfaceData}
+            setRootData={setRootUserInterfaceData}
             dragDropDisabled={!!preconfigured}
             onChangeData={onChangeData}
             onChangeSchema={(newSchema) => {

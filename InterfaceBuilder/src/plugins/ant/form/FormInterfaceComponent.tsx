@@ -40,7 +40,6 @@ interface IFormInterfaceComponentProps extends ComponentDefinitionNamedProps {
   onChangeData: UserInterfaceProps["onChangeData"]
   orientation: "inline" | "horizontal" | "vertical"
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 interface FormInterfaceComponentDisplayModeProps extends IFormInterfaceComponentProps {
@@ -80,6 +79,7 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
       orientation,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
     } = this.props
 
     const formLayout = formColumnLayout ? merge(defaultFormLayout, formColumnLayout) : defaultFormLayout
@@ -91,6 +91,7 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
             components={components || ([] as ComponentDefinition[])}
             data={userInterfaceData}
             getRootData={getRootUserInterfaceData}
+            setRootData={setRootUserInterfaceData}
             onChangeData={onChangeData}
             onChangeSchema={(newSchema) => {
               if (this.props.mode === "edit") {

@@ -23,7 +23,8 @@ import {
   EditorLangCodec,
   editorLanguages,
   getDefaultsFromComponentDefinitions,
-  UserInterface,
+  JSONRecord,
+  UserInterface, UserInterfaceProps,
 } from "@opg/interface-builder"
 import { Alert, Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton, Tabs } from "antd"
 import { fromEither, getSetoid as getOptionSetoid, none, Option, option, some, tryCatch } from "fp-ts/lib/Option"
@@ -156,6 +157,12 @@ export function CreateGlobalConfig({
       }).equals(a, b)
     }
   }, [dispatch, fromStore.configs, prevState.createdConfig, state.createdConfig])
+
+  function getData(
+    form: Formik.FormikProps<{ config: string; name: string; type: string }>
+  ): UserInterfaceProps["data"] {
+    return tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})
+  }
 
   //
   // ─── RENDER ─────────────────────────────────────────────────────────────────────
@@ -326,7 +333,12 @@ export function CreateGlobalConfig({
                         ) : (
                           <UserInterface
                             contextManager={userInterfaceContextManager}
-                            data={tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})}
+                            data={getData(form)}
+                            getRootUserInterfaceData={() => getData(form)}
+                            setRootUserInterfaceData={(value: any) => {
+                              form.setFieldValue("config", JSON.stringify(value, null, 2))
+                              form.setFieldTouched("config", true)
+                            }}
                             onChangeData={(value: any) => {
                               console.log("edit", "UserInterface.onChangeData", "new config", value)
                               form.setFieldValue("config", JSON.stringify(value, null, 2))
@@ -349,6 +361,11 @@ export function CreateGlobalConfig({
                           <UserInterface
                             contextManager={userInterfaceContextManager}
                             data={previewData}
+                            getRootUserInterfaceData={() => getData(form)}
+                            setRootUserInterfaceData={(value: any) => {
+                              form.setFieldValue("config", JSON.stringify(value, null, 2))
+                              form.setFieldTouched("config", true)
+                            }}
                             onChangeData={(value: any) => {
                               console.log("edit", "UserInterface.onChangeData", "display config", value)
                               setPreviewData(value)

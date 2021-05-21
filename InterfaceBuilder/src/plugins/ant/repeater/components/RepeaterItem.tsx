@@ -11,6 +11,7 @@ export function _RepeaterItem({
   components,
   itemData,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   hasNextSibling,
   index,
   isDraggable,
@@ -58,6 +59,7 @@ export function _RepeaterItem({
               components={components}
               data={itemDataWithIndex}
               getRootData={getRootUserInterfaceData}
+              setRootData={setRootUserInterfaceData}
               onChangeData={handleChangeData}
               onChangeSchema={handleSchemaChange}
             />
@@ -96,6 +98,7 @@ export function _RepeaterItem({
                 components={components}
                 data={itemDataWithIndex}
                 getRootData={getRootUserInterfaceData}
+                setRootData={setRootUserInterfaceData}
                 onChangeData={handleChangeData}
                 onChangeSchema={handleSchemaChange}
               />

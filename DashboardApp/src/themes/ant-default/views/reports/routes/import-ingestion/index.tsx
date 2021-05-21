@@ -197,6 +197,8 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 Partners
               </Typography.Text>
               <Query<PartnerStatus>
+                getRootUserInterfaceData={() => void 0}
+                setRootUserInterfaceData={() => void 0}
                 queryType="remote-query"
                 remoteQuery={partnerQueryId}
                 refresh={{ interval: 120, stopOnFailure: true }}>
@@ -205,6 +207,8 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
             </Col>
             <Col span={12}>
               <Query<IngestionStatus>
+                getRootUserInterfaceData={() => void 0}
+                setRootUserInterfaceData={() => void 0}
                 queryType="remote-query"
                 refresh={{ interval: 30, stopOnFailure: true }}
                 remoteQuery={ingestionStatusQueryConfigId}>
@@ -219,6 +223,8 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
             </Col>
             <Col span={8}>
               <Query<ExportStatus>
+                getRootUserInterfaceData={() => void 0}
+                setRootUserInterfaceData={() => void 0}
                 queryType="remote-query"
                 refresh={{ interval: 30, stopOnFailure: true }}
                 remoteQuery={exportStatusQueryConfigId}>

@@ -14,7 +14,6 @@ export interface NumberInputInterfaceComponentProps extends ComponentDefinitionN
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   size: InputNumberProps["size"]
   max: InputNumberProps["max"]

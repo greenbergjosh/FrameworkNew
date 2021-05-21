@@ -39,7 +39,6 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
     const {
       filename,
       httpMethod,
-      onChangeData,
       paramKVPMaps,
       paramsValueKey,
       url,

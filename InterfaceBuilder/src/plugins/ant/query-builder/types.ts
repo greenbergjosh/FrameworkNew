@@ -14,7 +14,6 @@ export interface QueryBuilderInterfaceComponentProps extends ComponentDefinition
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string // aka, qbData Key
   mode: UserInterfaceProps["mode"]
 

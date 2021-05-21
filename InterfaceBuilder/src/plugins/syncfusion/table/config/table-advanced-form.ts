@@ -11,6 +11,8 @@ export const tableAdvancedForm = {
       component: "toggle",
       defaultValue: false,
       size: "small",
+      getRootUserInterfaceData: () => void 0,
+      setRootUserInterfaceData: () => void 0,
     },
     {
       key: "removeCellPadding",

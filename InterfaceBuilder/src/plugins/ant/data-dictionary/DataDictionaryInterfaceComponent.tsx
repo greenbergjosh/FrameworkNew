@@ -18,7 +18,6 @@ export interface DataDictionaryInterfaceComponentProps extends ComponentDefiniti
   keyLabel?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueComponent: [ComponentDefinition]
   valueKey: string
 }
@@ -64,6 +63,7 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
       onChangeData,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       valueComponent,
       valueKey,
     } = this.props
@@ -93,10 +93,13 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
                     component: "input",
                     valueKey: "key",
                     hideLabel: true,
+                    getRootUserInterfaceData,
+                    setRootUserInterfaceData,
                   },
                 ]}
                 data={dataItem}
                 getRootData={getRootUserInterfaceData}
+                setRootData={setRootUserInterfaceData}
                 mode="display"
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
@@ -126,6 +129,7 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
                 }
                 data={dataItem}
                 getRootData={getRootUserInterfaceData}
+                setRootData={setRootUserInterfaceData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   console.warn(

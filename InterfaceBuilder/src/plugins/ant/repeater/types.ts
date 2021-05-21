@@ -17,7 +17,6 @@ export interface RepeaterInterfaceComponentProps extends ComponentDefinitionName
   orientation?: OrientationType
   preconfigured?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   readonly: boolean
 }
@@ -29,7 +28,8 @@ export interface ModeProps {
   lastItemComponents?: ComponentDefinition[]
   orientation?: OrientationType
   data: JSONRecord[]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   onChange: (data: JSONRecord | JSONRecord[], subpath?: string) => void | undefined
 }
 
@@ -60,14 +60,16 @@ export interface RepeaterProps {
   onChange: (data: JSONRecord | JSONRecord[], subpath?: string) => void
   orientation?: OrientationType
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   readonly: boolean
 }
 
 export interface RepeaterItemProps {
   components: ComponentDefinition[]
   itemData: JSONRecord
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   hasNextSibling: boolean
   index: number
   isDraggable: boolean

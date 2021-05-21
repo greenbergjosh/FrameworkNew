@@ -12,6 +12,7 @@ import ReportBody from "./ReportBody"
 import { ReportOrErrors } from "./reportOrErrors/ReportOrErrors"
 import { ReportProps } from "./types"
 import { QueryParams } from "../query/QueryParams"
+import { UserInterfaceProps } from "@opg/interface-builder"
 
 export const Report = (props: ReportProps): JSX.Element => {
   const [fromStore /*dispatch*/] = useRematch((appState) => ({
@@ -64,6 +65,17 @@ export const Report = (props: ReportProps): JSX.Element => {
     return (props.getRootUserInterfaceData && props.getRootUserInterfaceData()) || props.data
   }
 
+  /**
+   * If this is a nested report, then return setRootUserInterfaceData;
+   * if this is the root report then log error
+   */
+  const setRootData = (newData: UserInterfaceProps["data"]): void => {
+    if (props.setRootUserInterfaceData) {
+      return props.setRootUserInterfaceData(newData)
+    }
+    console.error("Cannot set the root report's root data")
+  }
+
   return (
     <div>
       <ReportOrErrors reportConfig={reportConfig} reportId={reportId} queryConfig={queryConfig}>
@@ -72,6 +84,7 @@ export const Report = (props: ReportProps): JSX.Element => {
             {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
               <ReportBody
                 getRootUserInterfaceData={getRootData}
+                setRootUserInterfaceData={setRootData}
                 isChildReport={props.isChildReport}
                 parameterValues={parameterValues}
                 parentData={props.data}

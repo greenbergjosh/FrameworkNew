@@ -15,7 +15,6 @@ export interface InputInterfaceComponentProps extends ComponentDefinitionNamedPr
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder?: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   maxLength: number
   size: InputProps["size"]

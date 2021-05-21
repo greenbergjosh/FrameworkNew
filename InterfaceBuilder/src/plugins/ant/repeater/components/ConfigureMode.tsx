@@ -11,6 +11,7 @@ export function ConfigureMode({
   components,
   data,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   hasLastItemComponents,
   lastItemComponents,
   onChange,
@@ -47,6 +48,7 @@ export function ConfigureMode({
               components={components}
               data={data}
               getRootData={getRootUserInterfaceData}
+              setRootData={setRootUserInterfaceData}
               dragDropDisabled={!!preconfigured}
               onChangeData={handleChangeData}
               onChangeSchema={handleChangeSchema}
@@ -69,6 +71,7 @@ export function ConfigureMode({
                   components={lastItemComponents}
                   data={data}
                   getRootData={getRootUserInterfaceData}
+                  setRootData={setRootUserInterfaceData}
                   dragDropDisabled={!!preconfigured}
                   onChangeData={handleChangeData}
                   onChangeSchema={handleChangeSchema}

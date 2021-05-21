@@ -7,7 +7,8 @@ interface IUserInterfaceProps {
   onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
   submit?: () => void
-  getRootUserInterfaceData?: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  setRootUserInterfaceData: (newData: UserInterfaceProps["data"]) => void
   keyPrefix?: string
   hideMenu?: boolean
   title?: string

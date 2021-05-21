@@ -26,6 +26,7 @@ export const DataBinding: React.FC<
     onChangeSchema: RenderInterfaceComponentProps["onChangeSchema"]
     userInterfaceData: UserInterfaceProps["data"]
     children: (props: unknown & { boundComponentDefinition: ComponentDefinition }) => JSX.Element
+    getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   }
 > = (props): React.ReactElement<any, any> | null => {
   /**

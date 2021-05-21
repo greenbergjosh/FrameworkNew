@@ -13,7 +13,6 @@ export interface TextAreaInterfaceComponentProps extends ComponentDefinitionName
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   autosize?: boolean
   minRows?: number

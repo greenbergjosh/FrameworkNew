@@ -2,19 +2,21 @@ import { JSONRecord } from "../../data/JSON"
 import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../data/Report"
 import { Option } from "fp-ts/lib/Option"
 import { PropsFromQueryParams } from "../query/QueryParams"
-import { EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
+import { ComponentRenderMetaProps, EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
 import { GroupSettingsModel, PageSettingsModel, SortSettingsModel } from "@syncfusion/ej2-react-grids"
 
 export interface ReportProps {
   data?: JSONRecord
-  getRootUserInterfaceData?: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData?: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData?: UserInterfaceProps["setRootUserInterfaceData"]
   isChildReport?: boolean
   report: GlobalConfigReference | LocalReportConfig
   withoutHeader?: boolean
 }
 
 export interface ReportBodyProps extends PropsFromQueryParams {
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   isChildReport?: boolean
   parentData?: JSONRecord
   queryConfig: QueryConfig

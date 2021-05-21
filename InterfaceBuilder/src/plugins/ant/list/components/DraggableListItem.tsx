@@ -14,6 +14,7 @@ export default function DraggableListItem({
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   getValue,
   setValue,
   valueKey,
@@ -47,6 +48,7 @@ export default function DraggableListItem({
           <ListItem
             data={data}
             getRootUserInterfaceData={getRootUserInterfaceData}
+            setRootUserInterfaceData={setRootUserInterfaceData}
             getValue={getValue}
             setValue={setValue}
             index={index}

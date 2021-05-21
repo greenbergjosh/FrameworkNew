@@ -11,6 +11,7 @@ export function ListItem({
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
+  setRootUserInterfaceData,
   setValue,
   valueKey,
 }: ListItemProps): JSX.Element {
@@ -35,6 +36,7 @@ export function ListItem({
           : {}
       }
       getRootData={getRootUserInterfaceData}
+      setRootData={setRootUserInterfaceData}
       onChangeData={handleChangeData(index)}
       onChangeSchema={(newSchema) => {
         console.warn("ListInterfaceComponent.render", "TODO: Cannot alter schema inside ComponentRenderer in List.", {

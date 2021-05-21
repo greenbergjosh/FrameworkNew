@@ -61,6 +61,9 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
 
   getRootData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
 
+  setRootData = (newData: UserInterfaceProps["data"]): void =>
+    this.props.setRootUserInterfaceData && this.props.setRootUserInterfaceData(newData)
+
   render(): JSX.Element {
     const { components, contextManager, data, mode, onChangeData, submit } = this.props
     const { error, fullscreen, itemToAdd, itemToEdit } = this.state
@@ -74,6 +77,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
         components={components}
         data={data}
         getRootData={this.getRootData}
+        setRootData={this.setRootData}
         mode={mode}
         onChangeData={onChangeData}
         onChangeSchema={
@@ -207,6 +211,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
 
                       <SettingsModal
                         getRootUserInterfaceData={this.getRootData}
+                        setRootUserInterfaceData={this.setRootData}
                         userInterfaceData={data}
                         componentDefinition={
                           (itemToAdd && itemToAdd.componentDefinition) || (itemToEdit && itemToEdit.componentDefinition)

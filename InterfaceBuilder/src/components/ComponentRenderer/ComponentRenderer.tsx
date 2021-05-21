@@ -16,6 +16,7 @@ export const _ComponentRenderer = ({
   components,
   data,
   getRootData,
+  setRootData,
   dragDropDisabled,
   mode: propMode,
   onChangeData,
@@ -44,6 +45,7 @@ export const _ComponentRenderer = ({
             data={data}
             dragDropDisabled={dragDropDisabled}
             getRootData={getRootData}
+            setRootData={setRootData}
             index={index}
             mode={mode}
             onChangeData={onChangeData}

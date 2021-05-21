@@ -12,7 +12,7 @@ import { UserInterfaceProps } from "../globalTypes"
 export function getValue(
   valueKey: string,
   userInterfaceData: UserInterfaceProps["data"],
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
 ): JSONRecord | JSONRecord[] | undefined {
   if (!valueKey) return
   if (valueKey === "$root") {

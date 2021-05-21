@@ -57,6 +57,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       unwrapped,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       valueKey,
     } = this.props
 
@@ -76,6 +77,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                     components={components}
                     data={data}
                     getRootUserInterfaceData={getRootUserInterfaceData}
+                    setRootUserInterfaceData={setRootUserInterfaceData}
                     getValue={this.getValue.bind(this)}
                     setValue={this.setValue.bind(this)}
                     description={emptyText}
@@ -96,7 +98,8 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                     addItemLabel={addItemLabel}
                     components={components}
                     data={[]}
-                    getRootUserInterfaceData={() => null}
+                    getRootUserInterfaceData={() => void 0}
+                    setRootUserInterfaceData={() => void 0}
                     getValue={() => null}
                     setValue={() => null}
                     description={emptyText}
@@ -117,6 +120,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   components={components}
                   data={data}
                   getRootUserInterfaceData={getRootUserInterfaceData}
+                  setRootUserInterfaceData={setRootUserInterfaceData}
                   getValue={this.getValue.bind(this)}
                   setValue={this.setValue.bind(this)}
                   interleave={interleave}

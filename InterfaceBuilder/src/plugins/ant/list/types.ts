@@ -27,7 +27,6 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
   components: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   preconfigured?: boolean
   unwrapped?: boolean
@@ -38,8 +37,9 @@ export interface ModeProps {
   data: any
   interleave?: InterleaveType
   unwrapped?: boolean
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   getValue: IBaseInterfaceComponent["getValue"]
   setValue: IBaseInterfaceComponent["setValue"]
   valueKey: string

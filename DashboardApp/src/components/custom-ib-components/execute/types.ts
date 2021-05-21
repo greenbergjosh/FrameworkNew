@@ -2,6 +2,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
+  ComponentRenderMetaProps,
   UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
@@ -78,7 +79,8 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   paramKVPMaps: ParamKVPMapsType
   queryType: QueryType
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   valueKey: string
 }
 
@@ -184,6 +186,8 @@ export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Pro
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
   buttonProps: ButtonProps
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   mode: "display" | "preview" | "edit"
   onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
   onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]

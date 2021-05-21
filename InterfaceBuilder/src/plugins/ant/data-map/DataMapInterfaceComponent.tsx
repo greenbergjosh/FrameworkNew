@@ -20,7 +20,6 @@ export interface DataMapInterfaceComponentProps extends ComponentDefinitionNamed
   multiple?: boolean
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueComponent: ComponentDefinition
   valueKey: string
 }
@@ -73,6 +72,7 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
       onChangeData,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       valueComponent,
       valueKey,
     } = this.props
@@ -98,9 +98,10 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
             <DataPathContext path="keyComponent">
               <ComponentRenderer
                 componentLimit={1}
-                components={[{ ...keyComponent, hideLabel: true }]}
+                components={[{ ...keyComponent, hideLabel: true, getRootUserInterfaceData, setRootUserInterfaceData }]}
                 data={dataItem}
                 getRootData={getRootUserInterfaceData}
+                setRootData={setRootUserInterfaceData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   console.warn(
@@ -118,9 +119,12 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
             <DataPathContext path="valueComponent">
               <ComponentRenderer
                 componentLimit={1}
-                components={[{ ...valueComponent, hideLabel: true }]}
+                components={[
+                  { ...valueComponent, hideLabel: true, getRootUserInterfaceData, setRootUserInterfaceData },
+                ]}
                 data={dataItem}
                 getRootData={getRootUserInterfaceData}
+                setRootData={setRootUserInterfaceData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   console.warn(

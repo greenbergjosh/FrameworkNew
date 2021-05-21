@@ -17,7 +17,8 @@ export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNa
   placeholder: string
   providerType: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
   valueKey: string
 }
 
@@ -51,6 +52,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
       providerType,
       userInterfaceData,
       getRootUserInterfaceData,
+      setRootUserInterfaceData,
       valueKey,
     } = this.props
 
@@ -63,11 +65,15 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
         component: "list",
         orientation: "horizontal",
         interleave: "round-robin",
+        getRootUserInterfaceData,
+        setRootUserInterfaceData,
         components: [
           {
             key: "provider",
             valueKey: "provider",
             component: "card",
+            getRootUserInterfaceData,
+            setRootUserInterfaceData,
             components: [
               {
                 key: "slot-config-guid",
@@ -76,6 +82,8 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
                 dataHandlerType: "remote-config",
                 remoteConfigType: providerType,
                 valuePrefix: "@",
+                getRootUserInterfaceData,
+                setRootUserInterfaceData,
               },
             ],
           },
@@ -85,6 +93,8 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
             component: "select",
             dataHandlerType: "remote-kvp",
             remoteKeyValuePair: actionType,
+            getRootUserInterfaceData,
+            setRootUserInterfaceData,
           },
         ],
       },
@@ -99,6 +109,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
         components={components}
         data={data}
         getRootData={getRootUserInterfaceData}
+        setRootData={setRootUserInterfaceData}
         dragDropDisabled
         onChangeData={(newData: any) => {
           onChangeData &&

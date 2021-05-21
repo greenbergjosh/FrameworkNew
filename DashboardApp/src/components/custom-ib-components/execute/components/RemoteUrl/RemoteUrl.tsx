@@ -15,6 +15,8 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     buttonLabel,
     buttonProps,
     getParams,
+    getRootUserInterfaceData,
+    setRootUserInterfaceData,
     isCRUD,
     mode,
     onResults,
@@ -105,6 +107,8 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     <QueryParams queryConfig={queryConfig} parentData={params}>
       {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
         <QueryForm
+          getRootUserInterfaceData={getRootUserInterfaceData}
+          setRootUserInterfaceData={setRootUserInterfaceData}
           layout={queryConfig.layout}
           onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
           onMount={(queryFormValues) =>

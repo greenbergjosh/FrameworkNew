@@ -125,7 +125,8 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
   }
 
   render(): JSX.Element {
-    const { children, dataKey, queryType } = this.props as QueryProps<T> & typeof Query["defaultProps"]
+    const { children, dataKey, queryType, getRootUserInterfaceData, setRootUserInterfaceData } = this
+      .props as QueryProps<T> & typeof Query["defaultProps"]
     const {
       data,
       loadError,
@@ -147,6 +148,8 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
           !!promptParameters.length &&
           promptParameters.some(({ required }) => required === true) && (
             <QueryForm
+              getRootUserInterfaceData={getRootUserInterfaceData}
+              setRootUserInterfaceData={setRootUserInterfaceData}
               layout={promptLayout}
               parameters={promptParameters}
               parameterValues={parameterValues}

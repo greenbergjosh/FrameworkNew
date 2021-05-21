@@ -4,9 +4,13 @@ import { ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../glob
 export type ParamKVPMapsType = { values: { fieldName: string; valueKey: string }[] }
 
 export interface DownloadInterfaceComponentProps extends ComponentDefinitionNamedProps {
+  component: "button"
+  onChangeData: UserInterfaceProps["onChangeData"]
+  userInterfaceData: UserInterfaceProps["data"]
+
+  /* Local props */
   block: boolean
   buttonLabel: string
-  component: "button"
   defaultValue?: string
   displayType: buttonDisplayType
   filename: string
@@ -14,7 +18,6 @@ export interface DownloadInterfaceComponentProps extends ComponentDefinitionName
   hideButtonLabel: boolean
   httpMethod: "GET" | "POST"
   icon: string
-  onChangeData: UserInterfaceProps["onChangeData"]
   paramKVPMaps: ParamKVPMapsType
   paramsValueKey: string
   placeholder: string
@@ -22,8 +25,6 @@ export interface DownloadInterfaceComponentProps extends ComponentDefinitionName
   size: sizeType
   url: string
   useFilenameFromServer: boolean
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export interface DownloadInterfaceComponentState {

@@ -8,7 +8,6 @@ export interface StringTemplateInterfaceComponentProps extends ComponentDefiniti
   onChangeData: UserInterfaceProps["onChangeData"]
   preconfigured?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 
   // Additional props

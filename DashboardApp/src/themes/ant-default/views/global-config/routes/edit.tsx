@@ -19,11 +19,18 @@ import { useMemoPlus } from "../../../../../hooks/use-memo-plus"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { isWhitespace } from "../../../../../lib/string"
 import { store } from "../../../../../state/store"
-import { CodeEditor, ComponentDefinition, EditorLangCodec, UserInterface } from "@opg/interface-builder"
+import {
+  CodeEditor,
+  ComponentDefinition,
+  EditorLangCodec,
+  UserInterface,
+  UserInterfaceProps,
+} from "@opg/interface-builder"
 import { InProgressRemoteUpdateDraft, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"
 import styles from "./edit.module.scss"
+import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 
 interface Props {
   configId: string
@@ -221,6 +228,12 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     }
   }, [dispatch, fromStore.configs, updatedConfig])
 
+  function getData(
+    form: Formik.FormikProps<{ config: string; name: iots.Branded<string, NonEmptyStringBrand> }>
+  ): UserInterfaceProps["data"] {
+    return tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})
+  }
+
   return (
     <>
       {entityTypeConfig.isNone() && (
@@ -374,7 +387,12 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                       ) : (
                         <UserInterface
                           contextManager={userInterfaceContextManager}
-                          data={tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})}
+                          data={getData(form)}
+                          getRootUserInterfaceData={() => getData(form)}
+                          setRootUserInterfaceData={(value: any) => {
+                            form.setFieldValue("config", JSON.stringify(value, null, 2))
+                            form.setFieldTouched("config", true)
+                          }}
                           onChangeData={(value: any) => {
                             console.log("edit", "UserInterface.onChangeData", "new config", value)
                             form.setFieldValue("config", JSON.stringify(value, null, 2))

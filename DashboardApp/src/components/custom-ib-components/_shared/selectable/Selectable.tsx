@@ -405,6 +405,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
         ? remoteFunctionDataHandler.getOptions(
             this.props.userInterfaceData,
             this.props.getRootUserInterfaceData,
+            this.props.setRootUserInterfaceData,
             remoteFunction
           )
         : []
