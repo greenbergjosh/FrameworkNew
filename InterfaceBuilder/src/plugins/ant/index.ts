@@ -18,6 +18,7 @@ import { FormInterfaceComponent } from "./form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./input/InputInterfaceComponent"
 import { LinkInterfaceComponent } from "./link/LinkInterfaceComponent"
 import { ListInterfaceComponent } from "./list/ListInterfaceComponent"
+import { ModalInterfaceComponent } from "./modal/ModalInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "./number-range/NumberRangeInterfaceComponent"
 import { PasswordInterfaceComponent } from "./password/PasswordInterfaceComponent"
@@ -66,6 +67,7 @@ const plugin: ComponentRegistryCache = {
   link: LinkInterfaceComponent,
   list: ListInterfaceComponent,
   repeater: RepeaterInterfaceComponent,
+  modal: ModalInterfaceComponent,
   "number-input": NumberInputInterfaceComponent,
   "number-range": NumberRangeInterfaceComponent,
   password: PasswordInterfaceComponent,
