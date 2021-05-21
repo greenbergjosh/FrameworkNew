@@ -102,7 +102,8 @@ export function EditDataBindingModal(props: {
         <a href="https://jsonlogic.com/" target="_blank" rel="noreferrer">
           JsonLogic
         </a>
-        .
+        . You may use &ldquo;$root&rdquo; for &ldquo;var&rdquo; values only if all &ldquo;var&rdquo; in this rule use
+        &ldquo;$root&rdquo; (because this rule receives only one data set when evaluated).
       </Typography>
       {isInvalidRules && <Alert showIcon={true} message="Cannot save! Invalid JsonLogic rules." type="error" />}
       <CodeEditorInterfaceComponent

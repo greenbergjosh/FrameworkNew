@@ -104,7 +104,7 @@ export const EditDataBinding: React.FC<
             shape="circle"
             size="small"
             className={styles.bindingIcon}
-            style={{ color: isBinding ? "#0071E6" : "lightgrey" }}
+            style={{ color: isBinding ? "#0071E6" : "lightgrey", backgroundColor: "transparent" }}
             onClick={() => props.mode !== "preview" && setShowModal(true)}
           />
         </Tooltip>

@@ -43,7 +43,16 @@ export const DataBinding: React.FC<
     /* Do bindings with jsonLogic */
     let def: ComponentDefinition = { ...props.componentDefinition }
     forOwn(props.componentDefinition.bindings, (rule, key) => {
-      const result = jsonLogic.apply(rule, props.userInterfaceData)
+      const dataSources: string[] = jsonLogic.uses_data(rule)
+      const isTargetingRoot = dataSources.some((source) => source.startsWith("$root."))
+      let result
+
+      if (isTargetingRoot) {
+        result = jsonLogic.apply(rule, { $root: props.getRootUserInterfaceData() })
+      } else {
+        result = jsonLogic.apply(rule, props.userInterfaceData)
+      }
+
       def = { ...def, [key]: result }
     })
     return def
