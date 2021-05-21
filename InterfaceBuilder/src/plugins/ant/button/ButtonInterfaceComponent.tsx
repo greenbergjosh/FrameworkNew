@@ -28,6 +28,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
       icon: "play-circle",
       formControl: true,
       componentDefinition: {
+        classNames: ["container"],
         component: "button",
       },
     }
@@ -122,7 +123,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
     }
 
     const content = (
-      <Tooltip title={hideButtonLabel || isCircle ? buttonLabel : null}>
+      <Tooltip title={hideButtonLabel || isCircle ? buttonLabel : null} className={"container"}>
         <Button
           onClick={this.handleClick}
           icon={icon}
@@ -140,6 +141,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
 
     return requireConfirmation && !disabled ? (
       <Popover
+        className={"container"}
         content={
           <>
             <Typography.Paragraph>{confirmation.message}</Typography.Paragraph>
