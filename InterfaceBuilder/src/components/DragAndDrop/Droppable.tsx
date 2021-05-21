@@ -1,6 +1,6 @@
 import React from "react"
 import { DropTarget, DropTargetConnector, DropTargetMonitor } from "react-dnd"
-import { DroppableContext} from "../../contexts/DroppableContext"
+import { DroppableContext } from "../../contexts/DroppableContext"
 import { shallowPropCheck } from "../../lib/shallowPropCheck"
 import { DroppablePlaceholderState, DroppableProps } from "./types"
 import { DroppableInner } from "./components/DroppableInner"

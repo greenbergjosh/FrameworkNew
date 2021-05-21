@@ -20,8 +20,6 @@ export interface TimeRangeInterfaceComponentProps extends ComponentDefinitionNam
   endTimePlaceholder: string
 }
 
-interface TimeRangeInterfaceComponentState {}
-
 const TIMEFORMAT = "h:mm a"
 
 export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRangeInterfaceComponentProps> {

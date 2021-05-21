@@ -4,7 +4,7 @@ interface IUserInterfaceProps {
   data?: any
   contextManager?: UserInterfaceContextManager
   mode: "display" | "edit" | "preview"
-  onChangeData?: (data: UserInterfaceProps["data"], isTargetingRoot?: boolean) => void
+  onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
   submit?: () => void
   getRootUserInterfaceData?: () => UserInterfaceProps["data"]

@@ -32,7 +32,7 @@ export function RowDetail(props: {
       getRootData={props.getRootUserInterfaceData}
       mode={props.mode}
       onChangeData={handleChangeData}
-      onChangeSchema={(newSchema: any) => void 0}
+      onChangeSchema={() => void 0}
     />
   )
 }

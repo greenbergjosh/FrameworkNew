@@ -21,8 +21,6 @@ export interface TextAreaInterfaceComponentProps extends ComponentDefinitionName
   maxLength?: number
 }
 
-interface TextAreaInterfaceComponentState {}
-
 function getAutosize(
   minRows: number | undefined,
   maxRows: number | undefined,

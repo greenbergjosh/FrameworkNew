@@ -57,17 +57,17 @@ export class MenuInterfaceComponent extends BaseInterfaceComponent<MenuProps, Se
     }
   }
 
-  handleMenuClick = ({ key }: ClickParam) => {
+  handleMenuClick = ({ key }: ClickParam): void => {
     this.setState({ selectedKey: key })
     console.log("handleMenuClick!", key)
   }
 
-  handleButtonClick = (e: React.MouseEvent) => {
+  handleButtonClick = (e: React.MouseEvent): void => {
     // this.setState({ selectedKey: key })
     console.log("handleButtonClick!", e)
   }
 
-  handleInputChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+  handleInputChange = ({ target }: React.ChangeEvent<HTMLInputElement>): void => {
     this.setState({ searchText: target.value })
     console.log("handleChange!", target.value)
   }

@@ -15,7 +15,7 @@ interface PreviewModeProps {
   componentDefinition:
     | ComponentDefinitionNamedProps
     | (ComponentDefinitionNamedProps & ComponentDefinitionRecursiveProp)
-  onChangeData: ((data: UserInterfaceProps["data"], isTargetingRoot?: boolean) => void) | undefined
+  onChangeData: UserInterfaceProps["onChangeData"]
   onChangeSchema: ((newComponentDefinition: ComponentDefinition) => void) | undefined
   userInterfaceData: UserInterfaceProps["data"]
   layoutDefinition: LayoutDefinition

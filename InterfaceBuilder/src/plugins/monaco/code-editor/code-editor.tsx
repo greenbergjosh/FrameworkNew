@@ -70,7 +70,7 @@ export type CustomEditorWillMount = (monaco: editor.IStandaloneCodeEditor) => ID
 
 const willMountRegistry: CustomEditorWillMount[] = []
 
-export const registerMonacoEditorMount = (customEditorWillMount: CustomEditorWillMount) => {
+export const registerMonacoEditorMount = (customEditorWillMount: CustomEditorWillMount): void => {
   willMountRegistry.push(customEditorWillMount)
 }
 
@@ -214,7 +214,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
         props.editorDidMount!(getEditorValue, monaco)
       }
     },
-    [willMountRegistry, state, setState, props]
+    [state, setState, props]
   )
 
   return (

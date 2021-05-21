@@ -35,7 +35,7 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  handleClick = ({ target }: React.MouseEvent<HTMLInputElement>) => {
+  handleClick = (/*e: React.MouseEvent<HTMLInputElement>*/) => {
     const {
       filename,
       httpMethod,

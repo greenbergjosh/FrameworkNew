@@ -17,8 +17,6 @@ export interface InputInterfaceComponentProps extends ComponentDefinitionNamedPr
   valueKey: string
 }
 
-interface InputInterfaceComponentState {}
-
 export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<InputInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "value",

@@ -55,7 +55,7 @@ function extractGuidRangeItems(model: editor.ITextModel): guidRangeItem[] {
   const items: guidRangeItem[] = []
 
   while ((match = guidPattern.exec(text)) !== null) {
-    const index = match.index
+    const {index} = match
     const textBeforeMatch = text.substr(0, index)
     const lines = textBeforeMatch.split(/\n/g)
     const lineNumber = lines.length

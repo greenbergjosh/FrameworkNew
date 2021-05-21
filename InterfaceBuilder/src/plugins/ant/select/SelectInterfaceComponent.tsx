@@ -93,7 +93,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     loadStatus,
     options,
   }: SelectableChildProps) => {
-    const { placeholder, allowClear, multiple, size } = this.props as ISelectProps
+    const { placeholder, allowClear, /*multiple,*/ size } = this.props as ISelectProps
 
     const getKeyFromValue = () => {
       const value = getCleanValue()

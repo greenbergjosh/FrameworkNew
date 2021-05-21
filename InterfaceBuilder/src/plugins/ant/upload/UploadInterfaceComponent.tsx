@@ -105,7 +105,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  componentDidUpdate(prevProps: Readonly<UploadInterfaceComponentProps>, prevState: Readonly<{}>): void {
+  componentDidUpdate(prevProps: Readonly<UploadInterfaceComponentProps>): void {
     if (
       this.props.standaloneButton !== prevProps.standaloneButton ||
       this.props.dndButtonLabel !== prevProps.dndButtonLabel ||
@@ -242,7 +242,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
    * @param args
    */
   onUploading = (args?: UploadingEventArgs): void => {
-    const { onChangeData, userInterfaceData, valueKey, headers } = this.props
+    const { userInterfaceData, headers } = this.props
     this.setState({ isUploading: true })
 
     // Exit if no headers to add
@@ -268,13 +268,6 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
 
   render(): JSX.Element {
     const {
-      /* IB Props */
-      defaultValue,
-      userInterfaceData,
-      valueKey,
-      label,
-
-      /* Upload Props */
       accept,
       acceptOther,
       allowMultiple,

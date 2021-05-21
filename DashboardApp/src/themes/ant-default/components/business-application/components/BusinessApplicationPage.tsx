@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
-import { UserInterface } from "@opg/interface-builder"
+import { UserInterface, UserInterfaceProps } from "@opg/interface-builder"
 import { BusinessApplicationProps } from "../types"
 import { AdminUserInterfaceContextManagerProvider } from "../../../../../data/AdminUserInterfaceContextManager"
 import { Button, PageHeader } from "antd"
@@ -67,7 +67,7 @@ export const BusinessApplicationPage = ({
               contextManager={userInterfaceContextManager}
               components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
               data={data}
-              onChangeData={(newData: any) => setData(newData)}
+              onChangeData={(newData: UserInterfaceProps["data"]) => setData(newData)}
             />
           </div>
         )}

@@ -1,6 +1,6 @@
 import React from "react"
 
-export const QuoteIcon: React.FunctionComponent<React.SVGProps<SVGSVGElement>> = (props) => (
+export const QuoteIcon: React.FunctionComponent<React.SVGProps<SVGSVGElement>> = (/*props*/) => (
   <svg fill="currentColor" width="1em" height="1em" viewBox="0 0 512 512">
     <g>
       <g>

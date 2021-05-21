@@ -113,7 +113,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
    * Remove remote data refresh timeout
    */
   componentWillUnmount(): void {
-    const refreshTimeout = this.state.refreshTimeout
+    const { refreshTimeout } = this.state
     if (refreshTimeout) {
       // console.log(
       //   "Query.componentWillUnmount",

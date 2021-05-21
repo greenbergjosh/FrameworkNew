@@ -34,7 +34,7 @@ export class ThermometerInterfaceComponent extends BaseInterfaceComponent<
     this.state = { loading: true }
   }
 
-  componentDidUpdate(prevProps: Readonly<ThermometerInterfaceComponentProps>, prevState: Readonly<{}>): void {
+  componentDidUpdate(prevProps: Readonly<ThermometerInterfaceComponentProps>): void {
     type Value = number | undefined
     const prevValue: Value = get(prevProps.valueKey, prevProps.userInterfaceData)
     const nextValue: Value = get(this.props.valueKey, this.props.userInterfaceData)

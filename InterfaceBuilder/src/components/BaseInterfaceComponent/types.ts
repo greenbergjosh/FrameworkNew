@@ -18,7 +18,7 @@ export type BaseInterfaceComponentType = typeof BaseInterfaceComponent
 export type GetValue = (
   key: string,
   userInterfaceData?: UserInterfaceProps["data"],
-  getRootUserInterfaceData?: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData?: UserInterfaceProps["getRootUserInterfaceData"]
 ) => string | number | boolean | JSONRecord | JSONRecord[] | null | undefined
 
 export type SetValue = (key: string, value: any, userInterfaceData?: UserInterfaceProps["data"]) => void

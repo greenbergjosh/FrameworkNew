@@ -16,8 +16,6 @@ export interface PasswordInterfaceComponentProps extends ComponentDefinitionName
   hasShowPasswordToggle?: boolean
 }
 
-interface PasswordInterfaceComponentState {}
-
 export class PasswordInterfaceComponent extends BaseInterfaceComponent<PasswordInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "value",

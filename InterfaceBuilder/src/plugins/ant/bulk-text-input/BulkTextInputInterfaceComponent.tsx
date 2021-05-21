@@ -23,8 +23,6 @@ export interface BulkTextInputInterfaceComponentProps extends ComponentDefinitio
   commaPlaceholder: string
 }
 
-interface BulkTextInputInterfaceComponentState {}
-
 function getAutosize(
   minRows: number | undefined,
   maxRows: number | undefined,
@@ -67,7 +65,7 @@ export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<Bulk
     super(props)
   }
 
-  handleChange = ({ target: { value } }: React.ChangeEvent<HTMLTextAreaElement>) => {
+  handleChange = ({ target: { value } }: React.ChangeEvent<HTMLTextAreaElement>): void => {
     const { onChangeData, userInterfaceData, valueKey, itemSeparator } = this.props
     const codec: Codec = getCodec(itemSeparator)
     const arrayValue = codec.split(value)
