@@ -43,6 +43,12 @@ export function _RepeaterItem({
    * RENDER
    */
 
+  // Add the current index
+  const itemDataWithIndex = {
+    ...itemData,
+    index,
+  }
+
   return (
     <>
       {isDraggable ? (
@@ -50,7 +56,7 @@ export function _RepeaterItem({
           <Card size="small">
             <ComponentRenderer
               components={components}
-              data={itemData}
+              data={itemDataWithIndex}
               getRootData={getRootUserInterfaceData}
               onChangeData={handleChangeData}
               onChangeSchema={handleSchemaChange}
@@ -88,7 +94,7 @@ export function _RepeaterItem({
             <Card size="small">
               <ComponentRenderer
                 components={components}
-                data={itemData}
+                data={itemDataWithIndex}
                 getRootData={getRootUserInterfaceData}
                 onChangeData={handleChangeData}
                 onChangeSchema={handleSchemaChange}
