@@ -2,7 +2,6 @@ import React from "react"
 import { dataInjectorManageForm } from "./data-injector-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { DataInjectorInterfaceComponentProps, DataInjectorInterfaceComponentState, EVENTS } from "./types"
-import { set } from "lodash/fp"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
@@ -65,12 +64,12 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  /**
+   * Display mode method to put stored values into the model
+   */
   updateValue = () => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
     const value = this.getValueByType()
-
-    onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
-
+    this.setValue(this.props.valueKey, value)
     this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
   }
 
@@ -90,6 +89,10 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  /**
+   * Edit mode change event handler
+   * @param userInterfaceData
+   */
   handleChange = (userInterfaceData: any): void => {
     const { onChangeData } = this.props
     onChangeData && onChangeData(userInterfaceData)
