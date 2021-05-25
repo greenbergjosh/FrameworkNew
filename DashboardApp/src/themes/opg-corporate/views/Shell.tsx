@@ -10,7 +10,7 @@ import { ThemeProps } from "../../types"
 import { UserInterfaceProps } from "@opg/interface-builder"
 
 export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
-  const [fromStore, dispatch] = useRematch((appState) => ({
+  const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
     globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
   }))

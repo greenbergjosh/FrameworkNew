@@ -1,4 +1,4 @@
-import { baseManageForm, ComponentDefinition, Link } from "@opg/interface-builder"
+import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
 
 export const linkManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...LinkManageFormDefinition, ...extend)

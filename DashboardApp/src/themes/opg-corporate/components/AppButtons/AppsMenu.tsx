@@ -7,7 +7,7 @@ import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 
 export function AppsMenu(): JSX.Element {
-  const [fromStore, dispatch] = useRematch((appState) => ({
+  const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     appConfigs: store.select.apps.appConfigs(appState),
     appPaths: appState.apps.appPaths,
   }))

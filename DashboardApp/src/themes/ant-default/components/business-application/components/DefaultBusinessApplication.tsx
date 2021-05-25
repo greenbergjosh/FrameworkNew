@@ -11,7 +11,7 @@ export const DefaultBusinessApplication = ({
   applicationId,
   businessApplicationConfig,
 }: DefaultBusinessApplicationProps): JSX.Element => {
-  const [fromStore, dispatch] = useRematch((appState) => ({
+  const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
     globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
     reportPath: appState.navigation.routes.dashboard.subroutes.reports.abs,

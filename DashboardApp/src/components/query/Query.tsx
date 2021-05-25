@@ -1,4 +1,4 @@
-import { shallowPropCheck, UserInterfaceContext } from "@opg/interface-builder"
+import { UserInterfaceContext } from "@opg/interface-builder"
 import { Alert, Icon, Spin } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
@@ -18,6 +18,7 @@ import { LoadDataParams, QueryProps, QueryState } from "./types"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { Brand, Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { isEqual } from "lodash/fp"
 
 export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>> {
   static defaultProps = {
@@ -47,7 +48,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
    * EVENT HANDLERS
    */
 
-  componentDidMount() {
+  componentDidMount(): void {
     if (this.props.queryType) {
       this.loadRemoteData()
     }
@@ -64,7 +65,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
    * @param prevProps
    * @param prevState
    */
-  componentDidUpdate(prevProps: QueryProps<T>, prevState: QueryState<T>) {
+  componentDidUpdate(prevProps: QueryProps<T>, prevState: QueryState<T>): void {
     // console.log("Query.componentDidUpdate", {
     //   was: prevState.loadStatus,
     //   is: this.state.loadStatus,
@@ -102,7 +103,11 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       // Memoize rendered children
       if (
         (this.state.loadStatus === "loaded" && prevState.loadStatus !== "loaded") ||
-        !shallowPropCheck(["children", "dataKey", "data"])(prevProps, this.props)
+        !(
+          isEqual(prevProps.children, this.props.children) &&
+          isEqual(prevProps.dataKey, this.props.dataKey) &&
+          isEqual(prevProps.inputData, this.props.inputData)
+        )
       ) {
         this.renderChildren()
       }
@@ -125,10 +130,9 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
   }
 
   render(): JSX.Element {
-    const { children, dataKey, queryType, getRootUserInterfaceData, setRootUserInterfaceData } = this
-      .props as QueryProps<T> & typeof Query["defaultProps"]
+    const { queryType, getRootUserInterfaceData, setRootUserInterfaceData } = this.props as QueryProps<T> &
+      typeof Query["defaultProps"]
     const {
-      data,
       loadError,
       loadStatus,
       parameterValues,
@@ -137,8 +141,6 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       renderedChildren,
       submitButtonLabel,
     } = this.state
-
-    // console.log("Query.render", { context: this.context })
 
     return loadStatus === "error" ? (
       <Alert type="error" message={loadError || "An error occurred during data loading"} />
@@ -176,7 +178,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
    * data and loading status to the children's props.
    */
   private renderChildren() {
-    const { children, dataKey } = this.props as QueryProps<T> & typeof Query["defaultProps"]
+    const { children /*, dataKey*/ } = this.props as QueryProps<T> & typeof Query["defaultProps"]
     const { data } = this.state
     this.setState((state) => ({
       ...state,

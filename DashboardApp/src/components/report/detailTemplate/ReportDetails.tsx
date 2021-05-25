@@ -8,12 +8,7 @@ import { Identity } from "fp-ts/lib/Identity"
 import { isWhitespace } from "../../../lib/string"
 import { JSONRecord } from "../../../data/JSON"
 import { none, some, tryCatch } from "fp-ts/lib/Option"
-import {
-  ComponentDefinition,
-  ComponentRenderMetaProps,
-  UserInterface,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
+import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
 import { mapData } from "./mapData"
 import { ReportDetailsType, Values } from "./types"
 

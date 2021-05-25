@@ -92,8 +92,6 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
     }
   }, [])
 
-  console.log("Dashboard/index", "BusinessApp?", { isBusinessApp, nestedNavigation })
-
   // Make sure that remote configs are loaded
   React.useEffect(() => {
     dispatch.globalConfig.loadRemoteConfigs()

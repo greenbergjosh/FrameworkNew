@@ -13,7 +13,7 @@ import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
 import { mapData, unMapData } from "./mapData"
 import { ReportDetailsType } from "./types"
-import { ComponentRenderMetaProps, EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
+import { EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
 import { ColumnConfig } from "../../custom-ib-components/table/types"
 
 /***************************************************************************
