@@ -26,7 +26,6 @@ export const SettingsModal = ({
   const [componentDefinition, updateComponentDefinition] = React.useState(propComponentDefinition)
 
   React.useEffect(() => {
-    console.log("ManageComponentModal useEffect", { componentDefinition, propComponentDefinition })
     if (!componentDefinition && propComponentDefinition) {
       const Component = propComponentDefinition.component && registry.lookup(propComponentDefinition.component)
 
@@ -46,8 +45,6 @@ export const SettingsModal = ({
     registry.lookup(componentDefinition && componentDefinition.component)
   const layoutDefinition = Component && Component.getLayoutDefinition()
   const manageForm = Component && Component.manageForm()
-
-  console.log("ManageComponentModal.render", { componentDefinition, propComponentDefinition })
 
   return (
     <Modal

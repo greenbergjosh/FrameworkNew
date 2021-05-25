@@ -11,6 +11,8 @@ export const tableAggregateForm = {
       component: "select",
       dataHandlerType: "local",
       size: "small",
+      getRootUserInterfaceData: () => void 0,
+      setRootUserInterfaceData: () => void 0,
       data: {
         values: [
           {

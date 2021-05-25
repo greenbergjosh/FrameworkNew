@@ -63,7 +63,6 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
 
     // Get the list data from the data set
     const data = get(valueKey, userInterfaceData) || []
-    console.log("ListInterfaceComponent.render", { data })
 
     return (
       <ComponentRendererModeContext.Consumer>

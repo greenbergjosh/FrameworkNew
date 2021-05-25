@@ -1,10 +1,10 @@
 import React from "react"
 import { DragSource } from "react-dnd"
 import { DroppableContext } from "../../contexts/DroppableContext"
-import { shallowPropCheck } from "../../lib/shallowPropCheck"
 import { DraggableProps } from "./types"
 import { DraggableInner } from "./components/DraggableInner"
 import { dragHandlers } from "./lib/dragHandlers"
+import { isEqual } from "lodash/fp"
 
 function collect(connect: any, monitor: any) {
   return {
@@ -43,4 +43,13 @@ export const Draggable = React.memo(({ children, data, draggableId, index, title
       {children}
     </DraggableComponent>
   )
-}, shallowPropCheck(["data", "draggableId", "index", "type"]))
+}, propsAreEqual)
+
+function propsAreEqual(prevProps: DraggableProps, nextProps: DraggableProps) {
+  const eqData = isEqual(prevProps.data, nextProps.data)
+  const eqDraggableId = isEqual(prevProps.draggableId, nextProps.draggableId)
+  const eqIndex = isEqual(prevProps.index, nextProps.index)
+  const eqType = isEqual(prevProps.type, nextProps.type)
+
+  return eqData && eqDraggableId && eqIndex && eqType
+}

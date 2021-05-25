@@ -10,6 +10,8 @@ export const tableSortForm = {
       component: "toggle",
       defaultValue: true,
       size: "small",
+      getRootUserInterfaceData: () => void 0,
+      setRootUserInterfaceData: () => void 0,
     },
     {
       key: "sortDirection",

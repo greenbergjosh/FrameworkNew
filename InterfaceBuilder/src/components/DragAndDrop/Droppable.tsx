@@ -1,10 +1,10 @@
 import React from "react"
 import { DropTarget, DropTargetConnector, DropTargetMonitor } from "react-dnd"
 import { DroppableContext } from "../../contexts/DroppableContext"
-import { shallowPropCheck } from "../../lib/shallowPropCheck"
 import { DroppablePlaceholderState, DroppableProps } from "./types"
 import { DroppableInner } from "./components/DroppableInner"
 import { dropHandlers } from "./lib/dropHandlers"
+import { isEqual } from "lodash/fp"
 import "./dnd.module.scss"
 
 function collect(connect: DropTargetConnector, monitor: DropTargetMonitor) {
@@ -55,5 +55,15 @@ export const Droppable = React.memo(
       </DroppableContext.Provider>
     )
   },
-  shallowPropCheck(["allowDrop", "data", "disabled", "droppableId", "type"])
+  propsAreEqual
 )
+
+function propsAreEqual(prevProps: DroppableProps, nextProps: DroppableProps) {
+  const eqAllowDrop = isEqual(prevProps.allowDrop, nextProps.allowDrop)
+  const eqData = isEqual(prevProps.data, nextProps.data)
+  const eqDisabled = isEqual(prevProps.disabled, nextProps.disabled)
+  const eqDroppableId = isEqual(prevProps.droppableId, nextProps.droppableId)
+  const eqType = isEqual(prevProps.type, nextProps.type)
+
+  return eqData && eqAllowDrop && eqDisabled && eqDroppableId && eqType
+}

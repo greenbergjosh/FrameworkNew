@@ -1,6 +1,6 @@
 import { SectionDefinition } from "../../../ant/collapse/CollapseInterfaceComponent"
 
-export const tableGroupForm: SectionDefinition = {
+export const tableGroupForm = {
   title: "Group",
   components: [
     {
@@ -12,6 +12,8 @@ export const tableGroupForm: SectionDefinition = {
       component: "toggle",
       defaultValue: true,
       size: "small",
+      getRootUserInterfaceData: () => void 0,
+      setRootUserInterfaceData: () => void 0,
     },
     {
       key: "groupOrder",
@@ -22,4 +24,4 @@ export const tableGroupForm: SectionDefinition = {
       size: "small",
     },
   ],
-}
+} as SectionDefinition

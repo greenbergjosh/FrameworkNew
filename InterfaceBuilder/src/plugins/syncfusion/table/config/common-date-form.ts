@@ -9,6 +9,8 @@ export const commonDateForm: ComponentDefinition[] = [
     defaultValue: "short",
     dataHandlerType: "local",
     size: "small",
+    getRootUserInterfaceData: () => void 0,
+    setRootUserInterfaceData: () => void 0,
     data: {
       values: [
         {
@@ -46,6 +48,8 @@ export const commonDateForm: ComponentDefinition[] = [
     component: "input",
     defaultValue: "MM/dd/yyyy hh:mm:ss a",
     size: "small",
+    getRootUserInterfaceData: () => void 0,
+    setRootUserInterfaceData: () => void 0,
     visibilityConditions: {
       "===": ["custom", { var: "skeletonFormat" }],
     },

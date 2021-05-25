@@ -1,3 +1,4 @@
+// import "./lib/why-did-you-render"  // <-- Enable to trace unnecessary rendering
 import "./styles/index.scss"
 
 /*
@@ -49,7 +50,6 @@ export { deepDiff } from "./lib/deepDiff"
 export { evalExpression } from "./lib/evalExpression"
 export { Right } from "./lib/Either"
 export { sanitizeText } from "./lib/sanitizeText"
-export { shallowPropCheck } from "./lib/shallowPropCheck"
 
 /**
  * Plugins
