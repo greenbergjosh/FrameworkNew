@@ -13,7 +13,7 @@ export function ConfigureMode({
   getRootUserInterfaceData,
   setRootUserInterfaceData,
   hasLastItemComponents,
-  lastItemComponents,
+  lastItemComponents = [],
   onChange,
   preconfigured,
 }: ConfigureModeProps): JSX.Element {

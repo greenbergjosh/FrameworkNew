@@ -11,7 +11,7 @@ import { EditTableProps } from "../types"
  */
 export function EditTable({
   onChangeSchema,
-  rowDetails,
+  rowDetails = [],
   userInterfaceData,
   getRootUserInterfaceData,
   setRootUserInterfaceData,
