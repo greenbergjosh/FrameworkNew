@@ -1,6 +1,7 @@
 import React from "react"
 import { DropTarget, DropTargetConnector, DropTargetMonitor } from "react-dnd"
 import { DroppableContext } from "../../contexts/DroppableContext"
+import { shallowPropCheck } from "./lib/shallowPropCheck"
 import { DroppablePlaceholderState, DroppableProps } from "./types"
 import { DroppableInner } from "./components/DroppableInner"
 import { dropHandlers } from "./lib/dropHandlers"
@@ -60,7 +61,14 @@ export const Droppable = React.memo(
 
 function propsAreEqual(prevProps: DroppableProps, nextProps: DroppableProps) {
   const eqAllowDrop = isEqual(prevProps.allowDrop, nextProps.allowDrop)
-  const eqData = isEqual(prevProps.data, nextProps.data)
+
+  // TODO: [CHN-492] Optimize prop checking -- When the user enters a change in the column's
+  //  edit mode and we're using isEqual, the props appear unchanged by value, so changes aren't
+  //  merged into the model. When using shallowPropCheck, nested objects appear different
+  //  by identity so the view is re-rendered.
+  // const eqData = isEqual(prevProps.data, nextProps.data)
+  const eqData = shallowPropCheck(["data"])(prevProps, nextProps)
+
   const eqDisabled = isEqual(prevProps.disabled, nextProps.disabled)
   const eqDroppableId = isEqual(prevProps.droppableId, nextProps.droppableId)
   const eqType = isEqual(prevProps.type, nextProps.type)

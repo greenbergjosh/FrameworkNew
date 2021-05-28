@@ -22,6 +22,8 @@ export const tableGroupForm = {
       help: "The lowest Order is the first column grouped, followed by the next lowest, and so on",
       component: "number-input",
       size: "small",
+      getRootUserInterfaceData: () => void 0,
+      setRootUserInterfaceData: () => void 0,
     },
   ],
 } as SectionDefinition
