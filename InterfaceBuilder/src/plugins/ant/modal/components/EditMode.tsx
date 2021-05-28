@@ -108,7 +108,7 @@ export function EditMode(props: {
             backgroundColor: "white",
           }}>
           <ComponentRenderer
-            components={props.footer.components || ([] as ComponentDefinition[])}
+            components={(props.footer && props.footer.components) || ([] as ComponentDefinition[])}
             data={props.userInterfaceData}
             dragDropDisabled={false}
             getRootData={props.getRootUserInterfaceData}
