@@ -67,7 +67,7 @@ export function DisplayMode(props: {
         <DataPathContext path="footer.components">
           <ComponentRenderer
             key={"modal-footer"}
-            components={props.footer.components}
+            components={props.footer && props.footer.components}
             data={data}
             getRootData={props.getRootUserInterfaceData}
             setRootData={props.setRootUserInterfaceData}
