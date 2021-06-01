@@ -6,7 +6,7 @@ import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
 import JSONEditor from "plugins/ant/dev-tools/components/JSONEditor"
-import { isObjectLike, isString, isUndefined } from "lodash/fp"
+import { isObjectLike, isString, isUndefined, isEqual } from "lodash/fp"
 
 export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   DataInjectorInterfaceComponentProps,
@@ -60,7 +60,7 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     if (
       this.props.outboundValueKey !== prevProps.outboundValueKey ||
       this.props.dataType !== prevProps.dataType ||
-      this.props[typeKey] !== prevProps[typeKey]
+      !isEqual(this.props[typeKey], prevProps[typeKey])
     ) {
       this.updateValue()
     }
