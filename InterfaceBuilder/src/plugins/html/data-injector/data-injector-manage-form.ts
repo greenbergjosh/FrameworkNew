@@ -26,7 +26,15 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "valueKey",
-                defaultValue: "data",
+                hidden: true,
+              },
+              {
+                key: "outboundValueKey",
+                valueKey: "outboundValueKey",
+                label: "Outbound Value Key",
+                component: "input",
+                defaultValue: "$",
+                help: "The key used to put data into the model",
                 bindable: true,
               },
               {

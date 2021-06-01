@@ -1,4 +1,5 @@
 import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import { JSONRecord } from "../../../globalTypes/JSONTypes"
 
 export interface DataInjectorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // Core props
@@ -8,9 +9,10 @@ export interface DataInjectorInterfaceComponentProps extends ComponentDefinition
   preconfigured?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
+  outboundValueKey: string
 
   // Additional props
-  jsonValue: string
+  jsonValue: string | JSONRecord
   booleanValue: boolean
   numberValue: number
   stringValue: string

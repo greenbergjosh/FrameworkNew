@@ -6,6 +6,7 @@ import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
 import JSONEditor from "plugins/ant/dev-tools/components/JSONEditor"
+import { isObjectLike, isString, isUndefined } from "lodash/fp"
 
 export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   DataInjectorInterfaceComponentProps,
@@ -14,7 +15,8 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   static availableEvents = [EVENTS.VALUE_CHANGED]
   static defaultProps = {
     userInterfaceData: {},
-    valueKey: "data",
+    valueKey: "$", // deprecated, use outboundValueKey instead
+    outboundValueKey: "$",
     showBorder: true,
   }
 
@@ -56,7 +58,7 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     }
 
     if (
-      this.props.valueKey !== prevProps.valueKey ||
+      this.props.outboundValueKey !== prevProps.outboundValueKey ||
       this.props.dataType !== prevProps.dataType ||
       this.props[typeKey] !== prevProps[typeKey]
     ) {
@@ -69,16 +71,49 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
    */
   updateValue = () => {
     const value = this.getValueByType()
-    this.setValue(this.props.valueKey, value)
+    const key = this.props.outboundValueKey || this.props.valueKey // retain valueKey for backwards compatibility
+    this.setValue(key, value)
     this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
   }
 
-  getValueByType = (): JSONRecord | string | boolean | number => {
-    const { jsonValue, booleanValue, numberValue, stringValue, dataType } = this.props
+  getValueByType = (): JSONRecord | string | boolean | number | null => {
+    const { jsonValue, booleanValue, numberValue, stringValue, dataType, bindings } = this.props
 
     switch (dataType) {
       case "json":
-        return tryCatch(() => jsonValue && JSON.parse(jsonValue)).toUndefined()
+        /*
+         * Handle a bound json object
+         */
+        if (!isUndefined(bindings && bindings.jsonValue) && typeof jsonValue === "object" && isObjectLike(jsonValue)) {
+          return jsonValue
+        }
+
+        /*
+         * Parse a json string from either the settings or bound data
+         */
+        if (isString(jsonValue)) {
+          const json: JSONRecord | undefined = tryCatch(() => jsonValue && JSON.parse(jsonValue)).toUndefined()
+          if (json && isObjectLike(json)) {
+            return json
+          }
+          // jsonValue is an invalid json string
+          console.warn(
+            "DataInjectorInterfaceComponent.getValueByType",
+            `Data type "json" expected a valid json string.`,
+            { value: jsonValue }
+          )
+          return null
+        }
+
+        /*
+         * jsonValue is an invalid type
+         */
+        console.warn(
+          "DataInjectorInterfaceComponent.getValueByType",
+          `Data type "json" expected a valid json string or object but got a ${typeof jsonValue} instead.`,
+          { value: jsonValue }
+        )
+        return null
       case "number":
         return numberValue
       case "boolean":
