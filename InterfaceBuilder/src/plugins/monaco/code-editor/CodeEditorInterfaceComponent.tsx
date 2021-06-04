@@ -1,5 +1,5 @@
 import { some } from "fp-ts/lib/Option"
-import { get, set } from "lodash/fp"
+import { get, set, isString } from "lodash/fp"
 import React from "react"
 import { CodeEditor, EditorLang, EditorTheme } from "./code-editor"
 import { codeEditorManageForm } from "./code-editor-manage-form"
@@ -55,8 +55,8 @@ export class CodeEditorInterfaceComponent extends BaseInterfaceComponent<
 
   render(): JSX.Element {
     const { defaultLanguage, defaultTheme, defaultValue, userInterfaceData, valueKey } = this.props
-
-    const value = get(valueKey, userInterfaceData) || defaultValue
+    const rawValue = get(valueKey, userInterfaceData) || defaultValue
+    const value = isString(rawValue) ? rawValue : JSON.stringify(rawValue)
 
     return (
       <CodeEditor
