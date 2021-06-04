@@ -29,7 +29,7 @@
       "placeholder": "Placeholder from config",
       "bindable": true,
       "bindings": {
-        "placeholder": { "var" : ["placeholderValue"] }
+        "placeholder": { "var": ["placeholderValue"] }
       }
     }
   ]

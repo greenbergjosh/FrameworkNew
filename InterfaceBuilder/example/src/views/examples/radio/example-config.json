@@ -48,9 +48,9 @@
       "defaultValue": "2",
       "bindable": true,
       "bindings": {
-        "label": { "var" : ["labelValue"] }
+        "label": { "var": ["labelValue"] }
       },
-      "visibilityConditions": { "var": [ "$.blockIt" ] }
+      "visibilityConditions": { "var": ["$.blockIt"] }
     }
   ]
 }

@@ -1,7 +1,7 @@
 import jsonLogic from "json-logic-js"
 import React from "react"
 import { ComponentModifierProps, RenderInterfaceComponentProps } from "../ComponentRenderer/types"
-import { forOwn } from "lodash"
+import _, { forOwn } from "lodash"
 import { isEmpty } from "lodash/fp"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
 
@@ -9,6 +9,7 @@ import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
  * Add operators and libraries to jsonLogic
  */
 jsonLogic.add_operation("Math", Math)
+jsonLogic.add_operation("_", _)
 
 /**
  *
