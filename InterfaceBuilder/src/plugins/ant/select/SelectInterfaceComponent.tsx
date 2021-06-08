@@ -1,5 +1,4 @@
 import React from "react"
-import { set } from "lodash/fp"
 import { Icon, Select } from "antd"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { MODES, SelectableChildProps, SelectableProps } from "../_shared/selectable/types"
@@ -57,8 +56,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
           : `${valuePrefix}${value}${valueSuffix}`
         : value
 
-    onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
-
+    this.setValue([valueKey, newValue])
     this.raiseEvent("valueChanged", { value: newValue })
   }
 

@@ -6,12 +6,13 @@ import { Badge, Card, Icon } from "antd"
 import classNames from "classnames"
 import styles from "../styles.scss"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
+import { ComponentDefinition } from "globalTypes"
 
 export function ConfigureMode({
   components,
   data,
   getRootUserInterfaceData,
-  setRootUserInterfaceData,
+  onChangeRootData,
   hasLastItemComponents,
   lastItemComponents = [],
   onChange,
@@ -26,7 +27,7 @@ export function ConfigureMode({
     onChange(nextData)
   }
 
-  function handleChangeSchema(newSchema: any) {
+  function handleChangeSchema(newSchema: ComponentDefinition[]) {
     console.warn(
       "RepeaterInterfaceComponent > ConfigureMode.onChangeSchema!",
       "TODO: Cannot alter schema inside ComponentRenderer in Repeater",
@@ -47,8 +48,8 @@ export function ConfigureMode({
             <ComponentRenderer
               components={components}
               data={data}
-              getRootData={getRootUserInterfaceData}
-              setRootData={setRootUserInterfaceData}
+              getRootUserInterfaceData={getRootUserInterfaceData}
+              onChangeRootData={onChangeRootData}
               dragDropDisabled={!!preconfigured}
               onChangeData={handleChangeData}
               onChangeSchema={handleChangeSchema}
@@ -70,8 +71,8 @@ export function ConfigureMode({
                 <ComponentRenderer
                   components={lastItemComponents}
                   data={data}
-                  getRootData={getRootUserInterfaceData}
-                  setRootData={setRootUserInterfaceData}
+                  getRootUserInterfaceData={getRootUserInterfaceData}
+                  onChangeRootData={onChangeRootData}
                   dragDropDisabled={!!preconfigured}
                   onChangeData={handleChangeData}
                   onChangeSchema={handleChangeSchema}

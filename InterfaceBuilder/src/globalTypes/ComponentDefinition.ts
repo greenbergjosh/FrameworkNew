@@ -18,7 +18,7 @@ export interface ComponentDefinitionNamedProps {
   bindable?: boolean
   bindings?: DataBindings
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
 
   [key: string]: unknown
 
@@ -34,7 +34,7 @@ export interface ComponentRenderMetaProps {
   mode?: UserInterfaceProps["mode"]
   userInterfaceData?: UserInterfaceProps["data"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeData?: UserInterfaceProps["onChangeData"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition

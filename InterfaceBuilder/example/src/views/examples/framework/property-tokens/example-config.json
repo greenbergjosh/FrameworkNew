@@ -1,0 +1,130 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "inset": false,
+      "size": "default",
+      "bordered": true,
+      "hoverable": false,
+      "invisible": false,
+      "hidden": false,
+      "extra": "",
+      "title": "The text component below gets values for its properties using tokens such as {$.textOverrides.textType}.",
+      "valueKey": "$",
+      "label": "Card",
+      "hideLabel": true,
+      "component": "card",
+      "components": [
+        {
+          "center": "{$.textOverrides.center}",
+          "headerSize": "h2",
+          "closable": "{$.textOverrides.closable}",
+          "banner": "{$.textOverrides.banner}",
+          "description": "",
+          "showIcon": "{$.textOverrides.showIcon}",
+          "textType": "{$.textOverrides.textType}",
+          "invisible": false,
+          "hidden": false,
+          "stringTemplate": "Sample text here",
+          "valueKey": "$",
+          "label": "Text",
+          "hideLabel": true,
+          "component": "text",
+          "components": []
+        }
+      ]
+    },
+    {
+      "size": "default",
+      "allowClear": true,
+      "placeholder": null,
+      "invisible": false,
+      "hidden": false,
+      "data": {
+        "values": [
+          {
+            "label": "paragraph",
+            "value": "paragraph"
+          },
+          {
+            "label": "title",
+            "value": "title"
+          },
+          {
+            "label": "success",
+            "value": "success"
+          },
+          {
+            "label": "warning",
+            "value": "warning"
+          },
+          {
+            "label": "error",
+            "value": "error"
+          }
+        ]
+      },
+      "dataHandlerType": "local",
+      "multiple": false,
+      "valueKey": "textOverrides.textType",
+      "label": "Text Type",
+      "hideLabel": false,
+      "component": "select"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.showIcon",
+      "label": "Show Icon",
+      "hideLabel": false,
+      "component": "toggle"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.banner",
+      "label": "Banner",
+      "hideLabel": false,
+      "component": "toggle"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.closable",
+      "label": "Closable",
+      "hideLabel": false,
+      "component": "toggle"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.center",
+      "label": "Center",
+      "hideLabel": false,
+      "component": "toggle"
+    }
+  ]
+}

@@ -3,10 +3,11 @@ import React from "react"
 import { deepDiff } from "../../lib/deepDiff"
 import { DataPathContext } from "../../contexts/DataPathContext"
 import { Droppable } from "../DragAndDrop"
-import { DetokenizedComponent } from "./components/DetokenizedComponent"
 import { ComponentRendererProps } from "./types"
 import { ComponentRendererModeContext } from "../../contexts/ComponentRendererModeContext"
 import { ComponentDefinition } from "../../globalTypes"
+import { RenderInterfaceComponent } from "components/ComponentRenderer/components/RenderInterfaceComponent"
+import { registry } from "services/ComponentRegistry"
 
 export const UI_ROOT = "UI-Root"
 
@@ -15,8 +16,8 @@ export const ComponentRenderer = React.memo(
     componentLimit,
     components,
     data,
-    getRootData,
-    setRootData,
+    getRootUserInterfaceData,
+    onChangeRootData,
     dragDropDisabled,
     mode: propMode,
     onChangeData,
@@ -40,12 +41,13 @@ export const ComponentRenderer = React.memo(
       return (
         <DataPathContext path={index} key={`${keyPrefix || ""}${componentDefinition.component}-${index}`}>
           {(path) => (
-            <DetokenizedComponent
+            <RenderInterfaceComponent
+              Component={registry.lookup(componentDefinition.component)}
               componentDefinition={componentDefinition}
-              data={data}
+              userInterfaceData={data}
               dragDropDisabled={dragDropDisabled}
-              getRootData={getRootData}
-              setRootData={setRootData}
+              getRootUserInterfaceData={getRootUserInterfaceData}
+              onChangeRootData={onChangeRootData}
               index={index}
               mode={mode}
               onChangeData={onChangeData}

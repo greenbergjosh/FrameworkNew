@@ -26,7 +26,7 @@ export const devToolsManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "valueKey",
-                defaultValue: "data",
+                defaultValue: "$",
                 bindable: true,
               },
             ],

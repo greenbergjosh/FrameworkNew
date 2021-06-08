@@ -56,9 +56,16 @@ export class DateStepperInterfaceComponent extends BaseInterfaceComponent<
     let newValues: DateValuesType
 
     if (isDateRange) {
-      newValues = stepDateRangeValues(startDateKey, endDateKey, userInterfaceData, action, dateFormat)
+      newValues = stepDateRangeValues(
+        this.getValue(startDateKey),
+        this.getValue(endDateKey),
+        startDateKey,
+        endDateKey,
+        action,
+        dateFormat
+      )
     } else {
-      newValues = stepSingleDateValue(dateKey, userInterfaceData, action, dateFormat)
+      newValues = stepSingleDateValue(this.getValue(dateKey), dateKey, action, dateFormat)
     }
     const newUserInterfaceData = { ...userInterfaceData, ...newValues }
 

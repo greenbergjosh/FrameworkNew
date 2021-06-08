@@ -6,8 +6,8 @@ export interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
   userInterfaceData: UserInterfaceProps["data"]
-  getRootData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootData: UserInterfaceProps["setRootUserInterfaceData"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   dragDropDisabled?: boolean
   index: number
   mode: UserInterfaceProps["mode"]
@@ -29,8 +29,8 @@ export interface ComponentRendererProps {
   componentLimit?: number
   components: ComponentDefinition[]
   data: UserInterfaceProps["data"]
-  getRootData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootData: UserInterfaceProps["setRootUserInterfaceData"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   dragDropDisabled?: boolean
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]

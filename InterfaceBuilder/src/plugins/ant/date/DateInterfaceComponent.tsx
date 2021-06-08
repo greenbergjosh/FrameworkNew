@@ -1,5 +1,4 @@
 import { DatePicker } from "antd"
-import { get, set } from "lodash/fp"
 import moment from "moment"
 import React from "react"
 import { getTimeFormat, TimeSettings } from "../_shared/common-include-time-form"
@@ -44,10 +43,10 @@ export class DateInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = dateManageForm
 
   handleChange = (inputMoment: moment.Moment | null, dateString: string) => {
-    const { onChangeData, timeSettings, userInterfaceData, valueKey } = this.props
+    const { onChangeData, timeSettings, valueKey } = this.props
     const timeFormat = getTimeFormat(timeSettings)
     const newValueMoment = moment(dateString, `YYYY-MM-DD${timeFormat ? ` ${timeFormat.format}` : ""}`)
-    const currentValue = get(valueKey, userInterfaceData)
+    const currentValue = this.getValue(valueKey)
 
     const { includeTime } = timeSettings || { includeTime: false }
 
@@ -65,15 +64,13 @@ export class DateInterfaceComponent extends BaseInterfaceComponent<
     const newValue = newValueMoment.isValid() ? newValueMoment.startOf(alignmentTimePeriod).utc().toISOString() : null
 
     if (currentValue !== newValue && onChangeData) {
-      console.log("DateInterfaceComponent", { inputMoment, dateString, newValueMoment })
-      onChangeData(set(valueKey, newValue, userInterfaceData))
+      this.setValue([valueKey, newValue])
     }
   }
 
   render(): JSX.Element {
-    const { timeSettings, userInterfaceData, valueKey } = this.props
-    const value = get(valueKey, userInterfaceData)
-    const timeFormat = getTimeFormat(timeSettings)
+    const value = this.getValue(this.props.valueKey)
+    const timeFormat = getTimeFormat(this.props.timeSettings)
     return (
       <Undraggable wrap>
         <DatePicker

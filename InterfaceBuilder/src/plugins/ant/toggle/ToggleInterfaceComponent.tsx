@@ -40,7 +40,7 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<ToggleInter
 
   handleChange = (checked: boolean) => {
     const { inverted, valueKey } = this.props
-    this.setValue(valueKey, inverted ? !checked : checked)
+    this.setValue([valueKey, inverted ? !checked : checked])
   }
 
   isChecked = (): boolean => {

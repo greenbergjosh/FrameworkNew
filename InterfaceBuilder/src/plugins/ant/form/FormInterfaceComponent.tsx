@@ -79,7 +79,7 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
       orientation,
       userInterfaceData,
       getRootUserInterfaceData,
-      setRootUserInterfaceData,
+      onChangeRootData,
     } = this.props
 
     const formLayout = formColumnLayout ? merge(defaultFormLayout, formColumnLayout) : defaultFormLayout
@@ -90,8 +90,8 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
             data={userInterfaceData}
-            getRootData={getRootUserInterfaceData}
-            setRootData={setRootUserInterfaceData}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             onChangeData={onChangeData}
             onChangeSchema={(newSchema) => {
               if (this.props.mode === "edit") {

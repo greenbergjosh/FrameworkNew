@@ -1,0 +1,35 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "invisible": false,
+      "hidden": false,
+      "wrapperObjectKey": "range",
+      "useWrapperObject": false,
+      "marks": [],
+      "defaultRangeValueType": "full",
+      "endKey": "end",
+      "startKey": "start",
+      "label": "Number Range",
+      "hideLabel": false,
+      "size": "default",
+      "valueKey": "value",
+      "component": "number-range"
+    }
+  ]
+}

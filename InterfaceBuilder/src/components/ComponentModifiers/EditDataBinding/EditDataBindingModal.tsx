@@ -111,7 +111,7 @@ export function EditDataBindingModal(props: {
         defaultLanguage={"json"}
         defaultTheme={"vs-dark"}
         getRootUserInterfaceData={() => ({})}
-        setRootUserInterfaceData={() => void 0}
+        onChangeRootData={() => void 0}
         onChangeData={handleChangeData}
         userInterfaceData={data}
         valueKey={"rulesString"}

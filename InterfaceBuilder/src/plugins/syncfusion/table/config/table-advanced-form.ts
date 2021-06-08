@@ -12,7 +12,7 @@ export const tableAdvancedForm = {
       defaultValue: false,
       size: "small",
       getRootUserInterfaceData: () => void 0,
-      setRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
     },
     {
       key: "removeCellPadding",

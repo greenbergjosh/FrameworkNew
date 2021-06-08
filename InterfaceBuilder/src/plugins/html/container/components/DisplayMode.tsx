@@ -12,19 +12,17 @@ const Div = styled.div`
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {
   return (
-    <>
-      <Div styleString={props.style} className={"container"}>
-        <DataPathContext path="components">
-          <ComponentRenderer
-            components={props.components}
-            data={props.userInterfaceData}
-            getRootData={props.getRootUserInterfaceData}
-            setRootData={props.setRootUserInterfaceData}
-            onChangeData={props.onChangeData}
-            onChangeSchema={() => void 0}
-          />
-        </DataPathContext>
-      </Div>
-    </>
+    <Div styleString={props.style} className={"container"}>
+      <DataPathContext path="components">
+        <ComponentRenderer
+          components={props.components}
+          data={props.userInterfaceData}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          onChangeRootData={props.onChangeRootData}
+          onChangeData={props.onChangeData}
+          onChangeSchema={() => void 0}
+        />
+      </DataPathContext>
+    </Div>
   )
 }

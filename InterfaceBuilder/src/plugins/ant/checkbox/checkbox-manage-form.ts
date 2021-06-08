@@ -25,15 +25,6 @@ const checkboxManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "value",
                 bindable: true,
               },
-              {
-                key: "indeterminate",
-                valueKey: "indeterminate",
-                ordinal: 10,
-                component: "checkbox",
-                label: "Allow indeterminate state",
-                defaultValue: false,
-                bindable: true,
-              },
             ],
           },
           {

@@ -1,25 +1,13 @@
 import React from "react"
-import { ComponentDefinition, ComponentRenderMetaProps, UserInterfaceProps } from "globalTypes"
+import { ComponentDefinition } from "globalTypes"
 import { ComponentRenderer, RenderInterfaceComponent } from "components/ComponentRenderer"
 import { DataPathContext } from "contexts/DataPathContext"
 import { set } from "lodash/fp"
 import { registry } from "services/ComponentRegistry"
+import { EditModeProps } from "plugins/ant/modal/types"
 
-export function EditMode(props: {
-  components: ComponentDefinition[]
-  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
-  mode: UserInterfaceProps["mode"]
-  onChangeData: UserInterfaceProps["onChangeData"]
-  onChangeSchema: ComponentRenderMetaProps["onChangeSchema"]
-  title: string
-  userInterfaceData: UserInterfaceProps["data"]
-  userInterfaceSchema?: ComponentDefinition
-  footer: {
-    components: ComponentDefinition[]
-  }
-}): JSX.Element {
-  const handleTitleChangeData = (newData: any): void => {
+export function EditMode(props: EditModeProps): JSX.Element {
+  const handleTitleChangeData = (newData: ComponentDefinition): void => {
     props.onChangeSchema &&
       props.userInterfaceSchema &&
       props.onChangeSchema(set("title", newData.title, props.userInterfaceSchema))
@@ -42,38 +30,18 @@ export function EditMode(props: {
             label: "Title",
             bindable: true,
             getRootUserInterfaceData: props.getRootUserInterfaceData,
-            setRootUserInterfaceData: props.setRootUserInterfaceData,
+            onChangeRootData: props.onChangeRootData,
           }}
           userInterfaceData={props.userInterfaceSchema}
           dragDropDisabled={true}
-          getRootData={props.getRootUserInterfaceData}
-          setRootData={props.setRootUserInterfaceData}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          onChangeRootData={props.onChangeRootData}
           index={0}
           mode="display"
           onChangeData={handleTitleChangeData}
           onChangeSchema={() => void 0}
           path={"title"}
         />
-        {/*<ComponentRenderer*/}
-        {/*  components={[*/}
-        {/*    {*/}
-        {/*      key: "title",*/}
-        {/*      valueKey: "title",*/}
-        {/*      component: "input",*/}
-        {/*      defaultValue: "Edit Item",*/}
-        {/*      placeholder: "Enter modal title",*/}
-        {/*      label: "Title",*/}
-        {/*      bindable: true,*/}
-        {/*    },*/}
-        {/*  ]}*/}
-        {/*  data={props.userInterfaceSchema}*/}
-        {/*  mode="display"*/}
-        {/*  dragDropDisabled={true}*/}
-        {/*  getRootData={props.getRootUserInterfaceData}*/}
-        {/*  setRootData={props.setRootUserInterfaceData}*/}
-        {/*  onChangeData={handleTitleChangeData}*/}
-        {/*  onChangeSchema={() => void 0}*/}
-        {/*/>*/}
       </div>
       <span>Content</span>
       <DataPathContext path="components">
@@ -88,8 +56,8 @@ export function EditMode(props: {
             components={props.components || ([] as ComponentDefinition[])}
             data={props.userInterfaceData}
             dragDropDisabled={false}
-            getRootData={props.getRootUserInterfaceData}
-            setRootData={props.setRootUserInterfaceData}
+            getRootUserInterfaceData={props.getRootUserInterfaceData}
+            onChangeRootData={props.onChangeRootData}
             onChangeData={props.onChangeData}
             onChangeSchema={(newSchema) => {
               props.onChangeSchema &&
@@ -111,8 +79,8 @@ export function EditMode(props: {
             components={(props.footer && props.footer.components) || ([] as ComponentDefinition[])}
             data={props.userInterfaceData}
             dragDropDisabled={false}
-            getRootData={props.getRootUserInterfaceData}
-            setRootData={props.setRootUserInterfaceData}
+            getRootUserInterfaceData={props.getRootUserInterfaceData}
+            onChangeRootData={props.onChangeRootData}
             onChangeData={props.onChangeData}
             onChangeSchema={(newSchema) => {
               props.onChangeSchema &&

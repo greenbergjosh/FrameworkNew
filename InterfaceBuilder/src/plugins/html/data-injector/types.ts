@@ -1,13 +1,13 @@
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import { ComponentDefinition, ComponentDefinitionNamedProps, ComponentRenderMetaProps } from "../../../globalTypes"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 
 export interface DataInjectorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // Core props
   component: "data-injector"
   components: ComponentDefinition[]
-  onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeSchema: ComponentRenderMetaProps["onChangeSchema"]
+  userInterfaceSchema: ComponentRenderMetaProps["userInterfaceSchema"]
   preconfigured?: boolean
-  userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
   outboundValueKey: string
 

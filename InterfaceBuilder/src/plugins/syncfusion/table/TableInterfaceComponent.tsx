@@ -74,7 +74,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
       rowDetails,
       userInterfaceData,
       getRootUserInterfaceData,
-      setRootUserInterfaceData,
+      onChangeRootData,
       preview,
       valueKey,
     } = this.props
@@ -92,9 +92,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                */
               return (
                 <AbstractTable
-                  userInterfaceData={userInterfaceData}
                   getRootUserInterfaceData={getRootUserInterfaceData}
-                  setRootUserInterfaceData={setRootUserInterfaceData}
+                  onChangeRootData={onChangeRootData}
                   getValue={this.getValue.bind(this)}
                   setValue={this.setValue.bind(this)}
                   valueKey={valueKey}
@@ -111,9 +110,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                   <EditTable
                     onChangeSchema={this.props.onChangeSchema}
                     rowDetails={rowDetails}
-                    userInterfaceData={userInterfaceData}
                     getRootUserInterfaceData={getRootUserInterfaceData}
-                    setRootUserInterfaceData={setRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     getValue={this.getValue.bind(this)}
                     setValue={this.setValue.bind(this)}
                     userInterfaceSchema={this.props.userInterfaceSchema}
@@ -142,7 +140,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                       rowDetails={rowDetails}
                       userInterfaceData={userInterfaceData}
                       getRootUserInterfaceData={getRootUserInterfaceData}
-                      setRootUserInterfaceData={setRootUserInterfaceData}
+                      onChangeRootData={onChangeRootData}
                       getValue={this.getValue.bind(this)}
                       setValue={this.setValue.bind(this)}
                       valueKey={valueKey}

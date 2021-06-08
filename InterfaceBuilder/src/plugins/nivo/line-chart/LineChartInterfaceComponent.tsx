@@ -5,7 +5,7 @@ import { ResponsiveLine, Serie } from "@nivo/line"
 import { AxisProps } from "@nivo/axes"
 import { LegendProps } from "@nivo/legends"
 import { emptyDataSet } from "./utils"
-import { get, isEqual } from "lodash/fp"
+import { isEqual } from "lodash/fp"
 import {
   LineChartInterfaceComponentProps,
   LineChartInterfaceComponentState,
@@ -47,8 +47,8 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<LineChartInterfaceComponentProps>): void {
-    const prevValue = get(prevProps.valueKey, prevProps.userInterfaceData)
-    const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
+    const prevValue = this.getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData)
+    const nextValue = this.getValue(this.props.valueKey)
 
     if (!isEqual(prevValue, nextValue) || this.anyPropsChanged(prevProps, ["valueKey"])) {
       const lineChartData: Serie[] = (this.getValue(this.props.valueKey) as unknown) as Serie[]

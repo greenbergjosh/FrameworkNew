@@ -9,7 +9,7 @@ import { EditMode } from "plugins/ant/modal/components/EditMode"
 export class ModalInterfaceComponent extends BaseInterfaceComponent<ModalInterfaceComponentProps> {
   static defaultProps = {
     userInterfaceData: {},
-    valueKey: "data",
+    valueKey: "modalData",
   }
 
   static getLayoutDefinition(): LayoutDefinition {
@@ -31,12 +31,15 @@ export class ModalInterfaceComponent extends BaseInterfaceComponent<ModalInterfa
     if (this.props.mode === "edit") {
       return (
         <EditMode
+          closable={this.props.closable}
           components={this.props.components}
+          destroyOnClose={this.props.destroyOnClose}
           footer={this.props.footer}
           getRootUserInterfaceData={this.props.getRootUserInterfaceData}
-          setRootUserInterfaceData={this.props.setRootUserInterfaceData}
+          mask={this.props.mask}
           mode={this.props.mode}
           onChangeData={this.props.onChangeData}
+          onChangeRootData={this.props.onChangeRootData}
           onChangeSchema={this.props.onChangeSchema}
           title={this.props.title}
           userInterfaceData={this.props.userInterfaceData}
@@ -46,19 +49,25 @@ export class ModalInterfaceComponent extends BaseInterfaceComponent<ModalInterfa
     }
     return (
       <DisplayMode
+        bodyStyle={this.props.bodyStyle}
+        closable={this.props.closable}
         components={this.props.components}
+        destroyOnClose={this.props.destroyOnClose}
         footer={this.props.footer}
         getRootUserInterfaceData={this.props.getRootUserInterfaceData}
-        setRootUserInterfaceData={this.props.setRootUserInterfaceData}
         getValue={this.getValue.bind(this)}
+        mask={this.props.mask}
+        maskStyle={this.props.maskStyle}
+        modalStyle={this.props.modalStyle}
         mode={this.props.mode}
         onChangeData={this.props.onChangeData}
+        onChangeRootData={this.props.onChangeRootData}
         onChangeSchema={() => void 0}
         setValue={this.setValue.bind(this)}
         showKey={this.props.showKey}
+        style={this.props.style}
         title={this.props.title}
         userInterfaceData={this.props.userInterfaceData}
-        userInterfaceSchema={this.props.userInterfaceSchema}
         valueKey={this.props.valueKey}
       />
     )

@@ -1,11 +1,11 @@
 import { Checkbox } from "antd"
 import { CheckboxChangeEvent } from "antd/lib/checkbox"
-import { get, set } from "lodash/fp"
 import React from "react"
 import { checkboxManageForm } from "./checkbox-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { Undraggable } from "components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
+import { isBoolean } from "lodash/fp"
 
 export interface CheckboxInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "checkbox"
@@ -49,21 +49,24 @@ export class CheckboxInterfaceComponent extends BaseInterfaceComponent<
   constructor(props: CheckboxInterfaceComponentProps) {
     super(props)
 
-    const { defaultValue, userInterfaceData, valueKey } = props
-
-    this.state = { value: get(valueKey, userInterfaceData) || defaultValue || false }
+    const rawValue = this.getValue(this.props.valueKey)
+    if (isBoolean(rawValue)) {
+      const value = rawValue
+      this.state = { value }
+    } else {
+      this.state = { value: false }
+    }
   }
 
   handleChange = ({ target: { checked } }: CheckboxChangeEvent) => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData(set(valueKey, checked, userInterfaceData))
+    this.setValue([this.props.valueKey, checked])
   }
 
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey, disabled } = this.props
-    const rawValue = get(valueKey, userInterfaceData)
-
+    const { defaultValue, valueKey, disabled } = this.props
+    const rawValue = this.getValue(valueKey)
     const value = typeof rawValue === "boolean" ? rawValue : defaultValue
+
     return (
       <Undraggable wrap="shrink">
         <Checkbox onChange={this.handleChange} checked={value} disabled={disabled} />

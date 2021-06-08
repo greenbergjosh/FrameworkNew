@@ -29,7 +29,7 @@ export interface ModeProps {
   orientation?: OrientationType
   data: JSONRecord[]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChange: (data: JSONRecord | JSONRecord[], subpath?: string) => void | undefined
 }
 
@@ -61,7 +61,7 @@ export interface RepeaterProps {
   orientation?: OrientationType
   userInterfaceData?: UserInterfaceProps["data"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   readonly: boolean
 }
 
@@ -69,7 +69,7 @@ export interface RepeaterItemProps {
   components: ComponentDefinition[]
   itemData: JSONRecord
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   hasNextSibling: boolean
   index: number
   isDraggable: boolean

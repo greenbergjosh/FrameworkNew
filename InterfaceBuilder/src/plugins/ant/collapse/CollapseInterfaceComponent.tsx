@@ -21,7 +21,7 @@ export interface ICollapseInterfaceComponentProps extends ComponentDefinitionNam
   component: "collapse"
   sections: SectionDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
-  userInterfaceData?: UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
 
   accordion?: boolean
 }
@@ -63,7 +63,7 @@ export class CollapseInterfaceComponent extends BaseInterfaceComponent<CollapseI
       sections,
       userInterfaceData,
       getRootUserInterfaceData,
-      setRootUserInterfaceData,
+      onChangeRootData,
     } = this.props
     return (
       <Collapse accordion={accordion}>
@@ -73,8 +73,8 @@ export class CollapseInterfaceComponent extends BaseInterfaceComponent<CollapseI
               <ComponentRenderer
                 components={section.components}
                 data={userInterfaceData}
-                getRootData={getRootUserInterfaceData}
-                setRootData={setRootUserInterfaceData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   if (this.props.mode === "edit") {

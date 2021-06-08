@@ -12,6 +12,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "../../../globalTypes"
+import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
 
 interface ModeProps {
   componentDefinition:
@@ -22,7 +23,7 @@ interface ModeProps {
   userInterfaceData: UserInterfaceProps["data"]
   layoutDefinition: LayoutDefinition
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   mode: UserInterfaceProps["mode"]
   submit: (() => void) | undefined
   Component: typeof BaseInterfaceComponent
@@ -43,46 +44,56 @@ export function EditMode(props: EditModeProps): JSX.Element {
       userInterfaceData={props.userInterfaceData}
       getRootUserInterfaceData={props.getRootUserInterfaceData}>
       {({ boundComponentDefinition }) => (
-        <DraggableWrapper
+        <ReplaceTokens
           componentDefinition={boundComponentDefinition}
-          dragDropDisabled={props.dragDropDisabled}
-          index={props.index}
-          layoutDefinition={props.layoutDefinition}
-          mode={props.mode}
-          path={props.path}>
-          {({ isDragging, draggableItem }) => (
-            <EditPanelWrapper
-              componentDefinition={boundComponentDefinition}
-              draggableItem={draggableItem}
-              hidden={boundComponentDefinition.hidden}
+          onChangeData={props.onChangeData}
+          onChangeSchema={props.onChangeSchema}
+          userInterfaceData={props.userInterfaceData}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          mode={props.mode}>
+          {({ tokenReplacedComponentDefinition }) => (
+            <DraggableWrapper
+              componentDefinition={tokenReplacedComponentDefinition}
+              dragDropDisabled={props.dragDropDisabled}
               index={props.index}
-              invisible={boundComponentDefinition.invisible}
-              isDragging={isDragging}
-              title={props.layoutDefinition.title}
-              userInterfaceData={props.userInterfaceData}>
-              <FormField componentDefinition={boundComponentDefinition} layoutDefinition={props.layoutDefinition}>
-                <EditDataBinding
-                  componentDefinition={boundComponentDefinition}
-                  mode={props.mode}
-                  onChangeData={props.onChangeData}
-                  onChangeSchema={props.onChangeSchema}
+              layoutDefinition={props.layoutDefinition}
+              mode={props.mode}
+              path={props.path}>
+              {({ isDragging, draggableItem }) => (
+                <EditPanelWrapper
+                  componentDefinition={tokenReplacedComponentDefinition}
+                  draggableItem={draggableItem}
+                  hidden={tokenReplacedComponentDefinition.hidden}
+                  index={props.index}
+                  invisible={tokenReplacedComponentDefinition.invisible}
+                  isDragging={isDragging}
+                  title={props.layoutDefinition.title}
                   userInterfaceData={props.userInterfaceData}>
-                  <props.Component
-                    {...boundComponentDefinition}
-                    userInterfaceData={props.userInterfaceData}
-                    getRootUserInterfaceData={props.getRootUserInterfaceData}
-                    setRootUserInterfaceData={props.setRootUserInterfaceData}
-                    mode={props.mode}
-                    onChangeData={props.onChangeData}
-                    onChangeSchema={props.onChangeSchema}
-                    submit={props.submit}
-                    userInterfaceSchema={boundComponentDefinition}
-                  />
-                </EditDataBinding>
-              </FormField>
-            </EditPanelWrapper>
+                  <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={props.layoutDefinition}>
+                    <EditDataBinding
+                      componentDefinition={tokenReplacedComponentDefinition}
+                      mode={props.mode}
+                      onChangeData={props.onChangeData}
+                      onChangeSchema={props.onChangeSchema}
+                      userInterfaceData={props.userInterfaceData}>
+                      <props.Component
+                        {...tokenReplacedComponentDefinition}
+                        userInterfaceData={props.userInterfaceData}
+                        getRootUserInterfaceData={props.getRootUserInterfaceData}
+                        onChangeRootData={props.onChangeRootData}
+                        mode={props.mode}
+                        onChangeData={props.onChangeData}
+                        onChangeSchema={props.onChangeSchema}
+                        submit={props.submit}
+                        userInterfaceSchema={tokenReplacedComponentDefinition}
+                      />
+                    </EditDataBinding>
+                  </FormField>
+                </EditPanelWrapper>
+              )}
+            </DraggableWrapper>
           )}
-        </DraggableWrapper>
+        </ReplaceTokens>
       )}
     </DataBinding>
   )

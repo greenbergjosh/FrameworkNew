@@ -21,8 +21,8 @@ export class RenderInterfaceComponent extends React.Component<
       Component,
       componentDefinition,
       dragDropDisabled,
-      getRootData,
-      setRootData,
+      getRootUserInterfaceData,
+      onChangeRootData,
       index,
       mode,
       path,
@@ -44,8 +44,8 @@ export class RenderInterfaceComponent extends React.Component<
           layoutDefinition={Component && Component.getLayoutDefinition()}
           mode={mode}
           path={path}
-          getRootUserInterfaceData={getRootData.bind(this)}
-          setRootUserInterfaceData={setRootData.bind(this)}
+          getRootUserInterfaceData={getRootUserInterfaceData.bind(this)}
+          onChangeRootData={onChangeRootData.bind(this)}
           submit={submit}
           Component={Component}
           error={this.state.error}
@@ -62,8 +62,8 @@ export class RenderInterfaceComponent extends React.Component<
             onChangeSchema={onChangeSchema}
             layoutDefinition={Component.getLayoutDefinition()}
             userInterfaceData={userInterfaceData}
-            getRootUserInterfaceData={getRootData.bind(this)}
-            setRootUserInterfaceData={setRootData.bind(this)}
+            getRootUserInterfaceData={getRootUserInterfaceData.bind(this)}
+            onChangeRootData={onChangeRootData.bind(this)}
             mode={mode}
             submit={submit}
             Component={Component}
@@ -77,8 +77,8 @@ export class RenderInterfaceComponent extends React.Component<
             onChangeSchema={onChangeSchema}
             layoutDefinition={Component.getLayoutDefinition()}
             userInterfaceData={userInterfaceData}
-            getRootUserInterfaceData={getRootData.bind(this)}
-            setRootUserInterfaceData={setRootData.bind(this)}
+            getRootUserInterfaceData={getRootUserInterfaceData.bind(this)}
+            onChangeRootData={onChangeRootData.bind(this)}
             mode={mode}
             submit={submit}
             Component={Component}
@@ -96,8 +96,8 @@ export class RenderInterfaceComponent extends React.Component<
             index={index}
             mode={mode}
             path={path}
-            getRootUserInterfaceData={getRootData.bind(this)}
-            setRootUserInterfaceData={setRootData.bind(this)}
+            getRootUserInterfaceData={getRootUserInterfaceData.bind(this)}
+            onChangeRootData={onChangeRootData.bind(this)}
             submit={submit}
             Component={Component}
           />

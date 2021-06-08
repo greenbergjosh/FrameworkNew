@@ -25,7 +25,7 @@ export interface ModeProps {
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeSchema: ComponentRenderMetaProps["onChangeSchema"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
 }
 
 export interface DisplayModeProps extends ModeProps {}

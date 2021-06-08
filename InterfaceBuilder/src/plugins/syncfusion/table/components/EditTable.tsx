@@ -12,15 +12,14 @@ import { EditTableProps } from "../types"
 export function EditTable({
   onChangeSchema,
   rowDetails = [],
-  userInterfaceData,
   getRootUserInterfaceData,
-  setRootUserInterfaceData,
+  onChangeRootData,
   getValue,
   setValue,
   userInterfaceSchema,
   valueKey,
 }: EditTableProps): JSX.Element {
-  const dataArray = getValue(valueKey!, userInterfaceData) || []
+  const dataArray = getValue(valueKey) || []
   const data = { columns: dataArray }
 
   return (
@@ -32,8 +31,8 @@ export function EditTable({
       <ComponentRenderer
         components={editComponents}
         data={userInterfaceSchema}
-        getRootData={getRootUserInterfaceData}
-        setRootData={setRootUserInterfaceData}
+        getRootUserInterfaceData={getRootUserInterfaceData}
+        onChangeRootData={onChangeRootData}
         mode="display"
         onChangeData={(newData) => {
           onChangeSchema && userInterfaceSchema && onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
@@ -66,10 +65,10 @@ export function EditTable({
           <ComponentRenderer
             components={rowDetails}
             data={data}
-            getRootData={getRootUserInterfaceData}
-            setRootData={setRootUserInterfaceData}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             onChangeData={(newData) => {
-              setValue(valueKey!, newData, userInterfaceData)
+              setValue([valueKey, newData])
             }}
             onChangeSchema={(newSchema) => {
               onChangeSchema && userInterfaceSchema && onChangeSchema(set("rowDetails", newSchema, userInterfaceSchema))

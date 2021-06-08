@@ -5,8 +5,11 @@ import { DataInjectorInterfaceComponentProps, DataInjectorInterfaceComponentStat
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
-import JSONEditor from "plugins/ant/dev-tools/components/JSONEditor"
-import { isObjectLike, isString, isUndefined, isEqual } from "lodash/fp"
+import { JSONEditor } from "../../../components/JSONEditor/JSONEditor"
+import { JSONEditorProps } from "../../../components/JSONEditor/types"
+import { isObjectLike, isString, isUndefined, set, isEqual } from "lodash/fp"
+import { TextInterfaceComponent } from "plugins/ant/text/TextInterfaceComponent"
+import { Icon } from "antd"
 
 export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   DataInjectorInterfaceComponentProps,
@@ -72,7 +75,7 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   updateValue = () => {
     const value = this.getValueByType()
     const key = this.props.outboundValueKey || this.props.valueKey // retain valueKey for backwards compatibility
-    this.setValue(key, value)
+    this.setValue([key, value])
     this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
   }
 
@@ -126,18 +129,43 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
 
   /**
    * Edit mode change event handler
-   * @param userInterfaceData
+   * @param data
    */
-  handleChange = (userInterfaceData: any): void => {
-    const { onChangeData } = this.props
-    onChangeData && onChangeData(userInterfaceData)
+  handleChange: JSONEditorProps["onChange"] = (data): void => {
+    if (this.props.mode === "edit") {
+      const { onChangeSchema, userInterfaceSchema } = this.props
+      const jsonValue = JSON.stringify(data || {})
+      onChangeSchema && userInterfaceSchema && onChangeSchema(set("jsonValue", jsonValue, userInterfaceSchema))
+    }
   }
 
   render(): JSX.Element | null {
     if (this.props.mode === "edit") {
       const rawValue = this.getValueByType() as JSONRecord
 
-      return <JSONEditor data={rawValue} onChange={this.handleChange} height={this.props.height || 100} />
+      const fieldsetStyle: React.CSSProperties = {
+        padding: "5px",
+        backgroundColor: "rgba(180, 0, 255, 0.05)",
+        display: "inline-block",
+        width: "100%",
+        overflow: "scroll",
+      }
+
+      return (
+        <fieldset style={fieldsetStyle}>
+          <div style={{ fontSize: 10, color: "rgb(172 177 180)" }}>
+            <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
+          </div>
+          <div
+            style={{
+              marginTop: 5,
+              borderRadius: 3,
+              backgroundColor: "white",
+            }}>
+            <JSONEditor data={rawValue} onChange={this.handleChange} height={this.props.height || 100} />
+          </div>
+        </fieldset>
+      )
     }
     return null
   }

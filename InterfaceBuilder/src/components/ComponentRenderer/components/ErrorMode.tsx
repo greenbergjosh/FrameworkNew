@@ -11,6 +11,7 @@ import { EditPanelWrapper } from "components/ComponentModifiers/EditPanelWrapper
 import { BaseInterfaceComponent } from "components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { DraggableWrapper } from "components/ComponentModifiers/DraggableWrapper"
 import { DataBinding } from "components/ComponentModifiers/DataBinding"
+import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
 
 interface ModeProps {
   componentDefinition:
@@ -21,7 +22,7 @@ interface ModeProps {
   userInterfaceData: UserInterfaceProps["data"]
   layoutDefinition: LayoutDefinition
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   mode: UserInterfaceProps["mode"]
   submit: (() => void) | undefined
   Component: typeof BaseInterfaceComponent
@@ -61,66 +62,76 @@ export function ErrorMode(props: ErrorModeProps): JSX.Element {
       userInterfaceData={props.userInterfaceData}
       getRootUserInterfaceData={props.getRootUserInterfaceData}>
       {({ boundComponentDefinition }) => (
-        <DraggableWrapper
+        <ReplaceTokens
           componentDefinition={boundComponentDefinition}
-          dragDropDisabled={props.dragDropDisabled}
-          index={props.index}
-          layoutDefinition={props.layoutDefinition}
-          mode={props.mode}
-          path={props.path}>
-          {({ isDragging, draggableItem }) => (
-            <EditPanelWrapper
-              componentDefinition={boundComponentDefinition}
-              draggableItem={draggableItem}
-              hasError={true}
-              hidden={boundComponentDefinition.hidden}
+          onChangeData={props.onChangeData}
+          onChangeSchema={props.onChangeSchema}
+          userInterfaceData={props.userInterfaceData}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          mode={props.mode}>
+          {({ tokenReplacedComponentDefinition }) => (
+            <DraggableWrapper
+              componentDefinition={tokenReplacedComponentDefinition}
+              dragDropDisabled={props.dragDropDisabled}
               index={props.index}
-              invisible={boundComponentDefinition.invisible}
-              isDragging={isDragging}
-              title={boundComponentDefinition.component}
-              userInterfaceData={props.userInterfaceData}>
-              <div
-                style={{
-                  margin: 10,
-                  display: "flex",
-                  flexDirection: "row",
-                  flexWrap: "nowrap",
-                  justifyContent: "flex-start",
-                  alignContent: "stretch",
-                  alignItems: "flex-start",
-                }}>
-                <Icon
-                  type="warning"
-                  style={{
-                    order: 0,
-                    flex: "0 1 auto",
-                    alignSelf: "auto",
-                    fontSize: "1.5em",
-                    marginRight: 10,
-                    color: "#c70039",
-                  }}
-                />
-                <div
-                  style={{
-                    order: 0,
-                    flex: "1 1 auto",
-                    alignSelf: "auto",
-                    color: "#c70039",
-                  }}>
-                  <h3 style={{ color: "#c70039" }}>Component Error</h3>
-                  <p>{props.error}</p>
-                  <Collapse>
-                    <Collapse.Panel header="Diagnostics" key="2">
-                      <div style={{ overflow: "scroll", width: "50vw" }}>
-                        <pre>{JSON.stringify(props, null, 2)}</pre>
-                      </div>
-                    </Collapse.Panel>
-                  </Collapse>
-                </div>
-              </div>
-            </EditPanelWrapper>
+              layoutDefinition={props.layoutDefinition}
+              mode={props.mode}
+              path={props.path}>
+              {({ isDragging, draggableItem }) => (
+                <EditPanelWrapper
+                  componentDefinition={tokenReplacedComponentDefinition}
+                  draggableItem={draggableItem}
+                  hasError={true}
+                  hidden={tokenReplacedComponentDefinition.hidden}
+                  index={props.index}
+                  invisible={tokenReplacedComponentDefinition.invisible}
+                  isDragging={isDragging}
+                  title={tokenReplacedComponentDefinition.component}
+                  userInterfaceData={props.userInterfaceData}>
+                  <div
+                    style={{
+                      margin: 10,
+                      display: "flex",
+                      flexDirection: "row",
+                      flexWrap: "nowrap",
+                      justifyContent: "flex-start",
+                      alignContent: "stretch",
+                      alignItems: "flex-start",
+                    }}>
+                    <Icon
+                      type="warning"
+                      style={{
+                        order: 0,
+                        flex: "0 1 auto",
+                        alignSelf: "auto",
+                        fontSize: "1.5em",
+                        marginRight: 10,
+                        color: "#c70039",
+                      }}
+                    />
+                    <div
+                      style={{
+                        order: 0,
+                        flex: "1 1 auto",
+                        alignSelf: "auto",
+                        color: "#c70039",
+                      }}>
+                      <h3 style={{ color: "#c70039" }}>Component Error</h3>
+                      <p>{props.error}</p>
+                      <Collapse>
+                        <Collapse.Panel header="Diagnostics" key="2">
+                          <div style={{ overflow: "scroll", width: "50vw" }}>
+                            <pre>{JSON.stringify(props, null, 2)}</pre>
+                          </div>
+                        </Collapse.Panel>
+                      </Collapse>
+                    </div>
+                  </div>
+                </EditPanelWrapper>
+              )}
+            </DraggableWrapper>
           )}
-        </DraggableWrapper>
+        </ReplaceTokens>
       )}
     </DataBinding>
   )

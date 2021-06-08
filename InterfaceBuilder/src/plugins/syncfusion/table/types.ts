@@ -37,7 +37,7 @@ export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedP
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   rowDetails?: ComponentDefinition[]
-  userInterfaceData?: UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -72,12 +72,11 @@ export function visiblityConditionType(type: string): JSONRecord {
 
 export interface TableProps {
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   getValue: IBaseInterfaceComponent["getValue"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   rowDetails?: ComponentDefinition[]
   setValue: IBaseInterfaceComponent["setValue"]
-  userInterfaceData: UserInterfaceProps["data"]
   userInterfaceSchema?: ComponentDefinition
   valueKey: string
 }
@@ -92,6 +91,7 @@ export interface DisplayTableProps extends TableProps {
   height?: number
   preview?: boolean
   showToolbar?: boolean
+  userInterfaceData: UserInterfaceProps["data"]
   useSmallFont?: boolean
   useSmallPager?: boolean
 }

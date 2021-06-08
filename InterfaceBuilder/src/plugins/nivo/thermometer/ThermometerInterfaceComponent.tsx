@@ -1,7 +1,6 @@
 import React from "react"
 import { thermometerManageForm } from "./thermometer-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { get } from "lodash/fp"
 import getThermometer from "./components"
 import { ThermometerInterfaceComponentProps, ThermometerInterfaceComponentState } from "./types"
 import { ThermometerIcon } from "./components/ThermometerIcon"
@@ -36,8 +35,12 @@ export class ThermometerInterfaceComponent extends BaseInterfaceComponent<
 
   componentDidUpdate(prevProps: Readonly<ThermometerInterfaceComponentProps>): void {
     type Value = number | undefined
-    const prevValue: Value = get(prevProps.valueKey, prevProps.userInterfaceData)
-    const nextValue: Value = get(this.props.valueKey, this.props.userInterfaceData)
+    const prevValue: Value = this.getValue(
+      prevProps.valueKey,
+      prevProps.userInterfaceData,
+      prevProps.getRootUserInterfaceData
+    )
+    const nextValue: Value = this.getValue(this.props.valueKey)
 
     if (prevValue !== nextValue) {
       this.setState({ loading: false })
@@ -56,8 +59,8 @@ export class ThermometerInterfaceComponent extends BaseInterfaceComponent<
       thermometerLabel,
       absoluteValueKey,
     } = this.props
-    const value: number = get(valueKey, userInterfaceData)
-    const actualValue: number = absoluteValueKey ? get(absoluteValueKey, userInterfaceData) : null
+    const value: number = this.getValue(valueKey)
+    const actualValue: number = absoluteValueKey ? this.getValue(absoluteValueKey) : null
     const formattedActualValue = formatNumber(actualValue)
     const Thermometer = getThermometer(iconType)
     const coloquialValue = Math.floor(value * 100)

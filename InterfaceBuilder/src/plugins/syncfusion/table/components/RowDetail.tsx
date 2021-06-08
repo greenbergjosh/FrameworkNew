@@ -5,7 +5,7 @@ import { ComponentDefinition, UserInterfaceProps } from "../../../../globalTypes
 export function RowDetail(props: {
   components: ComponentDefinition[]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   parentRowData: any
@@ -21,8 +21,8 @@ export function RowDetail(props: {
     <ComponentRenderer
       components={props.components}
       data={data}
-      getRootData={props.getRootUserInterfaceData}
-      setRootData={props.setRootUserInterfaceData}
+      getRootUserInterfaceData={props.getRootUserInterfaceData}
+      onChangeRootData={props.onChangeRootData}
       mode={props.mode}
       onChangeData={handleChangeData}
       onChangeSchema={() => void 0}

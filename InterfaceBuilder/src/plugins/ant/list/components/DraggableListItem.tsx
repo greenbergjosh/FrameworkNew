@@ -14,7 +14,7 @@ export default function DraggableListItem({
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
-  setRootUserInterfaceData,
+  onChangeRootData,
   getValue,
   setValue,
   valueKey,
@@ -22,7 +22,7 @@ export default function DraggableListItem({
   function handleDelete(): void {
     const existingData = getValue(valueKey, userInterfaceData) as JSONRecord[]
     const value = [...existingData.slice(0, index), ...existingData.slice(index + 1)]
-    setValue(valueKey, value, userInterfaceData)
+    setValue([valueKey, value, userInterfaceData])
   }
 
   return (
@@ -48,7 +48,7 @@ export default function DraggableListItem({
           <ListItem
             data={data}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             getValue={getValue}
             setValue={setValue}
             index={index}

@@ -1,6 +1,6 @@
 import { Icon, Layout, Tooltip, Typography } from "antd"
 import classNames from "classnames"
-import { get, getOr, set } from "lodash/fp"
+import { getOr, set } from "lodash/fp"
 import React from "react"
 import { ComponentRenderer, UI_ROOT } from "../ComponentRenderer"
 import { EditableContext, EditableContextProps } from "../../contexts/EditableContext"
@@ -59,10 +59,10 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     this.setState({ collapsed: !this.state.collapsed })
   }
 
-  getRootData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
+  getRootUserInterfaceData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
 
-  setRootData = (newData: UserInterfaceProps["data"]): void =>
-    this.props.setRootUserInterfaceData && this.props.setRootUserInterfaceData(newData)
+  // onChangeRootData = (newData: UserInterfaceProps["data"]): void =>
+  //   this.props.onChangeRootData && this.props.onChangeRootData(newData)
 
   render(): JSX.Element {
     const { components, contextManager, data, mode, onChangeData, submit } = this.props
@@ -76,14 +76,14 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
       <ComponentRenderer
         components={components}
         data={data}
-        getRootData={this.getRootData}
-        setRootData={this.setRootData}
+        getRootUserInterfaceData={this.getRootUserInterfaceData}
+        onChangeRootData={this.props.onChangeRootData /*this.onChangeRootData*/}
         mode={mode}
         onChangeData={onChangeData}
         onChangeSchema={
           this.props.mode === "edit"
             ? this.props.onChangeSchema
-            : (newSchema: any) => {
+            : (newSchema) => {
                 console.warn(
                   "UserInterface.render",
                   "ComponentRenderer/onChangeSchema",
@@ -133,13 +133,13 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
         }
       },
       onEdit: (draggedItem) => {
-        console.log(
+        /*console.log(
           "UserInterface.editableContextHandlers",
           "onEdit",
           draggedItem,
           components,
           get(draggedItem.draggableId, components)
-        )
+        )*/
         this.setState({
           components,
           itemToAdd: null,
@@ -210,8 +210,8 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                       </Layout>
 
                       <SettingsModal
-                        getRootUserInterfaceData={this.getRootData}
-                        setRootUserInterfaceData={this.setRootData}
+                        getRootUserInterfaceData={this.getRootUserInterfaceData}
+                        onChangeRootData={this.props.onChangeRootData /*this.onChangeRootData*/}
                         userInterfaceData={data}
                         componentDefinition={
                           (itemToAdd && itemToAdd.componentDefinition) || (itemToEdit && itemToEdit.componentDefinition)

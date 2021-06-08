@@ -1,5 +1,4 @@
 import { Button, message, Tooltip } from "antd"
-import { get } from "lodash/fp"
 import React from "react"
 import { downloadManageForm } from "./download-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
@@ -36,16 +35,8 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
   }
 
   handleClick = (/*e: React.MouseEvent<HTMLInputElement>*/) => {
-    const {
-      filename,
-      httpMethod,
-      paramKVPMaps,
-      paramsValueKey,
-      url,
-      useFilenameFromServer,
-      userInterfaceData,
-    } = this.props
-    const params = convertParamKVPMapsToParams(paramKVPMaps, userInterfaceData, paramsValueKey)
+    const { filename, httpMethod, paramKVPMaps, paramsValueKey, url, useFilenameFromServer } = this.props
+    const params = convertParamKVPMapsToParams(paramKVPMaps, this.getValue.bind(this), paramsValueKey)
     const config: Partial<RequestInit> = {
       method: httpMethod,
     }
@@ -85,11 +76,10 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
       paramsValueKey,
       shape,
       size,
-      userInterfaceData,
     } = this.props
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
-    const rawValue = get(paramsValueKey, userInterfaceData)
+    const rawValue = this.getValue(paramsValueKey)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
 
     return (

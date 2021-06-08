@@ -1,5 +1,4 @@
 import { get } from "lodash/fp"
-import { JSONRecord } from "../globalTypes/JSONTypes"
 import { UserInterfaceProps } from "../globalTypes"
 
 /**
@@ -13,7 +12,7 @@ export function getValue(
   valueKey: string,
   userInterfaceData: UserInterfaceProps["data"],
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-): JSONRecord | JSONRecord[] | undefined {
+): UserInterfaceProps["data"] {
   if (!valueKey) return
   if (valueKey === "$root") {
     return getRootUserInterfaceData()

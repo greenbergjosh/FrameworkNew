@@ -24,8 +24,8 @@ export function EditMode(props: EditModeProps): JSX.Element {
         <ComponentRenderer
           components={props.components}
           data={props.userInterfaceData}
-          getRootData={props.getRootUserInterfaceData}
-          setRootData={props.setRootUserInterfaceData}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          onChangeRootData={props.onChangeRootData}
           onChangeData={props.onChangeData}
           onChangeSchema={handleChangeSchema}
         />

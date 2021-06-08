@@ -1,29 +1,19 @@
 import { Modal } from "antd"
 import React from "react"
-import { ComponentDefinition, ComponentRenderMetaProps, IBaseInterfaceComponent, UserInterfaceProps } from "globalTypes"
+import { UserInterfaceProps } from "globalTypes"
 import { isBoolean } from "lodash/fp"
 import { ComponentRenderer } from "components/ComponentRenderer"
 import { DataPathContext } from "contexts/DataPathContext"
+import { DisplayModeProps } from "plugins/ant/modal/types"
+import { tryCatch } from "fp-ts/lib/Option"
 
-export function DisplayMode(props: {
-  components: ComponentDefinition[]
-  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
-  mode: UserInterfaceProps["mode"]
-  onChangeData: UserInterfaceProps["onChangeData"]
-  onChangeSchema: ComponentRenderMetaProps["onChangeSchema"] //EditUserInterfaceProps["onChangeSchema"]
-  userInterfaceData: UserInterfaceProps["data"]
-  userInterfaceSchema?: ComponentDefinition
-  setValue: IBaseInterfaceComponent["setValue"]
-  getValue: IBaseInterfaceComponent["getValue"]
-  showKey: string
-  title: string
-  valueKey: string
-  footer: {
-    components: ComponentDefinition[]
-  }
-}): JSX.Element {
-  const { getValue, valueKey, showKey } = props
+export function DisplayMode(props: DisplayModeProps): JSX.Element {
+  const { getValue, setValue, valueKey, showKey } = props
+
+  /* ****************************
+   *
+   * PROP WATCHERS
+   */
 
   const visible = React.useMemo(() => {
     const visible = getValue(showKey)
@@ -37,29 +27,51 @@ export function DisplayMode(props: {
     return getValue(valueKey)
   }, [getValue, valueKey])
 
+  const maskStyle = React.useMemo<React.CSSProperties | undefined>(() => {
+    return getCSSPropertiesFromJSON(props.maskStyle)
+  }, [props.maskStyle])
+
+  const bodyStyle = React.useMemo<React.CSSProperties | undefined>(() => {
+    return getCSSPropertiesFromJSON(props.bodyStyle)
+  }, [props.bodyStyle])
+
+  const modalStyle = React.useMemo<React.CSSProperties | undefined>(() => {
+    return getCSSPropertiesFromJSON(props.modalStyle)
+  }, [props.modalStyle])
+
+  /* ****************************
+   *
+   * EVENT HANDLERS
+   */
+
   const handleCancel = () => {
-    props.setValue(props.showKey, false, props.userInterfaceData)
+    setValue([showKey, false])
   }
 
   const handleChangeData: UserInterfaceProps["onChangeData"] = React.useCallback(
     (newData: UserInterfaceProps["data"]) => {
-      const isTargetingRoot = false
-      if (isTargetingRoot) {
-        // Put newData in the root context
-        props.setRootUserInterfaceData(newData)
-      } else {
-        // Put newData in the modal's context
-        props.setValue(props.valueKey, newData, props.userInterfaceData)
-      }
+      setValue([valueKey, newData])
     },
-    [props]
+    [setValue, valueKey]
   )
+
+  /* ****************************
+   *
+   * RENDER
+   */
 
   return (
     <Modal
+      closable={props.closable}
+      destroyOnClose={props.destroyOnClose}
+      mask={props.mask}
+      maskStyle={maskStyle}
+      bodyStyle={bodyStyle}
+      style={modalStyle}
+      onCancel={handleCancel}
       title={props.title || "Edit Item"}
       visible={visible}
-      onCancel={handleCancel}
+      width={props.width}
       footer={
         /*
          * FOOTER
@@ -67,10 +79,10 @@ export function DisplayMode(props: {
         <DataPathContext path="footer.components">
           <ComponentRenderer
             key={"modal-footer"}
-            components={props.footer && props.footer.components}
+            components={(props.footer && props.footer.components) || []}
             data={data}
-            getRootData={props.getRootUserInterfaceData}
-            setRootData={props.setRootUserInterfaceData}
+            getRootUserInterfaceData={props.getRootUserInterfaceData}
+            onChangeRootData={props.onChangeRootData}
             onChangeData={handleChangeData}
             onChangeSchema={() => void 0}
           />
@@ -82,14 +94,22 @@ export function DisplayMode(props: {
       <DataPathContext path="components">
         <ComponentRenderer
           key={"modal-content"}
-          components={props.components}
+          components={props.components || []}
           data={data}
-          getRootData={props.getRootUserInterfaceData}
-          setRootData={props.setRootUserInterfaceData}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          onChangeRootData={props.onChangeRootData}
           onChangeData={handleChangeData}
           onChangeSchema={() => void 0}
         />
       </DataPathContext>
     </Modal>
   )
+}
+
+function getCSSPropertiesFromJSON(jsonStyle?: string): React.CSSProperties | undefined {
+  const cssProperties = tryCatch(() => jsonStyle && (JSON.parse(jsonStyle) as React.CSSProperties)).toUndefined()
+  if (cssProperties !== "") {
+    return cssProperties
+  }
+  return undefined
 }

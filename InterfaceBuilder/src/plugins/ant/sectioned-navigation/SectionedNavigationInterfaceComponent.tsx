@@ -83,7 +83,7 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
       title,
       userInterfaceData,
       getRootUserInterfaceData,
-      setRootUserInterfaceData,
+      onChangeRootData,
     } = this.props
     const { activeKey } = this.state
     const activeSectionKey = activeKey || (sections[0] && sections[0].title)
@@ -116,8 +116,8 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
                   <ComponentRenderer
                     components={components}
                     data={userInterfaceData}
-                    getRootData={getRootUserInterfaceData}
-                    setRootData={setRootUserInterfaceData}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
                       if (this.props.mode === "edit") {

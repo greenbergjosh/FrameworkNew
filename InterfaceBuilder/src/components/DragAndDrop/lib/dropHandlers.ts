@@ -8,7 +8,7 @@ export const dropHandlers = {
   // canDrop(props: DroppableInnerProps) {
   //   return props.allowDrop !== false
   // },
-  hover(props: DroppableInnerProps, monitor: DropTargetMonitor, component: any) {
+  hover(props: DroppableInnerProps, monitor: DropTargetMonitor /*, component: any*/) {
     const item = monitor.getItem() as DraggableInnerProps
     const { index: draggedIndex, /*draggableId,*/ parentDroppableId } = item
     const {

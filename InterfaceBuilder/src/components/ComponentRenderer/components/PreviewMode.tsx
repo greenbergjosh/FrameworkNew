@@ -10,6 +10,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "../../../globalTypes"
+import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
 
 interface PreviewModeProps {
   componentDefinition:
@@ -20,7 +21,7 @@ interface PreviewModeProps {
   userInterfaceData: UserInterfaceProps["data"]
   layoutDefinition: LayoutDefinition
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   mode: UserInterfaceProps["mode"]
   submit: (() => void) | undefined
   Component: typeof BaseInterfaceComponent
@@ -35,25 +36,35 @@ export function PreviewMode(props: PreviewModeProps): JSX.Element {
       userInterfaceData={props.userInterfaceData}
       getRootUserInterfaceData={props.getRootUserInterfaceData}>
       {({ boundComponentDefinition }) => (
-        <DisplayVisibility
+        <ReplaceTokens
           componentDefinition={boundComponentDefinition}
-          layoutDefinition={props.layoutDefinition}
-          mode={props.mode}
-          userInterfaceData={props.userInterfaceData}>
-          <FormField componentDefinition={boundComponentDefinition} layoutDefinition={props.layoutDefinition}>
-            <props.Component
-              {...boundComponentDefinition}
-              userInterfaceData={props.userInterfaceData}
-              getRootUserInterfaceData={props.getRootUserInterfaceData}
-              setRootUserInterfaceData={props.setRootUserInterfaceData}
+          onChangeData={props.onChangeData}
+          onChangeSchema={props.onChangeSchema}
+          userInterfaceData={props.userInterfaceData}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          mode={props.mode}>
+          {({ tokenReplacedComponentDefinition }) => (
+            <DisplayVisibility
+              componentDefinition={tokenReplacedComponentDefinition}
+              layoutDefinition={props.layoutDefinition}
               mode={props.mode}
-              onChangeData={props.onChangeData}
-              onChangeSchema={props.onChangeSchema}
-              submit={props.submit}
-              userInterfaceSchema={boundComponentDefinition}
-            />
-          </FormField>
-        </DisplayVisibility>
+              userInterfaceData={props.userInterfaceData}>
+              <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={props.layoutDefinition}>
+                <props.Component
+                  {...tokenReplacedComponentDefinition}
+                  userInterfaceData={props.userInterfaceData}
+                  getRootUserInterfaceData={props.getRootUserInterfaceData}
+                  onChangeRootData={props.onChangeRootData}
+                  mode={props.mode}
+                  onChangeData={props.onChangeData}
+                  onChangeSchema={props.onChangeSchema}
+                  submit={props.submit}
+                  userInterfaceSchema={tokenReplacedComponentDefinition}
+                />
+              </FormField>
+            </DisplayVisibility>
+          )}
+        </ReplaceTokens>
       )}
     </DataBinding>
   )

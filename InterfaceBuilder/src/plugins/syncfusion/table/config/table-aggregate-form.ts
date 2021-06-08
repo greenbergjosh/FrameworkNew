@@ -12,7 +12,7 @@ export const tableAggregateForm = {
       dataHandlerType: "local",
       size: "small",
       getRootUserInterfaceData: () => void 0,
-      setRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
       data: {
         values: [
           {

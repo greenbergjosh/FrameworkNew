@@ -3,7 +3,7 @@ import { mapManageForm } from "./map-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import UsaMap from "./components/UsaMap"
 import { MapInterfaceComponentProps, MapInterfaceComponentState, MarkerType } from "./types"
-import { get, intersectionWith, isEqual } from "lodash/fp"
+import { intersectionWith, isEqual } from "lodash/fp"
 import { Empty, Icon, Spin } from "antd"
 import { LayoutDefinition } from "../../../globalTypes"
 
@@ -32,8 +32,9 @@ export class MapInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<MapInterfaceComponentProps>) {
-    const prevValue: MarkerType[] = get(prevProps.valueKey, prevProps.userInterfaceData) || []
-    const nextValue: MarkerType[] = get(this.props.valueKey, this.props.userInterfaceData) || []
+    const prevValue: MarkerType[] =
+      this.getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData) || []
+    const nextValue: MarkerType[] = this.getValue(this.props.valueKey) || []
     const intersection = intersectionWith(isEqual, prevValue, nextValue)
 
     if (intersection.length !== prevValue.length || prevValue.length !== nextValue.length) {
@@ -42,8 +43,8 @@ export class MapInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { width, mapType, valueKey, userInterfaceData, markerFillColor, markerLimit } = this.props
-    const rawMarkers = get(valueKey, userInterfaceData) || []
+    const { width, mapType, valueKey, markerFillColor, markerLimit } = this.props
+    const rawMarkers = this.getValue(valueKey) || []
     const markers = markerLimit && markerLimit > 0 ? rawMarkers.slice(0, markerLimit) : rawMarkers
 
     return (

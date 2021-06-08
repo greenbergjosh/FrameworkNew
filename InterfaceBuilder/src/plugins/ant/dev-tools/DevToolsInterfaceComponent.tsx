@@ -2,9 +2,10 @@ import React from "react"
 import { devToolsManageForm } from "./dev-tools-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { DevToolsInterfaceComponentProps, DevToolsInterfaceComponentState } from "./types"
-import JSONEditor from "./components/JSONEditor"
+import { JSONEditor } from "../../../components/JSONEditor/JSONEditor"
 import { Button } from "antd"
 import { LayoutDefinition } from "../../../globalTypes"
+import { JSONEditorProps } from "../../../components/JSONEditor/types"
 
 export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
   DevToolsInterfaceComponentProps,
@@ -19,7 +20,6 @@ export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static defaultProps = {
-    userInterfaceData: {},
     valueKey: "data",
     showBorder: true,
   }
@@ -40,20 +40,12 @@ export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = devToolsManageForm
 
-  // componentDidMount(): void {}
-
-  // componentDidUpdate(prevProps: Readonly<DevToolsInterfaceComponentProps>): void {
-  // const prevValue = get(prevProps.valueKey, prevProps.userInterfaceData)
-  // const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
-  // }
-
-  handleChange = (userInterfaceData: any): void => {
-    const { onChangeData } = this.props
-    onChangeData && onChangeData(userInterfaceData)
+  handleChange: JSONEditorProps["onChange"] = (data): void => {
+    this.setValue([this.props.valueKey, data || {}])
   }
 
   render(): JSX.Element {
-    const { userInterfaceData, height } = this.props
+    const data = this.getValue(this.props.valueKey) || {}
 
     return (
       <div>
@@ -69,7 +61,7 @@ export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
           </Button>
         </Button.Group>
         {this.state.showDataViewer && (
-          <JSONEditor data={userInterfaceData} onChange={this.handleChange} height={height} />
+          <JSONEditor data={data} onChange={this.handleChange} height={this.props.height} />
         )}
       </div>
     )

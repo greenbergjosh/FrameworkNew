@@ -48,7 +48,7 @@ export class NumberInputInterfaceComponent extends BaseInterfaceComponent<Number
   }
 
   handleChange = (value?: number) => {
-    this.setValue(this.props.valueKey, value)
+    this.setValue([this.props.valueKey, value])
   }
 
   private getNumberValue(valueKey: string, defaultValue: string | number | undefined): number | undefined {

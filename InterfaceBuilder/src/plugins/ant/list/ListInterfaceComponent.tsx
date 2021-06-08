@@ -1,4 +1,3 @@
-import { get } from "lodash/fp"
 import React from "react"
 import { v4 as uuid } from "uuid"
 import { listManageForm } from "./list-manage-form"
@@ -57,12 +56,12 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       unwrapped,
       userInterfaceData,
       getRootUserInterfaceData,
-      setRootUserInterfaceData,
+      onChangeRootData,
       valueKey,
     } = this.props
 
     // Get the list data from the data set
-    const data = get(valueKey, userInterfaceData) || []
+    const data = this.getValue(valueKey) || []
 
     return (
       <ComponentRendererModeContext.Consumer>
@@ -76,7 +75,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                     components={components}
                     data={data}
                     getRootUserInterfaceData={getRootUserInterfaceData}
-                    setRootUserInterfaceData={setRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     getValue={this.getValue.bind(this)}
                     setValue={this.setValue.bind(this)}
                     description={emptyText}
@@ -98,7 +97,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                     components={components}
                     data={[]}
                     getRootUserInterfaceData={() => void 0}
-                    setRootUserInterfaceData={() => void 0}
+                    onChangeRootData={() => void 0}
                     getValue={() => null}
                     setValue={() => null}
                     description={emptyText}
@@ -119,12 +118,11 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   components={components}
                   data={data}
                   getRootUserInterfaceData={getRootUserInterfaceData}
-                  setRootUserInterfaceData={setRootUserInterfaceData}
+                  onChangeRootData={onChangeRootData}
                   getValue={this.getValue.bind(this)}
                   setValue={this.setValue.bind(this)}
                   interleave={interleave}
                   preconfigured={preconfigured}
-                  userInterfaceData={userInterfaceData}
                   valueKey={valueKey}
                 />
               )

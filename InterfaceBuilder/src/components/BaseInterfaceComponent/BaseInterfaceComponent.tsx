@@ -1,11 +1,12 @@
 import React from "react"
 import { EventPayloadType } from "../../services/EventBus"
 import { getValue } from "../../lib/getValue"
-import { isUndefined, set } from "lodash/fp"
+import { set } from "lodash/fp"
 import { v4 as uuid } from "uuid"
 import { ComponentDefinition, LayoutDefinition } from "../../globalTypes"
-import { BaseInterfaceComponentProps, GetMergedData, GetValue, SetValue } from "./types"
+import { BaseInterfaceComponentProps, GetValue, SetValue } from "./types"
 import { getDefaultsFromComponentDefinitions } from "./componentDefinitionUtils"
+import { getMergedData } from "./getMergedData"
 
 /* TODO: Create an eventManager HOC to provide an onRaiseEvent prop for all components */
 /**
@@ -15,10 +16,10 @@ import { getDefaultsFromComponentDefinitions } from "./componentDefinitionUtils"
  * @static availableEvents: string[] - Add event names to raise in the component to this array
  * @method raiseEvent - Raise events by calling this method with an event name and a payload
  */
-export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentProps, Y = {}> extends React.Component<
-  T,
-  Y
-> {
+export abstract class BaseInterfaceComponent<
+  T extends BaseInterfaceComponentProps, // Component's props
+  Y = Record<string, unknown> // Component's state
+> extends React.Component<T, Y> {
   private _componentId: string | null = null
 
   public get componentId(): string {
@@ -65,45 +66,8 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   }
 
   /**
-   * Returns data with a value merged at the provided key path
-   * @param key
-   * @param value
-   * @param userInterfaceData
-   */
-  getMergedData: GetMergedData = (key, value, userInterfaceData) => {
-    const pathSegments = key.split(".")
-    const isTargetingRoot = pathSegments[0] === "$root"
-    const isTargetingLocalRoot = pathSegments[0] === "$"
-
-    // Remove "$root" and "$" since they can't be part of the path
-    if (isTargetingRoot || isTargetingLocalRoot) {
-      pathSegments.shift()
-    }
-    const path = pathSegments.join(".")
-
-    let mergedData
-    if (isTargetingRoot) {
-      // The target is "$root" so get the data from root.
-      const uiData = this.props.getRootUserInterfaceData()
-      mergedData = set(path, value, uiData)
-    } else {
-      // Get the local data.
-      const uiData = isUndefined(userInterfaceData) ? this.props.userInterfaceData : userInterfaceData
-      if (isTargetingLocalRoot) {
-        // If the target is local root, then we replace all data at the local root.
-        mergedData = { ...uiData, ...value }
-      } else {
-        // Otherwise we replace it at the path.
-        mergedData = set(path, value, uiData)
-      }
-    }
-
-    return { mergedData, isTargetingRoot }
-  }
-
-  /**
    * Gets the value from local or root UI data.
-   * Provide the "root." keyword at the beginning of the valueKey to use root UI data.
+   * Provide the "$root." keyword at the beginning of the value key to use root UI data.
    * @param key
    * @param userInterfaceData -- Optional, provide if using a different source such as from prevProps
    * @param getRootUserInterfaceData -- Optional, provide if using a different source such as from prevProps
@@ -118,19 +82,20 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
 
   /**
    * Sets the value in local or root UI parentRowData.
-   * Provide the "$root." keyword at the beginning of the valueKey to use root UI parentRowData.
-   * @param key
-   * @param value
-   * @param userInterfaceData
+   * Provide the "$root." keyword at the beginning of the value key to use root UI parentRowData.
+   * @param kvpTuples
    */
-  setValue: SetValue = (key, value, userInterfaceData) => {
-    const { mergedData, isTargetingRoot } = this.getMergedData(key, value, userInterfaceData)
-    if (isTargetingRoot) {
-      // Put newData in the root context
-      this.props.setRootUserInterfaceData(mergedData)
-    } else {
-      // Put newData in the local context
-      this.props.onChangeData && this.props.onChangeData(mergedData)
+  setValue: SetValue = (kvpTuples) => {
+    const { isLocalDataDirty, isRootDataDirty, localData, rootData } = getMergedData(
+      kvpTuples,
+      this.props.userInterfaceData || {},
+      this.props.getRootUserInterfaceData
+    )
+    if (isRootDataDirty) {
+      this.props.onChangeRootData(rootData)
+    }
+    if (isLocalDataDirty) {
+      this.props.onChangeData && this.props.onChangeData(localData)
     }
   }
 

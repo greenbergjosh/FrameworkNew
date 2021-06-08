@@ -37,9 +37,8 @@ export interface ModeProps {
   data: any
   interleave?: InterleaveType
   unwrapped?: boolean
-  userInterfaceData: UserInterfaceProps["data"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   getValue: IBaseInterfaceComponent["getValue"]
   setValue: IBaseInterfaceComponent["setValue"]
   valueKey: string
@@ -51,6 +50,7 @@ export interface DisplayModeProps extends ModeProps {
   description?: string
   listId: string
   orientation?: OrientationType
+  userInterfaceData: UserInterfaceProps["data"]
 }
 
 export interface EditModeProps extends ModeProps {
@@ -62,9 +62,11 @@ export interface DraggableListItemProps extends ModeProps {
   index: number
   component: ComponentDefinition
   listId: string
+  userInterfaceData: UserInterfaceProps["data"]
 }
 
 export interface ListItemProps extends ModeProps {
   index: number
   component: ComponentDefinition
+  userInterfaceData: UserInterfaceProps["data"]
 }

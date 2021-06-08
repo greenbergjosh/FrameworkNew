@@ -1,6 +1,6 @@
 import React from "react"
 import { TimePicker } from "antd"
-import { get, set } from "lodash/fp"
+import { set } from "lodash/fp"
 import moment from "moment"
 import { timeRangeManageForm } from "./time-range-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
@@ -54,22 +54,20 @@ export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRang
   }
 
   private setUIDataByKey(time: moment.Moment, timeKey: string) {
-    const { onChangeData, userInterfaceData } = this.props
     const timeValue = time ? time.format("LT") : undefined
-    onChangeData && onChangeData(set(timeKey, timeValue, userInterfaceData))
+    this.setValue([timeKey, timeValue])
   }
 
-  handleStartTimeChange = (time: moment.Moment, timeString: string): void => {
+  handleStartTimeChange = (time: moment.Moment): void => {
     this.setUIDataByKey(time, this.props.startTimeKey)
   }
 
-  handleEndTimeChange = (time: moment.Moment, timeString: string): void => {
+  handleEndTimeChange = (time: moment.Moment): void => {
     this.setUIDataByKey(time, this.props.endTimeKey)
   }
 
   getTimeValue = (timeKey: string) => {
-    const { userInterfaceData } = this.props
-    const timeValue = get(timeKey, userInterfaceData)
+    const timeValue = this.getValue(timeKey)
     return typeof timeValue !== "undefined" ? moment.utc(timeValue, TIMEFORMAT) : undefined
   }
 

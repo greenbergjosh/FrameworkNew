@@ -1,0 +1,80 @@
+{
+  "inset": false,
+  "size": "small",
+  "bordered": false,
+  "hoverable": false,
+  "invisible": false,
+  "hidden": false,
+  "extra": "",
+  "title": "Repeater Example",
+  "valueKey": "$",
+  "label": "Card",
+  "hideLabel": true,
+  "key": "outer",
+  "component": "card",
+  "components": [
+    {
+      "height": 150,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "maxLength": null,
+      "valueKey": "components[2].value",
+      "label": "Text pointing to 3rd item",
+      "hideLabel": false,
+      "component": "input"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "maxLength": null,
+      "valueKey": "valueOutsideRepeater",
+      "label": "Text Outside Repeater",
+      "hideLabel": false,
+      "component": "input"
+    },
+    {
+      "invisible": false,
+      "hidden": false,
+      "hasLastItemComponents": false,
+      "hasInitialRecord": false,
+      "emptyText": "No Items",
+      "addItemLabel": "Add Item",
+      "valueKey": "components",
+      "label": "Components",
+      "hideLabel": false,
+      "component": "repeater",
+      "components": [
+        {
+          "size": "default",
+          "invisible": false,
+          "hidden": false,
+          "maxLength": null,
+          "valueKey": "value",
+          "label": "Text",
+          "hideLabel": false,
+          "component": "input"
+        },
+        {
+          "size": "default",
+          "invisible": false,
+          "hidden": false,
+          "valueKey": "valueNum",
+          "label": "Number",
+          "hideLabel": false,
+          "component": "number-input"
+        }
+      ]
+    }
+  ]
+}

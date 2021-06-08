@@ -1,7 +1,6 @@
 import { ParamKVPMapsType } from "../../../plugins/ant/download/types"
-import { get } from "lodash/fp"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
-import { UserInterfaceProps } from "../../../globalTypes"
+import { IBaseInterfaceComponent } from "components/BaseInterfaceComponent/types"
 
 /**
  *
@@ -9,7 +8,7 @@ import { UserInterfaceProps } from "../../../globalTypes"
  * @param params
  * @param configOverrides
  */
-export async function postData(url = "", params = {}, configOverrides = {}) {
+export async function postData(url = "", params = {}, configOverrides = {}): Promise<{ headers: Headers; data: any }> {
   // Default options are marked with *
   const request: RequestInit = {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
@@ -46,9 +45,8 @@ export function getFilename(
   useFilenameFromServer: boolean,
   response: { headers: Headers; data: Blob },
   filename: string
-) {
-  const filenameFixed = useFilenameFromServer ? getFilenameFromHeaders(response.headers, filename) : filename
-  return filenameFixed
+): string {
+  return useFilenameFromServer ? getFilenameFromHeaders(response.headers, filename) : filename
 }
 
 function getFilenameFromHeaders(headers: Headers, defaultFilename: string) {
@@ -68,23 +66,23 @@ function getFilenameFromHeaders(headers: Headers, defaultFilename: string) {
 /**
  * Convert param definitions to params hash
  * @param paramKVPMaps
- * @param userInterfaceData
+ * @param getValue
  * @param paramsValueKey
  * @deprecated
  */
 export function convertParamKVPMapsToParams(
   paramKVPMaps: ParamKVPMapsType,
-  userInterfaceData: UserInterfaceProps["data"],
+  getValue: IBaseInterfaceComponent["getValue"],
   paramsValueKey?: string
 ): JSONRecord {
-  const singleKeyParams = (paramsValueKey && get(paramsValueKey, userInterfaceData)) || {}
+  const singleKeyParams = (paramsValueKey && getValue(paramsValueKey)) || {}
 
   if (!paramKVPMaps || !paramKVPMaps.values || !paramKVPMaps.values.reduce) {
     return { ...singleKeyParams }
   }
 
   const params = paramKVPMaps.values.reduce((acc, item) => {
-    const val = get(item.valueKey, userInterfaceData)
+    const val = getValue(item.valueKey)
     if (val) acc[item.fieldName] = val
     return acc
   }, {} as JSONRecord)

@@ -13,7 +13,7 @@ export const tableGroupForm = {
       defaultValue: true,
       size: "small",
       getRootUserInterfaceData: () => void 0,
-      setRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
     },
     {
       key: "groupOrder",
@@ -23,7 +23,7 @@ export const tableGroupForm = {
       component: "number-input",
       size: "small",
       getRootUserInterfaceData: () => void 0,
-      setRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
     },
   ],
 } as SectionDefinition

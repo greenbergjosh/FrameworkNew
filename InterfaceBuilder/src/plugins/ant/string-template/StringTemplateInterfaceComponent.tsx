@@ -110,11 +110,11 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
       ? this.props.serialize(nextData) // First from parent component, if provided
       : this.state.serialize(nextData) // Else from local config
 
-    this.setValue(this.props.valueKey, serializedData)
+    this.setValue([this.props.valueKey, serializedData])
   }
 
   render(): JSX.Element {
-    const { components, preconfigured, getRootUserInterfaceData, setRootUserInterfaceData, showBorder } = this.props
+    const { components, preconfigured, getRootUserInterfaceData, onChangeRootData, showBorder } = this.props
 
     return (
       <DataPathContext path="components">
@@ -123,8 +123,8 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
             <ComponentRenderer
               components={components || ([] as ComponentDefinition[])}
               data={this.state.data}
-              getRootData={getRootUserInterfaceData}
-              setRootData={setRootUserInterfaceData}
+              getRootUserInterfaceData={getRootUserInterfaceData}
+              onChangeRootData={onChangeRootData}
               dragDropDisabled={!!preconfigured}
               onChangeData={this.handleChangeFromSubcomponents}
               onChangeSchema={(newSchema) => {
@@ -140,8 +140,8 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
             data={this.state.data}
-            getRootData={getRootUserInterfaceData}
-            setRootData={setRootUserInterfaceData}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             dragDropDisabled={!!preconfigured}
             onChangeData={this.handleChangeFromSubcomponents}
             onChangeSchema={(newSchema) => {

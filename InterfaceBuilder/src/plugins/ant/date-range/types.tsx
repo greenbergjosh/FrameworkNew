@@ -9,7 +9,6 @@ export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNam
   onChangeData: UserInterfaceProps["onChangeData"]
   startDateKey: string
   endDateKey: string
-  userInterfaceData: UserInterfaceProps["data"]
 }
 
 export interface DateRangeInterfaceComponentState {}

@@ -1,5 +1,4 @@
 import React from "react"
-import { set } from "lodash/fp"
 import { Icon, Radio } from "antd"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { MODES, SelectableChildProps, SelectableProps } from "../_shared/selectable/types"
@@ -59,8 +58,7 @@ export class RadioInterfaceComponent extends BaseInterfaceComponent<RadioProps> 
           : `${valuePrefix}${value}${valueSuffix}`
         : value
 
-    onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
-
+    this.setValue([valueKey, newValue])
     this.raiseEvent("valueChanged", { value: newValue })
   }
 

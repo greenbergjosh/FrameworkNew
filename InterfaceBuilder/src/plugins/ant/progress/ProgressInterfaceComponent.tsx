@@ -1,6 +1,5 @@
 import { Progress } from "antd"
 import { ProgressProps, ProgressSize } from "antd/lib/progress/progress"
-import { get } from "lodash/fp"
 import React from "react"
 import { TSEnum } from "../../../@types/ts-enum"
 import { progressManageForm } from "./progress-manage-form"
@@ -73,24 +72,23 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<ProgressI
       statuses,
       successPercent,
       type,
-      userInterfaceData,
       valueKey,
       width,
     } = this.props
 
     // Determine Status
-    const statusValue = statusKey && get(statusKey, userInterfaceData)
+    const statusValue = statusKey && this.getValue(statusKey)
     const status = forceStatus === "useAPI" ? mapStatus(statuses || STATUS, statusValue) : forceStatus
 
     // Determine Value
-    const rawValue = get(valueKey, userInterfaceData)
+    const rawValue = this.getValue(valueKey)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     let percent = value
     let format
 
     // Calculate percent, if necessary
     if (calculatePercent) {
-      const rawTotal = get(maxValueKey, userInterfaceData)
+      const rawTotal = this.getValue(maxValueKey)
       const total = typeof rawTotal !== "undefined" ? rawTotal : defaultValue
       percent = Math.round((value / total) * 100)
       format = () => `${value}/${total}`

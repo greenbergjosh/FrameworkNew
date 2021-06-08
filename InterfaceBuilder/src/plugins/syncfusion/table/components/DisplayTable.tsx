@@ -1,5 +1,5 @@
 import React from "react"
-import { get, isArray, isEmpty, isEqual, sortBy } from "lodash/fp"
+import { isArray, isEmpty, isEqual, sortBy } from "lodash/fp"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -11,6 +11,7 @@ import StandardGrid from "../StandardGrid/StandardGrid"
 import { DisplayTableProps, SortableGroupableColumnModel } from "../types"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 import { RowDetail } from "./RowDetail"
+import { getValue } from "lib/getValue"
 
 /**
  * Display Table
@@ -28,7 +29,7 @@ export function DisplayTable({
   rowDetails,
   userInterfaceData,
   getRootUserInterfaceData,
-  setRootUserInterfaceData,
+  onChangeRootData,
   getValue,
   setValue,
   valueKey,
@@ -73,10 +74,10 @@ export function DisplayTable({
               <RowDetail
                 components={rowDetails}
                 getRootUserInterfaceData={getRootUserInterfaceData}
-                setRootUserInterfaceData={setRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 mode="display"
                 onChangeData={(newData) => {
-                  setValue(valueKey!, newData, userInterfaceData)
+                  setValue([valueKey, newData])
                 }}
                 parentRowData={parentData}
               />
@@ -88,12 +89,11 @@ export function DisplayTable({
 }
 
 function propsAreEqual(prevProps: DisplayTableProps, nextProps: DisplayTableProps) {
-  const prevData = prevProps.valueKey && get(prevProps.valueKey, prevProps.userInterfaceData)
-  const nextData = nextProps.valueKey && get(nextProps.valueKey, nextProps.userInterfaceData)
-  const eqData = isEqual(prevData, nextData)
-  const eq = eqData
-
-  return eq
+  const prevData =
+    prevProps.valueKey && getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData)
+  const nextData =
+    nextProps.valueKey && getValue(nextProps.valueKey, nextProps.userInterfaceData, nextProps.getRootUserInterfaceData)
+  return isEqual(prevData, nextData)
 }
 
 export default React.memo(DisplayTable, propsAreEqual)

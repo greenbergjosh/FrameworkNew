@@ -18,7 +18,7 @@ export const editComponents: ComponentDefinition[] = [
     orientation: "horizontal",
     preconfigured: true,
     getRootUserInterfaceData: () => void 0,
-    setRootUserInterfaceData: () => void 0,
+    onChangeRootData: () => void 0,
     components: [
       {
         key: "column",

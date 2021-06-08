@@ -47,8 +47,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<PieInterfaceComponentProps>): void {
-    const prevValue = get(prevProps.valueKey, prevProps.userInterfaceData)
-    const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
+    const prevValue = this.getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData)
+    const nextValue = this.getValue(this.props.valueKey)
 
     if (
       !isEqual(prevValue, nextValue) ||
@@ -74,14 +74,13 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
         sliceLabelValueFunction,
         sliceLabelValueFunctionSrc,
         threshold,
-        userInterfaceData,
         valueKey,
         preSorted,
         otherAggregatorFunction,
         otherAggregatorFunctionSrc,
       } = this.props
 
-      const rawData: JSONRecord[] = get(valueKey, userInterfaceData)
+      const rawData: JSONRecord[] = this.getValue(valueKey)
 
       const labelValueFunction =
         sliceLabelValueFunction || parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)

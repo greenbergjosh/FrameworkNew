@@ -6,7 +6,7 @@ import { BaseInterfaceComponent } from "../../../components/BaseInterfaceCompone
 import { colorPickerManageForm } from "./color-picker-manage-form"
 import { LayoutDefinition } from "../../../globalTypes"
 import { Input, Popover } from "antd"
-import { isEmpty, set } from "lodash/fp"
+import { isEmpty, isEqual } from "lodash/fp"
 import { RgbaColor, RgbaColorPicker } from "react-colorful"
 import { Undraggable } from "components/DragAndDrop/Undraggable"
 import { ColorPickerInterfaceComponentProps, ColorPickerInterfaceComponentState } from "plugins/ant/color-picker/types"
@@ -58,16 +58,18 @@ export class ColorPickerInterfaceComponent extends BaseInterfaceComponent<
     this.setState({ colorString, rgbaColor, colorSpace })
   }
 
-  componentDidUpdate(prevProps: Readonly<ColorPickerInterfaceComponentProps>): void {
-    const prevValue = this.getValue(prevProps.valueKey, prevProps.userInterfaceData) as string
-    const nextValue = this.getValue(this.props.valueKey) as string
+  shouldComponentUpdate(nextProps: Readonly<ColorPickerInterfaceComponentProps>): boolean {
+    const prevValue = this.getValue(this.props.valueKey)
+    const nextValue = this.getValue(nextProps.valueKey, nextProps.userInterfaceData, nextProps.getRootUserInterfaceData)
+    return isEqual(prevValue, nextValue)
+  }
 
-    if (prevValue !== nextValue) {
-      const colorString = getColorStringFromString(nextValue, this.props.defaultValue)
-      const colorSpace = colorString.startsWith("#") ? "hex" : "rgba"
-      const rgbaColor = tinycolor(colorString).toRgb()
-      this.setState({ colorString, rgbaColor, colorSpace })
-    }
+  componentDidUpdate(): void {
+    const nextValue = this.getValue(this.props.valueKey)
+    const colorString = getColorStringFromString(nextValue, this.props.defaultValue)
+    const colorSpace = colorString.startsWith("#") ? "hex" : "rgba"
+    const rgbaColor = tinycolor(colorString).toRgb()
+    this.setState({ colorString, rgbaColor, colorSpace })
   }
 
   /* *******************************************
@@ -80,8 +82,7 @@ export class ColorPickerInterfaceComponent extends BaseInterfaceComponent<
    * @public
    */
   public reset(): void {
-    const { onChangeData, userInterfaceData, valueKey, defaultValue } = this.props
-    onChangeData && onChangeData(set(valueKey, defaultValue || "", userInterfaceData))
+    this.setValue([this.props.valueKey, this.props.defaultValue || ""])
   }
 
   handleInputChange = ({ target: { value } }: React.ChangeEvent<HTMLInputElement>): void => {
@@ -89,14 +90,14 @@ export class ColorPickerInterfaceComponent extends BaseInterfaceComponent<
     const colorSpace = colorString.startsWith("#") ? "hex" : "rgba"
     const rgbaColor = tinycolor(colorString).toRgb()
     this.setState({ colorString, rgbaColor, colorSpace })
-    this.setValue(this.props.valueKey, colorString)
+    this.setValue([this.props.valueKey, colorString])
   }
 
   handlePickerChange = (rgbaColor: RgbaColor): void => {
     const colorString = getColorStringFromColor(rgbaColor, this.state.colorSpace)
     console.log("ColorPicker", { rgbaColor, colorString })
     this.setState({ colorString, rgbaColor })
-    this.setValue(this.props.valueKey, colorString)
+    this.setValue([this.props.valueKey, colorString])
   }
 
   hide = () => {

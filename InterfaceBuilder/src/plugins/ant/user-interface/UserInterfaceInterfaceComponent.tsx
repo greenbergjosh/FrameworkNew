@@ -1,4 +1,3 @@
-import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterface } from "components/UserInterface/UserInterface"
 import { userInterfaceManageForm } from "./user-interface-manage-form"
@@ -59,18 +58,16 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
     this.state = { data: props.defaultDataValue }
   }
 
-  handleChangeData = (data: any): void => {
+  handleChangeData = (data: UserInterfaceProps["data"]): void => {
     this.setState({ data })
   }
 
   handleChangeSchema = (schema: ComponentDefinition[]) => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    // console.log("UserInterfaceInterfaceComponent.onChangeSchema", schema, onChangeData)
-    onChangeData && onChangeData(set(valueKey, schema, userInterfaceData))
+    this.setValue([this.props.valueKey, schema])
   }
 
   render(): JSX.Element {
-    const { defaultValue, /*mode,*/ userInterfaceData, valueKey, submit } = this.props
+    const { defaultValue, valueKey, submit } = this.props
     const { data } = this.state
     if (this.props.mode === "edit") {
       return (
@@ -78,14 +75,14 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
           <div>
             <div style={{ pointerEvents: "none" }}>
               <UserInterface
-                components={get(valueKey, userInterfaceData) || defaultValue}
+                components={this.getValue(valueKey) || defaultValue}
                 data={data}
                 mode="edit"
                 onChangeData={this.handleChangeData}
                 onChangeSchema={this.handleChangeSchema}
                 submit={submit}
                 getRootUserInterfaceData={this.props.getRootUserInterfaceData}
-                setRootUserInterfaceData={this.props.setRootUserInterfaceData}
+                onChangeRootData={this.props.onChangeRootData}
                 hideMenu={this.props.hideMenu}
                 title={this.props.label}
               />
@@ -96,14 +93,14 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
     }
     return (
       <UserInterface
-        components={get(valueKey, userInterfaceData) || defaultValue}
+        components={this.getValue(valueKey) || defaultValue}
         data={data}
         mode="edit"
         onChangeData={this.handleChangeData}
         onChangeSchema={this.handleChangeSchema}
         submit={submit}
         getRootUserInterfaceData={this.props.getRootUserInterfaceData}
-        setRootUserInterfaceData={this.props.setRootUserInterfaceData}
+        onChangeRootData={this.props.onChangeRootData}
         hideMenu={this.props.hideMenu}
         title={this.props.label}
       />

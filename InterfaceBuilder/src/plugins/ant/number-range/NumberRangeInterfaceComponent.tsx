@@ -1,6 +1,6 @@
 import { Slider } from "antd"
 import { SliderMarks, SliderValue } from "antd/lib/slider"
-import { get, set } from "lodash/fp"
+import { set } from "lodash/fp"
 import React from "react"
 import { numberRangeManageForm } from "./number-range-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
@@ -9,6 +9,10 @@ import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } f
 interface LabelValue {
   label?: string
   value?: number
+}
+
+type NumberRange = {
+  [key: string]: number
 }
 
 export interface NumberRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -65,17 +69,7 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
     upperBound,
     endKey,
     startKey,
-  }: NumberRangeInterfaceComponentProps) {
-    console.log("NumberRangeInterfaceComponent.getDefaultValue", {
-      defaultRangeValueType,
-      defaultRangeLowerValue,
-      defaultRangeUpperValue,
-      lowerBound,
-      upperBound,
-      endKey,
-      startKey,
-    })
-
+  }: NumberRangeInterfaceComponentProps): NumberRange {
     if (defaultRangeValueType !== "none") {
       let lowerValue, upperValue
       if (defaultRangeValueType === "full") {
@@ -87,15 +81,15 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
       }
       return set(startKey, lowerValue, set(endKey, upperValue, {}))
     }
-
     return {}
   }
 
   handleChange = (value: SliderValue) => {
-    const { endKey, startKey, onChangeData, userInterfaceData } = this.props
-
     if (Array.isArray(value)) {
-      onChangeData && onChangeData(set(startKey, value[0], set(endKey, value[1], userInterfaceData)))
+      this.setValue([
+        [this.props.startKey, value[0]],
+        [this.props.endKey, value[1]],
+      ])
     }
   }
 
@@ -104,9 +98,7 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   getValues = (): [number, number] => {
-    const { endKey, startKey, userInterfaceData } = this.props
-
-    return [get(startKey, userInterfaceData), get(endKey, userInterfaceData)]
+    return [this.getValue(this.props.startKey), this.getValue(this.props.endKey)]
   }
 
   render(): JSX.Element {

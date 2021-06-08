@@ -24,7 +24,7 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
   static manageForm = tabsManageForm
 
   render(): JSX.Element {
-    const { onChangeData, tabs, userInterfaceData, getRootUserInterfaceData, setRootUserInterfaceData } = this.props
+    const { onChangeData, tabs, userInterfaceData, getRootUserInterfaceData, onChangeRootData } = this.props
     return (
       <DataPathContext path="tabs">
         <Tabs defaultActiveKey="tab0">
@@ -35,8 +35,8 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
                   <ComponentRenderer
                     components={(tab as ComponentDefinitionRecursiveProp).components || ([] as ComponentDefinition[])}
                     data={userInterfaceData}
-                    getRootData={getRootUserInterfaceData}
-                    setRootData={setRootUserInterfaceData}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
                       if (this.props.mode === "edit") {

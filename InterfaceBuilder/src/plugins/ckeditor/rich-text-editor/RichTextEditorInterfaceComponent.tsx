@@ -1,5 +1,4 @@
 import CKEditor from "ckeditor4-react"
-import { get, set } from "lodash/fp"
 import React from "react"
 import { richTextEditorManageForm } from "./rich-text-editor-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
@@ -44,15 +43,12 @@ export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<Inp
   }
 
   handleChange = (evt: CKEDITOR.eventInfo): void => {
-    const value = evt.editor.getData()
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
+    this.setValue([this.props.valueKey, evt.editor.getData()])
   }
 
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey } = this.props
-    const rawValue = get(valueKey, userInterfaceData)
-    const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
+    const rawValue = this.getValue(this.props.valueKey)
+    const value = typeof rawValue !== "undefined" ? rawValue : this.props.defaultValue
     return (
       <CKEditor
         onChange={this.handleChange}
