@@ -5,7 +5,6 @@ import { PathEditorInterfaceComponentProps, PathEditorInterfaceComponentState } 
 import { some } from "fp-ts/lib/Option"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import { pathExtraLib } from "./pathExtraLib"
-import { get, set } from "lodash/fp"
 
 export class PathEditorInterfaceComponent extends BaseInterfaceComponent<
   PathEditorInterfaceComponentProps,
@@ -37,10 +36,10 @@ export class PathEditorInterfaceComponent extends BaseInterfaceComponent<
    */
 
   handleChange = ({ value: newValue }: { value: string }) => {
-    const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
-    const value = get(valueKey, userInterfaceData) || defaultValue
+    const { defaultValue, valueKey } = this.props
+    const value = this.getValue(valueKey) || defaultValue
     if ((newValue || "") !== (value || "")) {
-      onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+      this.setValue([valueKey, newValue])
     }
   }
 
@@ -61,9 +60,8 @@ export class PathEditorInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { defaultTheme, defaultValue, userInterfaceData, valueKey } = this.props
-
-    const value = get(valueKey, userInterfaceData) || defaultValue
+    const { defaultTheme, defaultValue, valueKey } = this.props
+    const value = this.getValue(valueKey) || defaultValue
 
     return (
       <CodeEditor

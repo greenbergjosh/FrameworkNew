@@ -53,7 +53,7 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
               appConfig={props.appConfig}
               data={props.data}
               getRootUserInterfaceData={() => props.data}
-              setRootUserInterfaceData={(newData: UserInterfaceProps["data"]) =>
+              onChangeRootData={(newData: UserInterfaceProps["data"]) =>
                 props.onChangeData && props.onChangeData(newData)
               }
               onChangeData={props.onChangeData}

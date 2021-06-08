@@ -18,7 +18,7 @@ export interface ContentPanelProps {
   data: UserInterfaceProps["data"]
   onChangeData: UserInterfaceProps["onChangeData"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
 }
 
 export interface ITheme {

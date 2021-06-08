@@ -12,7 +12,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
   const {
     columns,
     getRootUserInterfaceData,
-    setRootUserInterfaceData,
+    onChangeRootData,
     onChangeData,
     parameterValues,
     parentData,
@@ -42,7 +42,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
           columnType: column.type,
           dispatch,
           getRootUserInterfaceData,
-          setRootUserInterfaceData,
+          onChangeRootData,
           onChangeData,
           parameterValues: parameterValues && parameterValues.toUndefined(),
           parentData,
@@ -72,7 +72,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
     parameterValues,
     parentData,
     getRootUserInterfaceData,
-    setRootUserInterfaceData,
+    onChangeRootData,
   ])
 
   return <Table.TableInterfaceComponent {...props} columns={enrichedColumns} />

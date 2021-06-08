@@ -1,9 +1,4 @@
-import {
-  ComponentDefinitionNamedProps,
-  ComponentRenderMetaProps,
-  EditorTheme,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
+import { ComponentDefinitionNamedProps, EditorTheme, UserInterfaceProps } from "@opg/interface-builder"
 
 export interface PathEditorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "path-editor"
@@ -12,7 +7,7 @@ export interface PathEditorInterfaceComponentProps extends ComponentDefinitionNa
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   valueKey: string
 }
 

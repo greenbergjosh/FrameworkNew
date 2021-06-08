@@ -8,7 +8,7 @@ import { GroupSettingsModel, PageSettingsModel, SortSettingsModel } from "@syncf
 export interface ReportProps {
   data?: JSONRecord
   getRootUserInterfaceData?: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData?: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData?: UserInterfaceProps["onChangeRootData"]
   isChildReport?: boolean
   report: GlobalConfigReference | LocalReportConfig
   withoutHeader?: boolean
@@ -16,7 +16,7 @@ export interface ReportProps {
 
 export interface ReportBodyProps extends PropsFromQueryParams {
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   isChildReport?: boolean
   parentData?: JSONRecord
   queryConfig: QueryConfig

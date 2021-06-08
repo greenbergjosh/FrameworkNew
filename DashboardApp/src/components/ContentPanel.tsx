@@ -61,7 +61,7 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
             contextManager={userInterfaceContextManager}
             data={props.data}
             getRootUserInterfaceData={props.getRootUserInterfaceData}
-            setRootUserInterfaceData={props.setRootUserInterfaceData}
+            onChangeRootData={props.onChangeRootData}
             keyPrefix={`${appPaths.appRootPath}/${appPaths.pagePath.join("/")}/`}
             mode="display"
             onChangeData={props.onChangeData}

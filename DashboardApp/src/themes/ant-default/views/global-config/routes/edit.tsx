@@ -389,11 +389,11 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                           contextManager={userInterfaceContextManager}
                           data={getData(form)}
                           getRootUserInterfaceData={() => getData(form)}
-                          setRootUserInterfaceData={(value: any) => {
+                          onChangeRootData={(value: any) => {
                             form.setFieldValue("config", JSON.stringify(value, null, 2))
                             form.setFieldTouched("config", true)
                           }}
-                          onChangeData={(value: any) => {
+                          onChangeData={(value) => {
                             console.log("edit", "UserInterface.onChangeData", "new config", value)
                             form.setFieldValue("config", JSON.stringify(value, null, 2))
                             form.setFieldTouched("config", true)

@@ -1,5 +1,6 @@
 import React, { CSSProperties } from "react"
-import { BaseInterfaceComponent, UserInterfaceContext } from "@opg/interface-builder"
+import { Alert, Empty, Icon } from "antd"
+import { BaseInterfaceComponent, getMergedData, UserInterfaceContext, UserInterfaceProps } from "@opg/interface-builder"
 import { executeManageForm } from "./execute-manage-form"
 import {
   ExecuteInterfaceComponentProps,
@@ -14,7 +15,6 @@ import {
 import RemoteConfig from "./components/RemoteConfig/RemoteConfig"
 import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
 import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
-import { Empty, Icon } from "antd"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../../data/JSON"
 import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
@@ -151,10 +151,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private handleRaiseEvent = (eventName: string, eventPayload: any): void => {
-    const { outboundLoadingKey, userInterfaceData } = this.props
-    if (outboundLoadingKey) {
+    if (this.props.outboundLoadingKey) {
       const isLoading = eventName === "loading"
-      this.setValue(outboundLoadingKey, isLoading, userInterfaceData)
+      this.setValue([this.props.outboundLoadingKey, isLoading])
     }
     this.raiseEvent(eventName, eventPayload)
   }
@@ -169,13 +168,23 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
      * Temporarily merge TransientParams with userInterfaceData
      * so we can map the paramKVPMaps all at once and extract either data.
      */
-    const uiDataWithTransientParams = Object.keys(this.state.transientParams).reduce(
+    const uiDataWithTransientParams = Object.keys(this.state.transientParams).reduce<UserInterfaceProps["data"]>(
       (acc, key) => {
-        const val = this.state.transientParams[key] //this.getValue(key)
-        const { mergedData } = this.getMergedData(key, val, acc)
-        return mergedData
+        const val = this.state.transientParams[key]
+        const { isLocalDataDirty, isRootDataDirty, localData, rootData } = getMergedData(
+          [key, val],
+          userInterfaceData,
+          this.props.getRootUserInterfaceData
+        )
+        if (isLocalDataDirty) {
+          acc = { ...acc, ...localData }
+        }
+        if (isRootDataDirty) {
+          acc = { ...acc, $root: { ...acc.$root, ...rootData } }
+        }
+        return acc
       },
-      { ...userInterfaceData } as JSONRecord
+      { ...userInterfaceData, $root: this.props.getRootUserInterfaceData() }
     )
 
     /* Nothing to map so just merge the TransientParams and return */
@@ -184,21 +193,17 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
 
     /* Map the query params */
-    const params = paramKVPMaps.values.reduce((acc, item) => {
+    const params = paramKVPMaps.values.reduce<JSONRecord>((acc, item) => {
       const val = this.getValue(item.valueKey, uiDataWithTransientParams)
       if (val) acc[item.fieldName] = val
       return acc
-    }, {} as JSONRecord)
+    }, {})
 
     return params
   }
 
-  private handleResults = (data: any) => {
-    const { onChangeData, outboundValueKey, userInterfaceData } = this.props
-
-    console.log("handleChangeData", { data })
-    // onChangeData && onChangeData(set(outboundValueKey, data, userInterfaceData))
-    this.setValue(outboundValueKey, data, userInterfaceData)
+  private handleResults = (data: UserInterfaceProps["data"]) => {
+    this.setValue([this.props.outboundValueKey, data])
   }
 
   /* ******************************************
@@ -207,11 +212,16 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
    */
 
   getQueryStrategy(): JSX.Element {
+    if (!this.context) {
+      return <Alert type="warning" message="Remote Component is missing a context" />
+    }
+
     const {
       buttonLabel,
       buttonProps,
       getRootUserInterfaceData,
-      setRootUserInterfaceData,
+      onChangeRootData,
+      mode,
       onChangeData,
       outboundValueKey,
       remoteQuery,
@@ -219,6 +229,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       userInterfaceData,
       queryType,
     } = this.props
+    const { executeQuery, executeQueryUpdate, loadById, reportDataByQuery, executeHTTPRequestQuery } = this.context
     let castProps
 
     switch (queryType) {
@@ -233,8 +244,8 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
-            mode={this.props.mode}
+            onChangeRootData={onChangeRootData}
+            mode={mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
@@ -246,22 +257,24 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             setParentSubmitting={this.setSubmitting}
             useRedirect={castProps.RemoteConfig_useRedirect}
             userInterfaceData={userInterfaceData}
+            getValue={this.getValue.bind(this)}
           />
         )
       case "remote-query":
         castProps = this.props as ExecuteRemoteQueryInterfaceComponentProps
+
         return (
           <RemoteQuery
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            executeQuery={this.context!.executeQuery}
-            executeQueryUpdate={this.context!.executeQueryUpdate}
+            executeQuery={executeQuery}
+            executeQueryUpdate={executeQueryUpdate}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteQuery_isCRUD}
-            loadById={this.context!.loadById}
-            mode={this.props.mode}
+            loadById={loadById}
+            mode={mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
@@ -269,7 +282,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submitting}
             queryConfigId={remoteQuery as PersistedConfig["id"]}
-            reportDataByQuery={this.context!.reportDataByQuery}
+            reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
           />
@@ -280,13 +293,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteUrl
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            executeHTTPRequestQuery={this.context!.executeHTTPRequestQuery}
+            executeHTTPRequestQuery={executeHTTPRequestQuery}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteUrl_isCRUD}
-            loadById={this.context!.loadById}
-            mode={this.props.mode}
+            loadById={loadById}
+            mode={mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
@@ -294,7 +307,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submitting}
             queryConfigId={remoteUrl as PersistedConfig["id"]}
-            reportDataByQuery={this.context!.reportDataByQuery}
+            reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
           />

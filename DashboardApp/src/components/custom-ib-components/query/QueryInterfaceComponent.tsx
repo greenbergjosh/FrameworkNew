@@ -6,7 +6,9 @@ import {
   BaseInterfaceComponent,
   ComponentRenderer,
   DataPathContext,
+  getMergedData,
   UserInterfaceContext,
+  UserInterfaceProps,
 } from "@opg/interface-builder"
 import { QueryInterfaceComponentProps, QueryInterfaceComponentState } from "./types"
 
@@ -37,17 +39,27 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
   static contextType = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
+  private getQueryResultUIData(result: QueryChildProps<any>): UserInterfaceProps["data"] {
+    const { userInterfaceData, valueKey, loadingKey = "loading" } = this.props
+    return getMergedData(
+      [
+        [valueKey, result.data],
+        [loadingKey, result.loading],
+      ],
+      userInterfaceData,
+      this.props.getRootUserInterfaceData
+    )
+  }
+
   render(): JSX.Element {
     const {
       components,
-      loadingKey = "loading",
       mode,
       onChangeData,
-      queryType,
       remoteDataFilter,
       userInterfaceData,
       getRootUserInterfaceData,
-      setRootUserInterfaceData,
+      onChangeRootData,
       valueKey,
     } = this.props
 
@@ -55,16 +67,14 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       <DataPathContext path="components">
         <ComponentRenderer
           components={components}
-          data={{ ...userInterfaceData, [valueKey]: result.data, [loadingKey]: result.loading }}
-          getRootData={getRootUserInterfaceData}
-          setRootData={setRootUserInterfaceData}
+          data={this.getQueryResultUIData(result)}
+          getRootUserInterfaceData={getRootUserInterfaceData}
+          onChangeRootData={onChangeRootData}
           onChangeData={onChangeData}
-          // onChangeSchema={(newSchema: any) => {
-          //   if (this.props.mode === "edit") {
-          //     this.props.onChangeSchema && this.props.onChangeSchema(newSchema)
-          //   }
-          // }}
-          onChangeSchema={(newSchema: any) => {
+          onChangeSchema={(newSchema) => {
+            // if (this.props.mode === "edit") {
+            //   this.props.onChangeSchema && this.props.onChangeSchema(newSchema)
+            // }
             console.warn(
               "QueryInterfaceComponent.render",
               "TODO: Cannot alter schema inside ComponentRenderer in Query",
@@ -81,7 +91,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
           <Query
             dataKey={valueKey}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}
@@ -94,7 +104,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
           <Query
             dataKey={valueKey}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}
@@ -107,7 +117,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
           <Query
             dataKey={valueKey}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}

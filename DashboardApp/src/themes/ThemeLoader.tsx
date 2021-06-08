@@ -45,7 +45,7 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
     return OpgCorporateTheme
   }, [fromStore.appConfig])
 
-  function handleChangeData(newData: any) {
+  function handleChangeData(newData: UserInterfaceProps["data"]) {
     setData(newData)
   }
 

@@ -15,7 +15,7 @@ import * as record from "fp-ts/lib/Record"
 export const QueryForm = React.memo(
   ({
     getRootUserInterfaceData,
-    setRootUserInterfaceData,
+    onChangeRootData,
     layout,
     parameters,
     parameterValues,
@@ -149,7 +149,7 @@ export const QueryForm = React.memo(
             contextManager={fromStore.privilegedUserInterfaceContextManager}
             data={formState}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            setRootUserInterfaceData={setRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             mode="display"
             onChangeData={updateFormState}
             submit={handleSubmit}

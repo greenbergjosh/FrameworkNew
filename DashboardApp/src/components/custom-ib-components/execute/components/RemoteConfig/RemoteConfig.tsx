@@ -24,7 +24,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     entityTypeId,
     getParams,
     getRootUserInterfaceData,
-    setRootUserInterfaceData,
+    onChangeRootData,
     mode,
     onChangeData,
     onResults,
@@ -37,6 +37,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     setParentSubmitting,
     useRedirect,
     userInterfaceData,
+    getValue,
   } = props
 
   /* *************************************
@@ -101,10 +102,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
      */
     setParameterValues(some(parameterValues))
     const queryFormValues: JSONRecord = getQueryFormValues(queryConfig, satisfiedByParentParams, parameterValues)
-
-    const uiDataSlice: JSONRecord = !isEmpty(outboundValueKey)
-      ? get(outboundValueKey, userInterfaceData)
-      : userInterfaceData
+    const uiDataSlice: JSONRecord = !isEmpty(outboundValueKey) ? getValue(outboundValueKey) : userInterfaceData
 
     return executeRemoteConfig({
       actionType,
@@ -171,7 +169,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
         <QueryForm
           getRootUserInterfaceData={getRootUserInterfaceData}
-          setRootUserInterfaceData={setRootUserInterfaceData}
+          onChangeRootData={onChangeRootData}
           layout={queryConfig.layout}
           onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
           onMount={(queryFormValues) =>

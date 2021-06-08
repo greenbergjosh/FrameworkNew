@@ -61,17 +61,17 @@ export const Report = (props: ReportProps): JSX.Element => {
    * If this is a nested report, then return getRootUserInterfaceData;
    * if this is the root report then return props.data
    */
-  const getRootData = () => {
+  const getRootUserInterfaceData = () => {
     return (props.getRootUserInterfaceData && props.getRootUserInterfaceData()) || props.data
   }
 
   /**
-   * If this is a nested report, then return setRootUserInterfaceData;
+   * If this is a nested report, then return onChangeRootData;
    * if this is the root report then log error
    */
-  const setRootData = (newData: UserInterfaceProps["data"]): void => {
-    if (props.setRootUserInterfaceData) {
-      return props.setRootUserInterfaceData(newData)
+  const onChangeRootData = (newData: UserInterfaceProps["data"]): void => {
+    if (props.onChangeRootData) {
+      return props.onChangeRootData(newData)
     }
     console.error("Cannot set the root report's root data")
   }
@@ -83,8 +83,8 @@ export const Report = (props: ReportProps): JSX.Element => {
           <QueryParams queryConfig={queryConfig} parentData={props.data}>
             {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
               <ReportBody
-                getRootUserInterfaceData={getRootData}
-                setRootUserInterfaceData={setRootData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 isChildReport={props.isChildReport}
                 parameterValues={parameterValues}
                 parentData={props.data}

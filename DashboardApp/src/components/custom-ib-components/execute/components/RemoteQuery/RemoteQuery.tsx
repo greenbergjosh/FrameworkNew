@@ -16,7 +16,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     buttonProps,
     getParams,
     getRootUserInterfaceData,
-    setRootUserInterfaceData,
+    onChangeRootData,
     isCRUD,
     mode,
     onResults,
@@ -25,7 +25,6 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     parentSubmitting,
     queryConfigId,
     setParentSubmitting,
-    userInterfaceData,
     loadById,
     executeQuery,
     executeQueryUpdate,
@@ -126,7 +125,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
         <QueryForm
           layout={queryConfig.layout}
           getRootUserInterfaceData={getRootUserInterfaceData}
-          setRootUserInterfaceData={setRootUserInterfaceData}
+          onChangeRootData={onChangeRootData}
           onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
           onMount={(queryFormValues) =>
             onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))

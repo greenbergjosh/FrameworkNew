@@ -4,7 +4,7 @@ import { reporter } from "io-ts-reporters"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
-import { get, set, intersectionWith, isEqual } from "lodash/fp"
+import { get, intersectionWith, isEqual } from "lodash/fp"
 import React from "react"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
@@ -60,12 +60,6 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   static getDerivedStateFromProps(props: SelectableProps, state: SelectableState) {
-    // console.log(
-    //   "Selectable.getDerivedStateFromProps",
-    //   state.loadStatus,
-    //   props.dataHandlerType,
-    //   props.data
-    // )
     if (
       props.dataHandlerType === "local" &&
       Selectable.optionsDidChange(props.data && props.data.values, state.options)
@@ -84,7 +78,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   handleChange = (value: string | string[]) => {
-    const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    const { valueKey, valuePrefix, valueSuffix } = this.props
     const newValue =
       valuePrefix || valueSuffix
         ? Array.isArray(value)
@@ -92,7 +86,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           : `${valuePrefix}${value}${valueSuffix}`
         : value
 
-    onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+    this.setValue([valueKey, newValue])
   }
 
   /**
@@ -405,7 +399,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
         ? remoteFunctionDataHandler.getOptions(
             this.props.userInterfaceData,
             this.props.getRootUserInterfaceData,
-            this.props.setRootUserInterfaceData,
+            this.props.onChangeRootData,
             remoteFunction
           )
         : []
@@ -417,13 +411,9 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
    *
    */
   getCleanValue = (): string | string[] | undefined => {
-    const { defaultValue, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    const { defaultValue, valueKey, valuePrefix, valueSuffix } = this.props
     const { options } = this.state
-
-    const rawValue =
-      typeof get(valueKey, userInterfaceData) !== "undefined"
-        ? (get(valueKey, userInterfaceData) as string | string[])
-        : defaultValue
+    const rawValue: string | string[] | undefined = this.getValue(valueKey) || defaultValue
 
     const anyCaseResult =
       rawValue &&

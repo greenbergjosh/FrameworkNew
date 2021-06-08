@@ -14,7 +14,7 @@ import { UserInterfaceContextManager, UserInterfaceProps } from "@opg/interface-
 
 export interface QueryFormProps {
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   layout: QueryConfig["layout"]
   parameters: QueryConfig["parameters"]
   parameterValues: JSONRecord
@@ -79,7 +79,7 @@ export interface IQueryProps<T> {
   children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
   dataKey?: string
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   inputData?: JSONObject
   paused?: boolean
   queryType: "remote-query" | "remote-config" | "remote-url"

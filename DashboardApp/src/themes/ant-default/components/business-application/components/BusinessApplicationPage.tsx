@@ -64,12 +64,12 @@ export const BusinessApplicationPage = ({
           <div style={{ backgroundColor, padding }}>
             <UserInterface
               getRootUserInterfaceData={() => data}
-              setRootUserInterfaceData={(newData: UserInterfaceProps["data"]) => setData(newData)}
+              onChangeRootData={setData}
               mode="display"
               contextManager={userInterfaceContextManager}
               components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
               data={data}
-              onChangeData={(newData: UserInterfaceProps["data"]) => setData(newData)}
+              onChangeData={setData}
             />
           </div>
         )}

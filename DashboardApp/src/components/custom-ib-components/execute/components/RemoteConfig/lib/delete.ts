@@ -18,7 +18,6 @@ export function deleteCfg({
   remoteConfigStaticId,
   resultsType,
   uiDataSlice,
-  userInterfaceData,
 }: RemoteConfigActionParams): Promise<LoadStatus> {
   if (!entityTypeId || isEmpty(entityTypeId)) {
     return getErrorStatePromise("Config type not provided. Please check the Execute component settings.")

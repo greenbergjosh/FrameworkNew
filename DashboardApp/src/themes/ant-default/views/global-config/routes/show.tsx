@@ -224,7 +224,7 @@ export function ShowGlobalConfig({
                           contextManager={userInterfaceContextManager}
                           data={jsonData}
                           getRootUserInterfaceData={() => jsonData}
-                          setRootUserInterfaceData={() => void 0}
+                          onChangeRootData={() => void 0}
                           mode="display"
                           components={configComponents}
                         />

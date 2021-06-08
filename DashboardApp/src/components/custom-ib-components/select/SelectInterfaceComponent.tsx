@@ -1,15 +1,12 @@
 import React from "react"
-import { get, set } from "lodash/fp"
 import { Icon, Select } from "antd"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { MODES, ModeType, SelectableChildProps, SelectableProps } from "../_shared/selectable/types"
 import { Selectable } from "../_shared/selectable/Selectable"
 import { selectManageForm } from "./select-manage-form"
 import { SelectProps, SelectState } from "./types"
-
-/******************************
- * Component
- */
+import { isUndefined, isString } from "lodash/fp"
+import { AbstractSelectProps } from "antd/lib/select"
 
 export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
   static defaultProps = {
@@ -46,8 +43,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
   static availableEvents = ["valueChanged"]
 
   handleChange = (value: string | string[]): void => {
-    const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
-
+    const { valueKey, valuePrefix, valueSuffix } = this.props
     const newValue =
       valuePrefix || valueSuffix
         ? Array.isArray(value)
@@ -55,31 +51,39 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
           : `${valuePrefix}${value}${valueSuffix}`
         : value
 
-    onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
-
+    this.setValue([valueKey, newValue])
     this.raiseEvent("valueChanged", { value: newValue })
   }
 
-  private filterOption = (input: any, option: any) => {
-    // When switching about the internals of component during configuration time, the type of children can change
-    if (
-      typeof option.props.children.toLowerCase === "function" &&
-      option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-    ) {
+  private shouldShowLinkIcon(
+    valueKey: string,
+    dataHandlerType: SelectableProps["dataHandlerType"],
+    multiple?: boolean
+  ) {
+    const hasData = !isUndefined(this.getValue(valueKey))
+    const hasRemoteConfig = dataHandlerType === "remote-config"
+    const isSingleSelect = multiple !== true
+    return hasRemoteConfig && isSingleSelect && hasData
+  }
+
+  private filterOption: AbstractSelectProps["filterOption"] = (input, option) => {
+    /*
+     * When switching the internals of component during configuration time,
+     * the type of children can change.
+     */
+    if (isString(option.props.children) && option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0) {
       return true
     } else if (Array.isArray(option.props.children)) {
-      return !!option.props.children.find((item: any) => {
-        return item && typeof item.toLowerCase === "function" && item.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      const node = option.props.children.find((item) => {
+        return isString(item) && item.toLowerCase().indexOf(input.toLowerCase()) >= 0
       })
+      return !isUndefined(node)
     }
     return false
   }
 
   private handleIconClick = () => {
-    const { userInterfaceData, valueKey } = this.props
-
-    const value = get(valueKey, userInterfaceData)
-
+    const value = this.getValue(this.props.valueKey)
     value && window.open(`${window.location.origin}/dashboard/global-config/${value}`)
   }
 
@@ -97,16 +101,12 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     options,
     handleFocus,
   }: SelectableChildProps) => {
-    const { placeholder, allowClear, size, dataHandlerType, valueKey, userInterfaceData, multiple } = this.props
+    const { placeholder, allowClear, size, dataHandlerType, valueKey, multiple } = this.props
+    const showLinkIcon = this.shouldShowLinkIcon(valueKey, dataHandlerType, multiple)
     const getKeyFromValue = () => {
       const value = getCleanValue()
       return value && value.toString()
     }
-
-    const showLinkIcon =
-      dataHandlerType === "remote-config" &&
-      multiple !== true &&
-      typeof get(valueKey, userInterfaceData) !== "undefined"
 
     return (
       <div style={{ display: "grid", gridTemplateColumns: "auto 20px", alignItems: "baseline" }}>

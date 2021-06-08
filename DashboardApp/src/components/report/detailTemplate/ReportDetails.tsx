@@ -21,14 +21,14 @@ export interface ReportDetailsProps {
   parentData?: JSONRecord
   layout: ComponentDefinition[]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  setRootUserInterfaceData: UserInterfaceProps["setRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
 }
 
 export const ReportDetails = ({
   details,
-  dispatch,
+  /*dispatch,*/
   getRootUserInterfaceData,
-  setRootUserInterfaceData,
+  onChangeRootData,
   rowData,
   onChangeData,
   parameterValues,
@@ -123,7 +123,7 @@ export const ReportDetails = ({
                 components={layout}
                 onChangeData={handleChangeDataFromChildren(form)}
                 getRootUserInterfaceData={getRootUserInterfaceData}
-                setRootUserInterfaceData={setRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 data={dataResolver({
                   ...(parentData || record.empty),
                   ...(parameterValues || record.empty),
