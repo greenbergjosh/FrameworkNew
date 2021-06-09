@@ -7,9 +7,7 @@ import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
 import { JSONEditor } from "../../../components/JSONEditor/JSONEditor"
 import { JSONEditorProps } from "../../../components/JSONEditor/types"
-import { isObjectLike, isString, isUndefined, set, isEqual } from "lodash/fp"
-import { TextInterfaceComponent } from "plugins/ant/text/TextInterfaceComponent"
-import { Icon } from "antd"
+import { isEqual, isObjectLike, isString, isUndefined, set } from "lodash/fp"
 
 export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   DataInjectorInterfaceComponentProps,

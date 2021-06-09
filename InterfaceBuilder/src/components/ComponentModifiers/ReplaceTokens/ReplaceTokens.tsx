@@ -1,6 +1,7 @@
 import React from "react"
 import { ComponentModifierProps, RenderInterfaceComponentProps } from "../../ComponentRenderer/types"
 import { forIn } from "lodash"
+import { isEmpty } from "lodash/fp"
 import { ComponentDefinition, UserInterfaceProps } from "../../../globalTypes"
 import { replaceTokens } from "./tokenUtils"
 import { getValue } from "lib/getValue"
@@ -43,12 +44,27 @@ export const ReplaceTokens: React.FC<
     // properties, and mutate them.
     forIn(newDef, (value: unknown, key: string) => {
       // Never process these ComponentDefinition properties
-      if (["component", "key", "valueKey", "help"].includes(key)) {
-        return
-      }
+      const blockedProps = [
+        "bindable",
+        "bindings",
+        "component",
+        "defaultValue",
+        "getRootUserInterfaceData",
+        "help",
+        "hidden",
+        "hideLabel",
+        "invisible",
+        "key",
+        "label",
+        "onChangeRootData",
+        "preview",
+        "visibilityConditions",
+        "abstract",
+        "valueKey",
+      ]
 
       // Replace tokens
-      if (typeof value === "string") {
+      if (value && !blockedProps.includes(key) && typeof value === "string" && !isEmpty(value) && value.includes("{")) {
         newDef[key] = replaceTokens(value, valueKey, localUserInterfaceData, props.getRootUserInterfaceData)
       }
     })

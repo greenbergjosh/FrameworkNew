@@ -22,7 +22,6 @@ import ContainerExample from "./display/container"
 import TableExample from "./display/table"
 import DataInjectorExample from "./special/data-injector"
 import DataBindingExample from "./framework/data-binding"
-import PropertyTokensExample from "./framework/property-tokens"
 import TextTokensExample from "./framework/text-tokens"
 import FormattersExample from "./framework/formatters"
 import TreeExample from "./display/tree"
@@ -123,9 +122,6 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/framework/data-binding`}>
             <DataBindingExample />
-          </Route>
-          <Route path={`${path}/framework/property-tokens`}>
-            <PropertyTokensExample />
           </Route>
           <Route path={`${path}/framework/text-tokens`}>
             <TextTokensExample />

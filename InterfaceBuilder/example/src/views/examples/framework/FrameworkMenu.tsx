@@ -6,9 +6,6 @@ import { SubMenuProps } from "antd/lib/menu/SubMenu"
 export const FrameworkMenu = (props: SubMenuProps): JSX.Element => {
   return (
     <Menu.SubMenu {...props} key="/examples/framework" title={<span>Framework</span>}>
-      <Menu.Item key="/examples/framework/property-tokens">
-        <Link to="/examples/framework/property-tokens">Property Tokens</Link>
-      </Menu.Item>
       <Menu.Item key="/examples/framework/text-tokens">
         <Link to="/examples/framework/text-tokens">Text Tokens</Link>
       </Menu.Item>

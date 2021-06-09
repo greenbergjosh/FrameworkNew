@@ -11,7 +11,6 @@ import { Helmet } from "react-helmet"
 import React from "react"
 import "./styles.css"
 
-const { Text } = Typography
 const { TabPane } = Tabs
 
 export function ExampleView(props: {
@@ -118,7 +117,7 @@ export function ExampleView(props: {
             </Typography.Paragraph>
             <JSONEditor
               data={props.components as JSONRecord[]}
-              onChange={props.onChangeSchema as any}
+              onChange={props.onChangeSchema as (data: unknown) => void}
               height={"60vh"}
               collapsed={false}
             />

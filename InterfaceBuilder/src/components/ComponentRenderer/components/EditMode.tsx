@@ -4,36 +4,8 @@ import { DraggableWrapper } from "components/ComponentModifiers/DraggableWrapper
 import { EditPanelWrapper } from "components/ComponentModifiers/EditPanelWrapper"
 import { EditDataBinding } from "components/ComponentModifiers/EditDataBinding/EditDataBinding"
 import { FormField } from "components/ComponentModifiers/FormField"
-import { BaseInterfaceComponent } from "components/BaseInterfaceComponent/BaseInterfaceComponent"
-import {
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
-  ComponentDefinitionRecursiveProp,
-  LayoutDefinition,
-  UserInterfaceProps,
-} from "../../../globalTypes"
 import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
-
-interface ModeProps {
-  componentDefinition:
-    | ComponentDefinitionNamedProps
-    | (ComponentDefinitionNamedProps & ComponentDefinitionRecursiveProp)
-  onChangeData: UserInterfaceProps["onChangeData"]
-  onChangeSchema: ((newComponentDefinition: ComponentDefinition) => void) | undefined
-  userInterfaceData: UserInterfaceProps["data"]
-  layoutDefinition: LayoutDefinition
-  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  onChangeRootData: UserInterfaceProps["onChangeRootData"]
-  mode: UserInterfaceProps["mode"]
-  submit: (() => void) | undefined
-  Component: typeof BaseInterfaceComponent
-}
-
-interface EditModeProps extends ModeProps {
-  dragDropDisabled: boolean | undefined
-  index: number
-  path: string
-}
+import { EditModeProps } from "components/ComponentRenderer"
 
 export function EditMode(props: EditModeProps): JSX.Element {
   return (
