@@ -66,6 +66,16 @@
           "aggregationFunction": "Sum"
         },
         {
+          "customFormat": "MM/dd/yyyy hh:mm:ss a",
+          "skeletonFormat": "short",
+          "precision": 2,
+          "format": "currency",
+          "type": "boolean",
+          "headerText": "My Boolean",
+          "field": "MyBoolean",
+          "aggregationFunction": "Sum"
+        },
+        {
           "details": {
             "type": "layout"
           },
@@ -90,11 +100,22 @@
           "field": "last_seen_date"
         },
         {
-          "precision": 0,
-          "units": { "source": "seconds", "target": "durationMixedUnit" },
-          "type": "duration",
-          "headerText": "Duration",
-          "field": "Duration"
+          "details": {
+            "type": "layout"
+          },
+          "customFormat": "MM/dd/yyyy hh:mm:ss a",
+          "skeletonFormat": "short",
+          "precision": 2,
+          "format": "percentage",
+          "type": "number",
+          "field": "AggTest",
+          "headerText": "Agg Test",
+          "customAggregateOptions": {
+            "numerator": "PathOnlyRevenuePerLead",
+            "denominator": "GlobalPathRevenue"
+          },
+          "customAggregateId": "c498fc83-12f7-4530-b209-3000eb6f4e7b",
+          "aggregationFunction": "Custom"
         }
       ],
       "rowDetails": []
