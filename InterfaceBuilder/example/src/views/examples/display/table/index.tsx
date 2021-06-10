@@ -36,7 +36,7 @@ const Example = (): JSX.Element => {
       </div>
       <ExampleView
         title={"Table with Wrapper"}
-        description="Demonstrates the IB Table component wrapped by a local Table component which is registered with InterfaceBuilder. The red border is added by the wrapping component."
+        description="Demonstrates the IB Table component wrapped by a local Table component which is registered with InterfaceBuilder. The red border is added by a wrapping local decorator component."
         components={schema}
         data={data}
         onChangeData={handleChangeData}

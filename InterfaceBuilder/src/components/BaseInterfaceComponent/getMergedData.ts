@@ -86,6 +86,7 @@ function mergeKVPTuple(
   let localData: UserInterfaceProps["data"]
   const rawPath = kvpTuple[0]
   const value = kvpTuple[1]
+  //TODO: [CHN-507] Use kvpTuple[2] (custom userInterfaceData context), or get rid of it and any components trying to use it.
   const { target, path } = getTargetedPath(rawPath)
 
   if (target === "$root" || target === "$root.key") {

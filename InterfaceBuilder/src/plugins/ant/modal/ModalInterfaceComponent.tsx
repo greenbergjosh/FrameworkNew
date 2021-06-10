@@ -69,6 +69,7 @@ export class ModalInterfaceComponent extends BaseInterfaceComponent<ModalInterfa
         title={this.props.title}
         userInterfaceData={this.props.userInterfaceData}
         valueKey={this.props.valueKey}
+        width={this.props.width}
       />
     )
   }

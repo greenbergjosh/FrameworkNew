@@ -72,7 +72,7 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
    */
   updateValue = () => {
     const value = this.getValueByType()
-    const key = this.props.outboundValueKey || this.props.valueKey // retain valueKey for backwards compatibility
+    const key = this.props.outboundValueKey || this.props.valueKey // retaining valueKey for backwards compatibility
     this.setValue([key, value])
     this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
   }
