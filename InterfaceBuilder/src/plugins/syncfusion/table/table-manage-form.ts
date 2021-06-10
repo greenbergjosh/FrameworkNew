@@ -40,57 +40,6 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
-                key: "allowAdding",
-                valueKey: "allowAdding",
-                label: "Allow Add?",
-                help: "Allow the user to create new rows in the table",
-                component: "toggle",
-                defaultValue: false,
-                bindable: true,
-                visibilityConditions: {
-                  "===": [
-                    false,
-                    {
-                      var: ["abstract"],
-                    },
-                  ],
-                },
-              },
-              {
-                key: "allowEditing",
-                valueKey: "allowEditing",
-                label: "Allow Edit?",
-                help: "Allow the user to edit rows in the table",
-                component: "toggle",
-                defaultValue: false,
-                bindable: true,
-                visibilityConditions: {
-                  "===": [
-                    false,
-                    {
-                      var: ["abstract"],
-                    },
-                  ],
-                },
-              },
-              {
-                key: "allowDeleting",
-                valueKey: "allowDeleting",
-                label: "Allow Delete?",
-                help: "Allow the user to delete rows in the table",
-                component: "toggle",
-                defaultValue: false,
-                bindable: true,
-                visibilityConditions: {
-                  "===": [
-                    false,
-                    {
-                      var: ["abstract"],
-                    },
-                  ],
-                },
-              },
-              {
                 key: "loadingKey",
                 valueKey: "loadingKey",
                 component: "input",

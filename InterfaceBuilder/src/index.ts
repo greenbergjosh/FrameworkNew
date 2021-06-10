@@ -1,3 +1,4 @@
+// import "./lib/why-did-you-render"  // <-- Enable to trace unnecessary rendering
 import "./styles/index.scss"
 
 /*
@@ -15,7 +16,7 @@ export { JSONRecord } from "./globalTypes/JSONTypes"
 export { TSEnum } from "./@types/ts-enum"
 export { ComponentRegistryCache } from "./services/ComponentRegistry"
 export { EventPayloadType } from "./services/EventBus"
-export { BaseInterfaceComponentProps } from "./components/BaseInterfaceComponent/types"
+export { BaseInterfaceComponentProps, GetValue } from "./components/BaseInterfaceComponent/types"
 
 /**
  * Contexts
@@ -32,6 +33,8 @@ export { ComponentRenderer } from "./components/ComponentRenderer/ComponentRende
 export { ConfirmableDeleteButton } from "./components/ConfirmableDeleteButton"
 export { baseManageForm } from "./components/BaseInterfaceComponent/base-manage-form"
 export { getDefaultsFromComponentDefinitions } from "./components/BaseInterfaceComponent/componentDefinitionUtils"
+export { JSONEditor } from "./components/JSONEditor/JSONEditor"
+export { getMergedData } from "./components/BaseInterfaceComponent/getMergedData"
 
 /**
  * Services
@@ -49,7 +52,6 @@ export { deepDiff } from "./lib/deepDiff"
 export { evalExpression } from "./lib/evalExpression"
 export { Right } from "./lib/Either"
 export { sanitizeText } from "./lib/sanitizeText"
-export { shallowPropCheck } from "./lib/shallowPropCheck"
 
 /**
  * Plugins

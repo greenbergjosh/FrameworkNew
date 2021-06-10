@@ -5,9 +5,9 @@ import React from "react"
 import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { getDefaultFormValues, QueryForm } from "../../../../query/QueryForm"
+import { QueryForm } from "../../../../query/QueryForm"
 import { ErrorResponse, LOADSTATUSCODES, OnSubmitType, RemoteQueryProps } from "../../types"
-import { PropsFromQueryParams, QueryParams } from "../../../../query/QueryParams"
+import { QueryParams } from "../../../../query/QueryParams"
 import { executeRemoteQuery } from "./executeRemoteQuery"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
@@ -15,6 +15,8 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     buttonLabel,
     buttonProps,
     getParams,
+    getRootUserInterfaceData,
+    onChangeRootData,
     isCRUD,
     mode,
     onResults,
@@ -23,7 +25,6 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     parentSubmitting,
     queryConfigId,
     setParentSubmitting,
-    userInterfaceData,
     loadById,
     executeQuery,
     executeQueryUpdate,
@@ -123,6 +124,8 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
       {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
         <QueryForm
           layout={queryConfig.layout}
+          getRootUserInterfaceData={getRootUserInterfaceData}
+          onChangeRootData={onChangeRootData}
           onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
           onMount={(queryFormValues) =>
             onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))

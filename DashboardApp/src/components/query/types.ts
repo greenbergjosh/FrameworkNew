@@ -5,7 +5,7 @@ import { JSONRecord } from "../../data/JSON"
 import { AppDispatch } from "../../state/store.types"
 import { ButtonProps } from "../custom-ib-components/execute/types"
 import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
-import { UserInterfaceContextManager } from "@opg/interface-builder"
+import { UserInterfaceContextManager, UserInterfaceProps } from "@opg/interface-builder"
 
 /* ****************************************************
  *
@@ -13,6 +13,8 @@ import { UserInterfaceContextManager } from "@opg/interface-builder"
  */
 
 export interface QueryFormProps {
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   layout: QueryConfig["layout"]
   parameters: QueryConfig["parameters"]
   parameterValues: JSONRecord
@@ -76,6 +78,8 @@ export interface LoadDataParams {
 export interface IQueryProps<T> {
   children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
   dataKey?: string
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   inputData?: JSONObject
   paused?: boolean
   queryType: "remote-query" | "remote-config" | "remote-url"

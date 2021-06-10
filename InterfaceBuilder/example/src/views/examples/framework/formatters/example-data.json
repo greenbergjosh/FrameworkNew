@@ -1,0 +1,14 @@
+{
+  "formatExamples": {
+    "myPercent": 0.123567,
+    "myMoney": 12.34,
+    "myNumber": 35670234.123478,
+    "myNegativeNumber": -35670234.123478,
+    "myStringNumber": "35670234.123478",
+    "myDate": "2021-01-28T20:34:06.347Z",
+    "myObject": {
+      "foo": "bar"
+    },
+    "myArray": ["foo", "bar", "bah", "baz"]
+  }
+}

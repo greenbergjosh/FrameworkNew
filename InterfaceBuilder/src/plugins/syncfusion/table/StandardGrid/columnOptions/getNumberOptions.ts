@@ -9,7 +9,7 @@ import { ColumnModel } from "@syncfusion/ej2-react-grids"
  */
 export function getNumberOptions(
   format: EnrichedColumnDefinition["format"],
-  precision: EnrichedColumnDefinition["precision"],
+  precision: EnrichedColumnDefinition["precision"]
 ): ColumnOptions {
   let newFormat: ColumnModel["format"]
   switch (format) {

@@ -1,5 +1,5 @@
 import { some } from "fp-ts/lib/Option"
-import { get, set } from "lodash/fp"
+import { isString } from "lodash/fp"
 import React from "react"
 import { CodeEditor, EditorLang, EditorTheme } from "./code-editor"
 import { codeEditorManageForm } from "./code-editor-manage-form"
@@ -13,7 +13,6 @@ export interface CodeEditorInterfaceComponentProps extends ComponentDefinitionNa
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -47,17 +46,16 @@ export class CodeEditorInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = codeEditorManageForm
 
   handleChange = ({ value: newValue }: { value: string }): void => {
-    const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
-    const value = get(valueKey, userInterfaceData) || defaultValue
+    const value = this.getValue(this.props.valueKey)
     if ((newValue || "") !== (value || "")) {
-      onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+      this.setValue([this.props.valueKey, newValue])
     }
   }
 
   render(): JSX.Element {
-    const { defaultLanguage, defaultTheme, defaultValue, userInterfaceData, valueKey } = this.props
-
-    const value = get(valueKey, userInterfaceData) || defaultValue
+    const { defaultLanguage, defaultTheme, defaultValue, valueKey } = this.props
+    const rawValue = this.getValue(valueKey) || defaultValue
+    const value = isString(rawValue) ? rawValue : JSON.stringify(rawValue)
 
     return (
       <CodeEditor

@@ -18,8 +18,8 @@ import { ExamplesView } from "./views/examples/ExamplesView"
 import { HomeView } from "./views/HomeView"
 import { QuickStartView } from "./views/QuickStartView"
 import { DocsView } from "./views/DocsView"
-import { MainMenu } from "./components/MainMenu"
-import { TableInterfaceComponent } from "./components/custom-ib/table/TableInterfaceComponent"
+import { MainMenu } from "./views/MainMenu"
+import { TableInterfaceComponent } from "./custom-ib-components/table/TableInterfaceComponent"
 
 /* IB Plugins */
 registry.register(antComponents)

@@ -33,7 +33,8 @@ export function loadRemoteFunction(
 
 export function getOptions(
   userInterfaceData: UserInterfaceProps["data"],
-  getRootUserInterfaceData: () => UserInterfaceProps["data"],
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"],
+  onChangeRootData: UserInterfaceProps["onChangeRootData"],
   remoteFunction: RemoteFunctionType
 ): SelectableOption[] {
   if (isEmpty(userInterfaceData) && isEmpty(getRootUserInterfaceData())) {
@@ -41,14 +42,7 @@ export function getOptions(
     return []
   }
   try {
-    const options = remoteFunction(userInterfaceData, getRootUserInterfaceData())
-    console.log("Selectable.remoteFunction.getOptions", {
-      remoteFunction,
-      userInterfaceData,
-      getRootUserInterfaceData,
-      options,
-    })
-    return options
+    return remoteFunction(userInterfaceData, getRootUserInterfaceData, onChangeRootData)
   } catch (e) {
     // LBM script has an error
     console.warn(

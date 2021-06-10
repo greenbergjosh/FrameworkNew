@@ -1,0 +1,33 @@
+{
+  "navigation": [
+    {
+      "key": "0.5090680767528564",
+      "title": "New parent 46",
+      "children": [
+        {
+          "key": "0.900612481002665",
+          "title": "New leaf 91",
+          "isLeaf": true
+        },
+        {
+          "key": "0.8382862220341174",
+          "title": "New leaf 19",
+          "isLeaf": true
+        },
+        {
+          "key": "0.3656764416275273",
+          "title": "New parent 4",
+          "children": [
+            {
+              "key": "0.7356464098328219",
+              "title": "New leaf 72",
+              "isLeaf": true
+            }
+          ],
+          "isLeaf": false
+        }
+      ],
+      "isLeaf": false
+    }
+  ]
+}

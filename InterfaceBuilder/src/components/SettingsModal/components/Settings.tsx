@@ -7,7 +7,8 @@ export interface ManageComponentFormProps {
   manageForm: ComponentDefinition | ComponentDefinition[]
   onChangeDefinition: (componentDefinition: ComponentDefinition) => void
   layoutDefinition: LayoutDefinition
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
 }
 
 export const Settings = ({
@@ -15,14 +16,16 @@ export const Settings = ({
   manageForm,
   onChangeDefinition,
   getRootUserInterfaceData,
+  onChangeRootData,
 }: ManageComponentFormProps) => {
   return (
     <ComponentRenderer
       components={Array.isArray(manageForm) ? manageForm : [manageForm]}
       data={componentDefinition}
-      getRootData={getRootUserInterfaceData}
+      getRootUserInterfaceData={getRootUserInterfaceData}
+      onChangeRootData={onChangeRootData}
       onChangeData={onChangeDefinition}
-      onChangeSchema={(newSchema: any) => {
+      onChangeSchema={(newSchema) => {
         console.warn(
           "ManageComponentForm.render",
           "TODO: Cannot alter schema inside ComponentRenderer in ManageComponentForm",

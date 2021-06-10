@@ -21,8 +21,20 @@ const userInterfaceManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
+                key: "hideLabel",
+                defaultValue: true,
+              },
+              {
                 key: "valueKey",
                 defaultValue: "layout",
+                bindable: true,
+              },
+              {
+                key: "hideMenu",
+                valueKey: "hideMenu",
+                label: "Hide Menu",
+                component: "toggle",
+                defaultValue: false,
                 bindable: true,
               },
             ],

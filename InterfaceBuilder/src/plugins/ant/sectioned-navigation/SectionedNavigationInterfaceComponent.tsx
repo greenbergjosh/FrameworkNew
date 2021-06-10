@@ -25,7 +25,6 @@ export interface ISectionedNavigationInterfaceComponentProps extends ComponentDe
   onChangeData: UserInterfaceProps["onChangeData"]
   title?: string
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 interface SectionedNavigationInterfaceComponentDisplayModeProps extends ISectionedNavigationInterfaceComponentProps {
@@ -78,7 +77,14 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
   }
 
   render(): JSX.Element {
-    const { onChangeData, sections, title, userInterfaceData, getRootUserInterfaceData } = this.props
+    const {
+      onChangeData,
+      sections,
+      title,
+      userInterfaceData,
+      getRootUserInterfaceData,
+      onChangeRootData,
+    } = this.props
     const { activeKey } = this.state
     const activeSectionKey = activeKey || (sections[0] && sections[0].title)
 
@@ -110,7 +116,8 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
                   <ComponentRenderer
                     components={components}
                     data={userInterfaceData}
-                    getRootData={getRootUserInterfaceData}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
                       if (this.props.mode === "edit") {

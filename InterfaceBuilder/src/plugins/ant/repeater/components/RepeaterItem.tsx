@@ -6,11 +6,13 @@ import styles from "../styles.scss"
 import classNames from "classnames"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 import { isEqual } from "lodash/fp"
+import { ComponentDefinition } from "globalTypes"
 
 export function _RepeaterItem({
   components,
   itemData,
   getRootUserInterfaceData,
+  onChangeRootData,
   hasNextSibling,
   index,
   isDraggable,
@@ -30,7 +32,7 @@ export function _RepeaterItem({
     !isNaN(index) && onChange(index, nextData)
   }
 
-  const handleSchemaChange = (newSchema: any) => {
+  const handleSchemaChange = (newSchema: ComponentDefinition[]) => {
     console.warn(
       "RepeaterInterfaceComponent.render",
       "TODO: Cannot alter schema inside ComponentRenderer in Repeater.",
@@ -43,6 +45,12 @@ export function _RepeaterItem({
    * RENDER
    */
 
+  // Add the current index
+  const itemDataWithIndex = {
+    ...itemData,
+    index,
+  }
+
   return (
     <>
       {isDraggable ? (
@@ -50,8 +58,9 @@ export function _RepeaterItem({
           <Card size="small">
             <ComponentRenderer
               components={components}
-              data={itemData}
-              getRootData={getRootUserInterfaceData}
+              data={itemDataWithIndex}
+              getRootUserInterfaceData={getRootUserInterfaceData}
+              onChangeRootData={onChangeRootData}
               onChangeData={handleChangeData}
               onChangeSchema={handleSchemaChange}
             />
@@ -88,8 +97,9 @@ export function _RepeaterItem({
             <Card size="small">
               <ComponentRenderer
                 components={components}
-                data={itemData}
-                getRootData={getRootUserInterfaceData}
+                data={itemDataWithIndex}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 onChangeData={handleChangeData}
                 onChangeSchema={handleSchemaChange}
               />

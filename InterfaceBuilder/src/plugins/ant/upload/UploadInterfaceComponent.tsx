@@ -1,6 +1,6 @@
 import React from "react"
 import { Icon, message, Spin } from "antd"
-import { getOr, set } from "lodash/fp"
+import { getOr } from "lodash/fp"
 import { uploadManageForm } from "./upload-manage-form"
 import {
   FailureEventArgs,
@@ -12,7 +12,12 @@ import {
 } from "@syncfusion/ej2-react-inputs"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import "./upload.module.scss"
-import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
+import {
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  LayoutDefinition,
+  UserInterfaceProps,
+} from "../../../globalTypes"
 
 /******************************
  * Interfaces, Types, Enums
@@ -24,8 +29,7 @@ export interface UploadInterfaceComponentProps extends ComponentDefinitionNamedP
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  userInterfaceSchema?: any
+  userInterfaceSchema?: ComponentDefinition
   valueKey: string
 
   /* Upload Props */
@@ -105,7 +109,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  componentDidUpdate(prevProps: Readonly<UploadInterfaceComponentProps>, prevState: Readonly<{}>): void {
+  componentDidUpdate(prevProps: Readonly<UploadInterfaceComponentProps>): void {
     if (
       this.props.standaloneButton !== prevProps.standaloneButton ||
       this.props.dndButtonLabel !== prevProps.dndButtonLabel ||
@@ -223,16 +227,15 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
    */
   onSuccess = (args?: any): void => {
     const successEventArgs = args as SuccessEventArgs
-    const { onChangeData, userInterfaceData, valueKey } = this.props
     this.setState({ isUploading: false })
 
     if (successEventArgs?.operation === "upload") {
       // File was uploaded
-      onChangeData && onChangeData(set(valueKey, this.uploadObj && this.uploadObj.filesData, userInterfaceData))
+      this.setValue([this.props.valueKey, this.uploadObj && this.uploadObj.filesData])
       message.success("Upload completed")
     } else if (successEventArgs?.operation === "remove") {
       // File was removed
-      onChangeData && onChangeData(set(valueKey, null, userInterfaceData))
+      this.setValue([this.props.valueKey, null])
       message.success("Upload deleted from the server")
     }
   }
@@ -242,7 +245,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
    * @param args
    */
   onUploading = (args?: UploadingEventArgs): void => {
-    const { onChangeData, userInterfaceData, valueKey, headers } = this.props
+    const { userInterfaceData, headers } = this.props
     this.setState({ isUploading: true })
 
     // Exit if no headers to add
@@ -268,13 +271,6 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
 
   render(): JSX.Element {
     const {
-      /* IB Props */
-      defaultValue,
-      userInterfaceData,
-      valueKey,
-      label,
-
-      /* Upload Props */
       accept,
       acceptOther,
       allowMultiple,

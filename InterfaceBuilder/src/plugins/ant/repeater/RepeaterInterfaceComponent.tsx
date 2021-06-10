@@ -4,7 +4,7 @@ import { BaseInterfaceComponent } from "../../../components/BaseInterfaceCompone
 import { RepeaterInterfaceComponentProps } from "./types"
 import { ConfigureMode } from "./components/ConfigureMode"
 import { DisplayMode } from "./components/DisplayMode"
-import { get, isEmpty, set } from "lodash/fp"
+import { isEmpty } from "lodash/fp"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
 
@@ -36,7 +36,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
   handleChange = (nextState: JSONRecord | JSONRecord[], subpath?: string): void => {
     const { valueKey, userInterfaceData } = this.props
     const path = !isEmpty(subpath) ? `${valueKey}${subpath}` : valueKey
-    this.props.onChangeData && this.props.onChangeData(set(path, nextState, userInterfaceData))
+    this.setValue([path, nextState, userInterfaceData])
   }
 
   render(): JSX.Element | undefined {
@@ -49,13 +49,13 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
       lastItemComponents,
       orientation,
       preconfigured,
-      userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       valueKey,
       mode,
       readonly,
     } = this.props
-    const data = get(valueKey, userInterfaceData) || []
+    const data = this.getValue(valueKey) || []
 
     switch (mode) {
       case "display": {
@@ -65,6 +65,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
             components={components}
             data={data}
             getRootUserInterfaceData={getRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             description={emptyText}
             hasInitialRecord={hasInitialRecord}
             hasLastItemComponents={hasLastItemComponents}
@@ -81,7 +82,8 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
             addItemLabel={addItemLabel}
             components={components}
             data={[]}
-            getRootUserInterfaceData={() => null}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             description={emptyText}
             hasInitialRecord={hasInitialRecord}
             hasLastItemComponents={hasLastItemComponents}
@@ -99,6 +101,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
             components={components}
             data={data}
             getRootUserInterfaceData={getRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             hasLastItemComponents={hasLastItemComponents}
             lastItemComponents={lastItemComponents}
             onChange={this.handleChange}

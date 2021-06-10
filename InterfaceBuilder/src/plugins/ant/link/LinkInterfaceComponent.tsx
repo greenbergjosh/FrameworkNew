@@ -3,9 +3,8 @@ import { linkManageForm } from "./link-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { LinkInterfaceComponentProps, LinkInterfaceComponentState } from "./types"
 import { Link, LinkButton } from "./components/LinkTypes"
-import { get, isEmpty, isEqual, isObject } from "lodash/fp"
-import { JSONRecord } from "../../../globalTypes/JSONTypes"
-import { LayoutDefinition } from "../../../globalTypes"
+import { isEmpty, isEqual, isObject } from "lodash/fp"
+import { IBaseInterfaceComponent, LayoutDefinition } from "../../../globalTypes"
 
 export class LinkInterfaceComponent extends BaseInterfaceComponent<
   LinkInterfaceComponentProps,
@@ -50,11 +49,11 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = linkManageForm
 
   componentDidMount(): void {
-    const { useLinkLabelKey, linkLabelKey, linkLabel, userInterfaceData, uri, useUriTokens } = this.props
+    const { useLinkLabelKey, linkLabelKey, linkLabel, uri, useUriTokens } = this.props
 
     // Label
     if (useLinkLabelKey && !isEmpty(linkLabelKey)) {
-      const label = get(linkLabelKey, userInterfaceData) || "Link"
+      const label = this.getValue(linkLabelKey) || "Link"
       this.setState({ linkLabel: label })
     } else if (!isEmpty(linkLabel)) {
       this.setState({ linkLabel })
@@ -64,7 +63,7 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
 
     // URI
     if (!isEmpty(uri)) {
-      const nextUri = useUriTokens ? replaceUriTokens(uri, userInterfaceData) : uri
+      const nextUri = useUriTokens ? replaceUriTokens(uri, this.getValue.bind(this)) : uri
       this.setState({ uri: nextUri })
     }
   }
@@ -81,9 +80,7 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
       this.props.uri !== prevProps.uri ||
       (this.props.useUriTokens && !isEqual(prevProps.userInterfaceData, this.props.userInterfaceData))
     ) {
-      const uri = this.props.useUriTokens
-        ? replaceUriTokens(this.props.uri, this.props.userInterfaceData)
-        : this.props.uri
+      const uri = this.props.useUriTokens ? replaceUriTokens(this.props.uri, this.getValue.bind(this)) : this.props.uri
       this.setState({ uri })
     }
   }
@@ -106,14 +103,15 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
 /**
  * When there is a single value, the user should just provide {$} in the template string.
  * @param uriTemplate
- * @param value
+ * @param getValue
  */
-function replaceUriTokens(uriTemplate: string, value: string | JSONRecord): string {
+function replaceUriTokens(uriTemplate: string, getValue: IBaseInterfaceComponent["getValue"]): string {
   // One token and one value
   const hasOneToken = uriTemplate.includes("{$}")
-  const hasOneValue = !isObject(value)
-  if (value && hasOneToken && hasOneValue) {
-    return uriTemplate.replace("{$}", value.toString())
+  const localUIData = getValue("$")
+  const hasOneValue = !isEmpty(localUIData) && !isObject(localUIData)
+  if (hasOneToken && hasOneValue) {
+    return uriTemplate.replace("{$}", localUIData.toString())
   }
 
   // Multiple tokens and values
@@ -121,8 +119,8 @@ function replaceUriTokens(uriTemplate: string, value: string | JSONRecord): stri
   const replacedUri =
     matches &&
     matches.reduce((acc, match) => {
-      const key = match.slice(3, match.length - 1)
-      const val = get(key, value) || "?"
+      const key = match.slice(3, match.length - 1) // Remove leading {$. and trailing }
+      const val = getValue(key) || match
       return acc.replace(match, val.toString())
     }, uriTemplate)
   return replacedUri || uriTemplate

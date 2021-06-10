@@ -32,7 +32,7 @@ export function getUsableData(data: JSONRecord[], columns: EnrichedColumnDefinit
 
           const evald = tryCatch(() => {
             const interpolatedCalculationString = sortBy(
-              ([key, value]) => key && key.length,
+              ([key /*, value*/]) => key && key.length,
               Object.entries(dataRow)
             ).reduce((acc: string, [key, value]) => acc.replace(key, String(value)), calculationString)
 

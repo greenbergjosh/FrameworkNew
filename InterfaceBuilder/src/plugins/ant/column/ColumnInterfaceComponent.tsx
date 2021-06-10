@@ -52,6 +52,7 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
       onChangeData,
       userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       submit,
       mode,
       preview,
@@ -75,7 +76,8 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
                   <ComponentRenderer
                     components={components}
                     data={userInterfaceData}
-                    getRootData={getRootUserInterfaceData}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
                       if (this.props.mode === "edit") {

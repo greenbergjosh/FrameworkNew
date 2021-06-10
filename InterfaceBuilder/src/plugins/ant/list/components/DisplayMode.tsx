@@ -1,4 +1,3 @@
-import { get } from "lodash/fp"
 import { DraggedItemProps, Droppable, DroppableTargetProps } from "../../../../components/DragAndDrop"
 import classNames from "classnames"
 import { Button, Empty } from "antd"
@@ -19,6 +18,7 @@ export default function DisplayMode({
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
+  onChangeRootData,
   getValue,
   setValue,
   valueKey,
@@ -37,20 +37,16 @@ export default function DisplayMode({
         : interleave === "none"
         ? [getDefaultsFromComponentDefinitions([components[0]])]
         : interleave === "round-robin"
-        ? [
-            getDefaultsFromComponentDefinitions([
-              components[(get(valueKey, userInterfaceData) || []) % components.length],
-            ]),
-          ]
+        ? [getDefaultsFromComponentDefinitions([components[(getValue(valueKey) || []) % components.length]])]
         : []
-    setValue(
+    setValue([
       valueKey,
       [
         ...(getValue(valueKey, userInterfaceData) || []),
         ...(unwrapped ? entriesToAdd.map((entry) => Object.values(entry)[0]) : entriesToAdd),
       ],
-      userInterfaceData
-    )
+      userInterfaceData,
+    ])
   }
 
   function handleItemRearrange(draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps): void {
@@ -62,10 +58,10 @@ export default function DisplayMode({
     // const minIndex = Math.min(draggedItem.index, dropTarget.dropIndex)
     // const maxIndex = Math.max(draggedItem.index, dropTarget.dropIndex)
 
-    const existingData = get(valueKey, userInterfaceData) || []
+    const existingData = getValue(valueKey) || []
 
     if (draggedItem.index < dropTarget.dropIndex) {
-      setValue(
+      setValue([
         valueKey,
         [
           ...existingData.slice(0, draggedItem.index),
@@ -73,10 +69,10 @@ export default function DisplayMode({
           existingData[draggedItem.index],
           ...existingData.slice(dropTarget.dropIndex),
         ],
-        userInterfaceData
-      )
+        userInterfaceData,
+      ])
     } else if (draggedItem.index > dropTarget.dropIndex) {
-      setValue(
+      setValue([
         valueKey,
         [
           ...existingData.slice(0, dropTarget.dropIndex),
@@ -84,8 +80,8 @@ export default function DisplayMode({
           ...existingData.slice(dropTarget.dropIndex, draggedItem.index),
           ...existingData.slice(draggedItem.index + 1),
         ],
-        userInterfaceData
-      )
+        userInterfaceData,
+      ])
     }
   }
 
@@ -96,6 +92,9 @@ export default function DisplayMode({
 
   return (
     <>
+      <Button onClick={handleAddClick} size="small" icon="plus" type="link" style={{ marginTop: 5, marginBottom: 10 }}>
+        {addItemLabel}
+      </Button>
       <div
         className={classNames("ui-list", {
           "ui-list-horizontal": orientation === "horizontal",
@@ -116,6 +115,7 @@ export default function DisplayMode({
                     key={index}
                     data={data}
                     getRootUserInterfaceData={getRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     getValue={getValue}
                     setValue={setValue}
                     index={index}
@@ -134,9 +134,6 @@ export default function DisplayMode({
           <Empty description={description} />
         )}
       </div>
-      <Button style={{ display: "block", marginTop: "10px", marginBottom: "10px" }} onClick={handleAddClick}>
-        {addItemLabel}
-      </Button>
     </>
   )
 }

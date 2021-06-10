@@ -8,7 +8,6 @@ export interface ThermometerInterfaceComponentProps extends ComponentDefinitionN
   component: "thermometer"
   valueKey: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   // Pie props
   iconType: IconType

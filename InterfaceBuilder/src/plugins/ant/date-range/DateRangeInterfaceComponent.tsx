@@ -62,7 +62,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidMount(): void {
-    const { endDateKey, startDateKey, onChangeData, timeSettings, userInterfaceData } = this.props
+    const { endDateKey, startDateKey } = this.props
     const persistedStartDate = this.getValue(startDateKey)
     const persistedEndDate = this.getValue(endDateKey)
 
@@ -71,13 +71,16 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
       const startDate = get(startDateKey, range)
       const endDate = get(endDateKey, range)
 
-      onChangeData && onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
+      this.setValue([
+        [startDateKey, startDate],
+        [endDateKey, endDate],
+      ])
       this.raiseEvent(EVENTS.VALUE_CHANGED, { startDate, endDate })
     }
   }
 
-  handleChange = (dates: RangePickerValue, dateStrings: [string, string]): void => {
-    const { endDateKey, startDateKey, onChangeData, timeSettings, userInterfaceData } = this.props
+  handleChange = (dates: RangePickerValue /*, dateStrings: [string, string]*/): void => {
+    const { endDateKey, startDateKey, timeSettings } = this.props
     const { includeTime } = timeSettings || { includeTime: false }
     const alignmentTimePeriod =
       timeSettings && includeTime
@@ -91,8 +94,10 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
         : "day"
     const startDate = Array.isArray(dates) && dates[0] ? dates[0].startOf(alignmentTimePeriod).toISOString() : null
     const endDate = Array.isArray(dates) && dates[1] ? dates[1].endOf(alignmentTimePeriod).toISOString() : null
-
-    onChangeData && onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
+    this.setValue([
+      [startDateKey, startDate],
+      [endDateKey, endDate],
+    ])
   }
 
   getDefaultValue = () => {

@@ -2,14 +2,13 @@ import { Empty } from "antd"
 import React from "react"
 import { emptyManageForm } from "./empty-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
+import { ComponentDefinitionNamedProps, LayoutDefinition } from "../../../globalTypes"
 
 export interface EmptyInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "empty"
   customImage?: string
   message: string
   image: "default" | "compact"
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export class EmptyInterfaceComponent extends BaseInterfaceComponent<EmptyInterfaceComponentProps> {

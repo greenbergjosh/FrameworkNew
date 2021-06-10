@@ -5,8 +5,7 @@ export interface ICardInterfaceComponentProps extends ComponentDefinitionNamedPr
   components: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
   preconfigured?: boolean
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
 
   bordered?: boolean
   extra?: string

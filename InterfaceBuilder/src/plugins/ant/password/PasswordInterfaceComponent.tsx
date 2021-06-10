@@ -1,5 +1,4 @@
 import { Input } from "antd"
-import { get, set } from "lodash/fp"
 import React from "react"
 import { passwordManageForm } from "./password-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
@@ -11,12 +10,9 @@ export interface PasswordInterfaceComponentProps extends ComponentDefinitionName
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   hasShowPasswordToggle?: boolean
 }
-
-interface PasswordInterfaceComponentState {}
 
 export class PasswordInterfaceComponent extends BaseInterfaceComponent<PasswordInterfaceComponentProps> {
   static defaultProps = {
@@ -46,12 +42,11 @@ export class PasswordInterfaceComponent extends BaseInterfaceComponent<PasswordI
   }
 
   handleChange = ({ target: { value } }: React.ChangeEvent<HTMLInputElement>): void => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
+    this.setValue([this.props.valueKey, value])
   }
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey, hasShowPasswordToggle } = this.props
-    const rawValue = get(valueKey, userInterfaceData)
+    const { defaultValue, valueKey, hasShowPasswordToggle } = this.props
+    const rawValue = this.getValue(valueKey)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     return <Input.Password onChange={this.handleChange} value={value} visibilityToggle={hasShowPasswordToggle} />
   }

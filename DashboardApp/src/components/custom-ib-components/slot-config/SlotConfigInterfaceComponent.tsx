@@ -1,4 +1,3 @@
-import { get, set } from "lodash/fp"
 import React from "react"
 import {
   BaseInterfaceComponent,
@@ -8,6 +7,7 @@ import {
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { slotConfigManageForm } from "./slot-config-manage-form"
+import { getSlotConfigLayout } from "./getSlotConfigLayout"
 
 export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNamedProps {
   actionType: string
@@ -17,7 +17,8 @@ export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNa
   placeholder: string
   providerType: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   valueKey: string
 }
 
@@ -43,52 +44,20 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
 
   static manageForm = slotConfigManageForm
 
+  private handleChangeData = (newData: UserInterfaceProps["data"]) => {
+    const value = newData.data.map(({ value }: { value: any }) => value)
+    this.setValue([this.props.valueKey, value])
+  }
+
   render(): JSX.Element {
-    const {
-      actionType,
-      defaultValue,
-      onChangeData,
-      providerType,
-      userInterfaceData,
+    const { actionType, defaultValue, providerType, getRootUserInterfaceData, onChangeRootData, valueKey } = this.props
+    const dataArray = this.getValue(valueKey) || defaultValue || []
+    const slotConfigLayout: ComponentDefinition[] = getSlotConfigLayout(
       getRootUserInterfaceData,
-      valueKey,
-    } = this.props
-
-    const dataArray = get(valueKey, userInterfaceData) || defaultValue || []
-
-    const components: ComponentDefinition[] = [
-      {
-        key: "slot-config",
-        valueKey: "data",
-        component: "list",
-        orientation: "horizontal",
-        interleave: "round-robin",
-        components: [
-          {
-            key: "provider",
-            valueKey: "provider",
-            component: "card",
-            components: [
-              {
-                key: "slot-config-guid",
-                valueKey: "value",
-                component: "select",
-                dataHandlerType: "remote-config",
-                remoteConfigType: providerType,
-                valuePrefix: "@",
-              },
-            ],
-          },
-          {
-            key: "slot-config-action",
-            valueKey: "value",
-            component: "select",
-            dataHandlerType: "remote-kvp",
-            remoteKeyValuePair: actionType,
-          },
-        ],
-      },
-    ]
+      onChangeRootData,
+      providerType,
+      actionType
+    )
 
     const data = {
       data: dataArray.map((value: any) => ({ value })),
@@ -96,21 +65,13 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
 
     return (
       <ComponentRenderer
-        components={components}
+        components={slotConfigLayout}
         data={data}
-        getRootData={getRootUserInterfaceData}
+        getRootUserInterfaceData={getRootUserInterfaceData}
+        onChangeRootData={onChangeRootData}
         dragDropDisabled
-        onChangeData={(newData: any) => {
-          onChangeData &&
-            onChangeData(
-              set(
-                valueKey,
-                newData.data.map(({ value }: { value: any }) => value),
-                userInterfaceData
-              )
-            )
-        }}
-        onChangeSchema={(newSchema: any) => {
+        onChangeData={this.handleChangeData}
+        onChangeSchema={(newSchema) => {
           console.warn(
             "SlotConfigInterfaceComponent.render",
             "TODO: Cannot alter schema inside ComponentRenderer in SlotConfig",

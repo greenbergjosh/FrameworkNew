@@ -14,7 +14,6 @@ export interface NumberInputInterfaceComponentProps extends ComponentDefinitionN
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   size: InputNumberProps["size"]
   max: InputNumberProps["max"]
@@ -49,7 +48,7 @@ export class NumberInputInterfaceComponent extends BaseInterfaceComponent<Number
   }
 
   handleChange = (value?: number) => {
-    this.setValue(this.props.valueKey, value)
+    this.setValue([this.props.valueKey, value])
   }
 
   private getNumberValue(valueKey: string, defaultValue: string | number | undefined): number | undefined {

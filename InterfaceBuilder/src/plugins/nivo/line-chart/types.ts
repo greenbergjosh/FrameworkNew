@@ -9,7 +9,6 @@ export interface LineChartInterfaceComponentProps extends ComponentDefinitionNam
   component: "line-chart"
   valueKey: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   // lineChart props
   areaBaselineValue?: number

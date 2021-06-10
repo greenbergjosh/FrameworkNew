@@ -1,0 +1,70 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "center": false,
+      "headerSize": "h2",
+      "closable": false,
+      "banner": true,
+      "description": "Open the javascript console to hit the button's click handler LBM breakpoint, and to see the button's click event being logged. The event log should show a payload with the mapped value from userInterfaceData.",
+      "showIcon": true,
+      "textType": "info",
+      "invisible": false,
+      "hidden": false,
+      "stringTemplate": "",
+      "valueKey": "$",
+      "label": "Text",
+      "hideLabel": true,
+      "component": "text",
+      "components": []
+    },
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "confirmation": {
+        "cancelText": "Cancel",
+        "okText": "Continue",
+        "message": "This action cannot be undone and may take a while. Are you sure?",
+        "title": "Are you sure?"
+      },
+      "requireConfirmation": false,
+      "ghost": false,
+      "block": false,
+      "size": null,
+      "buttonLabel": "Button",
+      "hideButtonLabel": false,
+      "icon": null,
+      "shape": null,
+      "displayType": "primary",
+      "invisible": false,
+      "hidden": false,
+      "onClickSrc": "/*\n * props: {\n *   block: boolean\n *   buttonLabel: string\n *   confirmation: {cancelText: \"Cancel\", okText: \"Continue\", message: \"This action cannot be undone and may take a while. Are you sure?\", title: \"Are you sure?\"}\n *   displayType: \"link\" | \"button\"\n *   getRootUserInterfaceData: ƒ ()\n *   ghost: boolean\n *   hidden: boolean\n *   hideButtonLabel: boolean\n *   hideLabel: boolean\n *   icon: string\n *   invisible: boolean\n *   mode: \"display\" | \"edit\" | \"preview\"\n *   onChangeData: ƒ handleChangeData(newData)\n *   onChangeSchema: ƒ (newComponentDefinition)\n *   onClickSrc: string\n *   onRaiseEvent: ƒ onRaiseEvent(eventName, eventPayload, source)\n *   paramKVPMaps: {values: Array(0)}\n *   requireConfirmation: boolean\n *   shape: string\n *   size: string\n *   submit: ƒ\n *   useOnClick: boolean\n *   userInterfaceData: JSONRecord\n *   userInterfaceSchema: JSONRecord\n *   valueKey: string\n * }\n *\n * lib: {\n *   getValue: (key: string, userInterfaceData?: JSONRecord, getRootUserInterfaceData?: ƒ) => void,\n *   setValue: (key: string, newValue: any, userInterfaceData?: JSONRecord) => void\n * }\n *\n * Note: lib can also be modified to contain other libraries, properties, and functions.\n */\nreturn function(props, lib) {\n  debugger\n}",
+      "useOnClick": true,
+      "hideLabel": true,
+      "valueKey": "value",
+      "label": "Take Action",
+      "component": "button",
+      "paramKVPMaps": {
+        "values": [
+          {
+            "sourceKey": "value",
+            "targetKey": "target.value"
+          }
+        ]
+      }
+    }
+  ]
+}

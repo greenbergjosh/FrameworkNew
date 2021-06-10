@@ -1,7 +1,11 @@
 import { formatNumber } from "./formatNumber"
 import { formatDate } from "./formatDate"
+import { formatDuration, isDuration } from "./formatDuration"
 import { isArray, isDate } from "lodash/fp"
 import { CoerceableDataType, DataType } from "./types"
+
+export { DurationUnits } from "./types"
+export { durationFormats } from "./formatDuration"
 
 /**
  *
@@ -12,15 +16,23 @@ import { CoerceableDataType, DataType } from "./types"
 export function formatValue(rawValue: DataType, rawFormat?: string, coerceToType?: CoerceableDataType): string | null {
   switch (coerceToType) {
     case "number":
+      if (isDuration(rawFormat)) {
+        return formatDuration(rawValue, rawFormat)
+      }
       return formatNumber(rawValue, rawFormat)
     case "date":
       return formatDate(rawValue, rawFormat)
+    case "duration":
+      return formatDuration(rawValue, rawFormat)
   }
 
   switch (typeof rawValue) {
     case "boolean":
       return rawValue.toString()
     case "number":
+      if (isDuration(rawFormat)) {
+        return formatDuration(rawValue, rawFormat)
+      }
       return formatNumber(rawValue, rawFormat)
     case "object":
       // Could be JSONRecord, Array, Date

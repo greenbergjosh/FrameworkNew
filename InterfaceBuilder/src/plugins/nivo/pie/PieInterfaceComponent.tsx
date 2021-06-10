@@ -47,8 +47,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<PieInterfaceComponentProps>): void {
-    const prevValue = get(prevProps.valueKey, prevProps.userInterfaceData)
-    const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
+    const prevValue = this.getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData)
+    const nextValue = this.getValue(this.props.valueKey)
 
     if (
       !isEqual(prevValue, nextValue) ||
@@ -74,14 +74,13 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
         sliceLabelValueFunction,
         sliceLabelValueFunctionSrc,
         threshold,
-        userInterfaceData,
         valueKey,
         preSorted,
         otherAggregatorFunction,
         otherAggregatorFunctionSrc,
       } = this.props
 
-      const rawData: JSONRecord[] = get(valueKey, userInterfaceData)
+      const rawData: JSONRecord[] = this.getValue(valueKey)
 
       const labelValueFunction =
         sliceLabelValueFunction || parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)
@@ -160,7 +159,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             data={this.state.pieData.map((item) => item.pieDatum) || []}
             enableRadialLabels={enableRadialLabels}
             enableSlicesLabels={enableSliceLabels}
-            isInteractive={this.state.pieData != emptyDataSet}
+            isInteractive={this.state.pieData !== emptyDataSet}
             innerRadius={donut ? 0.5 : undefined}
             legends={showLegend ? legends : undefined}
             margin={margin}

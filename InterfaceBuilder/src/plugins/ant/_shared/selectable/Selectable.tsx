@@ -1,4 +1,4 @@
-import { get, intersectionWith, isEqual, set } from "lodash/fp"
+import { get, intersectionWith, isEqual } from "lodash/fp"
 import React from "react"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 import { UserInterfaceContext } from "../../../../contexts/UserInterfaceContext"
@@ -68,7 +68,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   handleChange = (value: string | string[]): void => {
-    const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    const { valueKey, valuePrefix, valueSuffix } = this.props
     const newValue =
       valuePrefix || valueSuffix
         ? Array.isArray(value)
@@ -76,7 +76,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           : `${valuePrefix}${value}${valueSuffix}`
         : value
 
-    onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+    this.setValue([valueKey, newValue])
   }
 
   /**
@@ -115,13 +115,9 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
    *
    */
   getCleanValue = () => {
-    const { defaultValue, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    const { defaultValue, valuePrefix, valueSuffix } = this.props
     const { options } = this.state
-
-    const rawValue =
-      typeof get(valueKey, userInterfaceData) !== "undefined"
-        ? (get(valueKey, userInterfaceData) as string | string[])
-        : defaultValue
+    const rawValue = this.getValue(this.props.valueKey) || defaultValue || ""
 
     const anyCaseResult =
       rawValue &&

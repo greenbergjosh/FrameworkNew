@@ -29,7 +29,6 @@ export interface IWizardInterfaceComponentProps extends ComponentDefinitionNamed
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   disableStepNumbersChangingTabs?: boolean
 }
 
@@ -127,6 +126,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
       steps,
       userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       disableStepNumbersChangingTabs,
     } = this.props
     const { activeStep } = this.state
@@ -145,7 +145,8 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
               <ComponentRenderer
                 components={steps.length ? steps[activeStepIndex].components : []}
                 data={userInterfaceData}
-                getRootData={getRootUserInterfaceData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   if (this.props.mode === "edit") {

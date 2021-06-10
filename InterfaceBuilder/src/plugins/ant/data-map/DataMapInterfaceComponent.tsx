@@ -1,4 +1,3 @@
-import { get, set } from "lodash/fp"
 import React from "react"
 import { DataMap } from "./DataMap"
 import { DataPathContext } from "../../../contexts/DataPathContext"
@@ -19,8 +18,6 @@ export interface DataMapInterfaceComponentProps extends ComponentDefinitionNamed
   keyComponent: ComponentDefinition
   multiple?: boolean
   onChangeData: UserInterfaceProps["onChangeData"]
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueComponent: ComponentDefinition
   valueKey: string
 }
@@ -70,13 +67,12 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
       defaultValue,
       keyComponent,
       multiple,
-      onChangeData,
-      userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       valueComponent,
       valueKey,
     } = this.props
-    const values = get(valueKey, userInterfaceData) || defaultValue
+    const values = this.getValue(valueKey) || defaultValue
     return (
       <DataMap
         count={count}
@@ -86,11 +82,9 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
           (console.log("DataMapInterfaceComponent.onDataChanged", {
             valueKey,
             newData,
-            userInterfaceData,
-            result: set(valueKey, newData, userInterfaceData),
+            result: this.setValue([valueKey, newData]),
           }),
-          0) ||
-          (onChangeData && onChangeData(set(valueKey, newData, userInterfaceData)))
+          0) || this.setValue([valueKey, newData])
         }
         multiple={multiple}
         renderKeyComponent={(dataItem, onChangeData) => {
@@ -98,9 +92,10 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
             <DataPathContext path="keyComponent">
               <ComponentRenderer
                 componentLimit={1}
-                components={[{ ...keyComponent, hideLabel: true }]}
+                components={[{ ...keyComponent, hideLabel: true, getRootUserInterfaceData, onChangeRootData }]}
                 data={dataItem}
-                getRootData={getRootUserInterfaceData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   console.warn(
@@ -118,9 +113,12 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
             <DataPathContext path="valueComponent">
               <ComponentRenderer
                 componentLimit={1}
-                components={[{ ...valueComponent, hideLabel: true }]}
+                components={[
+                  { ...valueComponent, hideLabel: true, getRootUserInterfaceData, onChangeRootData },
+                ]}
                 data={dataItem}
-                getRootData={getRootUserInterfaceData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   console.warn(

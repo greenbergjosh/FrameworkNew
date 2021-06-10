@@ -1,4 +1,3 @@
-import { get, set } from "lodash/fp"
 import React from "react"
 import { DataMap } from "../data-map/DataMap"
 import { DataPathContext } from "../../../contexts/DataPathContext"
@@ -14,11 +13,8 @@ import {
 
 export interface DataDictionaryInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "data-dictionary"
-  defaultValue?: any
+  defaultValue: UserInterfaceProps["data"]
   keyLabel?: string
-  onChangeData: UserInterfaceProps["onChangeData"]
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueComponent: [ComponentDefinition]
   valueKey: string
 }
@@ -61,13 +57,12 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
     const {
       defaultValue,
       keyLabel,
-      onChangeData,
-      userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       valueComponent,
       valueKey,
     } = this.props
-    const dictionary = get(valueKey, userInterfaceData) || defaultValue
+    const dictionary = this.getValue(valueKey) || defaultValue
     const values = dictionary && Object.entries(dictionary).map(([key, value]) => ({ key, value }))
     return (
       <DataMap
@@ -80,7 +75,7 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
             return acc
           }, {} as any)
 
-          onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+          this.setValue([valueKey, newValue])
         }}
         renderKeyComponent={(dataItem, onChangeData) => {
           return (
@@ -93,10 +88,13 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
                     component: "input",
                     valueKey: "key",
                     hideLabel: true,
+                    getRootUserInterfaceData,
+                    onChangeRootData,
                   },
                 ]}
                 data={dataItem}
-                getRootData={getRootUserInterfaceData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 mode="display"
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
@@ -125,7 +123,8 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
                     : []
                 }
                 data={dataItem}
-                getRootData={getRootUserInterfaceData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   console.warn(

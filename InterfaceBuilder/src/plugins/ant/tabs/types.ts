@@ -6,7 +6,6 @@ export interface ITabsInterfaceComponentProps extends ComponentDefinitionNamedPr
   onChangeData: UserInterfaceProps["onChangeData"]
   tabs?: ComponentDefinition[]
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 interface TabsInterfaceComponentDisplayModeProps extends ITabsInterfaceComponentProps {

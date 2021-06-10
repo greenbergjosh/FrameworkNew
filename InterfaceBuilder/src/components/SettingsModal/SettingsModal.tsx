@@ -10,7 +10,8 @@ export interface ManageComponentModalProps {
   componentDefinition: null | Partial<ComponentDefinition>
   onCancel: () => void
   onConfirm: (componentDefinition: ComponentDefinition) => void
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   userInterfaceData: UserInterfaceProps["data"]
 }
 
@@ -19,12 +20,12 @@ export const SettingsModal = ({
   onCancel,
   onConfirm,
   getRootUserInterfaceData,
+  onChangeRootData,
   userInterfaceData,
 }: ManageComponentModalProps) => {
   const [componentDefinition, updateComponentDefinition] = React.useState(propComponentDefinition)
 
   React.useEffect(() => {
-    console.log("ManageComponentModal useEffect", { componentDefinition, propComponentDefinition })
     if (!componentDefinition && propComponentDefinition) {
       const Component = propComponentDefinition.component && registry.lookup(propComponentDefinition.component)
 
@@ -44,8 +45,6 @@ export const SettingsModal = ({
     registry.lookup(componentDefinition && componentDefinition.component)
   const layoutDefinition = Component && Component.getLayoutDefinition()
   const manageForm = Component && Component.manageForm()
-
-  console.log("ManageComponentModal.render", { componentDefinition, propComponentDefinition })
 
   return (
     <Modal
@@ -79,6 +78,7 @@ export const SettingsModal = ({
                 manageForm={manageForm}
                 layoutDefinition={layoutDefinition}
                 getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
               />
             )}
           </Col>

@@ -13,7 +13,6 @@ export interface IColumnInterfaceComponentProps extends ComponentDefinitionNamed
   gutter?: number
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   submit?: UserInterfaceProps["submit"]
 }

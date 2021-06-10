@@ -27,6 +27,8 @@ export const ROOT_CONFIG_COMPONENTS = [
     component: "select",
     label: "Language",
     dataHandlerType: "local",
+    getRootUserInterfaceData: () => void 0,
+    onChangeRootData: () => void 0,
     data: {
       values: [
         { label: "JSON", value: "json" },

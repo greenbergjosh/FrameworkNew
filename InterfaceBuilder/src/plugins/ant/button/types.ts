@@ -21,7 +21,6 @@ export interface ButtonInterfaceComponentProps extends ComponentDefinitionNamedP
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   // valueKey: string
   buttonLabel: string
   icon: string

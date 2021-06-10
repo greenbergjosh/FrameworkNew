@@ -20,51 +20,27 @@ export interface ReportDetailsProps {
   parameterValues?: JSONRecord
   parentData?: JSONRecord
   layout: ComponentDefinition[]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
 }
 
 export const ReportDetails = ({
   details,
-  dispatch,
+  /*dispatch,*/
   getRootUserInterfaceData,
+  onChangeRootData,
   rowData,
   onChangeData,
   parameterValues,
   parentData,
   layout,
 }: ReportDetailsProps): JSX.Element => {
-  // const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
   const initialFormState = { config: JSON.stringify(rowData) }
   const dataResolver = getDataResolver(details, parentData)
 
-  /****************************************************************
+  /* ************************
    * EVENT HANDLERS
    */
-
-  // TODO: Why is this here and commented out?
-  /* afterCreate */
-  // React.useEffect(() => {
-  //   updatedConfig.chain(findInStore).foldL(
-  //     None(() => {}),
-  //     Some((c) => {
-  //       dispatch.navigation.showGlobalConfigById({ id: c.id, navOpts: { replace: true } })
-  //     })
-  //   )
-  //
-  //   function findInStore(c: InProgressRemoteUpdateDraft): Option<PersistedConfig> {
-  //     return findFirst(array)(fromStore.configs.getOrElse([]), (c1) =>
-  //       equals(c, { ...c1, config: c1.config.getOrElse("") })
-  //     )
-  //   }
-  //   function equals<T extends InProgressRemoteUpdateDraft>(a: T, b: T): boolean {
-  //     return getStructSetoid({
-  //       config: setoidString,
-  //       id: setoidString,
-  //       name: setoidString,
-  //       type: setoidString,
-  //     }).equals(a, b)
-  //   }
-  // }, [dispatch, fromStore.configs, updatedConfig])
 
   const validateHandler = (
     vs: any //Values
@@ -96,7 +72,7 @@ export const ReportDetails = ({
     }
   }
 
-  /****************************************************************
+  /* ************************
    * RENDER
    */
 
@@ -121,6 +97,7 @@ export const ReportDetails = ({
                 components={layout}
                 onChangeData={handleChangeDataFromChildren(form)}
                 getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
                 data={dataResolver({
                   ...(parentData || record.empty),
                   ...(parameterValues || record.empty),
@@ -135,7 +112,7 @@ export const ReportDetails = ({
   )
 }
 
-/***************************************************************************
+/* ******************************
  *
  * Private Functions
  */

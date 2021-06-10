@@ -5,7 +5,6 @@ import {
   ColumnChooser,
   DetailRow,
   Edit,
-  EditMode,
   ExcelExport,
   Filter,
   Freeze,
@@ -42,9 +41,6 @@ let grid: GridComponent | null = null
 
 const StandardGrid = (
   {
-    allowAdding,
-    allowDeleting,
-    allowEditing,
     autoFitColumns,
     useSmallFont = false,
     enableAltRow = false,
@@ -167,12 +163,6 @@ const StandardGrid = (
 
   //**********************************
   // Settings
-  const editSettings = { allowAdding, allowDeleting, allowEditing, mode: "Dialog" as EditMode }
-  const editingToolbarItems = ([] as string[]).concat(
-    allowAdding ? "Add" : [],
-    allowEditing ? "Edit" : [],
-    allowDeleting ? "Delete" : []
-  )
   const toolbar = [
     "CsvExport",
     "ExcelExport",
@@ -408,6 +398,7 @@ const StandardGrid = (
         allowPdfExport={true}
         allowReordering={true}
         allowResizing={true}
+        allowSelection={false}
         allowSorting={true}
         allowTextWrap={true}
         className={classes}
@@ -415,7 +406,6 @@ const StandardGrid = (
         columns={usableColumns}
         // dataSource={usableData}
         detailTemplate={detailTemplate}
-        editSettings={editSettings}
         enableAltRow={enableAltRow}
         enableVirtualization={enableVirtualization}
         filterSettings={{ type: "Menu" }}
@@ -425,7 +415,7 @@ const StandardGrid = (
         pageSettings={defaultedPageSettings}
         showColumnChooser={true}
         sortSettings={sortSettings}
-        toolbar={[...editingToolbarItems, ...toolbar]}>
+        toolbar={[...toolbar]}>
         <Inject
           services={[
             Toolbar,

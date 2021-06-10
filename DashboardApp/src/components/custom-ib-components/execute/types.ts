@@ -2,6 +2,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
+  GetValue,
   UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
@@ -78,7 +79,8 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   paramKVPMaps: ParamKVPMapsType
   queryType: QueryType
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   valueKey: string
 }
 
@@ -184,6 +186,8 @@ export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Pro
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
   buttonProps: ButtonProps
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   mode: "display" | "preview" | "edit"
   onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
   onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
@@ -246,6 +250,7 @@ export interface RemoteConfigProps extends RemoteComponentProps {
   remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
   resultsType?: ResultsType
   useRedirect?: boolean
+  getValue: GetValue
 }
 
 export interface RemoteConfigFromStore extends FromStore {

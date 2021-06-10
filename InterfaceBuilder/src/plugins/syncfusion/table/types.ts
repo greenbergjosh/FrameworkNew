@@ -22,9 +22,6 @@ export type SortableGroupableColumnModel = EnrichedColumnDefinition & ColumnSort
 
 export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   abstract?: boolean
-  allowAdding?: boolean
-  allowDeleting?: boolean
-  allowEditing?: boolean
   columns: SortableGroupableColumnModel[]
   component: "table"
   showToolbar?: boolean
@@ -40,8 +37,7 @@ export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedP
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   rowDetails?: ComponentDefinition[]
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -75,20 +71,17 @@ export function visiblityConditionType(type: string): JSONRecord {
 }
 
 export interface TableProps {
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   getValue: IBaseInterfaceComponent["getValue"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   rowDetails?: ComponentDefinition[]
   setValue: IBaseInterfaceComponent["setValue"]
-  userInterfaceData: UserInterfaceProps["data"]
   userInterfaceSchema?: ComponentDefinition
   valueKey: string
 }
 
 export interface DisplayTableProps extends TableProps {
-  allowAdding?: boolean
-  allowDeleting?: boolean
-  allowEditing?: boolean
   autoFitColumns?: boolean
   columns: EnrichedColumnDefinition[]
   defaultCollapseAll?: boolean
@@ -98,6 +91,7 @@ export interface DisplayTableProps extends TableProps {
   height?: number
   preview?: boolean
   showToolbar?: boolean
+  userInterfaceData: UserInterfaceProps["data"]
   useSmallFont?: boolean
   useSmallPager?: boolean
 }

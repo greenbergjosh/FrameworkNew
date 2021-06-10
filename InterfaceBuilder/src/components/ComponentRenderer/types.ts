@@ -1,31 +1,31 @@
 import { BaseInterfaceComponent } from "../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { DroppableContextType } from "../../contexts/DroppableContext"
-import { ComponentDefinition, EditUserInterfaceProps, UserInterfaceProps } from "../../globalTypes"
+import {
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  ComponentDefinitionRecursiveProp,
+  EditUserInterfaceProps,
+  LayoutDefinition,
+  UserInterfaceProps,
+} from "../../globalTypes"
 
 export interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootData: () => UserInterfaceProps["data"]
   dragDropDisabled?: boolean
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   index: number
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema?: (newComponentDefinition: ComponentDefinition) => void
-  submit?: UserInterfaceProps["submit"]
   path: string
+  submit?: UserInterfaceProps["submit"]
+  userInterfaceData: UserInterfaceProps["data"]
 }
 
 export interface RenderInterfaceComponentState {
-  error: null | string
-}
-
-export type VisibilityStyle = {
-  color?: string
-  backgroundColor?: string
-  border?: string
-  modeTitle: string
-  blockEvents: boolean
+  error: ErrorModeProps["error"]
 }
 
 export interface ComponentModifierProps {
@@ -36,12 +36,42 @@ export interface ComponentRendererProps {
   componentLimit?: number
   components: ComponentDefinition[]
   data: UserInterfaceProps["data"]
-  getRootData: () => UserInterfaceProps["data"]
   dragDropDisabled?: boolean
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema: EditUserInterfaceProps["onChangeSchema"]
   submit?: UserInterfaceProps["submit"]
   onDrop?: DroppableContextType["onDrop"]
   keyPrefix?: string
+}
+
+interface ModeProps {
+  componentDefinition:
+    | ComponentDefinitionNamedProps
+    | (ComponentDefinitionNamedProps & ComponentDefinitionRecursiveProp)
+  Component: typeof BaseInterfaceComponent
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  layoutDefinition: LayoutDefinition
+  mode: UserInterfaceProps["mode"]
+  onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
+  onChangeSchema: ((newComponentDefinition: ComponentDefinition) => void) | undefined
+  submit: (() => void) | undefined
+  userInterfaceData: UserInterfaceProps["data"]
+}
+
+export interface DisplayModeProps extends ModeProps {}
+
+export interface PreviewModeProps extends ModeProps {}
+
+export interface EditModeProps extends ModeProps {
+  dragDropDisabled: boolean | undefined
+  index: number
+  path: string
+}
+
+export interface ErrorModeProps extends EditModeProps {
+  error: string | null
 }

@@ -26,16 +26,17 @@ import { ColumnConfig } from "../../custom-ib-components/table/types"
  * @param dispatch
  * @param details
  * @param getRootUserInterfaceData
+ * @param onChangeRootData
  * @param parameterValues
  * @param parentData
  * @param handleChangeData
  * @param onChangeData
- * @param type
  */
 export const getDetailTemplate = ({
   dispatch,
   columnDetails,
   getRootUserInterfaceData,
+  onChangeRootData,
   parameterValues,
   parentData,
   handleChangeData,
@@ -44,7 +45,8 @@ export const getDetailTemplate = ({
 }: {
   dispatch: AppDispatch
   columnDetails: ColumnConfig["details"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   parameterValues?: JSONRecord
   parentData?: JSONRecord
   handleChangeData?: (oldData: JSONRecord, newData: JSONRecord) => void
@@ -59,6 +61,7 @@ export const getDetailTemplate = ({
     return (rowData: JSONRecord) => (
       <Report
         getRootUserInterfaceData={getRootUserInterfaceData}
+        onChangeRootData={onChangeRootData}
         isChildReport
         report={resolved}
         data={getData(columnDetails, parentData, parameterValues, rowData)}
@@ -72,11 +75,12 @@ export const getDetailTemplate = ({
         details={columnDetails}
         dispatch={dispatch}
         getRootUserInterfaceData={getRootUserInterfaceData}
+        onChangeRootData={onChangeRootData}
         rowData={rowData}
         parameterValues={parameterValues}
         parentData={parentData}
         layout={resolved.layout}
-        onChangeData={(newData: any) =>
+        onChangeData={(newData) =>
           handleChangeDataFromChildren(columnDetails, rowData, newData, handleChangeData, onChangeData)
         }
       />

@@ -1,7 +1,12 @@
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../../data/Report"
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
+import {
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  ComponentRenderMetaProps,
+  UserInterfaceProps,
+} from "@opg/interface-builder"
 import { QueryProps } from "../../query/types"
 
 export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -10,8 +15,9 @@ export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedP
   loadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   queryType: QueryProps["queryType"]
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   valueKey: string
 }
 

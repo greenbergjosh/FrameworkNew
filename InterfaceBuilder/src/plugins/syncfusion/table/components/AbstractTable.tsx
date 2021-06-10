@@ -10,23 +10,24 @@ import { AbstractTableProps } from "../types"
  * basic settings (settings popup), but may edit its columns.
  */
 export function AbstractTable({
-  userInterfaceData,
   getRootUserInterfaceData,
+  onChangeRootData,
   getValue,
   setValue,
   valueKey,
 }: AbstractTableProps): JSX.Element {
-  const dataArray = getValue(valueKey!, userInterfaceData) || []
+  const dataArray = getValue(valueKey) || []
   const data = { columns: dataArray }
 
   return (
     <ComponentRenderer
       components={editComponents}
       data={data}
-      getRootData={getRootUserInterfaceData}
+      getRootUserInterfaceData={getRootUserInterfaceData}
+      onChangeRootData={onChangeRootData}
       dragDropDisabled
       onChangeData={(newData) => {
-        setValue(valueKey!, newData.columns, userInterfaceData)
+        setValue([valueKey, newData.columns])
       }}
       onChangeSchema={(newData) => {
         console.log("TableInterfaceComponent.AbstractTable", "onChangeSchema X3", {

@@ -1,12 +1,12 @@
 import { EnrichedColumnDefinition } from "../types"
 import { cloneDeep, omit } from "lodash/fp"
-import { getNumberOptions } from "./getNumberOptions.js"
-import { getBooleanOptions } from "./getBooleanOptions.js"
-import { getCustomCellFormatterOptions } from "./getCustomCellFormatterOptions.js"
+import { getNumberOptions } from "./getNumberOptions"
+import { getBooleanOptions } from "./getBooleanOptions"
+import { getCustomCellFormatterOptions } from "./getCustomCellFormatterOptions"
 import { getDateOptions } from "./getDateOptions"
-import { getStyleOptions } from "./getStyleOptions.js"
-import { getDisableHtmlEncodeOptions } from "./getDisableHtmlEncodeOptions.js"
-import { getDurationOptions } from "./getDurationOptions.js"
+import { getStyleOptions } from "./getStyleOptions"
+import { getDisableHtmlEncodeOptions } from "./getDisableHtmlEncodeOptions"
+import { getDurationOptions } from "./getDurationOptions"
 
 /**
  * Defines the schema of columns. Add custom cell formatters, row detail templates, and aggregate functions.

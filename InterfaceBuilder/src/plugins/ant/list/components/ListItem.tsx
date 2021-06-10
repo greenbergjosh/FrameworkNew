@@ -11,13 +11,14 @@ export function ListItem({
   unwrapped,
   userInterfaceData,
   getRootUserInterfaceData,
+  onChangeRootData,
   setValue,
   valueKey,
 }: ListItemProps): JSX.Element {
   const handleChangeData = (index: number) => (newData: JSONRecord) => {
     const path = `${valueKey}.${index}` // <-- valid lodash set() path for an array
     const value = unwrapped ? Object.values(newData)[0] : newData
-    setValue(path, value, userInterfaceData)
+    setValue([path, value, userInterfaceData])
   }
 
   return (
@@ -34,7 +35,8 @@ export function ListItem({
             : data[index]
           : {}
       }
-      getRootData={getRootUserInterfaceData}
+      getRootUserInterfaceData={getRootUserInterfaceData}
+      onChangeRootData={onChangeRootData}
       onChangeData={handleChangeData(index)}
       onChangeSchema={(newSchema) => {
         console.warn("ListInterfaceComponent.render", "TODO: Cannot alter schema inside ComponentRenderer in List.", {

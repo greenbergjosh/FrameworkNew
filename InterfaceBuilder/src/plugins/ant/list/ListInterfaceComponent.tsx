@@ -1,4 +1,3 @@
-import { get } from "lodash/fp"
 import React from "react"
 import { v4 as uuid } from "uuid"
 import { listManageForm } from "./list-manage-form"
@@ -8,6 +7,13 @@ import EditMode from "./components/EditMode"
 import { ListInterfaceComponentProps } from "./types"
 import { ComponentRendererModeContext } from "../../../contexts/ComponentRendererModeContext"
 import { LayoutDefinition } from "../../../globalTypes"
+import styled, { css } from "styled-components"
+
+const Div = styled.div`
+  ${({ styleString }: { styleString: string }) => css`
+    ${styleString}
+  `}
+`
 
 export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterfaceComponentProps> {
   static defaultProps = {
@@ -28,6 +34,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       title: "List",
       icon: "unordered-list",
       componentDefinition: {
+        classNames: ["display-mode"],
         component: "list",
         components: [],
       },
@@ -49,12 +56,12 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       unwrapped,
       userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       valueKey,
     } = this.props
 
     // Get the list data from the data set
-    const data = get(valueKey, userInterfaceData) || []
-    console.log("ListInterfaceComponent.render", { data })
+    const data = this.getValue(valueKey) || []
 
     return (
       <ComponentRendererModeContext.Consumer>
@@ -62,40 +69,46 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
           switch (mode) {
             case "display": {
               return (
-                <DisplayMode
-                  addItemLabel={addItemLabel}
-                  components={components}
-                  data={data}
-                  getRootUserInterfaceData={getRootUserInterfaceData}
-                  getValue={this.getValue.bind(this)}
-                  setValue={this.setValue.bind(this)}
-                  description={emptyText}
-                  interleave={interleave}
-                  listId={this.listId}
-                  orientation={orientation}
-                  unwrapped={unwrapped}
-                  userInterfaceData={userInterfaceData}
-                  valueKey={valueKey}
-                />
+                <Div styleString={this.props.style} className={"display-mode"}>
+                  <DisplayMode
+                    addItemLabel={addItemLabel}
+                    components={components}
+                    data={data}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
+                    getValue={this.getValue.bind(this)}
+                    setValue={this.setValue.bind(this)}
+                    description={emptyText}
+                    interleave={interleave}
+                    listId={this.listId}
+                    orientation={orientation}
+                    unwrapped={unwrapped}
+                    userInterfaceData={userInterfaceData}
+                    valueKey={valueKey}
+                  />
+                </Div>
               )
             }
             case "preview": {
               return (
-                <DisplayMode
-                  addItemLabel={addItemLabel}
-                  components={components}
-                  data={[]}
-                  getRootUserInterfaceData={() => null}
-                  getValue={() => null}
-                  setValue={() => null}
-                  description={emptyText}
-                  interleave={interleave}
-                  listId={this.listId}
-                  orientation={orientation}
-                  unwrapped={unwrapped}
-                  userInterfaceData={userInterfaceData}
-                  valueKey={valueKey}
-                />
+                <Div styleString={this.props.style} className={"display-mode"}>
+                  <DisplayMode
+                    addItemLabel={addItemLabel}
+                    components={components}
+                    data={[]}
+                    getRootUserInterfaceData={() => void 0}
+                    onChangeRootData={() => void 0}
+                    getValue={() => null}
+                    setValue={() => null}
+                    description={emptyText}
+                    interleave={interleave}
+                    listId={this.listId}
+                    orientation={orientation}
+                    unwrapped={unwrapped}
+                    userInterfaceData={userInterfaceData}
+                    valueKey={valueKey}
+                  />
+                </Div>
               )
             }
             case "edit": {
@@ -105,11 +118,11 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   components={components}
                   data={data}
                   getRootUserInterfaceData={getRootUserInterfaceData}
+                  onChangeRootData={onChangeRootData}
                   getValue={this.getValue.bind(this)}
                   setValue={this.setValue.bind(this)}
                   interleave={interleave}
                   preconfigured={preconfigured}
-                  userInterfaceData={userInterfaceData}
                   valueKey={valueKey}
                 />
               )

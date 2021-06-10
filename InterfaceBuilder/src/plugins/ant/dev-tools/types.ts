@@ -1,13 +1,10 @@
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import { ComponentDefinition, ComponentDefinitionNamedProps } from "../../../globalTypes"
 
 export interface DevToolsInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // Core props
   component: "text"
   components: ComponentDefinition[]
-  onChangeData: UserInterfaceProps["onChangeData"]
   preconfigured?: boolean
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 
   // Additional props

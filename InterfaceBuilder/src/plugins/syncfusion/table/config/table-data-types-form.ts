@@ -21,6 +21,7 @@ export const tableDataTypes = [
         label: "Format",
         defaultValue: "standard",
         dataHandlerType: "local",
+        size: "small",
         data: {
           values: [
             {
@@ -45,6 +46,7 @@ export const tableDataTypes = [
         help: "Set the decimal precision of the number type",
         component: "number-input",
         defaultValue: 2,
+        size: "small",
       },
     ],
   },
@@ -82,6 +84,7 @@ export const tableDataTypes = [
         label: "Source Units",
         defaultValue: "seconds",
         dataHandlerType: "local",
+        size: "small",
         data: {
           values: [
             {
@@ -124,17 +127,18 @@ export const tableDataTypes = [
         valueKey: "units.target",
         component: "select",
         label: "Display Units",
-        defaultValue: "durationMixed",
+        defaultValue: "durationMixedUnit",
         dataHandlerType: "local",
+        size: "small",
         data: {
           values: [
             {
               label: 'Mixed (e.g., "3h 22m 55s", etc.)',
-              value: "durationMixed",
+              value: "durationMixedUnit",
             },
             {
               label: 'Largest Unit (e.g., "3 years")',
-              value: "largestUnit",
+              value: "durationLargestUnit",
             },
             {
               label: "Milliseconds",
@@ -178,6 +182,7 @@ export const tableDataTypes = [
         help: "Set the decimal precision of the display units",
         component: "number-input",
         defaultValue: 0,
+        size: "small",
       },
     ],
   },
@@ -195,6 +200,7 @@ export const tableDataTypes = [
         hideLabel: true,
         component: "input",
         defaultValue: "layout",
+        size: "small",
       },
       {
         hideLabel: false,
@@ -202,17 +208,20 @@ export const tableDataTypes = [
         valueKey: "details.dataMapping",
         hidden: false,
         component: "data-map",
+        size: "small",
         keyComponent: {
           hideLabel: false,
           label: "Original Property Key",
           component: "input",
           valueKey: "originalKey",
+          size: "small",
         },
         valueComponent: {
           hideLabel: false,
           label: "Adjusted Property Key",
           component: "input",
           valueKey: "mappedKey",
+          size: "small",
         },
         multiple: true,
       },
@@ -229,9 +238,10 @@ export const tableDataTypes = [
       },
       {
         hideLabel: true,
-        label: "",
+        label: "Cell Layout",
         valueKey: "details.layout",
         component: "user-interface",
+        hideMenu: true,
       },
     ],
   },

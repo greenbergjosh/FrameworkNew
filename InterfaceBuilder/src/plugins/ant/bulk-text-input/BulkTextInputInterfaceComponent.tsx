@@ -1,5 +1,4 @@
 import { Input } from "antd"
-import { get, set } from "lodash/fp"
 import React from "react"
 import { bulkTextInputManageForm } from "./bulk-text-input-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
@@ -13,7 +12,6 @@ export interface BulkTextInputInterfaceComponentProps extends ComponentDefinitio
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   autosize?: boolean
   minRows?: number
@@ -22,8 +20,6 @@ export interface BulkTextInputInterfaceComponentProps extends ComponentDefinitio
   newlinePlaceholder: string
   commaPlaceholder: string
 }
-
-interface BulkTextInputInterfaceComponentState {}
 
 function getAutosize(
   minRows: number | undefined,
@@ -34,8 +30,7 @@ function getAutosize(
   return typeof autosize !== "undefined" && autosize ? true : minMaxRows
 }
 
-function getValue(valueKey: string, userInterfaceData: UserInterfaceProps["data"], defaultValue: string, codec: Codec) {
-  const rawValue = get(valueKey, userInterfaceData)
+function formatValue(rawValue: string[], defaultValue: string, codec: Codec) {
   const value = codec.join(rawValue)
   return typeof value !== "undefined" ? value : defaultValue
 }
@@ -67,17 +62,15 @@ export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<Bulk
     super(props)
   }
 
-  handleChange = ({ target: { value } }: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { onChangeData, userInterfaceData, valueKey, itemSeparator } = this.props
-    const codec: Codec = getCodec(itemSeparator)
+  handleChange = ({ target: { value } }: React.ChangeEvent<HTMLTextAreaElement>): void => {
+    const codec: Codec = getCodec(this.props.itemSeparator)
     const arrayValue = codec.split(value)
-    onChangeData && onChangeData(set(valueKey, arrayValue, userInterfaceData))
+    this.setValue([this.props.valueKey, arrayValue])
   }
 
   render(): JSX.Element {
     const {
       defaultValue,
-      userInterfaceData,
       valueKey,
       autosize,
       minRows,
@@ -87,7 +80,7 @@ export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<Bulk
       commaPlaceholder,
     } = this.props
     const codec: Codec = getCodec(itemSeparator)
-    const value = getValue(valueKey, userInterfaceData, defaultValue, codec)
+    const value = formatValue(this.getValue(valueKey), defaultValue, codec)
     const autosizeValue = getAutosize(minRows, maxRows, autosize)
     const placeholder = itemSeparator === separator.comma ? commaPlaceholder : newlinePlaceholder
     return (

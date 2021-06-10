@@ -1,8 +1,8 @@
-import React, { useState } from "react"
+import React from "react"
 import { useRematch } from "../hooks"
 import { store } from "../state/store"
 import { Helmet } from "react-helmet"
-import { Button, PageHeader, Tooltip, Icon } from "antd"
+import { Button, Icon, PageHeader, Tooltip } from "antd"
 import * as Reach from "@reach/router"
 import { AdminUserInterfaceContextManagerProvider } from "../data/AdminUserInterfaceContextManager"
 import { UserInterface } from "@opg/interface-builder"
@@ -10,7 +10,7 @@ import BreadcrumbNav from "./BreadcrumbNav"
 import { ContentPanelProps } from "../themes/types"
 
 export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
-  const [fromStore, dispatch] = useRematch((appState) => ({
+  const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
     configsByType: store.select.globalConfig.configsByType(appState),
     globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
@@ -57,12 +57,14 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
       <AdminUserInterfaceContextManagerProvider>
         {(userInterfaceContextManager) => (
           <UserInterface
-            mode="display"
-            contextManager={userInterfaceContextManager}
             components={(appPageConfig && appPageConfig.layout) || []}
+            contextManager={userInterfaceContextManager}
             data={props.data}
-            onChangeData={props.onChangeData}
+            getRootUserInterfaceData={props.getRootUserInterfaceData}
+            onChangeRootData={props.onChangeRootData}
             keyPrefix={`${appPaths.appRootPath}/${appPaths.pagePath.join("/")}/`}
+            mode="display"
+            onChangeData={props.onChangeData}
           />
         )}
       </AdminUserInterfaceContextManagerProvider>

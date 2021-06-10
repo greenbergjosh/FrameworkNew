@@ -1,0 +1,25 @@
+{
+  "value1": "Root's Value 1",
+  "value2": "Root's Value 2",
+  "value3": { "subKey": "Root's Value 3, subKey" },
+  "emptyString": "",
+  "numberZero": 0,
+  "booleanFalse": false,
+  "someCollection": [
+    {
+      "value1": "someCollection's Record 1, Value 1",
+      "value2": "someCollection's Record 1, Value 2",
+      "value3": { "subKey": "someCollection's Record 1, Value 3, subKey" }
+    },
+    {
+      "value1": "someCollection's Record 2, Value 1",
+      "value2": "someCollection's Record 2, Value 2",
+      "value3": { "subKey": "someCollection's Record 2, Value 3, subKey" }
+    }
+  ],
+  "someNode": {
+    "value1": "someNode's Value 1",
+    "value2": "someNode's Value 2",
+    "value3": { "subKey": "someNode's Value 3, subKey" }
+  }
+}

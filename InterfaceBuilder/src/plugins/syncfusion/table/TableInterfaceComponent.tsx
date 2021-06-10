@@ -61,9 +61,6 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
   render(): JSX.Element {
     const {
       abstract,
-      allowAdding,
-      allowDeleting,
-      allowEditing,
       columns,
       showToolbar,
       useSmallPager,
@@ -77,87 +74,86 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
       rowDetails,
       userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       preview,
       valueKey,
     } = this.props
 
     return (
       <ComponentRendererModeContext.Consumer>
-        {(mode) => {
-          console.log("TableInterfaceComponent.render", { props: this.props, mode })
-
-          if (abstract) {
-            /*
-             * Abstract Table
-             * Defines a table to be used on child configs. Child configs
-             * that use this table cannot edit the abstract table's
-             * basic settings (settings popup), but may edit its columns.
-             */
-            return (
-              <AbstractTable
-                userInterfaceData={userInterfaceData}
-                getRootUserInterfaceData={getRootUserInterfaceData}
-                getValue={this.getValue.bind(this)}
-                setValue={this.setValue.bind(this)}
-                valueKey={valueKey}
-              />
-            )
-          }
-          switch (this.props.mode) {
-            case "edit": {
+        {
+          (/* mode */) => {
+            if (abstract) {
               /*
-               * Edit Mode
-               * User defines columns with data types, etc.
+               * Abstract Table
+               * Defines a table to be used on child configs. Child configs
+               * that use this table cannot edit the abstract table's
+               * basic settings (settings popup), but may edit its columns.
                */
               return (
-                <EditTable
-                  onChangeSchema={this.props.onChangeSchema}
-                  rowDetails={rowDetails}
-                  userInterfaceData={userInterfaceData}
+                <AbstractTable
                   getRootUserInterfaceData={getRootUserInterfaceData}
+                  onChangeRootData={onChangeRootData}
                   getValue={this.getValue.bind(this)}
                   setValue={this.setValue.bind(this)}
-                  userInterfaceSchema={this.props.userInterfaceSchema}
                   valueKey={valueKey}
                 />
               )
             }
-            case "display": {
-              /*
-               * Display Mode
-               * View the actual grid with data.
-               */
-              return (
-                <Spin
-                  spinning={this.state.loading}
-                  indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
-                  <DisplayTable
-                    allowAdding={allowAdding}
-                    allowDeleting={allowDeleting}
-                    allowEditing={allowEditing}
-                    columns={columns}
-                    defaultCollapseAll={defaultCollapseAll}
-                    autoFitColumns={autoFitColumns}
-                    useSmallFont={useSmallFont}
-                    enableAltRow={enableAltRow}
-                    enableVirtualization={enableVirtualization}
-                    height={height}
-                    defaultPageSize={defaultPageSize}
+            switch (this.props.mode) {
+              case "edit": {
+                /*
+                 * Edit Mode
+                 * User defines columns with data types, etc.
+                 */
+                return (
+                  <EditTable
+                    onChangeSchema={this.props.onChangeSchema}
                     rowDetails={rowDetails}
-                    userInterfaceData={userInterfaceData}
                     getRootUserInterfaceData={getRootUserInterfaceData}
+                    onChangeRootData={onChangeRootData}
                     getValue={this.getValue.bind(this)}
                     setValue={this.setValue.bind(this)}
+                    userInterfaceSchema={this.props.userInterfaceSchema}
                     valueKey={valueKey}
-                    preview={preview}
-                    showToolbar={showToolbar}
-                    useSmallPager={useSmallPager}
                   />
-                </Spin>
-              )
+                )
+              }
+              case "display": {
+                /*
+                 * Display Mode
+                 * View the actual grid with data.
+                 */
+                return (
+                  <Spin
+                    spinning={this.state.loading}
+                    indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
+                    <DisplayTable
+                      columns={columns}
+                      defaultCollapseAll={defaultCollapseAll}
+                      autoFitColumns={autoFitColumns}
+                      useSmallFont={useSmallFont}
+                      enableAltRow={enableAltRow}
+                      enableVirtualization={enableVirtualization}
+                      height={height}
+                      defaultPageSize={defaultPageSize}
+                      rowDetails={rowDetails}
+                      userInterfaceData={userInterfaceData}
+                      getRootUserInterfaceData={getRootUserInterfaceData}
+                      onChangeRootData={onChangeRootData}
+                      getValue={this.getValue.bind(this)}
+                      setValue={this.setValue.bind(this)}
+                      valueKey={valueKey}
+                      preview={preview}
+                      showToolbar={showToolbar}
+                      useSmallPager={useSmallPager}
+                    />
+                  </Spin>
+                )
+              }
             }
           }
-        }}
+        }
       </ComponentRendererModeContext.Consumer>
     )
   }

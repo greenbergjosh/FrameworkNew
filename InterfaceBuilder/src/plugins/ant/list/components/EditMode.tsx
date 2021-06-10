@@ -8,8 +8,8 @@ export default function EditMode({
   data,
   interleave,
   preconfigured,
-  userInterfaceData,
   getRootUserInterfaceData,
+  onChangeRootData,
   setValue,
   valueKey,
 }: EditModeProps): JSX.Element {
@@ -19,10 +19,11 @@ export default function EditMode({
         components={components}
         componentLimit={interleave === "none" ? 1 : 0}
         data={data}
-        getRootData={getRootUserInterfaceData}
+        getRootUserInterfaceData={getRootUserInterfaceData}
+        onChangeRootData={onChangeRootData}
         dragDropDisabled={!!preconfigured}
         onChangeData={(newData) => {
-          setValue(valueKey, newData, userInterfaceData)
+          setValue([valueKey, newData])
         }}
         onChangeSchema={(newSchema) => {
           console.warn("ListInterfaceComponent.render", "TODO: Cannot alter schema inside ComponentRenderer in List", {

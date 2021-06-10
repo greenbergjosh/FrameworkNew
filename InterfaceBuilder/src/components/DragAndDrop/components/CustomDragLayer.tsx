@@ -21,7 +21,7 @@ export interface CustomDragLayerProps {
 }
 
 const _CustomDragLayer: React.FC<CustomDragLayerProps> = (props) => {
-  const { item, itemType, isDragging } = props
+  const { itemType, isDragging } = props
 
   // console.log("_CustomDragLayer.render", props)
 

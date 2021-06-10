@@ -12,7 +12,7 @@ export const Undraggable: React.FunctionComponent<UndraggableProps> = ({ childre
     case true:
       return <div {...undraggableProps}>{children}</div>
     default:
-      const undraggableChildren = React.Children.map(children, (child, index) => {
+      const undraggableChildren = React.Children.map(children, (child /*, index*/) => {
         return React.cloneElement(child as React.ReactElement<any>, undraggableProps)
       })
       return <>{undraggableChildren}</>

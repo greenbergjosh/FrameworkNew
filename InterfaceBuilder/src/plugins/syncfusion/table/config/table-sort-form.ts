@@ -9,6 +9,9 @@ export const tableSortForm = {
       label: "Allow Sorting",
       component: "toggle",
       defaultValue: true,
+      size: "small",
+      getRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
     },
     {
       key: "sortDirection",
@@ -16,6 +19,7 @@ export const tableSortForm = {
       label: "Direction",
       component: "select",
       dataHandlerType: "local",
+      size: "small",
       data: {
         values: [
           {
@@ -35,6 +39,7 @@ export const tableSortForm = {
       label: "Order",
       help: "The lowest Order is the first column sorted, followed by the next lowest, and so on",
       component: "number-input",
+      size: "small",
     },
   ],
 } as SectionDefinition

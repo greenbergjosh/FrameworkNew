@@ -1,0 +1,143 @@
+{
+  "key": "outer",
+  "invisible": false,
+  "hidden": false,
+  "valueKey": "",
+  "hideLabel": true,
+  "classNames": ["container"],
+  "component": "container",
+  "components": [
+    {
+      "height": 150,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": true,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "detailsOrientation": "right",
+      "allowDetails": true,
+      "hidden": false,
+      "addParentLabel": "Add Group",
+      "addLeafLabel": "Add Page",
+      "addLabel": "Add Item",
+      "emptyText": "No Navigation Items",
+      "allowSelectParents": true,
+      "multiselect": false,
+      "selectedKey": "_state.selectedNavigation",
+      "selectable": true,
+      "allowAddParents": true,
+      "allowAddLeaves": true,
+      "allowAdd": true,
+      "allowNestingInLeaves": false,
+      "modifiable": true,
+      "valueKey": "navigation",
+      "label": "Navigation",
+      "hideLabel": false,
+      "component": "tree",
+      "components": [
+        {
+          "hidden": false,
+          "image": "compact",
+          "message": "No Navigation Selected",
+          "hideLabel": true,
+          "component": "empty",
+          "label": "Empty",
+          "visibilityConditions": {
+            "!": {
+              "var": "_state.selectedNavigation"
+            }
+          }
+        },
+        {
+          "hidden": false,
+          "orientation": "vertical",
+          "label": "Form",
+          "hideLabel": true,
+          "component": "form",
+          "components": [
+            {
+              "key": "title",
+              "hidden": false,
+              "maxLength": null,
+              "valueKey": "_state.selectedNavigation.title",
+              "label": "Page Title",
+              "hideLabel": false,
+              "component": "input",
+              "visibilityConditions": {
+                "===": [
+                  true,
+                  {
+                    "var": "_state.selectedNavigation.isLeaf"
+                  }
+                ]
+              }
+            },
+            {
+              "hidden": false,
+              "createNewLabel": "Create New...",
+              "allowCreateNew": false,
+              "remoteQueryMapping": [
+                {
+                  "label": "label",
+                  "value": ""
+                },
+                {
+                  "label": "value",
+                  "value": ""
+                }
+              ],
+              "data": {
+                "values": []
+              },
+              "dataHandlerType": "remote-config",
+              "multiple": false,
+              "placeholder": "Select a Business Application Page",
+              "valueKey": "_state.selectedNavigation.page",
+              "label": "Page Link",
+              "hideLabel": false,
+              "component": "select",
+              "remoteConfigType": "60e0d2fd-7e89-43c7-94bb-7319cd7bb039",
+              "visibilityConditions": {
+                "===": [
+                  true,
+                  {
+                    "var": "_state.selectedNavigation.isLeaf"
+                  }
+                ]
+              }
+            },
+            {
+              "hidden": false,
+              "maxLength": null,
+              "valueKey": "_state.selectedNavigation.title",
+              "label": "Group Title",
+              "hideLabel": false,
+              "component": "input",
+              "visibilityConditions": {
+                "and": [
+                  {
+                    "!==": [
+                      true,
+                      {
+                        "var": "_state.selectedNavigation.isLeaf"
+                      }
+                    ]
+                  },
+                  {
+                    "!!": {
+                      "var": "_state.selectedNavigation"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,10 +2,12 @@ import React from "react"
 import { dataInjectorManageForm } from "./data-injector-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { DataInjectorInterfaceComponentProps, DataInjectorInterfaceComponentState, EVENTS } from "./types"
-import { set } from "lodash/fp"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
+import { JSONEditor } from "../../../components/JSONEditor/JSONEditor"
+import { JSONEditorProps } from "../../../components/JSONEditor/types"
+import { isEqual, isObjectLike, isString, isUndefined, set } from "lodash/fp"
 
 export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   DataInjectorInterfaceComponentProps,
@@ -14,7 +16,8 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   static availableEvents = [EVENTS.VALUE_CHANGED]
   static defaultProps = {
     userInterfaceData: {},
-    valueKey: "data",
+    valueKey: "$", // deprecated, use outboundValueKey instead
+    outboundValueKey: "$",
     showBorder: true,
   }
 
@@ -56,29 +59,62 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     }
 
     if (
-      this.props.valueKey !== prevProps.valueKey ||
+      this.props.outboundValueKey !== prevProps.outboundValueKey ||
       this.props.dataType !== prevProps.dataType ||
-      this.props[typeKey] !== prevProps[typeKey]
+      !isEqual(this.props[typeKey], prevProps[typeKey])
     ) {
       this.updateValue()
     }
   }
 
+  /**
+   * Display mode method to put stored values into the model
+   */
   updateValue = () => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
     const value = this.getValueByType()
-
-    onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
-
+    const key = this.props.outboundValueKey || this.props.valueKey // retaining valueKey for backwards compatibility
+    this.setValue([key, value])
     this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
   }
 
-  getValueByType = (): JSONRecord | string | boolean | number => {
-    const { jsonValue, booleanValue, numberValue, stringValue, dataType } = this.props
+  getValueByType = (): JSONRecord | string | boolean | number | null => {
+    const { jsonValue, booleanValue, numberValue, stringValue, dataType, bindings } = this.props
 
     switch (dataType) {
       case "json":
-        return tryCatch(() => jsonValue && JSON.parse(jsonValue)).toUndefined()
+        /*
+         * Handle a bound json object
+         */
+        if (!isUndefined(bindings && bindings.jsonValue) && typeof jsonValue === "object" && isObjectLike(jsonValue)) {
+          return jsonValue
+        }
+
+        /*
+         * Parse a json string from either the settings or bound data
+         */
+        if (isString(jsonValue)) {
+          const json: JSONRecord | undefined = tryCatch(() => jsonValue && JSON.parse(jsonValue)).toUndefined()
+          if (json && isObjectLike(json)) {
+            return json
+          }
+          // jsonValue is an invalid json string
+          console.warn(
+            "DataInjectorInterfaceComponent.getValueByType",
+            `Data type "json" expected a valid json string.`,
+            { value: jsonValue }
+          )
+          return null
+        }
+
+        /*
+         * jsonValue is an invalid type
+         */
+        console.warn(
+          "DataInjectorInterfaceComponent.getValueByType",
+          `Data type "json" expected a valid json string or object but got a ${typeof jsonValue} instead.`,
+          { value: jsonValue }
+        )
+        return null
       case "number":
         return numberValue
       case "boolean":
@@ -89,25 +125,43 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  /**
+   * Edit mode change event handler
+   * @param data
+   */
+  handleChange: JSONEditorProps["onChange"] = (data): void => {
+    if (this.props.mode === "edit") {
+      const { onChangeSchema, userInterfaceSchema } = this.props
+      const jsonValue = JSON.stringify(data || {})
+      onChangeSchema && userInterfaceSchema && onChangeSchema(set("jsonValue", jsonValue, userInterfaceSchema))
+    }
+  }
+
   render(): JSX.Element | null {
     if (this.props.mode === "edit") {
-      const rawValue = this.getValueByType()
-      const value = this.props.dataType === "json" ? JSON.stringify(rawValue) : rawValue.toString()
+      const rawValue = this.getValueByType() as JSONRecord
+
+      const fieldsetStyle: React.CSSProperties = {
+        padding: "5px",
+        backgroundColor: "rgba(180, 0, 255, 0.05)",
+        display: "inline-block",
+        width: "100%",
+        overflow: "scroll",
+      }
 
       return (
-        <fieldset
-          style={{
-            padding: 10,
-            border: "1px dashed rgba(0, 178, 255, 0.5)",
-            backgroundColor: "rgba(0, 178, 255, 0.05)",
-            borderRadius: 5,
-            position: "relative",
-            overflow: "scroll",
-          }}>
-          <legend style={{ all: "unset", color: "rgb(0, 178, 255)", padding: 5 }}>Data Injector</legend>
-          <code>
-            {this.props.valueKey}: {value}
-          </code>
+        <fieldset style={fieldsetStyle}>
+          <div style={{ fontSize: 10, color: "rgb(172 177 180)" }}>
+            <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
+          </div>
+          <div
+            style={{
+              marginTop: 5,
+              borderRadius: 3,
+              backgroundColor: "white",
+            }}>
+            <JSONEditor data={rawValue} onChange={this.handleChange} height={this.props.height || 100} />
+          </div>
         </fieldset>
       )
     }

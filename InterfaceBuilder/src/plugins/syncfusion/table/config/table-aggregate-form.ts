@@ -10,6 +10,9 @@ export const tableAggregateForm = {
       help: "How to aggregate this column",
       component: "select",
       dataHandlerType: "local",
+      size: "small",
+      getRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
       data: {
         values: [
           {
@@ -63,6 +66,7 @@ export const tableAggregateForm = {
       help: "Custom function to aggregate this column",
       dataHandlerType: "remote-config",
       remoteConfigType: "Report.CustomAggregate",
+      size: "small",
       visibilityConditions: {
         "===": ["Custom", { var: "aggregationFunction" }],
       },
@@ -85,6 +89,7 @@ export const tableAggregateForm = {
           label: "Value",
           hideLabel: false,
           component: "textarea",
+          size: "small",
         },
       ],
       defaultValue: [],

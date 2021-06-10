@@ -1,6 +1,5 @@
 import React from "react"
 import { set } from "lodash/fp"
-import { Typography } from "antd"
 import { ComponentRenderer } from "../../../../components/ComponentRenderer/ComponentRenderer"
 import { DataPathContext } from "../../../../contexts/DataPathContext"
 import { editComponents } from "../config/edit-components"
@@ -12,23 +11,28 @@ import { EditTableProps } from "../types"
  */
 export function EditTable({
   onChangeSchema,
-  rowDetails,
-  userInterfaceData,
+  rowDetails = [],
   getRootUserInterfaceData,
+  onChangeRootData,
   getValue,
   setValue,
   userInterfaceSchema,
   valueKey,
 }: EditTableProps): JSX.Element {
-  const dataArray = getValue(valueKey!, userInterfaceData) || []
+  const dataArray = getValue(valueKey) || []
   const data = { columns: dataArray }
 
   return (
     <>
+      {/* **************************
+       *
+       * Columns Editor
+       */}
       <ComponentRenderer
         components={editComponents}
         data={userInterfaceSchema}
-        getRootData={getRootUserInterfaceData}
+        getRootUserInterfaceData={getRootUserInterfaceData}
+        onChangeRootData={onChangeRootData}
         mode="display"
         onChangeData={(newData) => {
           onChangeSchema && userInterfaceSchema && onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
@@ -45,22 +49,33 @@ export function EditTable({
           //   onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
         }}
       />
-      <Typography.Title level={4}>Row Details</Typography.Title>
-      <div style={{ marginLeft: 15 }}>
+      {/* **************************
+       *
+       * Row Details
+       */}
+      <fieldset
+        style={{
+          padding: 5,
+          border: "1px dashed #a3a3a3",
+          borderRadius: 5,
+          position: "relative",
+        }}>
+        <legend style={{ all: "unset", padding: 5 }}>Row Details</legend>
         <DataPathContext path="rowDetails">
           <ComponentRenderer
             components={rowDetails}
             data={data}
-            getRootData={getRootUserInterfaceData}
+            getRootUserInterfaceData={getRootUserInterfaceData}
+            onChangeRootData={onChangeRootData}
             onChangeData={(newData) => {
-              setValue(valueKey!, newData, userInterfaceData)
+              setValue([valueKey, newData])
             }}
             onChangeSchema={(newSchema) => {
               onChangeSchema && userInterfaceSchema && onChangeSchema(set("rowDetails", newSchema, userInterfaceSchema))
             }}
           />
         </DataPathContext>
-      </div>
+      </fieldset>
     </>
   )
 }

@@ -23,6 +23,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 hidden: true,
+                bindable: true,
               },
               {
                 key: "startTimeKey",

@@ -1,0 +1,163 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "inset": false,
+      "size": "default",
+      "bordered": false,
+      "hoverable": false,
+      "invisible": false,
+      "hidden": false,
+      "extra": "",
+      "title": "ISO-8601 Date",
+      "valueKey": "$",
+      "label": "Card",
+      "hideLabel": true,
+      "component": "card",
+      "components": [
+        {
+          "center": false,
+          "headerSize": "h2",
+          "closable": false,
+          "banner": false,
+          "description": "",
+          "showIcon": false,
+          "textType": "paragraph",
+          "invisible": false,
+          "hidden": false,
+          "stringTemplate": "Start Date: {$.startDate}, End Date: {$.endDate}",
+          "useTokens": true,
+          "valueKey": "isoDate",
+          "label": "Text",
+          "hideLabel": true,
+          "component": "text",
+          "components": []
+        },
+        {
+          "size": "default",
+          "invisible": false,
+          "hidden": false,
+          "endDateKey": "isoDate.endDate",
+          "startDateKey": "isoDate.startDate",
+          "dateKey": "isoDate.startDate",
+          "isDateRange": true,
+          "timeFormat": "iso-8601",
+          "executeImmediately": false,
+          "label": "Date Stepper",
+          "hideLabel": true,
+          "component": "date-stepper"
+        }
+      ]
+    },
+    {
+      "inset": false,
+      "size": "default",
+      "bordered": false,
+      "hoverable": false,
+      "invisible": false,
+      "hidden": false,
+      "extra": "",
+      "title": "Locale Date",
+      "valueKey": "$",
+      "label": "Card",
+      "hideLabel": true,
+      "component": "card",
+      "components": [
+        {
+          "center": false,
+          "headerSize": "h2",
+          "closable": false,
+          "banner": false,
+          "description": "",
+          "showIcon": false,
+          "textType": "paragraph",
+          "invisible": false,
+          "hidden": false,
+          "stringTemplate": "Start Date: {$.startDate}, End Date: {$.endDate}",
+          "useTokens": true,
+          "valueKey": "localeDate",
+          "label": "Text",
+          "hideLabel": true,
+          "component": "text",
+          "components": []
+        },
+        {
+          "size": "default",
+          "invisible": false,
+          "hidden": false,
+          "endDateKey": "localeDate.endDate",
+          "startDateKey": "localeDate.startDate",
+          "dateKey": "localeDate.startDate",
+          "isDateRange": true,
+          "executeImmediately": false,
+          "label": "Date Stepper",
+          "hideLabel": true,
+          "component": "date-stepper"
+        }
+      ]
+    },
+    {
+      "inset": false,
+      "size": "default",
+      "bordered": false,
+      "hoverable": false,
+      "invisible": false,
+      "hidden": false,
+      "extra": "",
+      "title": "GMT Date",
+      "valueKey": "$",
+      "label": "Card",
+      "hideLabel": true,
+      "component": "card",
+      "components": [
+        {
+          "center": false,
+          "headerSize": "h2",
+          "closable": false,
+          "banner": false,
+          "description": "",
+          "showIcon": false,
+          "textType": "paragraph",
+          "invisible": false,
+          "hidden": false,
+          "stringTemplate": "Start Date: {$.startDate}, End Date: {$.endDate}",
+          "useTokens": true,
+          "valueKey": "gmtDate",
+          "label": "Text",
+          "hideLabel": true,
+          "component": "text",
+          "components": []
+        },
+        {
+          "size": "default",
+          "invisible": false,
+          "hidden": false,
+          "endDateKey": "gmtDate.endDate",
+          "startDateKey": "gmtDate.startDate",
+          "dateKey": "gmtDate.startDate",
+          "isDateRange": true,
+          "timeFormat": "gmt",
+          "executeImmediately": false,
+          "label": "Date Stepper",
+          "hideLabel": true,
+          "component": "date-stepper"
+        }
+      ]
+    }
+  ]
+}

@@ -10,6 +10,9 @@ export const tableAdvancedForm = {
       help: "If true, text containing HTML markup will be rendered as HTML rather than as raw text",
       component: "toggle",
       defaultValue: false,
+      size: "small",
+      getRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
     },
     {
       key: "removeCellPadding",
@@ -18,6 +21,7 @@ export const tableAdvancedForm = {
       help: "Removes the default spacing around cell contents to make more readable",
       component: "toggle",
       defaultValue: false,
+      size: "small",
     },
     {
       key: "maxWidth",
@@ -26,6 +30,7 @@ export const tableAdvancedForm = {
       help:
         'Maximum width of the column. Consider setting "Wrap Mode" on the grid to allow text to wrap in this column.',
       component: "number-input",
+      size: "small",
     },
     {
       key: "cellFormatter",
@@ -35,6 +40,7 @@ export const tableAdvancedForm = {
       help: "Custom format content of the cells in this column",
       dataHandlerType: "remote-config",
       remoteConfigType: "Report.CellFormatter",
+      size: "small",
     },
     {
       key: "cellFormatterOptions",
@@ -48,11 +54,13 @@ export const tableAdvancedForm = {
         label: "Key",
         component: "input",
         valueKey: "key",
+        size: "small",
       },
       valueComponent: {
         label: "Value",
         component: "textarea",
         valueKey: "value",
+        size: "small",
       },
       visibilityConditions: {
         "!!": { var: ["cellFormatter"] },

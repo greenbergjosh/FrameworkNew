@@ -1,0 +1,37 @@
+{
+  "formatExamples": {
+    "myPercent": 0.123567,
+    "myMoney": 12.34,
+    "myNumber": 35670234.123478,
+    "myNegativeNumber": -35670234.123478,
+    "myStringNumber": "35670234.123478",
+    "myDate": "2021-01-28T20:34:06.347Z",
+    "myObject": {
+      "foo": "bar"
+    },
+    "myArray": ["foo", "bar", "bah", "baz"]
+  },
+  "value1": "Value 1",
+  "value2": "Value 2",
+  "value3": { "subKey": "Value 3, subKey" },
+  "emptyString": "",
+  "numberZero": 0,
+  "booleanFalse": false,
+  "someCollection": [
+    {
+      "value1": "someCollection's Record 1, Value 1",
+      "value2": "someCollection's Record 1, Value 2",
+      "value3": { "subKey": "someCollection's Record 1, Value 3, subKey" }
+    },
+    {
+      "value1": "someCollection's Record 2, Value 1",
+      "value2": "someCollection's Record 2, Value 2",
+      "value3": { "subKey": "someCollection's Record 2, Value 3, subKey" }
+    }
+  ],
+  "someNode": {
+    "value1": "someNode's Value 1",
+    "value2": "someNode's Value 2",
+    "value3": { "subKey": "someNode's Value 3, subKey" }
+  }
+}

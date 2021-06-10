@@ -23,11 +23,18 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "hideLabel",
                 defaultValue: true,
-                hidden: true,
               },
               {
                 key: "valueKey",
-                defaultValue: "data",
+                hidden: true,
+              },
+              {
+                key: "outboundValueKey",
+                valueKey: "outboundValueKey",
+                label: "Outbound Value Key",
+                component: "input",
+                defaultValue: "$",
+                help: "The key used to put data into the model",
                 bindable: true,
               },
               {
@@ -114,7 +121,16 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
           },
           {
             key: "appearance",
-            components: [],
+            components: [
+              {
+                key: "height",
+                valueKey: "height",
+                component: "number-input",
+                label: "Height",
+                defaultValue: 100,
+                bindable: true,
+              },
+            ],
           },
         ],
       },

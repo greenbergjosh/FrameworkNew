@@ -5,12 +5,13 @@ import OpgCorporateTheme from "../themes/opg-corporate"
 import { isEmpty } from "lodash/fp"
 import { WithRouteProps } from "../state/navigation"
 import { ITheme, ThemeProps } from "./types"
+import { UserInterfaceProps } from "@opg/interface-builder"
 
 export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
   /*
    * For now, the user interacts with state, but it is not persisted.
    */
-  const [data, setData] = useState({})
+  const [data, setData] = useState<UserInterfaceProps["data"]>({})
 
   const [fromStore, dispatch] = useRematch((appState) => ({
     loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
@@ -44,7 +45,7 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
     return OpgCorporateTheme
   }, [fromStore.appConfig])
 
-  function handleChangeData(newData: any) {
+  function handleChangeData(newData: UserInterfaceProps["data"]) {
     setData(newData)
   }
 

@@ -98,8 +98,6 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
               (result) => result
             )
 
-            console.log("navigation.automaticChildTypeToNavigationItem", automaticChildType, childTypeRecords)
-
             return childTypeRecords.map((record) => ({
               active: true,
               description: "",

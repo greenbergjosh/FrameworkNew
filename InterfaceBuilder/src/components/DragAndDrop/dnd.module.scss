@@ -10,7 +10,6 @@
     display: inherit;
     position: relative;
     border: 1px solid transparent;
-    padding: 5px 5px 15px 5px;
     border-radius: 10px;
 
     transition: 0.1s padding-bottom ease-out;
@@ -42,7 +41,7 @@
       }
 
       height: 65px;
-      background-color: $ib-invisible-background; //#f2f4f5;
+      background-color: $ib-invisible-light;
       border: none;
       border-radius: 10px;
       transition: 0.1s top ease-out;
@@ -61,26 +60,6 @@
 
     & > * {
       transition: 0.1s transform ease-out;
-    }
-
-    .dnd-draggable-edit-buttons {
-      opacity: 0;
-      transition: 0.1s opacity ease-out;
-      position: absolute;
-      top: 0;
-      width: 100%;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.5);
-
-      .dnd-draggable-edit-title {
-        margin-right: 15px;
-      }
-    }
-
-    &:hover > .dnd-draggable-edit-buttons {
-      opacity: 1;
     }
   }
 }

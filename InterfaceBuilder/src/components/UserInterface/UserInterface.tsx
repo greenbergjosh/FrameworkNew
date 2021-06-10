@@ -1,22 +1,22 @@
 import { Icon, Layout, Tooltip, Typography } from "antd"
 import classNames from "classnames"
-import { get, getOr, set } from "lodash/fp"
+import { getOr, set } from "lodash/fp"
 import React from "react"
 import { ComponentRenderer, UI_ROOT } from "../ComponentRenderer"
-import { DraggableContext, DraggableContextProps } from "../../contexts/DraggableContext"
-import { ComponentMenu } from "./components/ComponentMenu"
+import { EditableContext, EditableContextProps } from "../../contexts/EditableContext"
+import { ComponentMenu } from "./ComponentMenu"
 import { SettingsModal } from "../SettingsModal/SettingsModal"
 import { ComponentRegistryContext, registry } from "../../services/ComponentRegistry"
 import { UserInterfaceContext } from "../../contexts/UserInterfaceContext"
 import { DataPathContext } from "../../contexts/DataPathContext"
 import { UserInterfaceState } from "./types"
-import { handleDropHelper } from "../../components/DragAndDrop/lib/handleDropHelper"
-import { DraggedItemProps, DroppableTargetProps } from "../../components/DragAndDrop"
+import { handleDropHelper } from "../DragAndDrop/lib/handleDropHelper"
+import { DraggedItemProps, DroppableTargetProps } from "../DragAndDrop"
 import "./userInterface.module.scss"
 import rainy_window_png from "../../images/rainy-window.png"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
-import styles from "./components/styles.scss"
-import { GripperPanel } from "components/GripperPanel/GripperPanel"
+import styles from "./styles.scss"
+import { EditPanel } from "../EditPanel/EditPanel"
 
 export class UserInterface extends React.Component<UserInterfaceProps, UserInterfaceState> {
   state = {
@@ -55,15 +55,18 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     this.setState({ collapsed })
   }
 
-  handleSiderToggleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+  handleSiderToggleClick = (/*e: React.MouseEvent<HTMLElement, MouseEvent>*/) => {
     this.setState({ collapsed: !this.state.collapsed })
   }
 
-  getRootData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
+  getRootUserInterfaceData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
+
+  // onChangeRootData = (newData: UserInterfaceProps["data"]): void =>
+  //   this.props.onChangeRootData && this.props.onChangeRootData(newData)
 
   render(): JSX.Element {
     const { components, contextManager, data, mode, onChangeData, submit } = this.props
-    const { clipboardComponent, error, fullscreen, itemToAdd, itemToEdit } = this.state
+    const { error, fullscreen, itemToAdd, itemToEdit } = this.state
 
     if (error) {
       return <img src={rainy_window_png} alt="A window showing a rainy day with text 'Something went wrong'" />
@@ -73,13 +76,14 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
       <ComponentRenderer
         components={components}
         data={data}
-        getRootData={this.getRootData}
+        getRootUserInterfaceData={this.getRootUserInterfaceData}
+        onChangeRootData={this.props.onChangeRootData /*this.onChangeRootData*/}
         mode={mode}
         onChangeData={onChangeData}
         onChangeSchema={
           this.props.mode === "edit"
             ? this.props.onChangeSchema
-            : (newSchema: any) => {
+            : (newSchema) => {
                 console.warn(
                   "UserInterface.render",
                   "ComponentRenderer/onChangeSchema",
@@ -94,17 +98,11 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
       />
     )
 
-    const draggableContextHandlers: DraggableContextProps = {
-      canCopy: true,
+    const editableContextHandlers: EditableContextProps = {
       canDelete: true,
       canEdit: true,
-      canPaste: !!clipboardComponent,
-      onCopy: (draggedItem) => {
-        console.log("UserInterface.draggableContextHandlers", "onCopy", draggedItem)
-        this.setState({ clipboardComponent: draggedItem })
-      },
       onDelete: (deleteItem) => {
-        console.log("UserInterface.draggableContextHandlers", "onDelete", deleteItem)
+        console.log("UserInterface.editableContextHandlers", "onDelete", deleteItem)
 
         // Must be in edit mode in order to delete things
         if (this.props.mode === "edit") {
@@ -135,13 +133,13 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
         }
       },
       onEdit: (draggedItem) => {
-        console.log(
-          "UserInterface.draggableContextHandlers",
+        /*console.log(
+          "UserInterface.editableContextHandlers",
           "onEdit",
           draggedItem,
           components,
           get(draggedItem.draggableId, components)
-        )
+        )*/
         this.setState({
           components,
           itemToAdd: null,
@@ -151,9 +149,6 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
             index: draggedItem.index,
           },
         })
-      },
-      onPaste: (draggedItem) => {
-        console.log("UserInterface.draggableContextHandlers", "onPaste", draggedItem)
       },
     }
 
@@ -166,48 +161,57 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     return (
       <div className={classNames("user-interface-builder", { fullscreen })}>
         <DataPathContext>
-          {(parentPath) => (
+          {() => (
+            /*{ parentPath }*/
             <DataPathContext reset>
               <ComponentRegistryContext.Provider value={{ componentRegistry: registry }}>
-                <DraggableContext.Provider value={draggableContextHandlers}>
+                <EditableContext.Provider value={editableContextHandlers}>
                   {mode === "edit" ? (
                     <>
                       <Layout className={styles.uiEditor}>
-                        <Layout.Sider
-                          width={175}
-                          collapsedWidth={32}
-                          className={styles.componentMenuPanel}
-                          collapsible
-                          trigger={null}
-                          collapsed={this.state.collapsed}
-                          onCollapse={this.handleComponentMenuCollapse}>
-                          {/*
-                           * Position sticky to make the component menu stay in the viewport.
-                           */}
-                          <div style={{ position: "sticky", top: 20 }}>
-                            <div
-                              className={classNames(
-                                styles.componentMenuToggleBar,
-                                this.state.collapsed ? styles.collapsed : undefined
-                              )}
-                              onClick={this.handleSiderToggleClick}>
-                              <Tooltip title="Drag & Drop Components">
-                                <Icon type="setting" className={styles.icon} />
-                              </Tooltip>
-                              {!this.state.collapsed && (
-                                <Typography.Text className={styles.title}>Drag &amp; Drop Components</Typography.Text>
-                              )}
+                        {!this.props.hideMenu && (
+                          <Layout.Sider
+                            width={175}
+                            collapsedWidth={32}
+                            className={styles.componentMenuPanel}
+                            collapsible
+                            trigger={null}
+                            collapsed={this.state.collapsed}
+                            onCollapse={this.handleComponentMenuCollapse}>
+                            {/*
+                             * Position sticky to make the component menu stay in the viewport.
+                             */}
+                            <div style={{ position: "sticky", top: 20 }}>
+                              <div
+                                className={classNames(
+                                  styles.componentMenuToggleBar,
+                                  this.state.collapsed ? styles.collapsed : undefined
+                                )}
+                                onClick={this.handleSiderToggleClick}>
+                                <Tooltip title="Drag & Drop Components">
+                                  <Icon type="setting" className={styles.icon} />
+                                </Tooltip>
+                                {!this.state.collapsed && (
+                                  <Typography.Text className={styles.title}>Drag &amp; Drop Components</Typography.Text>
+                                )}
+                              </div>
+                              {!this.state.collapsed && <ComponentMenu />}
                             </div>
-                            {!this.state.collapsed && <ComponentMenu />}
-                          </div>
-                        </Layout.Sider>
-                        <GripperPanel title="User Interface">
-                          <Layout.Content className={styles.uiEditorContent}>{contentWithContext}</Layout.Content>
-                        </GripperPanel>
+                          </Layout.Sider>
+                        )}
+                        <Layout.Content className={styles.uiEditorContent}>
+                          <EditPanel
+                            title={this.props.title || "User Interface"}
+                            style={{ width: "100%" }}
+                            visibilityMode="user-interface">
+                            {contentWithContext}
+                          </EditPanel>
+                        </Layout.Content>
                       </Layout>
 
                       <SettingsModal
-                        getRootUserInterfaceData={this.getRootData}
+                        getRootUserInterfaceData={this.getRootUserInterfaceData}
+                        onChangeRootData={this.props.onChangeRootData /*this.onChangeRootData*/}
                         userInterfaceData={data}
                         componentDefinition={
                           (itemToAdd && itemToAdd.componentDefinition) || (itemToEdit && itemToEdit.componentDefinition)
@@ -291,7 +295,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                   ) : (
                     contentWithContext
                   )}
-                </DraggableContext.Provider>
+                </EditableContext.Provider>
               </ComponentRegistryContext.Provider>
             </DataPathContext>
           )}

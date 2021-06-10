@@ -57,6 +57,47 @@ const dataTab = {
       label: "onClick Function",
       defaultTheme: "vs-dark",
       defaultLanguage: "javascript",
+      help:
+        "Return a function that receives props and lib. Lib contains getValue and setValue which can interact with the data model.",
+      defaultValue: `/*
+ * props: {
+ *   block: boolean
+ *   buttonLabel: string
+ *   confirmation: {cancelText: "Cancel", okText: "Continue", message: "This action cannot be undone and may take a while. Are you sure?", title: "Are you sure?"}
+ *   displayType: "link" | "button"
+ *   getRootUserInterfaceData: ƒ ()
+ *   ghost: boolean
+ *   hidden: boolean
+ *   hideButtonLabel: boolean
+ *   hideLabel: boolean
+ *   icon: string
+ *   invisible: boolean
+ *   mode: "display" | "edit" | "preview"
+ *   onChangeData: ƒ handleChangeData(newData)
+ *   onChangeSchema: ƒ (newComponentDefinition)
+ *   onClickSrc: string
+ *   onRaiseEvent: ƒ onRaiseEvent(eventName, eventPayload, source)
+ *   paramKVPMaps: {values: Array(0)}
+ *   requireConfirmation: boolean
+ *   shape: string
+ *   size: string
+ *   submit: ƒ
+ *   useOnClick: boolean
+ *   userInterfaceData: JSONRecord
+ *   userInterfaceSchema: JSONRecord
+ *   valueKey: string
+ * }
+ *
+ * lib: {
+ *   getValue: (key: string, userInterfaceData?: JSONRecord, getRootUserInterfaceData?: ƒ) => void,
+ *   setValue: (key: string, newValue: any, userInterfaceData?: JSONRecord) => void
+ * }
+ *
+ * Note: lib can also be modified to contain other libraries, properties, and functions.
+ */
+return function(props, lib) {
+  // Do stuff here
+}`,
       hidden: false,
       hideLabel: false,
       component: "code-editor",
@@ -307,13 +348,18 @@ const appearanceTab = {
   ],
 }
 
+const styleTab = {
+  key: "style",
+  components: [],
+}
+
 const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [
       {
         key: "tabs",
-        tabs: [dataTab, appearanceTab],
+        tabs: [dataTab, appearanceTab, styleTab],
       },
     ],
   },

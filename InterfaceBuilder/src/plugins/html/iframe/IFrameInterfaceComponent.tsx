@@ -14,7 +14,6 @@ export interface IFrameInterfaceComponentProps extends ComponentDefinitionNamedP
   onChangeData: UserInterfaceProps["onChangeData"]
   preconfigured?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   src: string
   height?: number
@@ -42,7 +41,7 @@ export class IFrameInterfaceComponent extends BaseInterfaceComponent<IFrameInter
    * https://www.tutorialrepublic.com/faq/automatically-adjust-iframe-height-according-to-its-contents-using-javascript.php
    */
   render(): JSX.Element {
-    const { bordered, components, onChangeData, preconfigured, height, src, userInterfaceData } = this.props
+    const { height, src } = this.props
     return <iframe src={src} height={height} width="100%" style={{ display: "block", border: "none" }} />
   }
 }

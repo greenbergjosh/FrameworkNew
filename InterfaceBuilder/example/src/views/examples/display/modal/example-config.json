@@ -1,0 +1,105 @@
+{
+  "key": "outer",
+  "invisible": false,
+  "hidden": false,
+  "valueKey": "",
+  "hideLabel": true,
+  "classNames": [
+    "container"
+  ],
+  "component": "container",
+  "components": [
+    {
+      "height": 150,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": true,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "confirmation": {
+        "cancelText": "Cancel",
+        "okText": "Continue",
+        "message": "This action cannot be undone and may take a while. Are you sure?",
+        "title": "Are you sure?"
+      },
+      "requireConfirmation": false,
+      "ghost": true,
+      "block": false,
+      "size": null,
+      "buttonLabel": "Show Modal",
+      "hideButtonLabel": false,
+      "icon": null,
+      "shape": null,
+      "displayType": "primary",
+      "invisible": false,
+      "hidden": false,
+      "onClickSrc": "/*\n * props: {\n *   block: boolean\n *   buttonLabel: string\n *   confirmation: {cancelText: \"Cancel\", okText: \"Continue\", message: \"This action cannot be undone and may take a while. Are you sure?\", title: \"Are you sure?\"}\n *   displayType: \"link\" | \"button\"\n *   getRootUserInterfaceData: ƒ ()\n *   ghost: boolean\n *   hidden: boolean\n *   hideButtonLabel: boolean\n *   hideLabel: boolean\n *   icon: string\n *   invisible: boolean\n *   mode: \"display\" | \"edit\" | \"preview\"\n *   onChangeData: ƒ handleChangeData(newData)\n *   onChangeSchema: ƒ (newComponentDefinition)\n *   onClickSrc: string\n *   onRaiseEvent: ƒ onRaiseEvent(eventName, eventPayload, source)\n *   paramKVPMaps: {values: Array(0)}\n *   requireConfirmation: boolean\n *   shape: string\n *   size: string\n *   submit: ƒ\n *   useOnClick: boolean\n *   userInterfaceData: JSONRecord\n *   userInterfaceSchema: JSONRecord\n *   valueKey: string\n * }\n *\n * lib: {\n *   getValue: (key: string, userInterfaceData?: JSONRecord, getRootUserInterfaceData?: ƒ) => void,\n *   setValue: (key: string, newValue: any, userInterfaceData?: JSONRecord) => void\n * }\n *\n * Note: lib can also be modified to contain other libraries, properties, and functions.\n */\nreturn function(props, lib) {\n  // Do stuff here\n  lib.setValue([\"showModal\", true])\n}",
+      "useOnClick": true,
+      "hideLabel": false,
+      "component": "button"
+    },
+    {
+      "maskStyle": "{\n    \"backgroundColor\": \"rgba(0,0,255,0.1)\"\n}",
+      "bodyStyle": "{\n    \"backgroundColor\": \"green\",\n    \"border\": \"solid 1px green\"\n}",
+      "modalStyle": "{\n    \"backgroundColor\": \"red\",\n    \"border\": \"solid 1px red\"\n}",
+      "destroyOnClose": true,
+      "mask": true,
+      "closable": true,
+      "title": "Edit Item",
+      "invisible": false,
+      "hidden": false,
+      "showKey": "showModal",
+      "valueKey": "modalData",
+      "hideLabel": false,
+      "component": "modal",
+      "showCloseButton": true,
+      "classNames": [
+        "modal-container"
+      ],
+      "components": [
+        {
+          "center": false,
+          "headerSize": "h2",
+          "closable": false,
+          "banner": false,
+          "description": "",
+          "showIcon": false,
+          "textType": "text",
+          "invisible": false,
+          "hidden": false,
+          "stringTemplate": "Body Content",
+          "valueKey": "$",
+          "label": "Text",
+          "hideLabel": true,
+          "component": "text",
+          "components": []
+        }
+      ],
+      "footer": {
+        "components": [
+          {
+            "center": false,
+            "headerSize": "h2",
+            "closable": false,
+            "banner": false,
+            "description": "",
+            "showIcon": false,
+            "textType": "text",
+            "invisible": false,
+            "hidden": false,
+            "stringTemplate": "Footer content",
+            "valueKey": "$",
+            "label": "Text",
+            "hideLabel": true,
+            "component": "text",
+            "components": []
+          }
+        ]
+      }
+    }
+  ]
+}

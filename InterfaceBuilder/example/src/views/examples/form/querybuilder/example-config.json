@@ -1,0 +1,38 @@
+{
+  "key": "outer",
+  "invisible": false,
+  "hidden": false,
+  "valueKey": "",
+  "hideLabel": true,
+  "classNames": [
+    "container"
+  ],
+  "component": "container",
+  "components": [
+    {
+      "height": 150,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": true,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "invisible": false,
+      "hidden": false,
+      "schemaKey": "schema",
+      "exposeQueryableFields": true,
+      "jsonLogicKey": "jsonLogic",
+      "valueKey": "qbDataJsonGroup",
+      "label": "Query Builder",
+      "hideLabel": true,
+      "isParseSchema": true,
+      "isParseJsonLogic": true,
+      "isParseQBData": true,
+      "component": "query-builder",
+      "queryableFieldsKey": "queryableFields"
+    }
+  ]
+}

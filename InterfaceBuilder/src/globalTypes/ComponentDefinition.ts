@@ -17,6 +17,8 @@ export interface ComponentDefinitionNamedProps {
   visibilityConditions?: JSONObject
   bindable?: boolean
   bindings?: DataBindings
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
 
   [key: string]: unknown
 
@@ -31,7 +33,8 @@ export interface ComponentDefinitionRecursiveProp {
 export interface ComponentRenderMetaProps {
   mode?: UserInterfaceProps["mode"]
   userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeData?: UserInterfaceProps["onChangeData"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition

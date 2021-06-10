@@ -24,7 +24,8 @@ export const Preview = ({
       Component={Component}
       componentDefinition={{ ...componentDefinition, preview: true }}
       userInterfaceData={previewData}
-      getRootData={() => previewData}
+      getRootUserInterfaceData={() => previewData}
+      onChangeRootData={() => void 0}
       index={0}
       mode={"preview"}
       onChangeData={setPreviewData}

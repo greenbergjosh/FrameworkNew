@@ -1,9 +1,9 @@
 import { Alert, Collapse } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
-import { get, set } from "lodash/fp"
 import React from "react"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
 import { remoteComponentManageForm } from "./remote-component-manage-form"
 import {
   BaseInterfaceComponent,
@@ -12,6 +12,7 @@ import {
   UserInterfaceContext,
   UserInterfaceProps,
 } from "@opg/interface-builder"
+import { isPlainObject } from "lodash/fp"
 
 export interface RemoteComponentInterfaceComponentProps extends ComponentDefinitionNamedProps {
   collapsible?: boolean
@@ -21,8 +22,9 @@ export interface RemoteComponentInterfaceComponentProps extends ComponentDefinit
   remoteId: PersistedConfig["id"]
   onChangeData: UserInterfaceProps["onChangeData"]
   startCollapsed?: boolean
-  userInterfaceData?: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   valueKey?: string
   mode: UserInterfaceProps["mode"]
 }
@@ -48,18 +50,16 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
 
   static manageForm = remoteComponentManageForm
   static contextType = UserInterfaceContext
-  context!: React.ContextType<typeof UserInterfaceContext>
+  context!: React.ContextType<typeof AdminUserInterfaceContext>
 
-  handleChange = (newData: any) => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    if (onChangeData) {
-      // If there's a valueKey, nest the data
-      if (valueKey) {
-        onChangeData(set(valueKey, newData, userInterfaceData))
-      } else {
-        // If there's not a valueKey, merge the data at the top level
-        onChangeData({ ...userInterfaceData, ...newData })
-      }
+  handleChange = (newData: UserInterfaceProps["data"]): void => {
+    if (this.props.valueKey && this.props.valueKey.length > 0) {
+      this.setValue([this.props.valueKey, newData])
+      return
+    }
+    // No valueKey, so try to merge data at the local root
+    if (isPlainObject(newData)) {
+      this.setValue(["$", newData])
     }
   }
 
@@ -72,70 +72,86 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
       startCollapsed,
       userInterfaceData,
       getRootUserInterfaceData,
+      onChangeRootData,
       valueKey,
     } = this.props
-    if (this.context) {
-      const { loadById } = this.context
-      // If there is a valueKey, pull from the nested data
-      const data = (valueKey ? get(valueKey, userInterfaceData) : userInterfaceData) || {}
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const remoteConfig = loadById(remoteId)
-      if (remoteConfig) {
-        const layout = tryCatch(() => JSON5.parse(remoteConfig.config.getOrElse("")).layout).toNullable()
-        if (Array.isArray(layout)) {
-          const content = (
-            <div style={this.props.mode === "edit" ? { pointerEvents: "none", margin: "3px 1px 3px 1px" } : undefined}>
-              <ComponentRenderer
-                components={layout}
-                mode="display"
-                data={data}
-                getRootData={getRootUserInterfaceData}
-                onChangeData={this.handleChange}
-                onChangeSchema={(newSchema: any) => {
-                  console.warn(
-                    "RemoteComponentInterfaceComponent.render",
-                    "TODO: Cannot alter schema inside ComponentRenderer in RemoteComponent",
-                    { newSchema }
-                  )
-                }}
-              />
-              <div
-                style={
-                  this.props.mode === "edit"
-                    ? {
-                        position: "absolute",
-                        border: "dashed 1px #adb5bd",
-                        margin: "-2px -1px -2px -1px",
-                        borderRadius: 5,
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: "rgb(255 255 255 / 50%)",
-                      }
-                    : undefined
-                }
-              />
-            </div>
-          )
 
-          const wrappedContent = collapsible ? (
-            <Collapse defaultActiveKey={startCollapsed ? [] : ["content"]}>
-              <Collapse.Panel key="content" header={header}>
-                {content}
-              </Collapse.Panel>
-            </Collapse>
-          ) : (
-            content
-          )
-
-          return <div style={{ marginLeft: indented ? 15 : 0 }}>{wrappedContent}</div>
-        }
-        return <Alert type="warning" message={`Remote Component ${remoteConfig.name} does not have a layout`} />
-      }
+    /*
+     * NO CONTEXT ERROR
+     */
+    if (!this.context) {
+      return <Alert type="warning" message="Remote Component is missing a context" />
     }
 
-    return <Alert type="warning" message="No Remote Component Configured" />
+    const data = (valueKey ? this.getValue(valueKey) : userInterfaceData) || {}
+    const remoteConfig = this.context.loadById(remoteId)
+
+    /*
+     * NO REMOTE CONFIG ERROR
+     */
+    if (!remoteConfig) {
+      return <Alert type="warning" message={`Remote Component does not have a configuration`} />
+    }
+    if (remoteConfig.type === "App.Page") {
+      return <Alert type="warning" message='Remote component must not be an "App.Page"' />
+    }
+
+    const layout = tryCatch(() => JSON5.parse(remoteConfig.config.getOrElse("")).layout).toNullable()
+
+    /*
+     * NO LAYOUT ERROR
+     */
+    if (!Array.isArray(layout)) {
+      return <Alert type="warning" message={`Remote Component ${remoteConfig.name} does not have a layout`} />
+    }
+
+    const content = (
+      <div style={this.props.mode === "edit" ? { pointerEvents: "none", margin: "3px 1px 3px 1px" } : undefined}>
+        <ComponentRenderer
+          components={layout}
+          mode="display"
+          data={data}
+          getRootUserInterfaceData={getRootUserInterfaceData}
+          onChangeRootData={onChangeRootData}
+          onChangeData={this.handleChange}
+          onChangeSchema={(newSchema) => {
+            console.warn(
+              "RemoteComponentInterfaceComponent.render",
+              "TODO: Cannot alter schema inside ComponentRenderer in RemoteComponent",
+              { newSchema }
+            )
+          }}
+        />
+        <div
+          style={
+            this.props.mode === "edit"
+              ? {
+                  position: "absolute",
+                  border: "dashed 1px #adb5bd",
+                  margin: "-2px -1px -2px -1px",
+                  borderRadius: 5,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgb(255 255 255 / 50%)",
+                }
+              : undefined
+          }
+        />
+      </div>
+    )
+
+    const wrappedContent = collapsible ? (
+      <Collapse defaultActiveKey={startCollapsed ? [] : ["content"]}>
+        <Collapse.Panel key="content" header={header}>
+          {content}
+        </Collapse.Panel>
+      </Collapse>
+    ) : (
+      content
+    )
+
+    return <div style={{ marginLeft: indented ? 15 : 0 }}>{wrappedContent}</div>
   }
 }
