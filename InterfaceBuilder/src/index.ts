@@ -17,6 +17,7 @@ export { TSEnum } from "./@types/ts-enum"
 export { ComponentRegistryCache } from "./services/ComponentRegistry"
 export { EventPayloadType } from "./services/EventBus"
 export { BaseInterfaceComponentProps, GetValue } from "./components/BaseInterfaceComponent/types"
+export { LBMFunctionType } from "./lib/parseLBM"
 
 /**
  * Contexts

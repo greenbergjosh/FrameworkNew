@@ -5,14 +5,8 @@ import { PieDatum, ResponsivePie } from "@nivo/pie"
 import { InheritedColorProp } from "@nivo/colors"
 import { convertToPieDatum, emptyDataSet, legends } from "./utils"
 import { getNivoColorScheme } from "../_shared/nivoColors"
-import { get, isEqual } from "lodash/fp"
-import {
-  OtherSliceAggregatorFunction,
-  PieInterfaceComponentProps,
-  PieInterfaceComponentState,
-  SliceLabelValueFunction,
-  SliceTooltipFunction,
-} from "./types"
+import { isEqual } from "lodash/fp"
+import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
 import { Icon, Spin } from "antd"
 import { parseLBM } from "../../../lib/parseLBM"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
@@ -42,7 +36,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
     this.state = {
       pieData: emptyDataSet,
       loading: true,
-      tooltipFunction: undefined,
+      pieDatumTooltipFunction: () => null,
     }
   }
 
@@ -83,10 +77,12 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
       const rawData: JSONRecord[] = this.getValue(valueKey)
 
       const labelValueFunction =
-        sliceLabelValueFunction || parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)
+        sliceLabelValueFunction ||
+        parseLBM<PieInterfaceComponentProps, { slice: JSONRecord }, string>(sliceLabelValueFunctionSrc)
 
       const otherSliceAggregatorFunction =
-        otherAggregatorFunction || parseLBM<OtherSliceAggregatorFunction>(otherAggregatorFunctionSrc)
+        otherAggregatorFunction ||
+        parseLBM<PieInterfaceComponentProps, { slices: JSONRecord[] }, JSONRecord>(otherAggregatorFunctionSrc)
 
       const pieData = convertToPieDatum({
         data: rawData,
@@ -99,6 +95,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
         threshold,
         otherSliceAggregatorFunction,
         props: this.props,
+        getValue: this.getValue.bind(this),
+        setValue: this.setValue.bind(this),
       })
 
       this.setState({ pieData, loading: false })
@@ -109,7 +107,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     if (this.props.useTooltipFunction && (this.props.tooltipFunction || this.props.tooltipFunctionSrc)) {
       this.createTooltipFunction()
     }
@@ -118,21 +116,32 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
   private createTooltipFunction(): void {
     const { useTooltipFunction, tooltipFunctionSrc, tooltipFunction } = this.props
     if (!useTooltipFunction) {
-      this.setState({ tooltipFunction: undefined })
+      this.setState({ pieDatumTooltipFunction: () => null })
     } else {
-      const me = this
-      const parsedTooltipFunction = tooltipFunction || parseLBM<SliceTooltipFunction>(tooltipFunctionSrc)
-      let wrappedTooltipFunction: Function | undefined
-      if (parsedTooltipFunction && this.props.mode !== "edit") {
-        wrappedTooltipFunction = function (item: PieDatum) {
-          const datum = me.state.pieData[parseInt(item.id.toString())]
+      const sliceTooltipFunction =
+        tooltipFunction || parseLBM<PieInterfaceComponentProps, { slice: JSONRecord }, string>(tooltipFunctionSrc)
+      let pieDatumTooltipFunction: PieInterfaceComponentState["pieDatumTooltipFunction"] = () => null
+      if (sliceTooltipFunction && this.props.mode !== "edit") {
+        pieDatumTooltipFunction = (item: PieDatum) => {
+          const datum = this.state.pieData[parseInt(item.id.toString())]
           if (datum) {
-            return <div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(datum.slice, me.props) }} />
+            return (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: sliceTooltipFunction({
+                    props: this.props,
+                    lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+                    args: { slice: datum.slice },
+                  }),
+                }}
+              />
+            )
           }
+          return null
         }
       }
 
-      this.setState({ tooltipFunction: wrappedTooltipFunction })
+      this.setState({ pieDatumTooltipFunction })
     }
   }
 
@@ -177,7 +186,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             sliceLabel="sliceLabel"
             slicesLabelsSkipAngle={10}
             slicesLabelsTextColor="#333333"
-            tooltip={this.state.tooltipFunction}
+            tooltip={this.state.pieDatumTooltipFunction}
           />
         </div>
       </Spin>

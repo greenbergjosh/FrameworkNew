@@ -2,12 +2,7 @@ import React from "react"
 import { ComponentRenderer } from "components/ComponentRenderer"
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import {
-  DeserializeType,
-  SerializeType,
-  StringTemplateInterfaceComponentProps,
-  StringTemplateInterfaceComponentState,
-} from "./types"
+import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
 import { QuoteIcon } from "./components/QuoteIcon"
 import { DataPathContext } from "../../../contexts/DataPathContext"
 import { isEmpty } from "lodash/fp"
@@ -25,10 +20,10 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     super(props)
 
     this.state = {
-      serialize(value?: JSONRecord | JSONRecord[]) {
+      serialize({ args: { value } }) {
         return value && JSON.stringify(value)
       },
-      deserialize(value?: string) {
+      deserialize({ args: { value } }) {
         return tryCatch(() => value && JSON.parse(value)).toUndefined()
       },
       data: {},
@@ -65,13 +60,22 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   componentDidMount(): void {
     // Load local config serialize function, if provided
     if (!isEmpty(this.props.serializeSrc)) {
-      const serialize = parseLBM<SerializeType>(this.props.serializeSrc)
+      // export type SerializeType = (value?: JSONRecord | JSONRecord[]) => string | undefined
+      const serialize = parseLBM<
+        StringTemplateInterfaceComponentProps,
+        { value?: JSONRecord | JSONRecord[] },
+        string | undefined
+      >(this.props.serializeSrc)
       serialize && this.setState({ serialize })
     }
 
     // Load local config deserialize function, if provided
     if (!isEmpty(this.props.deserializeSrc)) {
-      const deserialize = parseLBM<DeserializeType>(this.props.deserializeSrc)
+      const deserialize = parseLBM<
+        StringTemplateInterfaceComponentProps,
+        { value?: string },
+        (JSONRecord | JSONRecord[]) | undefined
+      >(this.props.deserializeSrc)
       deserialize && this.setState({ deserialize })
     }
   }
@@ -94,10 +98,15 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
       return
     }
 
+    const params = {
+      props: this.props,
+      lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+      args: { value },
+    }
     const data =
       value && this.props.deserialize
-        ? this.props.deserialize(value) // First from parent component, if provided
-        : this.state.deserialize(value) // Else from local config
+        ? this.props.deserialize(params) // First from parent component, if provided
+        : this.state.deserialize(params) // Else from local config
 
     this.setState({ data })
   }
@@ -106,9 +115,14 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     const nextData = { ...this.state.data, ...changeData }
 
     this.setState({ data: nextData })
+    const params = {
+      props: this.props,
+      lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+      args: { value: nextData },
+    }
     const serializedData = this.props.serialize
-      ? this.props.serialize(nextData) // First from parent component, if provided
-      : this.state.serialize(nextData) // Else from local config
+      ? this.props.serialize(params) // First from parent component, if provided
+      : this.state.serialize(params) // Else from local config
 
     this.setValue([this.props.valueKey, serializedData])
   }

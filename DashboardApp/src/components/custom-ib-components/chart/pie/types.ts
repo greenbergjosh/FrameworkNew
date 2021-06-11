@@ -11,13 +11,7 @@ export interface PieInterfaceComponentProps extends Pie.PieInterfaceComponentPro
 }
 
 export interface PieInterfaceComponentState {
-  sliceLabelValueFunction?: Pie.SliceLabelValueFunction
-  tooltipFunction?: Pie.SliceTooltipFunction
-  otherAggregatorFunction?: Pie.OtherSliceAggregatorFunction
+  sliceLabelValueFunctionSrc?: string
+  sliceTooltipFunctionSrc?: string
+  otherAggregatorFunctionSrc?: string
 }
-
-export type SliceLabelValueFunctionWithParameters = (params: { [key: string]: string }) => Pie.SliceLabelValueFunction
-export type SliceTooltipFunctionWithParameters = (params: { [key: string]: string }) => Pie.SliceTooltipFunction
-export type OtherSliceAggregatorFunctionWithParameters = (params: {
-  [key: string]: string
-}) => Pie.OtherSliceAggregatorFunction

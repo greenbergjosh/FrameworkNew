@@ -2,6 +2,8 @@ import { LineProps, Serie } from "@nivo/line"
 import { LinearScale, PointScale } from "@nivo/scales"
 import { DataFormatter } from "@nivo/core"
 import { ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import { LBMFunctionType } from "lib/parseLBM"
+import { JSONRecord } from "globalTypes/JSONTypes"
 
 export type ScaleType = PointScale | LinearScale
 
@@ -38,7 +40,7 @@ export interface LineChartInterfaceComponentProps extends ComponentDefinitionNam
 export interface LineChartInterfaceComponentState {
   lineChartData: Serie[]
   loading: boolean
-  tooltipFunction: any | undefined
+  pointTooltipFunction?: (item: JSONRecord) => JSX.Element | undefined
 }
 
-export type SerieTooltipFunction = (serie: Serie, props: LineChartInterfaceComponentProps) => string
+export type SerieTooltipFunction = LBMFunctionType<LineChartInterfaceComponentProps, { serie: Serie }, string>

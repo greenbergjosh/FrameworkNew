@@ -1,6 +1,8 @@
-import { PieDatum } from "@nivo/pie"
-import { JSONRecord } from "../../../globalTypes/JSONTypes"
+import * as React from "react"
 import { ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import { JSONRecord } from "../../../globalTypes/JSONTypes"
+import { LBMFunctionType } from "lib/parseLBM"
+import { PieDatum, PieDatumWithColor } from "@nivo/pie"
 
 export type SliceLabelValueType = "default" | "key" | "function"
 
@@ -34,9 +36,15 @@ export interface PieInterfaceComponentProps extends ComponentDefinitionNamedProp
 export interface PieInterfaceComponentState {
   pieData: { pieDatum: PieDatum; slice: JSONRecord }[]
   loading: boolean
-  tooltipFunction: any | undefined
+  pieDatumTooltipFunction: React.StatelessComponent<PieDatumWithColor>
 }
 
-export type SliceLabelValueFunction = (slice: JSONRecord, props: PieInterfaceComponentProps) => string
-export type SliceTooltipFunction = (slice: JSONRecord, props: PieInterfaceComponentProps) => string
-export type OtherSliceAggregatorFunction = (slices: JSONRecord[], props: PieInterfaceComponentProps) => JSONRecord
+export type SliceLabelValueFunction = LBMFunctionType<PieInterfaceComponentProps, { slice: JSONRecord }, string>
+
+export type SliceTooltipFunction = LBMFunctionType<PieInterfaceComponentProps, { slice: JSONRecord }, string>
+
+export type OtherSliceAggregatorFunction = LBMFunctionType<
+  PieInterfaceComponentProps,
+  { slices: JSONRecord[] },
+  JSONRecord
+>

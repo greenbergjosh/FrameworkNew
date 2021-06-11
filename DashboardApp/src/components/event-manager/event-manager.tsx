@@ -16,6 +16,7 @@ import { loadRemoteLBM } from "../custom-ib-components/_shared/LBM/loadRemoteLBM
 import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
 import { eventManagerManageFormDefinition } from "./event-manager-manage-form"
 import { cloneDeep } from "lodash"
+import { LBMFunctionType } from "@opg/interface-builder/dist/lib/parseLBM"
 
 type EventMapItem = {
   type: "none" | "simple" | "lbm"
@@ -51,21 +52,17 @@ class EventManagerState {
  * @param WrappedComponent
  */
 export function withEventManager<T extends BaseInterfaceComponentProps, Y>(WrappedComponent: any) {
-  type EventMapper = (
-    props: T,
-    eventName: string,
-    eventPayload: EventPayloadType,
-    parameters: { [key: string]: string }
-  ) => { mappedEventName: string; mappedEventPayload: EventPayloadType }
-
-  type EventHandler = (
-    props: T,
-    eventName: string,
-    eventPayload: EventPayloadType,
-    eventParameters: { [key: string]: string },
-    target: any,
-    source: any
-  ) => Record<string, any>
+  type EventHandler = LBMFunctionType<
+    T,
+    {
+      eventName: string
+      eventPayload: EventPayloadType
+      eventParameters: { [key: string]: string }
+      target: any
+      source: any
+    },
+    Record<string, any>
+  >
 
   const manageFormWithEvents = getManageForm(WrappedComponent)
 
@@ -104,7 +101,17 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
             return
           }
           const handlerSrc = loadRemoteLBM(loadById, eventInfo.handlerFunctionId)
-          const handler = utils.parseLBM<EventHandler>(handlerSrc)
+          const handler = utils.parseLBM<
+            T,
+            {
+              eventName: string
+              eventPayload: EventPayloadType
+              eventParameters: { [key: string]: string }
+              target: any
+              source: any
+            },
+            Record<string, any>
+          >(handlerSrc)
           if (handler) {
             console.log(`EventManager: Subscribing to event "${eventInfo.eventName}"`)
             this.subscriptionIds.push({
@@ -145,15 +152,27 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
         // TODO: Add lazy LBM caching
         const { loadById } = this.context as AdminUserInterfaceContextManager
         const mapperSrc = loadRemoteLBM(loadById, eventMapItem.lbmId)
-        const mapper = utils.parseLBM<EventMapper>(mapperSrc)
+        const mapper = utils.parseLBM<
+          T,
+          {
+            eventName: string
+            eventPayload: EventPayloadType
+            parameters: { [key: string]: string }
+          },
+          { mappedEventName: string; mappedEventPayload: EventPayloadType }
+        >(mapperSrc)
         if (mapper) {
           const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
-          const { mappedEventName: lbmMappedEventName, mappedEventPayload: lbmMappedEventPayload } = mapper(
-            passThroughProps as T,
-            eventName,
-            eventPayload,
-            eventMapItem.lbmParameters
-          )
+          const mapped = mapper({
+            props: passThroughProps as T,
+            lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+            args: {
+              eventName,
+              eventPayload,
+              parameters: eventMapItem.lbmParameters,
+            },
+          })
+          const { mappedEventName: lbmMappedEventName, mappedEventPayload: lbmMappedEventPayload } = mapped
           mappedEventName = lbmMappedEventName
           mappedEventPayload = lbmMappedEventPayload
           console.log(
@@ -175,14 +194,17 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       return (eventName: string, eventPayload: EventPayloadType, source: any) => {
         console.log(`EventManager: Handling event "${eventName}"`, eventPayload)
         const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
-        const mutatedProps = eventHandler(
-          passThroughProps as T,
-          eventName,
-          eventPayload,
-          eventHandlerParameters,
-          this.currentRef.current,
-          source
-        )
+        const mutatedProps = eventHandler({
+          props: passThroughProps as T,
+          lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+          args: {
+            eventName,
+            eventPayload,
+            eventParameters: eventHandlerParameters,
+            target: this.currentRef.current,
+            source,
+          },
+        })
         this.setState((prevState) => ({ ...prevState, mutatedProps }))
       }
     }

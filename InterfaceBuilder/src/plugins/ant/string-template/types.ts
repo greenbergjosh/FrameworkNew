@@ -1,5 +1,6 @@
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
+import { LBMFunctionType } from "lib/parseLBM"
 
 export interface StringTemplateInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // Core props
@@ -18,8 +19,16 @@ export interface StringTemplateInterfaceComponentProps extends ComponentDefiniti
   showBorder?: boolean
 }
 
-export type SerializeType = (value?: JSONRecord | JSONRecord[]) => string | undefined
-export type DeserializeType = (value?: string) => (JSONRecord | JSONRecord[]) | undefined
+export type SerializeType = LBMFunctionType<
+  StringTemplateInterfaceComponentProps,
+  { value?: JSONRecord | JSONRecord[] },
+  string | undefined
+>
+export type DeserializeType = LBMFunctionType<
+  StringTemplateInterfaceComponentProps,
+  { value?: string },
+  (JSONRecord | JSONRecord[]) | undefined
+>
 
 export interface StringTemplateInterfaceComponentState {
   serialize: SerializeType

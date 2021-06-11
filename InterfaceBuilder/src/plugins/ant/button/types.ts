@@ -10,8 +10,6 @@ interface ConfirmationProps {
   cancelText?: string
 }
 
-export type OnClickFunction = (props: ButtonInterfaceComponentProps, lib: unknown) => void
-
 export interface ButtonInterfaceComponentProps extends ComponentDefinitionNamedProps {
   paramKVPMaps: ParamKVPMapsType
   component: "button"
