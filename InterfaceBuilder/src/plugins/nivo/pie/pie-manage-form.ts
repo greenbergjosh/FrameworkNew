@@ -96,9 +96,46 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "sliceLabelValueFunctionSrc",
                 defaultTheme: "vs-dark",
                 defaultLanguage: "javascript",
+                defaultValue: `/**
+/*
+ * @param props: This component's props
+ * @param lib: { getData, setData }
+ * @param slice: Data for the current slice
+ * @return string
+ */
+return function ({ props, lib, args: { slice } }) {
+    return " ";
+}`,
                 component: "code-editor",
                 height: 100,
                 bindable: true,
+                visibilityConditions: {
+                  "===": [
+                    {
+                      var: ["sliceLabelValueType"],
+                    },
+                    "function",
+                  ],
+                },
+              },
+              {
+                keyLabel: "Parameter Name",
+                valueKey: "sliceLabelValueFunctionParameters",
+                label: "Function Parameters",
+                component: "data-dictionary",
+                bindable: true,
+                valueComponent: [
+                  {
+                    size: "default",
+                    invisible: false,
+                    hidden: false,
+                    maxLength: null,
+                    valueKey: "value",
+                    label: "Parameter Value",
+                    hideLabel: true,
+                    component: "input",
+                  },
+                ],
                 visibilityConditions: {
                   "===": [
                     {
@@ -122,9 +159,46 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "tooltipFunctionSrc",
                 defaultTheme: "vs-dark",
                 defaultLanguage: "javascript",
+                defaultValue: `/**
+/*
+ * @param lib: { getData, setData }
+ * @param props: This component's props
+ * @param slice: Data for the current slice
+ * @return string
+ */
+return function ({ props, lib, args: { slice } }) {
+    return " ";
+}`,
                 component: "code-editor",
                 height: 100,
                 bindable: true,
+                visibilityConditions: {
+                  "===": [
+                    {
+                      var: ["useTooltipFunction"],
+                    },
+                    true,
+                  ],
+                },
+              },
+              {
+                keyLabel: "Parameter Name",
+                valueKey: "tooltipFunctionParameters",
+                label: "Function Parameters",
+                component: "data-dictionary",
+                bindable: true,
+                valueComponent: [
+                  {
+                    size: "default",
+                    invisible: false,
+                    hidden: false,
+                    maxLength: null,
+                    valueKey: "value",
+                    label: "Parameter Value",
+                    hideLabel: true,
+                    component: "input",
+                  },
+                ],
                 visibilityConditions: {
                   "===": [
                     {
@@ -218,9 +292,46 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                   'A function that receives all slices below the threshold and returns the data for the "Other" slice. Note: By default the value will be summed.',
                 defaultTheme: "vs-dark",
                 defaultLanguage: "javascript",
+                defaultValue: `/**
+/*
+ * @param props: This component's props
+ * @param lib: { getData, setData }
+ * @param slice: Data for the current slice
+ * @return slice
+ */
+return function ({ props, lib, args: { slice } }) {
+    return {}; // return a new slice
+}`,
                 component: "code-editor",
                 height: 100,
                 bindable: true,
+                visibilityConditions: {
+                  ">": [
+                    {
+                      var: ["threshold"],
+                    },
+                    0,
+                  ],
+                },
+              },
+              {
+                keyLabel: "Parameter Name",
+                valueKey: "otherAggregatorFunctionParameters",
+                label: "Function Parameters",
+                component: "data-dictionary",
+                bindable: true,
+                valueComponent: [
+                  {
+                    size: "default",
+                    invisible: false,
+                    hidden: false,
+                    maxLength: null,
+                    valueKey: "value",
+                    label: "Parameter Value",
+                    hideLabel: true,
+                    component: "input",
+                  },
+                ],
                 visibilityConditions: {
                   ">": [
                     {

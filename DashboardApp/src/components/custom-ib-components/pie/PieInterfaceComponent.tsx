@@ -2,8 +2,8 @@ import React from "react"
 import { BaseInterfaceComponent, Pie, UserInterfaceContext } from "@opg/interface-builder"
 import { pieManageForm } from "./pie-manage-form"
 import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
-import { loadRemoteLBM } from "../../_shared/LBM/loadRemoteLBM"
-import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
+import { loadRemoteLBM } from "../_shared/LBM/loadRemoteLBM"
+import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
 export class PieInterfaceComponent extends BaseInterfaceComponent<
   PieInterfaceComponentProps,

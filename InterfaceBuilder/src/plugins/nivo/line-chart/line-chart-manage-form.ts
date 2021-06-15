@@ -126,6 +126,16 @@ export const LineChartManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "tooltipFunctionSrc",
                 defaultTheme: "vs-dark",
                 defaultLanguage: "javascript",
+                defaultValue: `/**
+/*
+ * @param props: This component's props
+ * @param lib: { getData, setData }
+ * @param serie: Serie data for the current line
+ * @return string
+ */
+return function ({ props, lib, args: { serie } }) {
+    return " ";
+}`,
                 component: "code-editor",
                 height: 100,
                 bindable: true,

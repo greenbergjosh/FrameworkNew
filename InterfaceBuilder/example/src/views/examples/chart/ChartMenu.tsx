@@ -9,6 +9,9 @@ export const ChartMenu = (props: SubMenuProps): JSX.Element => {
       <Menu.Item key="/examples/chart/line-chart">
         <Link to="/examples/chart/line-chart">Line Chart</Link>
       </Menu.Item>
+      <Menu.Item key="/examples/chart/pie">
+        <Link to="/examples/chart/pie">Pie Chart</Link>
+      </Menu.Item>
     </Menu.SubMenu>
   )
 }

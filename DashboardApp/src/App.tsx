@@ -33,7 +33,7 @@ import { SelectInterfaceComponent } from "./components/custom-ib-components/sele
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 import { TableInterfaceComponent } from "./components/custom-ib-components/table/TableInterfaceComponent"
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
-import { PieInterfaceComponent } from "./components/custom-ib-components/chart/pie/PieInterfaceComponent"
+import { PieInterfaceComponent } from "./components/custom-ib-components/pie/PieInterfaceComponent"
 import { LinkInterfaceComponent } from "./components/custom-ib-components/link/LinkInterfaceComponent"
 import { withEventManager } from "./components/event-manager/event-manager"
 import { RouteMeta } from "./state/navigation"

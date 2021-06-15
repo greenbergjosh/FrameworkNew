@@ -16,6 +16,7 @@ import NumberRangeExample from "./form/number-range"
 import StringTemplateExample from "./form/string-template"
 import DateRangeExample from "./form/date-range"
 import LineChartExample from "./chart/line-chart"
+import PieExample from "./chart/pie"
 import TextExample from "./display/text"
 import RepeaterExample from "./display/repeater"
 import ContainerExample from "./display/container"
@@ -57,6 +58,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/chart/line-chart`}>
             <LineChartExample />
+          </Route>
+          <Route path={`${path}/chart/pie`}>
+            <PieExample />
           </Route>
 
           <Route exact path={`${path}/form`}>
