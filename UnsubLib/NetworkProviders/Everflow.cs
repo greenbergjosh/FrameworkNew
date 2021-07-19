@@ -23,7 +23,7 @@ namespace UnsubLib.NetworkProviders
     internal class Everflow : INetworkProvider
     {
         private readonly FrameworkWrapper _fw;
-        private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Cake)}";
+        private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Everflow)}";
 
         public Everflow(FrameworkWrapper fw)
         {
