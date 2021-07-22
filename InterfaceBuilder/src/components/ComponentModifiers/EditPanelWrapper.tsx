@@ -79,6 +79,7 @@ export const EditPanelWrapper: React.FC<EditPanelWrapperProps> = (props): JSX.El
         blocked={isBlocked()}
         canDelete={getCanDelete()}
         canEdit={getCanEdit()}
+        componentDefinition={props.componentDefinition}
         draggableItem={props.draggableItem}
         editable
         hasError={props.hasError}

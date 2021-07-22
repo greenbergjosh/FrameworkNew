@@ -51,11 +51,13 @@ export function EditDataBindingModal(props: {
     }
   }
 
-  const handleChangeData = (newData: RuleContainer) => {
+  const handleChangeData = (newData: { rulesString: JSONRecord | undefined | null }) => {
     if (isInvalidRules) {
       setIsInvalidRules(false)
     }
-    setData(newData)
+    setData({
+      rulesString: JSON.stringify(newData.rulesString, null, "\t"),
+    })
   }
 
   const handleDelete = () => {
@@ -115,6 +117,11 @@ export function EditDataBindingModal(props: {
         onChangeData={handleChangeData}
         userInterfaceData={data}
         valueKey={"rulesString"}
+        autoSync={true}
+        height={"400px"}
+        width={"100%"}
+        incomingEventHandlers={[]}
+        outgoingEventMap={{}}
       />
     </Modal>
   )

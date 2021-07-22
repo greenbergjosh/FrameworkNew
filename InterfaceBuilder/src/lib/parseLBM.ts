@@ -8,7 +8,11 @@ export type LBMFunctionType<
   ReturnType
 > = (params: {
   props: PropType // The calling component's props
-  lib: { getValue: IBaseInterfaceComponent["getValue"]; setValue: IBaseInterfaceComponent["setValue"] }
+  lib: {
+    getValue: IBaseInterfaceComponent["getValue"]
+    setValue: IBaseInterfaceComponent["setValue"]
+    raiseEvent: IBaseInterfaceComponent["raiseEvent"]
+  }
   args: ArgType // Any additional args that the function needs
 }) => ReturnType
 

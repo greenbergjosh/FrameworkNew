@@ -18,6 +18,7 @@ export const ComponentRenderer = React.memo(
     data,
     getRootUserInterfaceData,
     onChangeRootData,
+    onVisibilityChange,
     dragDropDisabled,
     mode: propMode,
     onChangeData,
@@ -48,6 +49,7 @@ export const ComponentRenderer = React.memo(
               dragDropDisabled={dragDropDisabled}
               getRootUserInterfaceData={getRootUserInterfaceData}
               onChangeRootData={onChangeRootData}
+              onVisibilityChange={onVisibilityChange}
               index={index}
               mode={mode}
               onChangeData={onChangeData}

@@ -5,10 +5,13 @@ import { ComponentRenderer } from "components/ComponentRenderer/ComponentRendere
 import { tabsManageForm } from "./tabs-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { set } from "lodash/fp"
-import { TabsInterfaceComponentProps } from "../../../plugins/ant/tabs/types"
+import { EVENTS, TabsInterfaceComponentDisplayModeState, TabsInterfaceComponentProps } from "./types"
 import { ComponentDefinition, ComponentDefinitionRecursiveProp, LayoutDefinition } from "../../../globalTypes"
 
-export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterfaceComponentProps> {
+export class TabsInterfaceComponent extends BaseInterfaceComponent<
+  TabsInterfaceComponentProps,
+  TabsInterfaceComponentDisplayModeState
+> {
   static getLayoutDefinition(): LayoutDefinition {
     return {
       category: "Display",
@@ -22,12 +25,26 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
   }
 
   static manageForm = tabsManageForm
+  static availableEvents = [EVENTS.ACTIVE_TAB_CHANGED]
+
+  constructor(props: TabsInterfaceComponentProps) {
+    super(props)
+
+    this.state = {
+      activeTabKey: null,
+    }
+  }
+
+  handleTabChange = (activeTabKey: string) => {
+    this.raiseEvent(EVENTS.ACTIVE_TAB_CHANGED, { activeTabKey })
+    this.setState({ activeTabKey })
+  }
 
   render(): JSX.Element {
     const { onChangeData, tabs, userInterfaceData, getRootUserInterfaceData, onChangeRootData } = this.props
     return (
       <DataPathContext path="tabs">
-        <Tabs defaultActiveKey="tab0">
+        <Tabs defaultActiveKey="tab0" onChange={this.handleTabChange}>
           {tabs ? (
             tabs.map((tab, index) => (
               <Tabs.TabPane tab={tab.label} key={`tab${index}`}>

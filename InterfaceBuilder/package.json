@@ -42,6 +42,7 @@
     "classnames": "2.2.6",
     "d3-geo": "1.12.1",
     "fp-ts": "1.19.5",
+    "hoist-non-react-statics": "3.3.2",
     "io-ts": "1.10.4",
     "io-ts-types": "0.4.8",
     "js-file-download": "0.4.12",

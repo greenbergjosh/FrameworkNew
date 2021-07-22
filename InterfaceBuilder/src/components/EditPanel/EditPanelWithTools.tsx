@@ -31,8 +31,9 @@ export const EditPanelWithTools: React.FC<EditPanelWithToolsProps> = (props): JS
 
   return (
     <EditPanel
-      title={props.title}
+      componentDefinition={props.componentDefinition}
       showGripper={true}
+      title={props.title}
       visibilityMode={visibilityMode}
       tools={
         props.editable ? (

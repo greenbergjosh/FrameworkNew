@@ -11,6 +11,7 @@ import { Icon, Spin } from "antd"
 import { parseLBM } from "../../../lib/parseLBM"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
+import { EventBus } from "components/withEvents/EventBus"
 
 export class PieInterfaceComponent extends BaseInterfaceComponent<
   PieInterfaceComponentProps,
@@ -120,6 +121,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
       props: this.props,
       getValue: this.getValue.bind(this),
       setValue: this.setValue.bind(this),
+      raiseEvent: EventBus.raiseEvent,
     })
 
     this.setState({ pieData, loading: false })
@@ -153,7 +155,11 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
         if (pieDatum && slice) {
           const __html = tooltipLBM({
             props: this.props,
-            lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+            lib: {
+              getValue: this.getValue.bind(this),
+              setValue: this.setValue.bind(this),
+              raiseEvent: EventBus.raiseEvent,
+            },
             args: { slice, ...this.props.tooltipFunctionParameters },
           })
           return <div dangerouslySetInnerHTML={{ __html }} />

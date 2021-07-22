@@ -11,6 +11,7 @@ import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { parseLBM } from "../../../lib/parseLBM"
 import { tryCatch } from "fp-ts/lib/Option"
 import { ComponentDefinition, LayoutDefinition } from "../../../globalTypes"
+import { EventBus } from "components/withEvents/EventBus"
 
 export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   StringTemplateInterfaceComponentProps,
@@ -100,7 +101,11 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
 
     const params = {
       props: this.props,
-      lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+      lib: {
+        getValue: this.getValue.bind(this),
+        setValue: this.setValue.bind(this),
+        raiseEvent: EventBus.raiseEvent,
+      },
       args: { value },
     }
     const data =
@@ -117,7 +122,11 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     this.setState({ data: nextData })
     const params = {
       props: this.props,
-      lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+      lib: {
+        getValue: this.getValue.bind(this),
+        setValue: this.setValue.bind(this),
+        raiseEvent: EventBus.raiseEvent,
+      },
       args: { value: nextData },
     }
     const serializedData = this.props.serialize

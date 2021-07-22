@@ -48,7 +48,7 @@ export class RadioInterfaceComponent extends BaseInterfaceComponent<RadioProps> 
   }
 
   handleChange = (e: RadioChangeEvent) => {
-    const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    const { valueKey, valuePrefix, valueSuffix } = this.props
     const { value } = e.target
 
     const newValue =

@@ -99,7 +99,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: `/**
 /*
  * @param props: This component's props
- * @param lib: { getData, setData }
+ * @param lib: { getData, setData, raiseEvent }
  * @param slice: Data for the current slice
  * @return string
  */
@@ -161,7 +161,7 @@ return function ({ props, lib, args: { slice } }) {
                 defaultLanguage: "javascript",
                 defaultValue: `/**
 /*
- * @param lib: { getData, setData }
+ * @param lib: { getData, setData, raiseEvent }
  * @param props: This component's props
  * @param slice: Data for the current slice
  * @return string
@@ -295,7 +295,7 @@ return function ({ props, lib, args: { slice } }) {
                 defaultValue: `/**
 /*
  * @param props: This component's props
- * @param lib: { getData, setData }
+ * @param lib: { getData, setData, raiseEvent }
  * @param slice: Data for the current slice
  * @return slice
  */

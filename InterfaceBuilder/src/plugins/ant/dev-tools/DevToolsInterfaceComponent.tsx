@@ -3,9 +3,11 @@ import { devToolsManageForm } from "./dev-tools-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { DevToolsInterfaceComponentProps, DevToolsInterfaceComponentState } from "./types"
 import { JSONEditor } from "../../../components/JSONEditor/JSONEditor"
-import { Button } from "antd"
+import { Button, Tooltip } from "antd"
 import { LayoutDefinition } from "../../../globalTypes"
 import { JSONEditorProps } from "../../../components/JSONEditor/types"
+import styles from "./styles.scss"
+import classNames from "classnames"
 
 export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
   DevToolsInterfaceComponentProps,
@@ -49,19 +51,19 @@ export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
 
     return (
       <div>
-        <Button.Group size="small">
-          <Button disabled type="ghost">
-            Dev Tools:
-          </Button>
+        <Tooltip title="Data Visualizer">
           <Button
-            type="primary"
-            icon="database"
-            onClick={() => this.setState({ showDataViewer: !this.state.showDataViewer })}>
-            UI Data
-          </Button>
-        </Button.Group>
+            type="link"
+            icon="setting"
+            size="small"
+            className={classNames(styles.button, this.state.showDataViewer ? styles.active : null)}
+            onClick={() => this.setState({ showDataViewer: !this.state.showDataViewer })}
+          />
+        </Tooltip>
         {this.state.showDataViewer && (
-          <JSONEditor data={data} onChange={this.handleChange} height={this.props.height} />
+          <div className={styles.visualizer}>
+            <JSONEditor data={data} onChange={this.handleChange} height={this.props.height} />
+          </div>
         )}
       </div>
     )

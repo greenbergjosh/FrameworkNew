@@ -3,10 +3,11 @@ import React from "react"
 import { buttonManageForm } from "./button-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { ButtonInterfaceComponentProps, ButtonInterfaceComponentState } from "../../../plugins/ant/button/types"
-import { EVENTS } from "../../../plugins/html/data-injector/types"
+import { EVENTS } from "./types"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
 import { parseLBM } from "lib/parseLBM"
+import { EventBus } from "components/withEvents/EventBus"
 
 export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   ButtonInterfaceComponentProps,
@@ -31,7 +32,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static manageForm = buttonManageForm
-  static availableEvents = ["valueChanged"]
+  static availableEvents = [EVENTS.CLICK]
 
   constructor(props: ButtonInterfaceComponentProps) {
     super(props)
@@ -67,7 +68,11 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
       if (useOnClick && onClickFunction && this.props.mode !== "edit") {
         onClickFunction({
           props: this.props,
-          lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+          lib: {
+            getValue: this.getValue.bind(this),
+            setValue: this.setValue.bind(this),
+            raiseEvent: EventBus.raiseEvent,
+          },
           args: {},
         })
       }
@@ -80,7 +85,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
           paramKVPMaps.values.forEach((map) => {
             eventPayload[map.targetKey] = this.getValue(map.sourceKey)
           })
-        this.raiseEvent(EVENTS.VALUE_CHANGED, eventPayload)
+        this.raiseEvent(EVENTS.CLICK, eventPayload)
       }
 
       // Close Popup

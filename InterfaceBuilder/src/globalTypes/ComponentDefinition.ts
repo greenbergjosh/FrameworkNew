@@ -1,7 +1,7 @@
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { EventPayloadType } from "../services/EventBus"
 import { UserInterfaceProps } from "../globalTypes"
 import { DataBindings } from "../components/BaseInterfaceComponent/types"
+import { EventPayloadType, IncomingEventHandler, OutgoingEventMap } from "../components/withEvents/types"
 
 export interface ComponentDefinitionNamedProps {
   key: string
@@ -19,6 +19,9 @@ export interface ComponentDefinitionNamedProps {
   bindings?: DataBindings
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
+  onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
+  incomingEventHandlers: IncomingEventHandler[]
+  outgoingEventMap: OutgoingEventMap
 
   [key: string]: unknown
 

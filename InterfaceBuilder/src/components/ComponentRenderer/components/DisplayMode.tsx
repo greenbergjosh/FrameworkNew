@@ -27,6 +27,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
               componentDefinition={tokenReplacedComponentDefinition}
               layoutDefinition={props.layoutDefinition}
               mode={props.mode}
+              onVisibilityChange={props.onVisibilityChange}
               userInterfaceData={props.userInterfaceData}>
               <FormField
                 componentDefinition={tokenReplacedComponentDefinition}

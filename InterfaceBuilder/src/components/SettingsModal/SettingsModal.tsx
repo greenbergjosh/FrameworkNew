@@ -1,8 +1,7 @@
 import { Col, Modal, Row, Typography } from "antd"
 import React from "react"
 import { registry } from "../../services/ComponentRegistry"
-import { Settings } from "./components/Settings"
-import { Preview } from "./components/Preview"
+import { Settings } from "./Settings"
 import { isEmpty } from "lodash/fp"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
 
@@ -21,7 +20,6 @@ export const SettingsModal = ({
   onConfirm,
   getRootUserInterfaceData,
   onChangeRootData,
-  userInterfaceData,
 }: ManageComponentModalProps) => {
   const [componentDefinition, updateComponentDefinition] = React.useState(propComponentDefinition)
 
@@ -63,7 +61,7 @@ export const SettingsModal = ({
       width="95%">
       <div>
         <Row gutter={[{ xs: 8, sm: 16, md: 24, lg: 32 }, 20]} type="flex">
-          <Col span={16}>
+          <Col span={24}>
             {layoutDefinition && !isEmpty(layoutDefinition.description) && (
               <p>{layoutDefinition && layoutDefinition.description}</p>
             )}
@@ -80,29 +78,6 @@ export const SettingsModal = ({
                 getRootUserInterfaceData={getRootUserInterfaceData}
                 onChangeRootData={onChangeRootData}
               />
-            )}
-          </Col>
-          <Col
-            span={8}
-            style={{
-              backgroundColor: "#fafafa",
-              paddingBottom: 20,
-              borderRadius: 5,
-              display: "flex",
-              flexDirection: "column",
-            }}>
-            <Typography.Title level={4} style={{ flex: "0 1 auto" }}>
-              Preview
-            </Typography.Title>
-            {Component && layoutDefinition && (
-              <div style={{ overflow: "auto", backgroundColor: "white", padding: 1, flex: "1 1 auto" }}>
-                <Preview
-                  Component={Component}
-                  componentDefinition={componentDefinition as ComponentDefinition}
-                  layoutDefinition={layoutDefinition}
-                  userInterfaceData={userInterfaceData}
-                />
-              </div>
             )}
           </Col>
         </Row>

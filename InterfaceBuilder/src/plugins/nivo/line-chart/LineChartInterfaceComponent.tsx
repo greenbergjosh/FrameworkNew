@@ -12,6 +12,7 @@ import { parseLBM } from "../../../lib/parseLBM"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { getNivoColorScheme } from "../_shared/nivoColors"
 import { LayoutDefinition } from "../../../globalTypes"
+import { EventBus } from "components/withEvents/EventBus"
 
 export class LineChartInterfaceComponent extends BaseInterfaceComponent<
   LineChartInterfaceComponentProps,
@@ -86,7 +87,11 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
                 dangerouslySetInnerHTML={{
                   __html: parsedTooltipFunction({
                     props: this.props,
-                    lib: { getValue: this.getValue.bind(this), setValue: this.setValue.bind(this) },
+                    lib: {
+                      getValue: this.getValue.bind(this),
+                      setValue: this.setValue.bind(this),
+                      raiseEvent: EventBus.raiseEvent,
+                    },
                     args: { serie: datum.slice },
                   }),
                 }}

@@ -14,6 +14,8 @@ export const tableGroupForm = {
       size: "small",
       getRootUserInterfaceData: () => void 0,
       onChangeRootData: () => void 0,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
     },
     {
       key: "groupOrder",
@@ -24,6 +26,8 @@ export const tableGroupForm = {
       size: "small",
       getRootUserInterfaceData: () => void 0,
       onChangeRootData: () => void 0,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
     },
   ],
 } as SectionDefinition

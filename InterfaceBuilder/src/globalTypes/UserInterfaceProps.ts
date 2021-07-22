@@ -1,4 +1,7 @@
-import { ComponentDefinition, UserInterfaceContextManager } from "../globalTypes"
+import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceContextManager } from "../globalTypes"
+import { JSONRecord } from "globalTypes/JSONTypes"
+
+export type UserInterfaceDataType = string | number | boolean | JSONRecord | JSONRecord[] | null | undefined
 
 interface IUserInterfaceProps {
   data?: any // Includes but not limited to: string | number | boolean | JSONRecord | JSONRecord[] | null | undefined
@@ -9,6 +12,11 @@ interface IUserInterfaceProps {
   submit?: () => void
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   onChangeRootData: (newData: UserInterfaceProps["data"]) => void
+  onVisibilityChange?: (
+    mode: "visible" | "hidden" | "blocked" | "invisible",
+    cmpDef: ComponentDefinitionNamedProps,
+    data: UserInterfaceProps["data"]
+  ) => void
   keyPrefix?: string
   hideMenu?: boolean
   title?: string

@@ -41,6 +41,7 @@ function getLabelValue({
   props,
   getValue,
   setValue,
+  raiseEvent,
 }: {
   data: JSONRecord
   labelValueType: SliceLabelValueType
@@ -50,6 +51,7 @@ function getLabelValue({
   props: any
   getValue: IBaseInterfaceComponent["getValue"]
   setValue: IBaseInterfaceComponent["setValue"]
+  raiseEvent: IBaseInterfaceComponent["raiseEvent"]
 }): string {
   switch (labelValueType) {
     case "default":
@@ -59,7 +61,7 @@ function getLabelValue({
         ? tryCatch(() =>
             labelValueFunction({
               props,
-              lib: { getValue, setValue },
+              lib: { getValue, setValue, raiseEvent },
               args: { slice: data },
             })
           ).getOrElse(data[valueKey]?.toString() ?? "")
@@ -79,6 +81,7 @@ function getSliceRawData({
   props,
   getValue,
   setValue,
+  raiseEvent,
 }: {
   data: JSONRecord
   labelNameKey: string
@@ -89,6 +92,7 @@ function getSliceRawData({
   props: any
   getValue: IBaseInterfaceComponent["getValue"]
   setValue: IBaseInterfaceComponent["setValue"]
+  raiseEvent: IBaseInterfaceComponent["raiseEvent"]
 }) {
   const rawValue = toNumber(data[valueKey])
   const value = isNaN(rawValue) ? 0 : rawValue
@@ -102,6 +106,7 @@ function getSliceRawData({
     props,
     getValue,
     setValue,
+    raiseEvent,
   })
   return { value, labelName, labelValue }
 }
@@ -119,6 +124,7 @@ export function convertToPieDatum({
   props,
   getValue,
   setValue,
+  raiseEvent,
 }: {
   data: JSONRecord[]
   labelNameKey: string
@@ -132,6 +138,7 @@ export function convertToPieDatum({
   props: PieInterfaceComponentProps
   getValue: IBaseInterfaceComponent["getValue"]
   setValue: IBaseInterfaceComponent["setValue"]
+  raiseEvent: IBaseInterfaceComponent["raiseEvent"]
 }): { pieDatum: PieDatum; slice: JSONRecord }[] {
   // Return if nothing to do
   if (isEmpty(data)) return emptyDataSet
@@ -153,6 +160,7 @@ export function convertToPieDatum({
       props,
       getValue,
       setValue,
+      raiseEvent,
     })
     const pieDatum = createSliceData({
       id: index.toString(),
@@ -196,7 +204,7 @@ export function convertToPieDatum({
     if (otherSliceAggregatorFunction) {
       aggregateSlice = otherSliceAggregatorFunction({
         props,
-        lib: { getValue, setValue },
+        lib: { getValue, setValue, raiseEvent },
         args: { slices: belowThreshold.map((value) => value.slice) },
       })
     }
@@ -210,6 +218,7 @@ export function convertToPieDatum({
       props,
       getValue,
       setValue,
+      raiseEvent,
     })
 
     pieData.push(aggregate)

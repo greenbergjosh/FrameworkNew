@@ -29,6 +29,7 @@ export class RenderInterfaceComponent extends React.Component<
       userInterfaceData,
       onChangeData,
       onChangeSchema,
+      onVisibilityChange,
       submit,
     } = this.props
 
@@ -60,6 +61,7 @@ export class RenderInterfaceComponent extends React.Component<
             componentDefinition={componentDefinition}
             onChangeData={onChangeData}
             onChangeSchema={onChangeSchema}
+            onVisibilityChange={onVisibilityChange}
             layoutDefinition={Component.getLayoutDefinition()}
             userInterfaceData={userInterfaceData}
             getRootUserInterfaceData={getRootUserInterfaceData.bind(this)}
@@ -75,6 +77,7 @@ export class RenderInterfaceComponent extends React.Component<
             componentDefinition={componentDefinition}
             onChangeData={onChangeData}
             onChangeSchema={onChangeSchema}
+            onVisibilityChange={onVisibilityChange}
             layoutDefinition={Component.getLayoutDefinition()}
             userInterfaceData={userInterfaceData}
             getRootUserInterfaceData={getRootUserInterfaceData.bind(this)}

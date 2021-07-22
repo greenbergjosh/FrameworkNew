@@ -1,5 +1,6 @@
 import React from "react"
 import { BaseInterfaceComponentType } from "../globalTypes"
+import { withEvents } from "components/withEvents/withEvents"
 
 export interface ComponentRegistry {
   cache: ComponentRegistryCache
@@ -21,7 +22,7 @@ export const registry: ComponentRegistry = {
    * @param updatedRegistry
    */
   register(updatedRegistry: ComponentRegistryCache) {
-    Object.entries(updatedRegistry).forEach(([key, component]) => (registry.cache[key] = component))
+    Object.entries(updatedRegistry).forEach(([key, component]) => (registry.cache[key] = withEvents(component)))
   },
 }
 

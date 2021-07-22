@@ -22,6 +22,8 @@ const baseComponentDefinition: ComponentDefinition[] = [
     component: "form",
     getRootUserInterfaceData: () => void 0,
     onChangeRootData: () => void 0,
+    incomingEventHandlers: [],
+    outgoingEventMap: {},
     components: [
       {
         key: "tabs",

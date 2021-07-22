@@ -11,6 +11,8 @@ export const commonDateForm: ComponentDefinition[] = [
     size: "small",
     getRootUserInterfaceData: () => void 0,
     onChangeRootData: () => void 0,
+    incomingEventHandlers: [],
+    outgoingEventMap: {},
     data: {
       values: [
         {
@@ -50,6 +52,8 @@ export const commonDateForm: ComponentDefinition[] = [
     size: "small",
     getRootUserInterfaceData: () => void 0,
     onChangeRootData: () => void 0,
+    incomingEventHandlers: [],
+    outgoingEventMap: {},
     visibilityConditions: {
       "===": ["custom", { var: "skeletonFormat" }],
     },

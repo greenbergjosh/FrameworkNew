@@ -1,8 +1,9 @@
 import React from "react"
-import { Icon, Tooltip } from "antd"
+import { Icon } from "antd"
 import styles from "./styles.scss"
 import { EditPanelProps } from "./types"
 import classNames from "classnames"
+import { Summary } from "components/EditPanel/Summary"
 
 export const EditPanel: React.FC<EditPanelProps> = (props): JSX.Element => {
   let modeStyle: string
@@ -45,13 +46,18 @@ export const EditPanel: React.FC<EditPanelProps> = (props): JSX.Element => {
         <div className={styles.title}>{title}</div>
         <div className={styles.tools}>{props.tools}</div>
       </div>
+      {props.componentDefinition &&
+        (props.componentDefinition.incomingEventHandlers || props.componentDefinition.outgoingEventMap) && (
+          <Summary
+            incomingEventHandlers={props.componentDefinition.incomingEventHandlers}
+            outgoingEventMap={props.componentDefinition.outgoingEventMap}
+          />
+        )}
       {props.visibilityMode === "disabled" ? (
-        <Tooltip title="This component is disabled. Enable it to make changes." trigger="click">
-          <div style={{ position: "relative", cursor: "default" }}>
-            <div className={styles.editPanelContent}>{props.children}</div>
-            <div className={styles.disabledMask} />
-          </div>
-        </Tooltip>
+        <div style={{ position: "relative", cursor: "default" }}>
+          <div className={styles.disabledMask} />
+          <div className={styles.editPanelContent}>{props.children}</div>
+        </div>
       ) : (
         <div className={styles.editPanelContent}>{props.children}</div>
       )}

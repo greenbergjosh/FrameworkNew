@@ -37,3 +37,7 @@ export interface ButtonInterfaceComponentProps extends ComponentDefinitionNamedP
 export interface ButtonInterfaceComponentState {
   isShowingConfirmation: boolean
 }
+
+export enum EVENTS {
+  CLICK = "click",
+}

@@ -8,6 +8,7 @@ export const DisplayVisibility: React.FC<
   ComponentModifierProps & {
     layoutDefinition: LayoutDefinition
     mode: UserInterfaceProps["mode"]
+    onVisibilityChange: UserInterfaceProps["onVisibilityChange"]
     userInterfaceData: UserInterfaceProps["data"]
   }
 > = (props): JSX.Element | null => {
@@ -37,6 +38,7 @@ export const DisplayVisibility: React.FC<
    * not in the DOM and not functioning.
    */
   if (props.componentDefinition.hidden) {
+    props.onVisibilityChange && props.onVisibilityChange("hidden", props.componentDefinition, props.userInterfaceData)
     return null
   }
 
@@ -44,6 +46,7 @@ export const DisplayVisibility: React.FC<
    * not in the DOM and not functioning.
    */
   if (isBlocked()) {
+    props.onVisibilityChange && props.onVisibilityChange("blocked", props.componentDefinition, props.userInterfaceData)
     return null
   }
 
@@ -51,10 +54,13 @@ export const DisplayVisibility: React.FC<
    * but it is still in the DOM and functioning.
    */
   if (props.componentDefinition.invisible) {
+    props.onVisibilityChange &&
+      props.onVisibilityChange("invisible", props.componentDefinition, props.userInterfaceData)
     return <div style={{ display: "none" }}>{props.children}</div>
   }
 
   /* Normal
    */
+  props.onVisibilityChange && props.onVisibilityChange("visible", props.componentDefinition, props.userInterfaceData)
   return <>{props.children}</>
 }

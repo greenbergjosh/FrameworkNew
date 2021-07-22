@@ -129,7 +129,7 @@ export const LineChartManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: `/**
 /*
  * @param props: This component's props
- * @param lib: { getData, setData }
+ * @param lib: { getData, setData, raiseEvent }
  * @param serie: Serie data for the current line
  * @return string
  */

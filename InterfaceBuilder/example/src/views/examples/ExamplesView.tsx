@@ -25,6 +25,7 @@ import DataInjectorExample from "./special/data-injector"
 import DataBindingExample from "./framework/data-binding"
 import TextTokensExample from "./framework/text-tokens"
 import FormattersExample from "./framework/formatters"
+import EventsExample from "./framework/events"
 import TreeExample from "./display/tree"
 import ModalExample from "./display/modal"
 
@@ -132,6 +133,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/framework/formatters`}>
             <FormattersExample />
+          </Route>
+          <Route path={`${path}/framework/events`}>
+            <EventsExample />
           </Route>
         </Switch>
       </Layout>

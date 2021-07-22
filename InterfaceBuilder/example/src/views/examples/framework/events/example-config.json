@@ -1,0 +1,145 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "handlerFunctionSrc": "\nreturn function({props, lib: { getValue, setValue }, args}) {\n  // Do stuff here\n}",
+      "outgoingEventMap": {
+        "valueChanged": {
+          "lbmParameters": [],
+          "lbmSrc": "\nreturn function({props, lib: { getValue, setValue }, args}) {\n  // Do stuff here\n}",
+          "simpleMapValue": "valueChanged",
+          "type": "none"
+        }
+      },
+      "height": 100,
+      "invisible": false,
+      "hidden": false,
+      "numberValue": 0,
+      "stringValue": "return function({props, lib: { getValue, setValue }, args}) {  debugger;  alert(\"Button One responding to otherbutton.click via bound event handler!\"); }",
+      "booleanValue": false,
+      "jsonValue": "{}",
+      "dataType": "string",
+      "outboundValueKey": "eventHandler",
+      "label": "Data",
+      "hideLabel": true,
+      "component": "data-injector",
+      "components": [],
+      "incomingEventHandlers": [
+        {
+          "index": 0,
+          "eventName": "otherbutton.click",
+          "handlerFunctionSrc": "return function ({ props, lib: { getValue, setValue }, args }) {\n  debugger;\n  alert(\"Data Injector responding to otherbutton.click!\");\n}"
+        }
+      ]
+    },
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "handlerFunctionSrc": "\nreturn function({props, lib: { getValue, setValue }, args}) {\n  // Do stuff here\n}",
+      "outgoingEventMap": {
+        "valueChanged": {
+          "lbmParameters": [],
+          "lbmSrc": "\nreturn function({props, lib: { getValue, setValue }, args}) {\n  // Do stuff here\n}",
+          "simpleMapValue": "valueChanged",
+          "type": "none"
+        }
+      },
+      "confirmation": {
+        "cancelText": "Cancel",
+        "okText": "Continue",
+        "message": "This action cannot be undone and may take a while. Are you sure?",
+        "title": "Are you sure?"
+      },
+      "requireConfirmation": false,
+      "ghost": false,
+      "block": false,
+      "size": null,
+      "buttonLabel": "Button One",
+      "hideButtonLabel": false,
+      "icon": null,
+      "shape": null,
+      "displayType": "primary",
+      "invisible": false,
+      "hidden": false,
+      "onClickSrc": "/*\n * props: {\n *   block: boolean\n *   buttonLabel: string\n *   confirmation: {cancelText: \"Cancel\", okText: \"Continue\", message: \"This action cannot be undone and may take a while. Are you sure?\", title: \"Are you sure?\"}\n *   displayType: \"link\" | \"button\"\n *   getRootUserInterfaceData: ƒ ()\n *   ghost: boolean\n *   hidden: boolean\n *   hideButtonLabel: boolean\n *   hideLabel: boolean\n *   icon: string\n *   invisible: boolean\n *   mode: \"display\" | \"edit\" | \"preview\"\n *   onChangeData: ƒ handleChangeData(newData)\n *   onChangeSchema: ƒ (newComponentDefinition)\n *   onClickSrc: string\n *   onRaiseEvent: ƒ onRaiseEvent(eventName, eventPayload, source)\n *   paramKVPMaps: {values: Array(0)}\n *   requireConfirmation: boolean\n *   shape: string\n *   size: string\n *   submit: ƒ\n *   useOnClick: boolean\n *   userInterfaceData: JSONRecord\n *   userInterfaceSchema: JSONRecord\n *   valueKey: string\n * }\n *\n * lib: {\n *   getValue: (key: string, userInterfaceData?: JSONRecord, getRootUserInterfaceData?: ƒ) => void,\n *   setValue: (key: string, newValue: any, userInterfaceData?: JSONRecord) => void\n * }\n *\n * Note: lib can also be modified to contain other libraries, properties, and functions.\n */\nreturn function(props, lib) {\n  debugger\n}",
+      "useOnClick": false,
+      "hideLabel": true,
+      "valueKey": "value",
+      "label": "Take Action",
+      "component": "button",
+      "paramKVPMaps": {
+        "values": [
+          {
+            "sourceKey": "value",
+            "targetKey": "target.value"
+          }
+        ]
+      },
+      "incomingEventHandlers": [
+        {
+          "index": 0,
+          "handlerFunctionSrc": "return function({props, lib: { getValue, setValue }, args}) {  debugger;  alert(\"Button responding to otherbutton.click via bound event handler!\"); }",
+          "eventName": "otherbutton.click",
+          "bindings": {
+            "handlerFunctionSrc": {
+              "var": ["eventHandler"]
+            }
+          }
+        }
+      ],
+      "bindings": {
+        "hidden": {
+          "!": {
+            "var": ["eventHandler"]
+          }
+        }
+      }
+    },
+    {
+      "handlerFunctionSrc": "\nreturn function({props, lib: { getValue, setValue }, args}) {\n  // Do stuff here\n}",
+      "outgoingEventMap": {
+        "valueChanged": {
+          "lbmParameters": [],
+          "lbmSrc": "\nreturn function({props, lib: { getValue, setValue }, args}) {\n  // Do stuff here\n}",
+          "simpleMapValue": "otherbutton.click",
+          "type": "simple"
+        }
+      },
+      "confirmation": {
+        "cancelText": "Cancel",
+        "okText": "Continue",
+        "message": "This action cannot be undone and may take a while. Are you sure?",
+        "title": "Are you sure?"
+      },
+      "requireConfirmation": false,
+      "ghost": false,
+      "block": false,
+      "size": null,
+      "buttonLabel": "Other Button",
+      "hideButtonLabel": false,
+      "icon": null,
+      "shape": null,
+      "displayType": null,
+      "invisible": false,
+      "hidden": false,
+      "onClickSrc": "/*\n * props: {\n *   block: boolean\n *   buttonLabel: string\n *   confirmation: {cancelText: \"Cancel\", okText: \"Continue\", message: \"This action cannot be undone and may take a while. Are you sure?\", title: \"Are you sure?\"}\n *   displayType: \"link\" | \"button\"\n *   getRootUserInterfaceData: ƒ ()\n *   ghost: boolean\n *   hidden: boolean\n *   hideButtonLabel: boolean\n *   hideLabel: boolean\n *   icon: string\n *   invisible: boolean\n *   mode: \"display\" | \"edit\" | \"preview\"\n *   onChangeData: ƒ handleChangeData(newData)\n *   onChangeSchema: ƒ (newComponentDefinition)\n *   onClickSrc: string\n *   onRaiseEvent: ƒ onRaiseEvent(eventName, eventPayload, source)\n *   paramKVPMaps: {values: Array(0)}\n *   requireConfirmation: boolean\n *   shape: string\n *   size: string\n *   submit: ƒ\n *   useOnClick: boolean\n *   userInterfaceData: JSONRecord\n *   userInterfaceSchema: JSONRecord\n *   valueKey: string\n * }\n *\n * lib: {\n *   getValue: (key: string, userInterfaceData?: JSONRecord, getRootUserInterfaceData?: ƒ) => void,\n *   setValue: (key: string, newValue: any, userInterfaceData?: JSONRecord) => void\n * }\n *\n * Note: lib can also be modified to contain other libraries, properties, and functions.\n */\nreturn function({props, lib: { getValue, setValue }, args}) {\n  // Do stuff here\n}",
+      "useOnClick": false,
+      "hideLabel": false,
+      "classNames": ["container"],
+      "component": "button"
+    }
+  ]
+}
