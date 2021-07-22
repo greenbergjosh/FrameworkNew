@@ -6,9 +6,9 @@ import { registry } from "../../services/ComponentRegistry"
  * Returns a collection of the default values from each of this component's schema definitions.
  * @param componentDefinitions
  */
-export function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]) {
+export function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]): ComponentDefinition {
   // Iterate over all the definitions to accumulate their defaults
-  return componentDefinitions.reduce((acc, componentDefinition) => {
+  return componentDefinitions.reduce<ComponentDefinition>((acc, componentDefinition) => {
     // If there are child lists of in the component's definitions
     const nestedValues: { [key: string]: any } = Object.entries(componentDefinition).reduce((acc2, [key, value]) => {
       if (Array.isArray(value) && value.length && value[0].component) {
@@ -27,7 +27,7 @@ export function getDefaultsFromComponentDefinitions(componentDefinitions: Compon
 
     // Combine the existing values with this level's value and any nested values
     return merge(nestedValues, merge(thisValue, acc))
-  }, {})
+  }, {} as ComponentDefinition)
 }
 
 /**

@@ -1,5 +1,6 @@
 // import "./lib/why-did-you-render"  // <-- Enable to trace unnecessary rendering
 import "./styles/index.scss"
+import { getRegistry } from "./services/registrySingleton"
 
 /*
  * IMPORTANT:
@@ -40,7 +41,7 @@ export { EventPayloadType } from "./components/withEvents/types"
 /**
  * Services
  */
-export { registry } from "./services/ComponentRegistry"
+export const registry = getRegistry()
 export { UserInterface } from "./components/UserInterface/UserInterface"
 
 /**

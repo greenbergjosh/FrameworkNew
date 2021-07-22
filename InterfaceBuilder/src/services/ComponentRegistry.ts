@@ -1,19 +1,29 @@
 import React from "react"
 import { BaseInterfaceComponentType } from "../globalTypes"
-import { withEvents } from "components/withEvents/withEvents"
 
 export interface ComponentRegistry {
   cache: ComponentRegistryCache
   lookup: (key: string) => BaseInterfaceComponentType
   register: (updatedRegistry: ComponentRegistryCache) => void
+  _withEvents: (component: BaseInterfaceComponentType) => BaseInterfaceComponentType
 }
 
 export interface ComponentRegistryCache {
   [key: string]: BaseInterfaceComponentType
 }
 
+/**
+ * NOTE: Clients should use getRegistry (from registrySingleton.ts)
+ * This singleton was necessary to break a circular dependency:
+ * BaseInterfaceComponent
+ *   -> componentDefinitionUtils
+ *     -> ComponentRegistry
+ *       -> withEvents
+ *         -> BaseInterfaceComponent
+ */
 export const registry: ComponentRegistry = {
   cache: {},
+  _withEvents: (c) => c,
   lookup(key: string) {
     return registry.cache[key]
   },
@@ -22,7 +32,9 @@ export const registry: ComponentRegistry = {
    * @param updatedRegistry
    */
   register(updatedRegistry: ComponentRegistryCache) {
-    Object.entries(updatedRegistry).forEach(([key, component]) => (registry.cache[key] = withEvents(component)))
+    Object.entries(updatedRegistry).forEach(
+      ([key, component]) => (registry.cache[key] = registry._withEvents(component))
+    )
   },
 }
 
