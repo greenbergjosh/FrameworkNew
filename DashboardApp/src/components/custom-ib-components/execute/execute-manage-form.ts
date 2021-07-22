@@ -18,16 +18,6 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
             key: "data",
             components: [
               {
-                key: "hideLabel",
-                defaultValue: true,
-                hidden: true,
-              },
-              {
-                key: "label",
-                defaultValue: null,
-                hidden: true,
-              },
-              {
                 key: "valueKey",
                 defaultValue: "data",
                 help: "The key used to get data from the model",

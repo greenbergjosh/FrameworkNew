@@ -130,6 +130,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
             config: completeDraft.config,
             name: completeDraft.name,
             type: completeDraft.type,
+            type_id: completeDraft.type_id,
           })
 
           return response.fold(
@@ -170,6 +171,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                         ...createdConfig,
                         config: some(draft.config),
                         type: completeDraft.type,
+                        type_id: completeDraft.type_id,
                       })
 
                       dispatch.feedback.notify({
@@ -293,7 +295,9 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
           const result = await dispatch.remoteDataClient.globalConfigsUpdate(completeDraft)
 
           return result.fold(
-            Left((httpError) => dispatch.remoteDataClient.defaultHttpErrorHandler(httpError)),
+            Left((httpError) => {
+              dispatch.remoteDataClient.defaultHttpErrorHandler(httpError)
+            }),
             Right((GlobalConfigApiResponse) => {
               GlobalConfigApiResponse({
                 ServerException() {

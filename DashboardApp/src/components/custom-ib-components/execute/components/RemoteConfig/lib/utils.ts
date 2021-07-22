@@ -5,7 +5,7 @@ import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import jsonLogic from "json-logic-js"
-import { get } from "lodash/fp"
+import { get, isNull } from "lodash/fp"
 import { RemoteConfigFromStore, ParsedConfig } from "../../../types"
 import { UserInterfaceProps } from "@opg/interface-builder"
 import { JSONRecord } from "../../../../../../data/JSON"
@@ -22,15 +22,19 @@ export function getRemoteConfigPredicate(
   remoteConfigTypeParentName: null | string | Brand<NonEmptyStringBrand>
 ): (config: PersistedConfig) => boolean {
   return remoteDataFilter
-    ? (config: PersistedConfig) => {
-        const parsedConfig = {
-          ...config,
-          config: config.config.chain((cfg) => tryCatch(() => JSON5.parse(cfg))).toNullable(),
+    ? (persistedConfig: PersistedConfig) => {
+        const stringConfig = persistedConfig.config.getOrElse("")
+        let parsedConfig = persistedConfig && tryCatch(() => persistedConfig && JSON5.parse(stringConfig)).toNullable()
+
+        // Config is not json, so just use the string value
+        if (isNull(parsedConfig) && stringConfig.length > 0) {
+          parsedConfig = stringConfig
         }
 
         const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
         return remoteConfigType
-          ? (config.type === remoteConfigType || config.type === remoteConfigTypeParentName) && dataFilterResult
+          ? (persistedConfig.type === remoteConfigType || persistedConfig.type === remoteConfigTypeParentName) &&
+              dataFilterResult
           : dataFilterResult
       }
     : remoteConfigType
@@ -83,12 +87,18 @@ export function getParsedConfig(
  * @param persistedConfig
  */
 export function configToJson(persistedConfig: PersistedConfig): ParsedConfig {
-  const configJson =
-    persistedConfig && tryCatch(() => persistedConfig && JSON5.parse(persistedConfig.config.getOrElse(""))).toNullable()
+  const stringConfig = persistedConfig.config.getOrElse("")
+  let parsedConfig = persistedConfig && tryCatch(() => persistedConfig && JSON5.parse(stringConfig)).toNullable()
+
+  // Config is not json, so just use the string value
+  if (isNull(parsedConfig) && stringConfig.length > 0) {
+    parsedConfig = stringConfig
+  }
+
   return {
     id: persistedConfig.id,
     name: persistedConfig.name,
     type: persistedConfig.type,
-    config: configJson,
+    config: parsedConfig,
   }
 }

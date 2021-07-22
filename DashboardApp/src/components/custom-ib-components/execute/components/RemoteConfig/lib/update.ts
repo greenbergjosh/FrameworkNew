@@ -71,6 +71,7 @@ export function update({
     config: JSON.stringify(uiDataSlice.config, null, 2),
     name,
     type: parent.name,
+    type_id: parent.id,
   }
 
   /* NOTE: We don't allow ID to be changed by not using the uiDataSlice value,
@@ -85,6 +86,10 @@ export function update({
 
   return dispatch.globalConfig
     .updateRemoteConfig(payload)
-    .then(() => ({ data: uiDataSlice, loadStatus: LOADSTATUSCODES.updated } as LoadStatus))
-    .catch((e: Error) => getErrorState(e))
+    .then(() => {
+      return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
+    })
+    .catch((e: Error) => {
+      return getErrorState(e)
+    })
 }

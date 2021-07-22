@@ -2,7 +2,7 @@ import React from "react"
 import { BaseInterfaceComponent, StringTemplate, UserInterfaceContext } from "@opg/interface-builder"
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
-import { loadRemoteLBM } from "../_shared/LBM/loadRemoteLBM"
+import { loadRemoteLBM } from "../../../lib/loadRemoteLBM"
 import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
 export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<

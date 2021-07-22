@@ -24,7 +24,8 @@ import {
   editorLanguages,
   getDefaultsFromComponentDefinitions,
   JSONRecord,
-  UserInterface, UserInterfaceProps,
+  UserInterface,
+  UserInterfaceProps,
 } from "@opg/interface-builder"
 import { Alert, Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton, Tabs } from "antd"
 import { fromEither, getSetoid as getOptionSetoid, none, Option, option, some, tryCatch } from "fp-ts/lib/Option"
@@ -100,6 +101,7 @@ export function CreateGlobalConfig({
       config: JSON.stringify(fromStore.defaultEntityTypeConfig),
       name: "",
       type: "",
+      type_id: "",
       ...queryString.parse(window.location.search),
     }
 
@@ -154,12 +156,13 @@ export function CreateGlobalConfig({
         config: setoidString,
         name: setoidString,
         type: setoidString,
+        type_id: setoidString,
       }).equals(a, b)
     }
   }, [dispatch, fromStore.configs, prevState.createdConfig, state.createdConfig])
 
   function getData(
-    form: Formik.FormikProps<{ config: string; name: string; type: string }>
+    form: Formik.FormikProps<{ config: string; name: string; type: string; type_id: string }>
   ): UserInterfaceProps["data"] {
     return tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})
   }
@@ -274,6 +277,10 @@ export function CreateGlobalConfig({
                       onBlur={() => form.handleBlur({ target: { name: "type" } })}
                       onChange={(val: any) => {
                         form.setFieldValue("type", val)
+                        const typeConfig = record.lookup(val, fromStore.entityTypeConfigs).toUndefined()
+                        if (typeConfig) {
+                          form.setFieldValue("type_id", typeConfig.id)
+                        }
                         const countConfigLines = form.values.config.split("\n").length
 
                         if (countConfigLines <= 3) {
@@ -382,8 +389,8 @@ export function CreateGlobalConfig({
                       </Tabs.TabPane>
                       <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
                         <CodeEditor
-                          content={""}
-                          contentDraft={some(form.values.config)}
+                          document={""}
+                          documentDraft={some(form.values.config)}
                           height={500}
                           language={record
                             .lookup(form.values.type, fromStore.entityTypeConfigs)
@@ -393,6 +400,7 @@ export function CreateGlobalConfig({
                             .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
                             .getOrElse(fromStore.defaultEntityTypeConfig.lang)}
                           width="100%"
+                          outputType="string"
                           onChange={({ value, errors }) => {
                             errors.map((errors) => {
                               setConfigErrors(errors)
@@ -408,7 +416,10 @@ export function CreateGlobalConfig({
               </Card>
               <CreateEntityTypeModal
                 isVisible={state.shouldShowCreateEntityModal}
-                onDidCreate={(config) => form.setFieldValue("type", config.name)}
+                onDidCreate={(config) => {
+                  form.setFieldValue("type", config.name)
+                  form.setFieldValue("type_id", config.id)
+                }}
                 onRequestClose={toggleCreateEntityTypeModal}
               />
             </>
@@ -478,6 +489,7 @@ function CreateEntityTypeModal(props: {
         type: "EntityType",
         name: values.name,
         config: JSON.stringify({ lang: values.lang }),
+        type_id: "e4054430-cb21-49e6-86ef-c0f1ecb36eed",
       }
 
       await dispatch.globalConfig.createRemoteConfig({
@@ -512,6 +524,7 @@ function CreateEntityTypeModal(props: {
           config: getOptionSetoid(setoidString),
           name: setoidString,
           type: setoidString,
+          type_id: setoidString,
         }).equals(a, { ...b, config: some(b.config) })
       }
     },

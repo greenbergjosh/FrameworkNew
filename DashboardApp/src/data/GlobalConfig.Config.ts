@@ -40,6 +40,7 @@ export const PersistedConfigCodec = iots.type(
     id: NonEmptyString,
     name: NonEmptyString,
     type: NonEmptyString,
+    type_id: iots.any,
   },
   "PersistedConfig"
 )
@@ -62,6 +63,7 @@ export const InProgressRemoteUpdateDraftCodec = iots.type({
   config: iots.string,
   name: iots.string,
   type: iots.string,
+  type_id: iots.string,
 })
 //
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────  ──────────
@@ -74,6 +76,7 @@ export const CompleteRemoteUpdateDraftCodec = iots.type({
   config: NonEmptyString,
   name: NonEmptyString,
   type: NonEmptyString,
+  type_id: iots.string,
 })
 
 export function mkCompleteRemoteUpdateDraft(
@@ -85,12 +88,13 @@ export function mkCompleteRemoteUpdateDraft(
 //
 // ────────────────────────────────────────────────────────────────────────────────────────────────────  ──────────
 //   :::::: IN PROGRESS CREATE DRAFT : :  :   :    :     :        :          :
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────/Users/rblaske/Repos/RoslynArticle/DashboardApp/src/components/custom-ib-components/execute/components/RemoteConfig/lib/create.ts───────────────────────────────────────────────────────────
 //
 export interface InProgressLocalDraftConfig {
   config: string
   name: string
   type: string
+  type_id: string
 }
 
 //
@@ -103,6 +107,7 @@ export const CompleteLocalDraftCodec = iots.type({
   config: NonEmptyString,
   name: NonEmptyString,
   type: NonEmptyString,
+  type_id: iots.string,
 })
 
 export function mkCompleteLocalDraft(draft: InProgressLocalDraftConfig): Either<Array<string>, CompleteLocalDraft> {

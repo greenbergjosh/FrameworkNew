@@ -233,10 +233,11 @@ export function ShowGlobalConfig({
                     </Tabs.TabPane>
                     <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
                       <CodeEditor
-                        content={config.config.getOrElse("")}
-                        contentDraft={none}
+                        document={config.config.getOrElse("")}
+                        documentDraft={none}
                         height={500}
                         language={editorLanguage}
+                        outputType="string"
                         width="100%"
                       />
                     </Tabs.TabPane>

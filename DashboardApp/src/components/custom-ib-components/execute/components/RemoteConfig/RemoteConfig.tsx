@@ -12,7 +12,7 @@ import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
 import { AppDispatch } from "../../../../../state/store.types"
-import { get, isEmpty } from "lodash/fp"
+import { isEmpty } from "lodash/fp"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
