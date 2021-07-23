@@ -54,6 +54,11 @@ export function create({
 
   return dispatch.globalConfig
     .createRemoteConfig(payload)
-    .then(() => ({ data: uiDataSlice, loadStatus: LOADSTATUSCODES.created } as LoadStatus))
+    .then((result) => {
+      if (result && result.type === "error") {
+        return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+      }
+      return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.created } as LoadStatus
+    })
     .catch((e: Error) => getErrorState(e))
 }

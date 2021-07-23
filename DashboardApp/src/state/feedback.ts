@@ -2,7 +2,7 @@ import { notification } from "antd"
 import { ArgsProps as NotificationArgs } from "antd/lib/notification"
 import * as Store from "./store.types"
 
-interface NotifyConfig extends NotificationArgs {
+export interface NotifyConfig extends NotificationArgs {
   type: Exclude<keyof typeof notification, "close" | "config" | "destroy" | "open" | "warn">
 }
 

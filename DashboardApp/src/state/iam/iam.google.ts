@@ -2,6 +2,7 @@ import { Left, Right } from "../../data/Either"
 import { none, some } from "fp-ts/lib/Option"
 import { assertNever } from "../../lib/assert-never"
 import * as Store from "../store.types"
+import { NotifyConfig } from "../feedback"
 
 const gAPI = () => window.gapi
 const gAuth = () => gAPI().auth2.getAuthInstance()
@@ -35,12 +36,13 @@ export async function authViaGoogleOAuth(dispatch: Store.AppDispatch) {
   try {
     await new Promise((resolve) => gAPI().load("client:auth2", resolve))
   } catch (err) {
-    dispatch.logger.logError(`Error loading gAPI: ${JSON.stringify(err, null, 2)}`)
-    dispatch.feedback.notify({
+    const notifyConfig: NotifyConfig = {
       type: "error",
       message: "Application Error: Failed to load Google OAuth Library",
-    })
-    return undefined
+    }
+    dispatch.logger.logError(`Error loading gAPI: ${JSON.stringify(err, null, 2)}`)
+    dispatch.feedback.notify(notifyConfig)
+    return notifyConfig
   }
   try {
     await gAPI().client.init(GOOGLE_AUTH_CONFIG)
@@ -50,31 +52,31 @@ export async function authViaGoogleOAuth(dispatch: Store.AppDispatch) {
 
     switch (errorCode) {
       case "access_denied": {
-        dispatch.logger.logError(`User denied permission access for application: ${JSON.stringify(err, null, 2)}`)
-        dispatch.feedback.notify({
+        const notifyConfig: NotifyConfig = {
           type: "error",
           message: `You must allow permission for this app to access Google in order to use Google Sign In`,
-        })
-
-        break
+        }
+        dispatch.logger.logError(`User denied permission access for application: ${JSON.stringify(err, null, 2)}`)
+        dispatch.feedback.notify(notifyConfig)
+        return notifyConfig
       }
       case "idpiframe_initialization_failed": {
-        dispatch.logger.logError(`Error loading displaying gAuth sign in popup: ${JSON.stringify(err, null, 2)}`)
-        dispatch.feedback.notify({
+        const notifyConfig: NotifyConfig = {
           type: "error",
           message: `Application Error: Failed to open Google Sign In popup: ${err.details}`,
-        })
-
-        break
+        }
+        dispatch.logger.logError(`Error loading displaying gAuth sign in popup: ${JSON.stringify(err, null, 2)}`)
+        dispatch.feedback.notify(notifyConfig)
+        return notifyConfig
       }
       case "immediate_failed": {
-        dispatch.logger.logError(`Failed to force silent sign in: ${JSON.stringify(err, null, 2)}`)
-        dispatch.feedback.notify({
+        const notifyConfig: NotifyConfig = {
           type: "error",
           message: "Application Error: Failed to sign into Google Account automatically",
-        })
-
-        break
+        }
+        dispatch.logger.logError(`Failed to force silent sign in: ${JSON.stringify(err, null, 2)}`)
+        dispatch.feedback.notify(notifyConfig)
+        return notifyConfig
       }
       case "popup_closed_by_user": {
         dispatch.logger.logInfo("User closed Google OAuth popup manually")
@@ -104,24 +106,28 @@ export function handleGoogleAuthSignedIn(dispatch: Store.AppDispatch, currentUse
             dispatch.iam.update({ profile: some(profile) })
           },
           Unauthorized() {
+            const notifyConfig: NotifyConfig = {
+              type: "error",
+              message: `Your Google account is not authorized to access this application. Please check with your administrator.`,
+            }
             dispatch.remoteDataClient.update({ token: null })
             dispatch.iam.update({ profile: none })
             dispatch.logger.logError("Your Google account is not authorized")
-            dispatch.feedback.notify({
-              type: "error",
-              message: `Your Google account is not authorized to access this application. Please check with your administrator.`,
-            })
+            dispatch.feedback.notify(notifyConfig)
+            return notifyConfig
           },
           ServerException({ reason }) {
+            const notifyConfig: NotifyConfig = {
+              type: "error",
+              message: `An error occurred while trying to sync your Google account.`,
+            }
             dispatch.remoteDataClient.update({ token: null })
             dispatch.iam.update({ profile: none })
             dispatch.logger.logError(
               `Something went wrong while on our servers while authenticating with Google:\n${reason}`
             )
-            dispatch.feedback.notify({
-              type: "error",
-              message: `An error occurred while trying to sync your Google account.`,
-            })
+            dispatch.feedback.notify(notifyConfig)
+            return notifyConfig
           },
         })
       })

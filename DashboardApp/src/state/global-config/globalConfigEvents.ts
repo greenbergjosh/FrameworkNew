@@ -5,6 +5,7 @@ import { Left, Right } from "../../data/Either"
 import { ConfigEventPayload } from "./global-config"
 import { JSONRecord } from "../../data/JSON"
 import * as GC from "../../data/GlobalConfig.Config"
+import { NotifyConfig } from "../feedback"
 
 export enum APITypeEventHandlerKey {
   deleteFunction = "deleteFunction",
@@ -68,26 +69,28 @@ export function executeParentTypeEventHandler(
               /* Yay, success! But do nothing */
             },
             Unauthorized() {
-              dispatch.logger.logError("unauthed")
-              const error = {
+              const notifyConfig: NotifyConfig = {
                 type: "error" as "error" | "success" | "info" | "warning",
                 message: `You do not have permission to execute the ${
                   config.parent && config.parent.name
                 } event handler "${eventHandler}"`,
               }
-              dispatch.feedback.notify(error)
+              dispatch.logger.logError("unauthed")
+              dispatch.feedback.notify(notifyConfig)
               // throw new Error(error.message)
+              return notifyConfig
             },
             ServerException(err) {
-              dispatch.logger.logError(err.reason)
-              const error = {
+              const notifyConfig: NotifyConfig = {
                 type: "error" as "error" | "success" | "info" | "warning",
                 message: `An error occurred while executing the ${
                   config.parent && config.parent.name
                 } event handler "${eventHandler}": ${err.reason}`,
               }
-              dispatch.feedback.notify(error)
+              dispatch.logger.logError(err.reason)
+              dispatch.feedback.notify(notifyConfig)
               // throw new Error(error.message)
+              return notifyConfig
             },
           })
         )

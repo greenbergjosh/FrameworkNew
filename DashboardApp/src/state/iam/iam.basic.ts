@@ -5,6 +5,7 @@ import * as Store from "../store.types"
 import { HttpError } from "../../lib/http"
 import { ApiResponse } from "../../data/AdminApi"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { NotifyConfig } from "../feedback"
 
 export function authViaBasicAuth(dispatch: Store.AppDispatch, loginData: { user: string; password: string }) {
   return dispatch.remoteDataClient
@@ -33,24 +34,28 @@ export function authViaBasicAuth(dispatch: Store.AppDispatch, loginData: { user:
                 dispatch.iam.update({ profile: some(profile) })
               },
               Unauthorized() {
+                const notifyConfig: NotifyConfig = {
+                  type: "error",
+                  message: `Username or Password was incorrect. Please check with your administrator.`,
+                }
                 dispatch.remoteDataClient.update({ token: null })
                 dispatch.iam.update({ profile: none })
                 dispatch.logger.logError("Your account is not authorized")
-                dispatch.feedback.notify({
-                  type: "error",
-                  message: `Username or Password was incorrect. Please check with your administrator.`,
-                })
+                dispatch.feedback.notify(notifyConfig)
+                return notifyConfig
               },
               ServerException({ reason }) {
+                const notifyConfig: NotifyConfig = {
+                  type: "error",
+                  message: `An error occurred while attempting to authenticate your username and password`,
+                }
                 dispatch.remoteDataClient.update({ token: null })
                 dispatch.iam.update({ profile: none })
                 dispatch.logger.logError(
                   `Something went wrong while on our servers while authenticating your account:\n${reason}`
                 )
-                dispatch.feedback.notify({
-                  type: "error",
-                  message: `An error occurred while attempting to authenticate your username and password`,
-                })
+                dispatch.feedback.notify(notifyConfig)
+                return notifyConfig
               },
             })
           })

@@ -86,7 +86,10 @@ export function update({
 
   return dispatch.globalConfig
     .updateRemoteConfig(payload)
-    .then(() => {
+    .then((result) => {
+      if (result && result.type === "error") {
+        return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+      }
       return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
     })
     .catch((e: Error) => {

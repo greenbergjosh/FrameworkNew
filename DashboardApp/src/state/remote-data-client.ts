@@ -11,6 +11,7 @@ import { QueryConfig } from "../data/Report"
 import { HttpError, Method, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
+import { NotifyConfig } from "./feedback"
 
 declare module "./store.types" {
   interface AppModels {
@@ -35,7 +36,7 @@ export interface Reducers {
 }
 
 export interface Effects {
-  defaultHttpErrorHandler(r: HttpError): void
+  defaultHttpErrorHandler(r: HttpError): NotifyConfig
 
   authGetUserDetails(): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
@@ -79,7 +80,7 @@ export interface Effects {
   reportQueryGet(payload: {
     query: QueryConfig["query"]
     params: JSONRecord | JSONArray
-  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord> | NotifyConfig>>>
 
   reportQueryUpdate(payload: {
     query: QueryConfig["query"]
@@ -92,7 +93,7 @@ export interface Effects {
     headers: { [header: string]: string }
     params: JSONRecord | JSONArray
     body: string | JSONRecord | JSONArray | URLSearchParams
-  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord> | NotifyConfig>>>
 }
 
 export interface Selectors {}
@@ -233,41 +234,51 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     },
 
     defaultHttpErrorHandler: (HttpError) => {
-      HttpError({
+      return HttpError({
         BadStatus(res) {
-          dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(res)}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (001): Invalid data from server. Code: ${res.status}`,
-          })
+          }
+          dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(res)}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         BadPayload(message) {
-          dispatch.logger.logError(`Bad payload in remoteDataClient: ${message}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (002): Invalid data from server.`,
-          })
+          }
+          dispatch.logger.logError(`Bad payload in remoteDataClient: ${message}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         BadUrl(message) {
-          dispatch.logger.logError(`Bad url in remoteDataClient: ${message}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (003): Failed to connect to ${message}`,
-          })
+          }
+          dispatch.logger.logError(`Bad url in remoteDataClient: ${message}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         NetworkError(message) {
-          dispatch.logger.logError(`NetworkError in remoteDataClient: ${message}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (004): Failed to connect to server.`,
-          })
+          }
+          dispatch.logger.logError(`NetworkError in remoteDataClient: ${message}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         Timeout(req) {
-          dispatch.logger.logError(`Request timed out. ${prettyPrint(req)}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (005): Request timed out. ${req.url}`,
-          })
+          }
+          dispatch.logger.logError(`Request timed out. ${prettyPrint(req)}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
       })
     },

@@ -15,6 +15,7 @@ import { JSONRecord } from "../../../data/JSON"
 import { PropsFromQueryParams } from "../../query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { NotifyConfig } from "../../../state/feedback"
 
 export enum LOADSTATUSCODES {
   none = "none",
@@ -179,9 +180,11 @@ export type OnSubmitType = (
   parameterValues: JSONRecord,
   satisfiedByParentParams: PropsFromQueryParams["satisfiedByParentParams"],
   setParameterValues: PropsFromQueryParams["setParameterValues"]
-) => Promise<void> | undefined
+) => Promise<void | NotifyConfig> | undefined
 
-export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Promise<void> | undefined
+export type OnMountType = (
+  handleSubmit: () => Promise<void | NotifyConfig> | undefined
+) => Promise<void | NotifyConfig> | undefined
 
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]

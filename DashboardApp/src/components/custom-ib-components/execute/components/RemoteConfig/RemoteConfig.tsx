@@ -14,6 +14,7 @@ import { store } from "../../../../../state/store"
 import { AppDispatch } from "../../../../../state/store.types"
 import { isEmpty } from "lodash/fp"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { NotifyConfig } from "../../../../../state/feedback"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
@@ -117,11 +118,12 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       userInterfaceData,
     }).then((newLoadingState) => {
       if (newLoadingState.loadError) {
-        dispatch.feedback.notify({
+        const notifyConfig: NotifyConfig = {
           type: "error",
           message: newLoadingState.loadError,
-        })
-        return
+        }
+        dispatch.feedback.notify(notifyConfig)
+        return notifyConfig
       }
       setLoadStatus(newLoadingState.loadStatus)
 
