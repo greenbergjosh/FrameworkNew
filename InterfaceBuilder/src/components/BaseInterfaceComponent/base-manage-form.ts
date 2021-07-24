@@ -37,6 +37,13 @@ const baseComponentDefinition: ComponentDefinition[] = [
             label: "Data",
             components: [
               {
+                key: "name",
+                valueKey: "name",
+                component: "input",
+                label: "Name",
+                bindable: true,
+              },
+              {
                 key: "hideLabel",
                 valueKey: "hideLabel",
                 ordinal: 0,

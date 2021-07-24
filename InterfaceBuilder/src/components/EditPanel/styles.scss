@@ -68,7 +68,7 @@ $editPanelBar-height: 26px; // 24px + 2px top & bottom padding
   border-left: dashed 1px $ib-default;
   border-right: dashed 1px $ib-default;
   border-bottom: dashed 1px $ib-default;
-  border-top: solid 1px mix($ib-default, #fff, 40%); // higher percent is darker
+  //border-top: solid 1px mix($ib-default, #fff, 40%); // higher percent is darker
   padding: 5px;
 }
 
@@ -148,13 +148,14 @@ $editPanelBar-height: 26px; // 24px + 2px top & bottom padding
 }
 
 .summary {
-  background-color: $ib-violet-light;
-  border-left: solid 1px $ib-violet;
-  border-right: solid 1px $ib-violet;
-  border-top: solid 1px mix($ib-default, #fff, 70%); // higher percent is darker
+  background-color: $ib-invisible-light;
+  border-left: solid 1px $ib-invisible;
+  border-right: solid 1px $ib-invisible;
+  //border-top: solid 1px mix($ib-default, #fff, 70%); // higher percent is darker
   color: $ib-grey;
   font-size: 10px;
   padding: 5px;
+  cursor: pointer;
 
   display: flex;
   flex-direction: row;
@@ -172,21 +173,31 @@ $editPanelBar-height: 26px; // 24px + 2px top & bottom padding
     line-height: 1.7em;
   }
 
-  .info {
-    max-height: 1000px;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
-
+  .content-panel {
     order: 0;
     flex: 1 1 auto;
     align-self: auto;
 
-    &.collapsed {
-      max-height: 0;
+    .header {
+      font-weight: bold;
     }
 
-    > ul {
-      margin-bottom: 0;
+    .block {
+      padding-top: 5px;
+    }
+
+    .collapsible-panel {
+      max-height: 1000px;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+
+      &.collapsed {
+        max-height: 0;
+      }
+
+      > ul {
+        margin-bottom: 0;
+      }
     }
   }
 }

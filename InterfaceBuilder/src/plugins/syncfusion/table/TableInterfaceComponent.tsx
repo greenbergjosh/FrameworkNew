@@ -8,7 +8,7 @@ import DisplayTable from "./components/DisplayTable"
 import { AbstractTable } from "./components/AbstractTable"
 import { isBoolean } from "lodash/fp"
 import { Icon, Spin } from "antd"
-import { LayoutDefinition } from "../../../globalTypes"
+import { ComponentDefinitionNamedProps, LayoutDefinition } from "../../../globalTypes"
 
 export class TableInterfaceComponent extends BaseInterfaceComponent<
   TableInterfaceComponentProps,
@@ -42,6 +42,22 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static manageForm = tableManageForm
+
+  /**
+   *
+   */
+  static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
+    return (
+      <>
+        <div>
+          <strong>API Key:</strong> {props.valueKey}
+        </div>
+        <div>
+          <strong>Loading Key:</strong> {props.loadingKey}
+        </div>
+      </>
+    )
+  }
 
   componentDidUpdate(prevProps: Readonly<TableInterfaceComponentProps>): void {
     if (this.props.mode === "display") {

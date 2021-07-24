@@ -1,9 +1,9 @@
 import React from "react"
 import { Icon } from "antd"
-import styles from "./styles.scss"
-import { EditPanelProps } from "./types"
+import styles from "../styles.scss"
+import { EditPanelProps } from "../types"
 import classNames from "classnames"
-import { Summary } from "components/EditPanel/Summary"
+import { Summary } from "components/EditPanel/components/Summary"
 
 export const EditPanel: React.FC<EditPanelProps> = (props): JSX.Element => {
   let modeStyle: string
@@ -43,16 +43,17 @@ export const EditPanel: React.FC<EditPanelProps> = (props): JSX.Element => {
             <Icon type="more" />
           </div>
         )}
-        <div className={styles.title}>{title}</div>
+        <div className={styles.title}>
+          {title}
+          {props.componentDefinition && props.componentDefinition.name && (
+            <>
+              &nbsp;-&nbsp;<span style={{ fontWeight: 600 }}>{props.componentDefinition.name}</span>
+            </>
+          )}
+        </div>
         <div className={styles.tools}>{props.tools}</div>
       </div>
-      {props.componentDefinition &&
-        (props.componentDefinition.incomingEventHandlers || props.componentDefinition.outgoingEventMap) && (
-          <Summary
-            incomingEventHandlers={props.componentDefinition.incomingEventHandlers}
-            outgoingEventMap={props.componentDefinition.outgoingEventMap}
-          />
-        )}
+      <Summary component={props.component} componentDefinition={props.componentDefinition} />
       {props.visibilityMode === "disabled" ? (
         <div style={{ position: "relative", cursor: "default" }}>
           <div className={styles.disabledMask} />

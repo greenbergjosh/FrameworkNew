@@ -13,6 +13,7 @@ export interface ComponentDefinitionNamedProps {
   invisible?: boolean
   hideLabel?: boolean
   label?: string
+  name?: string
   preview?: boolean
   visibilityConditions?: JSONObject
   bindable?: boolean
@@ -22,6 +23,7 @@ export interface ComponentDefinitionNamedProps {
   onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
   incomingEventHandlers: IncomingEventHandler[]
   outgoingEventMap: OutgoingEventMap
+  summary?: JSX.Element
 
   [key: string]: unknown
 

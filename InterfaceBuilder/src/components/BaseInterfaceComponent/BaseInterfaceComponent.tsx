@@ -2,7 +2,7 @@ import React from "react"
 import { getValue } from "../../lib/getValue"
 import { set } from "lodash/fp"
 import { v4 as uuid } from "uuid"
-import { ComponentDefinition, LayoutDefinition } from "../../globalTypes"
+import { ComponentDefinition, ComponentDefinitionNamedProps, LayoutDefinition } from "../../globalTypes"
 import { BaseInterfaceComponentProps, GetValue, SetValue } from "./types"
 import { getDefaultsFromComponentDefinitions } from "./componentDefinitionUtils"
 import { getMergedData } from "./getMergedData"
@@ -55,6 +55,10 @@ export abstract class BaseInterfaceComponent<
 
   static getManageFormDefaults(): { [key: string]: any } {
     return getDefaultsFromComponentDefinitions(this.manageForm())
+  }
+
+  static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
+    return undefined
   }
 
   getDefaultValue(): unknown {

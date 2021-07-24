@@ -16,7 +16,7 @@ import "./userInterface.module.scss"
 import rainy_window_png from "../../images/rainy-window.png"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
 import styles from "./styles.scss"
-import { EditPanel } from "../EditPanel/EditPanel"
+import { EditPanel } from "../EditPanel/components/EditPanel"
 
 export class UserInterface extends React.Component<UserInterfaceProps, UserInterfaceState> {
   state = {
