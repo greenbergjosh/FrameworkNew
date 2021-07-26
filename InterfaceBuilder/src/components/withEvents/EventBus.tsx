@@ -1,21 +1,20 @@
-export type EventPayloadType = Record<string, unknown>
-export type EventBusEventHandler = (eventName: string, eventPayload: EventPayloadType, source: any) => void
+import { EventBusEventHandler, EventPayloadType } from "./types"
 
 export class EventBus {
   private static subscriptions: { [key: string]: Map<number, EventBusEventHandler> } = {}
   private static subscriptionId = 0
 
-  static addSubscription(eventName: string, handler: EventBusEventHandler): number {
+  static addSubscription = (eventName: string, handler: EventBusEventHandler): number => {
     console.log(`EventBus: Adding subscription for event "${eventName}"`)
-    const subscriptionId = this.subscriptionId++
-    this.subscriptions[eventName] = this.subscriptions[eventName] || new Map<number, EventBusEventHandler>()
-    this.subscriptions[eventName].set(subscriptionId, handler)
+    const subscriptionId = EventBus.subscriptionId++
+    EventBus.subscriptions[eventName] = EventBus.subscriptions[eventName] || new Map<number, EventBusEventHandler>()
+    EventBus.subscriptions[eventName].set(subscriptionId, handler)
     return subscriptionId
   }
 
-  static removeSubscription(eventName: string, subscriptionId: number): boolean {
+  static removeSubscription = (eventName: string, subscriptionId: number): boolean => {
     console.log(`EventBus: Removing subscription for event "${eventName}" with subscriptionId ${subscriptionId}`)
-    const handlers = this.subscriptions[eventName]
+    const handlers = EventBus.subscriptions[eventName]
     if (handlers) {
       if (handlers.delete(subscriptionId)) {
         return true
@@ -27,9 +26,9 @@ export class EventBus {
     return false
   }
 
-  static raiseEvent(eventName: string, eventPayload: EventPayloadType, source?: any): void {
+  static raiseEvent = (eventName: string, eventPayload: EventPayloadType, source?: any): void => {
     console.log(`EventBus: raising event "${eventName}"`, eventPayload)
-    const handlers = this.subscriptions[eventName]
+    const handlers = EventBus.subscriptions[eventName]
     if (handlers) {
       console.log(`EventBus "${eventName}" has ${handlers.size} subscriptions`)
       for (const [subscriptionId, handler] of handlers) {

@@ -6,17 +6,13 @@ import { AxisProps } from "@nivo/axes"
 import { LegendProps } from "@nivo/legends"
 import { emptyDataSet } from "./utils"
 import { isEqual } from "lodash/fp"
-import {
-  LineChartInterfaceComponentProps,
-  LineChartInterfaceComponentState,
-  ScaleType,
-  SerieTooltipFunction,
-} from "./types"
+import { LineChartInterfaceComponentProps, LineChartInterfaceComponentState, ScaleType } from "./types"
 import { Icon, Spin } from "antd"
 import { parseLBM } from "../../../lib/parseLBM"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { getNivoColorScheme } from "../_shared/nivoColors"
 import { LayoutDefinition } from "../../../globalTypes"
+import { EventBus } from "components/withEvents/EventBus"
 
 export class LineChartInterfaceComponent extends BaseInterfaceComponent<
   LineChartInterfaceComponentProps,
@@ -42,7 +38,7 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
     this.state = {
       lineChartData: emptyDataSet,
       loading: true,
-      tooltipFunction: undefined,
+      pointTooltipFunction: undefined,
     }
   }
 
@@ -62,7 +58,7 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     if (this.props.useTooltipFunction && (this.props.tooltipFunction || this.props.tooltipFunctionSrc)) {
       this.createTooltipFunction()
     }
@@ -76,21 +72,36 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
   private createTooltipFunction(): void {
     const { useTooltipFunction, tooltipFunctionSrc, tooltipFunction } = this.props
     if (!useTooltipFunction) {
-      this.setState({ tooltipFunction: undefined })
+      this.setState({ pointTooltipFunction: undefined })
     } else {
-      const parsedTooltipFunction = tooltipFunction || parseLBM<SerieTooltipFunction>(tooltipFunctionSrc)
-      let wrappedTooltipFunction: ((item: JSONRecord) => JSX.Element | undefined) | undefined
+      const parsedTooltipFunction =
+        tooltipFunction || parseLBM<LineChartInterfaceComponentProps, { serie: Serie }, string>(tooltipFunctionSrc)
+      let pointTooltipFunction: LineChartInterfaceComponentState["pointTooltipFunction"]
 
       if (parsedTooltipFunction && this.props.mode !== "edit") {
-        wrappedTooltipFunction = (item: JSONRecord) => {
+        pointTooltipFunction = (item: JSONRecord) => {
           const datum = this.state.lineChartData[parseInt((item.id && item.id.toString()) || "")]
           if (datum) {
-            return <div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(datum.slice, this.props) }} />
+            return (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: parsedTooltipFunction({
+                    props: this.props,
+                    lib: {
+                      getValue: this.getValue.bind(this),
+                      setValue: this.setValue.bind(this),
+                      raiseEvent: EventBus.raiseEvent,
+                    },
+                    args: { serie: datum.slice },
+                  }),
+                }}
+              />
+            )
           }
         }
       }
 
-      this.setState({ tooltipFunction: wrappedTooltipFunction })
+      this.setState({ pointTooltipFunction })
     }
   }
 
@@ -203,7 +214,7 @@ export class LineChartInterfaceComponent extends BaseInterfaceComponent<
             pointColor={{ theme: "background" }}
             pointLabelYOffset={-12}
             pointSize={pointSize}
-            tooltip={this.state.tooltipFunction}
+            tooltip={this.state.pointTooltipFunction as any}
             useMesh={false}
             xFormat={xFormat}
             xScale={xScale}

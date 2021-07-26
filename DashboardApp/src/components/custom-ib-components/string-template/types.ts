@@ -5,4 +5,8 @@ export interface StringTemplateInterfaceComponentProps extends StringTemplate.St
   serializeConfigId: PersistedConfig["id"]
   deserializeConfigId: PersistedConfig["id"]
 }
-export interface StringTemplateInterfaceComponentState extends StringTemplate.StringTemplateInterfaceComponentState {}
+
+export interface StringTemplateInterfaceComponentState {
+  serializeSrc?: string
+  deserializeSrc?: string
+}

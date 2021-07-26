@@ -1,6 +1,6 @@
 import React from "react"
-import { EditPanel } from "./EditPanel"
-import { EditButtons } from "./EditButtons"
+import { EditPanel } from "./components/EditPanel"
+import { EditButtons } from "./components/EditButtons"
 import { EditPanelWithToolsProps, VISIBILITY_MODES } from "./types"
 
 /**
@@ -31,8 +31,10 @@ export const EditPanelWithTools: React.FC<EditPanelWithToolsProps> = (props): JS
 
   return (
     <EditPanel
-      title={props.title}
+      component={props.component}
+      componentDefinition={props.componentDefinition}
       showGripper={true}
+      title={props.title}
       visibilityMode={visibilityMode}
       tools={
         props.editable ? (

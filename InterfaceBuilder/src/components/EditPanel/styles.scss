@@ -68,7 +68,7 @@ $editPanelBar-height: 26px; // 24px + 2px top & bottom padding
   border-left: dashed 1px $ib-default;
   border-right: dashed 1px $ib-default;
   border-bottom: dashed 1px $ib-default;
-  border-top: solid 1px mix($ib-default, #fff, 40%); // higher percent is darker
+  //border-top: solid 1px mix($ib-default, #fff, 40%); // higher percent is darker
   padding: 5px;
 }
 
@@ -107,7 +107,6 @@ $editPanelBar-height: 26px; // 24px + 2px top & bottom padding
     border-bottom-color: $ib-disabled;
     border-top-color: $ib-disabled;
     background-color: $ib-disabled-light;
-    pointer-events: none;
     filter: sepia(50%) hue-rotate(194deg);
   }
   .disabledMask {
@@ -116,7 +115,6 @@ $editPanelBar-height: 26px; // 24px + 2px top & bottom padding
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 999;
     background-color: rgba(0, 0, 0, 0.05);
     background-size: 150px;
     opacity: 0.03;
@@ -146,5 +144,60 @@ $editPanelBar-height: 26px; // 24px + 2px top & bottom padding
     border-right-color: $ib-invisible;
     border-bottom-color: $ib-invisible;
     border-top-color: $ib-invisible;
+  }
+}
+
+.summary {
+  background-color: $ib-invisible-light;
+  border-left: solid 1px $ib-invisible;
+  border-right: solid 1px $ib-invisible;
+  //border-top: solid 1px mix($ib-default, #fff, 70%); // higher percent is darker
+  color: $ib-grey;
+  font-size: 10px;
+  padding: 5px;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+  align-items: flex-start;
+
+  .toggle {
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+
+    padding-right: 5px;
+    line-height: 1.7em;
+  }
+
+  .content-panel {
+    order: 0;
+    flex: 1 1 auto;
+    align-self: auto;
+
+    .header {
+      font-weight: bold;
+    }
+
+    .block {
+      padding-top: 5px;
+    }
+
+    .collapsible-panel {
+      max-height: 1000px;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+
+      &.collapsed {
+        max-height: 0;
+      }
+
+      > ul {
+        margin-bottom: 0;
+      }
+    }
   }
 }

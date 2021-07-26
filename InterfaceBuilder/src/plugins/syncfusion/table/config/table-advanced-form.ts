@@ -13,6 +13,8 @@ export const tableAdvancedForm = {
       size: "small",
       getRootUserInterfaceData: () => void 0,
       onChangeRootData: () => void 0,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
     },
     {
       key: "removeCellPadding",

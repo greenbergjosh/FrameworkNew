@@ -6,7 +6,7 @@ import { ExecuteInterfaceComponentState, FromStore, LoadStatus, LOADSTATUSCODES 
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
-import { merge } from "lodash/fp"
+import { merge, isEmpty } from "lodash/fp"
 
 /**
  * Extract config from the Persisted Config and parse it.
@@ -18,7 +18,13 @@ export function getConfig(
   persistedConfig: PersistedConfig,
   defaults?: JSONRecord
 ): Readonly<Partial<ExecuteInterfaceComponentState>> {
-  let parsedConfig = tryCatch(() => JSON5.parse(persistedConfig.config.getOrElse(""))).toNullable()
+  const stringConfig = persistedConfig.config.getOrElse("")
+  let parsedConfig = tryCatch(() => JSON5.parse(stringConfig)).toNullable()
+
+  // Config is not json, so just use the string value
+  if (isEmpty(parsedConfig) && stringConfig.length > 0) {
+    parsedConfig = stringConfig
+  }
 
   if (defaults) {
     parsedConfig = merge(defaults, parsedConfig)

@@ -12,6 +12,8 @@ export const tableSortForm = {
       size: "small",
       getRootUserInterfaceData: () => void 0,
       onChangeRootData: () => void 0,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
     },
     {
       key: "sortDirection",

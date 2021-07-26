@@ -1,0 +1,74 @@
+@import "../../../styles/colors";
+
+/*
+ * Inspiration from:
+ * https://codepen.io/fusco/pen/Wvzjrm
+ */
+
+$max-tab-count: 25;
+
+.tabSet {
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+  overflow-x: scroll;
+}
+
+.tabNavDivider {
+  border-bottom: 1px solid $ib-grey-light;
+  width: 100%;
+  margin: -1px 0 16px 0;
+}
+
+.tabRadio {
+  display: none;
+
+  &:checked + .tabLabel {
+    cursor: default;
+    border-bottom: solid 2px $ib-blue-dark;
+    color: $ib-blue-dark;
+  }
+
+  + .tabLabel {
+    box-sizing: border-box;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    display: block;
+    flex-grow: 0;
+    padding: 12px 16px;
+    margin-right: 32px;
+    user-select: none;
+    z-index: 1;
+    transition: background-color 0.35s;
+
+    &:hover {
+      background-color: $ib-grey-lighter;
+      transition: background-color 0.35s;
+    }
+
+    &:active {
+      background-color: $ib-grey-light;
+      transition: background-color 0.35s;
+    }
+  }
+}
+
+.tabContent {
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  transform: translateX(100px);
+  width: 100%;
+  z-index: -1;
+
+  &.active {
+    opacity: 1;
+    position: relative;
+    text-shadow: 0 0 0;
+    top: 0;
+    transform: translateX(0px);
+    transition: opacity 0.35s, transform 0.35s;
+    z-index: 100;
+  }
+}

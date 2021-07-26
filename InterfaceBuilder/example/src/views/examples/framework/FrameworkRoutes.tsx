@@ -1,7 +1,8 @@
 import { Route } from "react-router-dom"
 import DataBindingExample from "./data-binding"
 import TextTokensExample from "./text-tokens"
-import FormattersExample from "./text-tokens"
+import FormattersExample from "./formatters"
+import EventsExample from "./events"
 import React from "react"
 
 export const FrameworkRoutes = (props: { path: string }): JSX.Element => {
@@ -19,6 +20,9 @@ export const FrameworkRoutes = (props: { path: string }): JSX.Element => {
       </Route>
       <Route path={`${sectionPath}/formatters`}>
         <FormattersExample />
+      </Route>
+      <Route path={`${sectionPath}/events`}>
+        <EventsExample />
       </Route>
     </>
   )

@@ -50,6 +50,7 @@ export function ErrorMode(props: ErrorModeProps): JSX.Element {
               path={props.path}>
               {({ isDragging, draggableItem }) => (
                 <EditPanelWrapper
+                  component={props.Component}
                   componentDefinition={tokenReplacedComponentDefinition}
                   draggableItem={draggableItem}
                   hasError={true}

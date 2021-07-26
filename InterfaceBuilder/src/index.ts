@@ -1,5 +1,6 @@
 // import "./lib/why-did-you-render"  // <-- Enable to trace unnecessary rendering
 import "./styles/index.scss"
+import { getRegistry } from "./services/registrySingleton"
 
 /*
  * IMPORTANT:
@@ -14,9 +15,9 @@ export * from "./globalTypes"
 export { UserInterfaceContextManager } from "./globalTypes/UserInterfaceContextManager"
 export { JSONRecord } from "./globalTypes/JSONTypes"
 export { TSEnum } from "./@types/ts-enum"
-export { ComponentRegistryCache } from "./services/ComponentRegistry"
-export { EventPayloadType } from "./services/EventBus"
 export { BaseInterfaceComponentProps, GetValue } from "./components/BaseInterfaceComponent/types"
+export { LBMFunctionType } from "./lib/parseLBM"
+export { CodeEditorProps } from "./plugins/monaco/code-editor/types"
 
 /**
  * Contexts
@@ -35,12 +36,12 @@ export { baseManageForm } from "./components/BaseInterfaceComponent/base-manage-
 export { getDefaultsFromComponentDefinitions } from "./components/BaseInterfaceComponent/componentDefinitionUtils"
 export { JSONEditor } from "./components/JSONEditor/JSONEditor"
 export { getMergedData } from "./components/BaseInterfaceComponent/getMergedData"
+export { EventPayloadType } from "./components/withEvents/types"
 
 /**
  * Services
  */
-export { EventBus, EventBusEventHandler } from "./services/EventBus"
-export { registry } from "./services/ComponentRegistry"
+export const registry = getRegistry()
 export { UserInterface } from "./components/UserInterface/UserInterface"
 
 /**
@@ -73,12 +74,6 @@ export { FormInterfaceComponentProps } from "./plugins/ant/form/FormInterfaceCom
 export { SortableGroupableColumnModel } from "./plugins/syncfusion/table/types"
 export { EnrichedColumnDefinition } from "./plugins/syncfusion/table/StandardGrid/types"
 export { default as StandardGrid } from "./plugins/syncfusion/table/StandardGrid/StandardGrid"
-export {
-  CodeEditor,
-  editorLanguages,
-  EditorLangCodec,
-  registerMonacoEditorMount,
-  supportedEditorTheme,
-  EditorLang,
-  EditorTheme,
-} from "./plugins/monaco/code-editor/code-editor"
+export { CodeEditor, supportedEditorTheme } from "./plugins/monaco/code-editor/CodeEditor"
+export { editorLanguages, EditorLangCodec, registerMonacoEditorMount } from "./plugins/monaco/code-editor/constants"
+export { EditorLang, EditorTheme } from "./plugins/monaco/code-editor/types"

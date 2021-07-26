@@ -29,7 +29,7 @@ export const ConfigLangNonJsonCodec = iots.union([
 export const ConfigLangCodec = iots.union([ConfigLangJsonCodec, ConfigLangNonJsonCodec])
 
 //
-// ────────────────────────────────────────────────────────────────────────  ──────────
+// ──────────────────────────────────────────────────────────────────────────────────
 //   :::::: P E R S I S T E D   C O N F I G : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────────────────────────
 //
@@ -40,6 +40,7 @@ export const PersistedConfigCodec = iots.type(
     id: NonEmptyString,
     name: NonEmptyString,
     type: NonEmptyString,
+    type_id: iots.any,
   },
   "PersistedConfig"
 )
@@ -51,7 +52,7 @@ export const setoidPersistedConfig = fromEquals<PersistedConfig>((a, b) => a.id 
 export const setoidConfigType = fromEquals<ConfigType>((a, b) => a === b)
 
 //
-// ────────────────────────────────────────────────────────────────────────────────────────────────────────────  ──────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 //   :::::: IN PROGRESS UPDATE DRAFT : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 //
@@ -62,9 +63,10 @@ export const InProgressRemoteUpdateDraftCodec = iots.type({
   config: iots.string,
   name: iots.string,
   type: iots.string,
+  type_id: iots.string,
 })
 //
-// ──────────────────────────────────────────────────────────────────────────────────────────────────────────  ──────────
+// ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 //   :::::: COMPLETE UPDATE DRAFT  : :  :   :    :     :        :          :
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 //
@@ -74,6 +76,7 @@ export const CompleteRemoteUpdateDraftCodec = iots.type({
   config: NonEmptyString,
   name: NonEmptyString,
   type: NonEmptyString,
+  type_id: iots.string,
 })
 
 export function mkCompleteRemoteUpdateDraft(
@@ -83,7 +86,7 @@ export function mkCompleteRemoteUpdateDraft(
 }
 
 //
-// ────────────────────────────────────────────────────────────────────────────────────────────────────  ──────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
 //   :::::: IN PROGRESS CREATE DRAFT : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
 //
@@ -91,10 +94,11 @@ export interface InProgressLocalDraftConfig {
   config: string
   name: string
   type: string
+  type_id: string
 }
 
 //
-// ────────────────────────────────────────────────────────────────────────────────────────────────  ──────────
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 //   :::::: COMPLETE CREATE DRAFT : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 //
@@ -103,6 +107,7 @@ export const CompleteLocalDraftCodec = iots.type({
   config: NonEmptyString,
   name: NonEmptyString,
   type: NonEmptyString,
+  type_id: iots.string,
 })
 
 export function mkCompleteLocalDraft(draft: InProgressLocalDraftConfig): Either<Array<string>, CompleteLocalDraft> {
@@ -110,7 +115,7 @@ export function mkCompleteLocalDraft(draft: InProgressLocalDraftConfig): Either<
 }
 
 //
-// ────────────────────────────────────────────────────────────────────────  ──────────
+// ──────────────────────────────────────────────────────────────────────────────────
 //   :::::: A S S O C I A T I O N S   M A P : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────────────────────────
 //

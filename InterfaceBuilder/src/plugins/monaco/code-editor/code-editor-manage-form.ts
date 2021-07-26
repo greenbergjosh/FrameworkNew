@@ -3,6 +3,8 @@ import { baseManageForm } from "../../../components/BaseInterfaceComponent/base-
 
 export const supportedEditorLang = [
   { label: "C#", value: "csharp" },
+  { label: "CSS", value: "css" },
+  { label: "Sass", value: "scss" },
   { label: "JavaScript", value: "javascript" },
   { label: "JSON", value: "json" },
   { label: "TypeScript", value: "typescript" },
@@ -15,7 +17,7 @@ export const supportedEditorTheme = [
   { label: "High Contrast Dark", value: "hc-black" },
 ]
 
-export const codeEditorManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+export const codeEditorManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
   return baseManageForm(...codeEditorFormDefinition, ...extend)
 }
 
@@ -40,28 +42,6 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
-                key: "defaultValue",
-                valueKey: "defaultValue",
-                component: "code-editor",
-                defaultTheme: "vs-dark",
-                label: "Default Value",
-                bindable: true,
-              },
-            ],
-          },
-          {
-            label: "Code",
-            key: "code",
-            components: [
-              // {
-              //   key: "allowDiffView",
-              //   valueKey: "allowDiffView",
-              //   component: "checkbox",
-              //   defaultValue: true,
-              //   help: "Let's the user open a side-by-side comparison of the old and new values",
-              //   label: "Allow Diff Viewer Option",
-              // },
-              {
                 key: "defaultLanguage",
                 valueKey: "defaultLanguage",
                 component: "select",
@@ -74,13 +54,36 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                   values: supportedEditorLang,
                 },
               },
-              // {
-              //   key: "allowLangSelect",
-              //   valueKey: "allowLangSelect",
-              //   component: "checkbox",
-              //   defaultValue: true,
-              //   label: "Allow Language Selection",
-              // },
+              {
+                key: "defaultValue",
+                valueKey: "defaultValue",
+                component: "code-editor",
+                defaultTheme: "vs-dark",
+                label: "Default Value",
+                bindable: true,
+              },
+              {
+                key: "stringifyValue",
+                valueKey: "stringifyValue",
+                label: "Stringify Value",
+                defaultValue: true,
+                component: "toggle",
+                bindable: true,
+              },
+              {
+                key: "autoSync",
+                valueKey: "autoSync",
+                label: "Auto Load",
+                defaultValue: true,
+                help: "Disable if you want to control when the editor loads the document.",
+                component: "toggle",
+                bindable: true,
+              },
+            ],
+          },
+          {
+            key: "appearance",
+            components: [
               {
                 key: "defaultTheme",
                 valueKey: "defaultTheme",
@@ -94,13 +97,22 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                   values: supportedEditorTheme,
                 },
               },
-              // {
-              //   key: "allowThemeSelect",
-              //   valueKey: "allowThemeSelect",
-              //   component: "checkbox",
-              //   defaultValue: true,
-              //   label: "Allow Theme Selection",
-              // },
+              {
+                key: "height",
+                valueKey: "height",
+                component: "input",
+                defaultValue: "400px",
+                label: "Height",
+                bindable: true,
+              },
+              {
+                key: "width",
+                valueKey: "width",
+                component: "input",
+                defaultValue: "100%",
+                label: "Width",
+                bindable: true,
+              },
             ],
           },
         ],

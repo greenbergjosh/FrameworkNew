@@ -22,6 +22,8 @@ const baseComponentDefinition: ComponentDefinition[] = [
     component: "form",
     getRootUserInterfaceData: () => void 0,
     onChangeRootData: () => void 0,
+    incomingEventHandlers: [],
+    outgoingEventMap: {},
     components: [
       {
         key: "tabs",
@@ -34,6 +36,13 @@ const baseComponentDefinition: ComponentDefinition[] = [
             hideLabel: true,
             label: "Data",
             components: [
+              {
+                key: "name",
+                valueKey: "name",
+                component: "input",
+                label: "Name",
+                bindable: true,
+              },
               {
                 key: "hideLabel",
                 valueKey: "hideLabel",

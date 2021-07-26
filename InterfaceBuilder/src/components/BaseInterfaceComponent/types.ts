@@ -6,6 +6,7 @@ import {
   ComponentRenderMetaProps,
   UserInterfaceProps,
 } from "../../globalTypes"
+import { EventPayloadType } from "components/withEvents/types"
 
 export type DataBindings = { [K in keyof ComponentDefinitionNamedProps]: JSONRecord }
 export type BaseInterfaceComponentProps = ComponentDefinition & ComponentRenderMetaProps
@@ -29,9 +30,12 @@ export type KVPTuple =
 
 export type SetValue = (kvpTuples: KVPTuple | KVPTuple[]) => void
 
+export type RaiseEvent = (eventName: string, eventPayload: EventPayloadType, source?: any) => void
+
 export type TargetType = "$root" | "$root.key" | "$" | "$.key"
 
 export interface IBaseInterfaceComponent {
   getValue: GetValue
   setValue: SetValue
+  raiseEvent: RaiseEvent
 }

@@ -25,6 +25,7 @@ export default {
       "@nivo/pie": "pie",
       classnames: "classNames",
       "d3-geo": "d3Geo",
+      "hoist-non-react-statics": "hoistNonReactStatic",
       json5: "JSON5",
       "react-dnd": "reactDnd",
       "react-dnd-html5-backend": "HTML5Backend",

@@ -33,6 +33,7 @@ export function EditMode(props: EditModeProps): JSX.Element {
               path={props.path}>
               {({ isDragging, draggableItem }) => (
                 <EditPanelWrapper
+                  component={props.Component}
                   componentDefinition={tokenReplacedComponentDefinition}
                   draggableItem={draggableItem}
                   hidden={tokenReplacedComponentDefinition.hidden}
@@ -41,7 +42,9 @@ export function EditMode(props: EditModeProps): JSX.Element {
                   isDragging={isDragging}
                   title={props.layoutDefinition.title}
                   userInterfaceData={props.userInterfaceData}>
-                  <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={props.layoutDefinition}>
+                  <FormField
+                    componentDefinition={tokenReplacedComponentDefinition}
+                    layoutDefinition={props.layoutDefinition}>
                     <EditDataBinding
                       componentDefinition={tokenReplacedComponentDefinition}
                       mode={props.mode}

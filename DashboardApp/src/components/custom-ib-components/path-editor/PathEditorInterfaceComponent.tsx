@@ -1,6 +1,6 @@
 import React from "react"
 import { pathEditorManageForm } from "./path-editor-manage-form"
-import { BaseInterfaceComponent, CodeEditor } from "@opg/interface-builder"
+import { BaseInterfaceComponent, CodeEditor, CodeEditorProps } from "@opg/interface-builder"
 import { PathEditorInterfaceComponentProps, PathEditorInterfaceComponentState } from "./types"
 import { some } from "fp-ts/lib/Option"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
@@ -35,11 +35,16 @@ export class PathEditorInterfaceComponent extends BaseInterfaceComponent<
    * EVENT HANDLERS
    */
 
-  handleChange = ({ value: newValue }: { value: string }) => {
-    const { defaultValue, valueKey } = this.props
-    const value = this.getValue(valueKey) || defaultValue
-    if ((newValue || "") !== (value || "")) {
-      this.setValue([valueKey, newValue])
+  /**
+   * Put editor value into model
+   * @param newValue
+   */
+  handleChange: CodeEditorProps["onChange"] = ({ value, errors }): void => {
+    console.error("CodeEditorInterfaceComponent.handleChange", errors)
+    const prevValue = this.getValue(this.props.valueKey) || this.props.defaultValue
+
+    if ((value || "") !== (prevValue || "")) {
+      this.setValue([this.props.valueKey, value])
     }
   }
 
@@ -60,17 +65,17 @@ export class PathEditorInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { defaultTheme, defaultValue, valueKey } = this.props
-    const value = this.getValue(valueKey) || defaultValue
+    const value = this.getValue(this.props.valueKey) || this.props.defaultValue
 
     return (
       <CodeEditor
-        content={value}
-        contentDraft={some(value)}
+        document={value}
+        documentDraft={some(value)}
         height="400px"
         language="typescript"
-        theme={defaultTheme}
+        theme={this.props.defaultTheme}
         width="100%"
+        outputType="string"
         onChange={this.handleChange}
         editorDidMount={this.handleEditorDidMount}
       />

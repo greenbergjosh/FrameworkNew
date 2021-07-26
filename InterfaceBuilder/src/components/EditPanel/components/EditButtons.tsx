@@ -1,7 +1,7 @@
 import { Button } from "antd"
 import React from "react"
-import { ConfirmableDeleteButton } from "../ConfirmableDeleteButton"
-import { EditButtonsProps } from "./types"
+import { ConfirmableDeleteButton } from "../../ConfirmableDeleteButton"
+import { EditButtonsProps } from "../types"
 
 export const EditButtons = (props: EditButtonsProps): JSX.Element => {
   return (

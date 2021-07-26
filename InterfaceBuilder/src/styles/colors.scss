@@ -3,6 +3,14 @@ $ib-blue: #00b2ff; // invisible
 $ib-grey: #b6b6b6; // blocked
 $ib-yellow: #fff004; // highlight
 
+$ib-blue-dark: #1890ff;
+$ib-grey-dark: darken(#b6b6b6, 10);
+$ib-grey-light: rgb(232, 232, 232);
+$ib-grey-lighter: rgba(232, 232, 232, 0.2);
+$ib-violet: rgba(180, 0, 255, 0.2);
+$ib-violet-light: rgba(180, 0, 255, 0.05);
+
+
 $ib-highlight: rgba($ib-yellow, 0.3); // higher opacity is darker
 $ib-highlight-solid: mix($ib-yellow, #fff, 50%); // higher percent is darker;
 $ib-highlight-light: rgba($ib-yellow, 0.2); // higher opacity is darker

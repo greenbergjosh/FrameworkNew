@@ -160,7 +160,11 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
               borderRadius: 3,
               backgroundColor: "white",
             }}>
-            <JSONEditor data={rawValue} onChange={this.handleChange} height={this.props.height || 100} />
+            {this.props.dataType === "json" ? (
+              <JSONEditor data={rawValue} onChange={this.handleChange} height={this.props.height || 100} />
+            ) : (
+              <pre>{rawValue}</pre>
+            )}
           </div>
         </fieldset>
       )

@@ -60,6 +60,11 @@ export function deleteCfg({
 
   return dispatch.globalConfig
     .deleteRemoteConfigs([payload]) // deleteRemoteConfigs expects an array
-    .then(() => ({ data: null, loadStatus: LOADSTATUSCODES.deleted } as LoadStatus))
+    .then((result) => {
+      if (result && result.type === "error") {
+        return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+      }
+      return { data: null, loadStatus: LOADSTATUSCODES.deleted } as LoadStatus
+    })
     .catch((e: Error) => getErrorState(e))
 }

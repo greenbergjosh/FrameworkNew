@@ -1,6 +1,6 @@
-import { ComponentDefinition } from "@opg/interface-builder"
+import { ComponentDefinition } from "../../../globalTypes"
 
-export const eventManagerManageFormDefinition: Partial<ComponentDefinition>[] = [
+export const eventsManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "events",
     component: "tab",
@@ -48,33 +48,20 @@ export const eventManagerManageFormDefinition: Partial<ComponentDefinition>[] = 
                     component: "input",
                   },
                   {
-                    size: "default",
-                    allowClear: false,
-                    placeholder: null,
-                    invisible: false,
-                    hidden: false,
-                    createNewLabel: "Create New...",
-                    allowCreateNew: false,
-                    remoteQueryMapping: [
-                      {
-                        label: "label",
-                        value: "",
-                      },
-                      {
-                        label: "value",
-                        value: "",
-                      },
-                    ],
-                    data: {
-                      values: [],
-                    },
-                    dataHandlerType: "remote-config",
-                    multiple: false,
-                    valueKey: "handlerFunctionId",
+                    key: "handlerFunctionSrc",
+                    valueKey: "handlerFunctionSrc",
                     label: "Handler Function",
+                    defaultTheme: "vs-dark",
+                    defaultLanguage: "javascript",
+                    defaultValue: `return function({props, lib: { getValue, setValue, raiseEvent }, args}) {
+  // Do stuff here
+}`,
+                    hidden: false,
                     hideLabel: false,
-                    component: "select",
-                    remoteConfigType: "45d3cad9-863d-4b36-8836-90b4f937180e",
+                    component: "code-editor",
+                    height: 400,
+                    width: "90%",
+                    bindable: true,
                   },
                   {
                     invisible: false,

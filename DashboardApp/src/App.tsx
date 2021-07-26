@@ -1,7 +1,7 @@
 import * as Reach from "@reach/router"
 import { getPersistor } from "@rematch/persist"
 import { flatten } from "fp-ts/lib/Array"
-import { toArray } from "fp-ts/lib/Record"
+import * as record from "fp-ts/lib/Record"
 import React from "react"
 import * as ReactRedux from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
@@ -14,18 +14,18 @@ import { NotFound } from "./views/not-found"
 import { store } from "./state/store"
 import {
   antComponents,
-  ComponentRegistryCache,
   DragDropContext,
   htmlComponents,
   monacoComponents,
   nivoComponents,
-  syncfusionComponents,
   registerMonacoEditorMount,
   registry,
+  syncfusionComponents,
 } from "@opg/interface-builder"
 import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
 import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
 import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
+import { RelationshipsInterfaceComponent } from "./components/custom-ib-components/relationships/RelationshipsInterfaceComponent"
 import { RemoteComponentInterfaceComponent } from "./components/custom-ib-components/remote-component/RemoteComponentInterfaceComponent"
 import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/slot-config/SlotConfigInterfaceComponent"
 import { getCustomEditorConstructionOptions } from "./components/custom-ib-components/code-editor-mount"
@@ -33,25 +33,12 @@ import { SelectInterfaceComponent } from "./components/custom-ib-components/sele
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 import { TableInterfaceComponent } from "./components/custom-ib-components/table/TableInterfaceComponent"
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
-import { PieInterfaceComponent } from "./components/custom-ib-components/chart/pie/PieInterfaceComponent"
+import { PieInterfaceComponent } from "./components/custom-ib-components/pie/PieInterfaceComponent"
 import { LinkInterfaceComponent } from "./components/custom-ib-components/link/LinkInterfaceComponent"
-import { withEventManager } from "./components/event-manager/event-manager"
 import { RouteMeta } from "./state/navigation"
 import { SplashScreen } from "./components/SplashScreen/SplashScreen"
 
 const persistor = getPersistor()
-
-/**
- * Wrap InterfaceBuilder components with the EventManager
- * @param ibComponentLib - An assoc array of InterfaceBuilder components
- */
-function wrapLibWithEventManager(ibComponentLib: any) {
-  const wrappedComponents: ComponentRegistryCache = {}
-  Object.keys(ibComponentLib).forEach((key) => {
-    wrappedComponents[key] = withEventManager((ibComponentLib as ComponentRegistryCache)[key])
-  })
-  return wrappedComponents
-}
 
 export function App(): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
@@ -64,22 +51,23 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   React.useEffect(() => {
-    registry.register(wrapLibWithEventManager(antComponents))
-    registry.register(wrapLibWithEventManager(htmlComponents))
-    registry.register(wrapLibWithEventManager(monacoComponents))
-    registry.register(wrapLibWithEventManager(nivoComponents))
-    registry.register(wrapLibWithEventManager(syncfusionComponents))
-    registry.register({ query: withEventManager(QueryInterfaceComponent) })
-    registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
+    registry.register(antComponents)
+    registry.register(htmlComponents)
+    registry.register(monacoComponents)
+    registry.register(nivoComponents)
+    registry.register(syncfusionComponents)
+    registry.register({ query: QueryInterfaceComponent })
+    registry.register({ execute: ExecuteInterfaceComponent })
     registry.register({ "path-editor": PathEditorInterfaceComponent })
+    registry.register({ relationships: RelationshipsInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
-    registry.register({ "slot-config": withEventManager(SlotConfigInterfaceComponent) })
-    registry.register({ "string-template": withEventManager(StringTemplateInterfaceComponent) })
-    registry.register({ select: withEventManager(SelectInterfaceComponent) })
-    registry.register({ table: withEventManager(TableInterfaceComponent) })
-    registry.register({ tags: withEventManager(TagsInterfaceComponent) })
-    registry.register({ pie: withEventManager(PieInterfaceComponent) })
-    registry.register({ link: withEventManager(LinkInterfaceComponent) })
+    registry.register({ "slot-config": SlotConfigInterfaceComponent })
+    registry.register({ "string-template": StringTemplateInterfaceComponent })
+    registry.register({ select: SelectInterfaceComponent })
+    registry.register({ table: TableInterfaceComponent })
+    registry.register({ tags: TagsInterfaceComponent })
+    registry.register({ pie: PieInterfaceComponent })
+    registry.register({ link: LinkInterfaceComponent })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
   }, [])
 
@@ -108,7 +96,7 @@ function Routes() {
   return (
     <Reach.Router>
       {(function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-        return toArray(routes).map(([k, route]) =>
+        return record.toArray(routes).map(([k, route]) =>
           route.requiresAuthentication === true ? (
             fromStore.profile.foldL(
               None(() => (
@@ -136,7 +124,7 @@ function Routes() {
 
       {(function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
         return flatten(
-          toArray(routes).map(([k, route]) => {
+          record.toArray(routes).map(([k, route]) => {
             return route.redirectFrom
               .map((url) => <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />)
               .concat(renderRedirects(route.subroutes))

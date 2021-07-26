@@ -9,6 +9,7 @@ import {
 } from "../../../plugins/nivo/pie/types"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
+import { IBaseInterfaceComponent } from "components/BaseInterfaceComponent/types"
 
 export const emptyDataSet = [{ pieDatum: { id: "None", label: "No data", value: 1 }, slice: {} }]
 
@@ -38,6 +39,9 @@ function getLabelValue({
   labelValueFunction,
   valueKey,
   props,
+  getValue,
+  setValue,
+  raiseEvent,
 }: {
   data: JSONRecord
   labelValueType: SliceLabelValueType
@@ -45,13 +49,22 @@ function getLabelValue({
   labelValueKey: string
   valueKey: string
   props: any
+  getValue: IBaseInterfaceComponent["getValue"]
+  setValue: IBaseInterfaceComponent["setValue"]
+  raiseEvent: IBaseInterfaceComponent["raiseEvent"]
 }): string {
   switch (labelValueType) {
     case "default":
       return data[valueKey]?.toString() ?? ""
     case "function":
       return labelValueFunction
-        ? tryCatch(() => labelValueFunction(data, props)).getOrElse(data[valueKey]?.toString() ?? "")
+        ? tryCatch(() =>
+            labelValueFunction({
+              props,
+              lib: { getValue, setValue, raiseEvent },
+              args: { slice: data },
+            })
+          ).getOrElse(data[valueKey]?.toString() ?? "")
         : data[valueKey]?.toString() ?? ""
     case "key":
       return data[labelValueKey]?.toString() ?? ""
@@ -66,6 +79,9 @@ function getSliceRawData({
   labelValueFunction,
   valueKey,
   props,
+  getValue,
+  setValue,
+  raiseEvent,
 }: {
   data: JSONRecord
   labelNameKey: string
@@ -74,11 +90,24 @@ function getSliceRawData({
   labelValueKey: string
   valueKey: string
   props: any
+  getValue: IBaseInterfaceComponent["getValue"]
+  setValue: IBaseInterfaceComponent["setValue"]
+  raiseEvent: IBaseInterfaceComponent["raiseEvent"]
 }) {
   const rawValue = toNumber(data[valueKey])
   const value = isNaN(rawValue) ? 0 : rawValue
   const labelName: string = data[labelNameKey]?.toString() ?? ""
-  const labelValue = getLabelValue({ data, labelValueType, labelValueKey, labelValueFunction, valueKey, props })
+  const labelValue = getLabelValue({
+    data,
+    labelValueType,
+    labelValueKey,
+    labelValueFunction,
+    valueKey,
+    props,
+    getValue,
+    setValue,
+    raiseEvent,
+  })
   return { value, labelName, labelValue }
 }
 
@@ -93,6 +122,9 @@ export function convertToPieDatum({
   threshold,
   otherSliceAggregatorFunction,
   props,
+  getValue,
+  setValue,
+  raiseEvent,
 }: {
   data: JSONRecord[]
   labelNameKey: string
@@ -104,6 +136,9 @@ export function convertToPieDatum({
   threshold: number
   otherSliceAggregatorFunction?: OtherSliceAggregatorFunction
   props: PieInterfaceComponentProps
+  getValue: IBaseInterfaceComponent["getValue"]
+  setValue: IBaseInterfaceComponent["setValue"]
+  raiseEvent: IBaseInterfaceComponent["raiseEvent"]
 }): { pieDatum: PieDatum; slice: JSONRecord }[] {
   // Return if nothing to do
   if (isEmpty(data)) return emptyDataSet
@@ -123,6 +158,9 @@ export function convertToPieDatum({
       labelValueFunction,
       valueKey,
       props,
+      getValue,
+      setValue,
+      raiseEvent,
     })
     const pieDatum = createSliceData({
       id: index.toString(),
@@ -164,10 +202,11 @@ export function convertToPieDatum({
 
     let aggregateSlice: JSONRecord = {}
     if (otherSliceAggregatorFunction) {
-      aggregateSlice = otherSliceAggregatorFunction(
-        belowThreshold.map((value) => value.slice),
-        props
-      )
+      aggregateSlice = otherSliceAggregatorFunction({
+        props,
+        lib: { getValue, setValue, raiseEvent },
+        args: { slices: belowThreshold.map((value) => value.slice) },
+      })
     }
 
     aggregate.sliceLabel = getLabelValue({
@@ -177,6 +216,9 @@ export function convertToPieDatum({
       labelValueFunction,
       valueKey,
       props,
+      getValue,
+      setValue,
+      raiseEvent,
     })
 
     pieData.push(aggregate)

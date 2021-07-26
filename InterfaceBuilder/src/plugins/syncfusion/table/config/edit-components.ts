@@ -19,6 +19,8 @@ export const editComponents: ComponentDefinition[] = [
     preconfigured: true,
     getRootUserInterfaceData: () => void 0,
     onChangeRootData: () => void 0,
+    incomingEventHandlers: [],
+    outgoingEventMap: {},
     components: [
       {
         key: "column",

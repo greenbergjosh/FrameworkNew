@@ -13,6 +13,8 @@ export const tableAggregateForm = {
       size: "small",
       getRootUserInterfaceData: () => void 0,
       onChangeRootData: () => void 0,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
       data: {
         values: [
           {

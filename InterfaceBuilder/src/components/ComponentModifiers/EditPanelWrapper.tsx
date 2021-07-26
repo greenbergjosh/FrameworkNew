@@ -8,8 +8,10 @@ import { tryCatch } from "lib/Option"
 import { UserInterfaceProps } from "../../globalTypes"
 import { DraggedItemProps } from "components/DragAndDrop"
 import { isBoolean, isFunction } from "lodash/fp"
+import { BaseInterfaceComponent } from "components/BaseInterfaceComponent/BaseInterfaceComponent"
 
 interface EditPanelWrapperProps extends ComponentModifierProps, Omit<EditPanelWithToolsProps, "draggableItem"> {
+  component: typeof BaseInterfaceComponent
   userInterfaceData: UserInterfaceProps["data"]
   index: number
   draggableItem?: DraggedItemProps
@@ -79,6 +81,8 @@ export const EditPanelWrapper: React.FC<EditPanelWrapperProps> = (props): JSX.El
         blocked={isBlocked()}
         canDelete={getCanDelete()}
         canEdit={getCanEdit()}
+        component={props.component}
+        componentDefinition={props.componentDefinition}
         draggableItem={props.draggableItem}
         editable
         hasError={props.hasError}

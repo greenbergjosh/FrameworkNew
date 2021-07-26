@@ -35,6 +35,25 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
+                center: false,
+                headerSize: "",
+                textType: "warning",
+                invisible: false,
+                hidden: false,
+                stringTemplate: "CAUTION: No Circular References!",
+                description: "Do not include a config as a child of itself or your app will crash.",
+                useTokens: false,
+                showIcon: true,
+                valueKey: "data",
+                label: "Text",
+                hideLabel: true,
+                component: "text",
+                marginTop: 20,
+                marginBottom: 20,
+                components: [],
+                bindable: false,
+              },
+              {
                 key: "remoteId",
                 valueKey: "remoteId",
                 label: "Remote Component",
@@ -49,6 +68,32 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
           {
             key: "appearance",
             components: [
+              {
+                key: "modeOverride",
+                valueKey: "modeOverride",
+                ordinal: 10,
+                defaultValue: "display",
+                label: "Mode",
+                component: "select",
+                dataHandlerType: "local",
+                bindable: true,
+                data: {
+                  values: [
+                    {
+                      label: "Display",
+                      value: "display",
+                    },
+                    {
+                      label: "Edit",
+                      value: "edit",
+                    },
+                    {
+                      label: "Preview",
+                      value: "preview",
+                    },
+                  ],
+                },
+              },
               {
                 key: "indented",
                 valueKey: "indented",

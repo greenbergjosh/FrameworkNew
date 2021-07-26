@@ -4,6 +4,7 @@ import { ListItem } from "./ListItem"
 import React from "react"
 import { EditPanelWrapper } from "components/ComponentModifiers/EditPanelWrapper"
 import { JSONRecord } from "globalTypes/JSONTypes"
+import { BaseInterfaceComponent } from "components/BaseInterfaceComponent/BaseInterfaceComponent"
 
 export default function DraggableListItem({
   data,
@@ -37,6 +38,7 @@ export default function DraggableListItem({
         <EditPanelWrapper
           canEdit={false}
           onDelete={handleDelete}
+          component={{} as typeof BaseInterfaceComponent}
           componentDefinition={component}
           draggableItem={draggableItem}
           hidden={component.hidden}

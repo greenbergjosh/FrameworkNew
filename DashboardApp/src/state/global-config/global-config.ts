@@ -16,6 +16,8 @@ import { prettyPrint } from "../../lib/json"
 import { Config as mockGlobalConfigs } from "./global-config.json"
 import * as Store from "../store.types"
 import { APITypeEventHandlerKey, executeParentTypeEventHandler } from "./globalConfigEvents"
+import { HttpError } from "../../lib/http"
+import { NotifyConfig } from "../feedback"
 
 declare module "../store.types" {
   interface AppModels {
@@ -62,10 +64,10 @@ export type CreateConfigEventPayload = {
 export type ConfigEventPayload = DeleteConfigEventPayload | UpdateConfigEventPayload | CreateConfigEventPayload
 
 export interface Effects {
-  createRemoteConfig(config: CreateConfigEventPayload): Promise<void>
-  deleteRemoteConfigs(configs: DeleteConfigEventPayload[]): Promise<void>
-  loadRemoteConfigs(): Promise<void>
-  updateRemoteConfig(config: UpdateConfigEventPayload): Promise<void>
+  createRemoteConfig(config: CreateConfigEventPayload): Promise<NotifyConfig>
+  deleteRemoteConfigs(configs: DeleteConfigEventPayload[]): Promise<NotifyConfig>
+  loadRemoteConfigs(): Promise<NotifyConfig>
+  updateRemoteConfig(config: UpdateConfigEventPayload): Promise<NotifyConfig>
 }
 
 export interface Selectors {
@@ -119,63 +121,75 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
 
       return GC.mkCompleteLocalDraft(draft).fold(
         Left(async (errs) => {
-          dispatch.logger.logError(`createRemoteConfig error:\n${errs.join("\n")}\n\nInvalid config params:\n${draft}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Form contains invalid data and cannot be submitted.`,
-          })
+          }
+          dispatch.logger.logError(`createRemoteConfig error:\n${errs.join("\n")}\n\nInvalid config params:\n${draft}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         }),
         Right(async (completeDraft) => {
           const response = await dispatch.remoteDataClient.globalConfigsInsert({
             config: completeDraft.config,
             name: completeDraft.name,
             type: completeDraft.type,
+            type_id: completeDraft.type_id,
           })
 
           return response.fold(
             Left((HttpError) => {
-              dispatch.remoteDataClient.defaultHttpErrorHandler(HttpError)
+              return dispatch.remoteDataClient.defaultHttpErrorHandler(HttpError)
             }),
 
             Right((GlobalConfigApiResponse) => {
               return GlobalConfigApiResponse({
                 ServerException({ reason }) {
+                  const notifyConfig: NotifyConfig = {
+                    type: "error",
+                    message: `Failed to save Global Config: ${reason}`,
+                  }
                   dispatch.logger.logError(
                     `A server exception occured while attempting to create config:\n${prettyPrint(draft)}`
                   )
-                  dispatch.feedback.notify({
-                    type: "error",
-                    message: `Failed to save Global Config: ${reason}`,
-                  })
+                  dispatch.feedback.notify(notifyConfig)
+                  return notifyConfig
                 },
                 Unauthorized: () => {
-                  dispatch.logger.logError(`Unauthorized to create config:\n${prettyPrint(draft)}`)
-                  dispatch.feedback.notify({
+                  const notifyConfig: NotifyConfig = {
                     type: "error",
                     message: `You do not have permission to create a Global Config. Please check with your administrator.`,
-                  })
+                  }
+                  dispatch.logger.logError(`Unauthorized to create config:\n${prettyPrint(draft)}`)
+                  dispatch.feedback.notify(notifyConfig)
+                  return notifyConfig
                 },
                 OK: (createdConfigs) => {
                   return head(createdConfigs).foldL(
                     None(() => {
-                      dispatch.logger.logError(`web service for state.globalConfig.createConfig returned nothing`)
-                      dispatch.feedback.notify({
+                      const notifyConfig: NotifyConfig = {
                         type: "error",
                         message: `Server Error: An unknown error occurred while processing this request.`,
-                      })
+                      }
+                      dispatch.logger.logError(`web service for state.globalConfig.createConfig returned nothing`)
+                      dispatch.feedback.notify(notifyConfig)
+                      return notifyConfig
                     }),
                     Some((createdConfig) => {
+                      const notifyConfig: NotifyConfig = {
+                        type: "success",
+                        message: `Global Config created`,
+                      }
                       executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.insertFunction)
                       dispatch.globalConfig.insertLocalConfig({
                         ...createdConfig,
                         config: some(draft.config),
                         type: completeDraft.type,
+                        type_id: completeDraft.type_id,
                       })
 
-                      dispatch.feedback.notify({
-                        type: "success",
-                        message: `Global Config created`,
-                      })
+                      dispatch.feedback.notify(notifyConfig)
+                      return notifyConfig
                     })
                   )
                 },
@@ -200,18 +214,26 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
         Right((GlobalConfigApiResponse) => {
           return GlobalConfigApiResponse({
             ServerException({ reason }) {
+              const notifyConfig: NotifyConfig = {
+                type: "error",
+                message: `Server Exception: Failed to delete global config${ids.length === 1 ? "" : "s"}`,
+              }
               dispatch.globalConfig.update({ configs: failure(new Error(reason)) })
               dispatch.logger.logError(
                 `ServerException "${reason}" occured while attempting to delete configs with the following ids:\n${ids.map(
                   (id) => `${id}\n`
                 )}`
               )
-              dispatch.feedback.notify({
-                type: "error",
-                message: `Server Exception: Failed to delete global config${ids.length === 1 ? "" : "s"}`,
-              })
+              dispatch.feedback.notify(notifyConfig)
+              return notifyConfig
             },
             Unauthorized() {
+              const notifyConfig: NotifyConfig = {
+                type: "error",
+                message: `You do not have permission to delete ${
+                  ids.length === 1 ? "this Global Config" : "these Global Configs"
+                }`,
+              }
               dispatch.globalConfig.update({
                 configs: failure(
                   new Error(`Unauthorized to delete configs with the following ids:\n${ids.map((id) => `${id}\n`)}`)
@@ -220,22 +242,20 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               dispatch.logger.logError(
                 `Unauthorized attempt to delete configs with the following ids:\n${ids.map((id) => `${id}\n`)}`
               )
-              dispatch.feedback.notify({
-                type: "error",
-                message: `You do not have permission to delete ${
-                  ids.length === 1 ? "this Global Config" : "these Global Configs"
-                }`,
-              })
+              dispatch.feedback.notify(notifyConfig)
+              return notifyConfig
             },
             OK() {
+              const notifyConfig: NotifyConfig = {
+                type: "success",
+                message: `Global Config Deleted`,
+              }
               configPayloads.map((configPayload) =>
                 executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.deleteFunction)
               )
               dispatch.globalConfig.rmLocalConfigsById(ids)
-              dispatch.feedback.notify({
-                type: "success",
-                message: `Global Config Deleted`,
-              })
+              dispatch.feedback.notify(notifyConfig)
+              return notifyConfig
             },
           })
         })
@@ -252,25 +272,34 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
         Right((GlobalConfigApiResponse) => {
           return GlobalConfigApiResponse({
             ServerException({ reason }) {
-              dispatch.globalConfig.update({ configs: failure(new Error(reason)) })
-              dispatch.logger.logError(`ServerException "${reason}" occured while attempting to load remote configs`)
-              dispatch.feedback.notify({
+              const notifyConfig: NotifyConfig = {
                 type: "error",
                 message: `Failed to load remote configs: ${reason}`,
-              })
+              }
+              dispatch.globalConfig.update({ configs: failure(new Error(reason)) })
+              dispatch.logger.logError(`ServerException "${reason}" occured while attempting to load remote configs`)
+              dispatch.feedback.notify(notifyConfig)
+              return notifyConfig
             },
             Unauthorized: () => {
+              const notifyConfig: NotifyConfig = {
+                type: "error",
+                message: `You do not have permission to load the Global Config list`,
+              }
               dispatch.globalConfig.update({
                 configs: failure(new Error(`Unauthorized to load GlobalConfig`)),
               })
               dispatch.logger.logError(`Unauthorized attempt to load remote configs`)
-              dispatch.feedback.notify({
-                type: "error",
-                message: `You do not have permission to load the Global Config list`,
-              })
+              dispatch.feedback.notify(notifyConfig)
+              return notifyConfig
             },
             OK: (configs) => {
+              const notifyConfig: NotifyConfig = {
+                type: "success",
+                message: `Config loaded successfully`,
+              }
               dispatch.globalConfig.update({ configs: success(configs) })
+              return notifyConfig
             },
           })
         })
@@ -281,47 +310,57 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
 
       return GC.mkCompleteRemoteUpdateDraft(draft).fold(
         Left(async (errs) => {
+          const notifyConfig: NotifyConfig = {
+            type: "error",
+            message: `Form contains invalid data and cannot be submitted.`,
+          }
           dispatch.logger.logError(
             `updateRemoteConfig argument error:\n${errs.join("\n")}\n\nInvalid update values:\n${prettyPrint(draft)}`
           )
-          dispatch.feedback.notify({
-            type: "error",
-            message: `Form contains invalid data and cannot be submitted.`,
-          })
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         }),
         Right(async (completeDraft) => {
           const result = await dispatch.remoteDataClient.globalConfigsUpdate(completeDraft)
 
           return result.fold(
-            Left((httpError) => dispatch.remoteDataClient.defaultHttpErrorHandler(httpError)),
+            Left((httpError) => {
+              return dispatch.remoteDataClient.defaultHttpErrorHandler(httpError)
+            }),
             Right((GlobalConfigApiResponse) => {
-              GlobalConfigApiResponse({
+              return GlobalConfigApiResponse({
                 ServerException() {
+                  const notifyConfig: NotifyConfig = {
+                    type: "error",
+                    message: `ServerException: Failed to save Global Config`,
+                  }
                   dispatch.logger.logError(
                     `Error "ServerException"; could not update remote config ${prettyPrint(draft)}`
                   )
-                  dispatch.feedback.notify({
-                    type: "error",
-                    message: `ServerException: Failed to save Global Config`,
-                  })
+                  dispatch.feedback.notify(notifyConfig)
+                  return notifyConfig
                 },
                 Unauthorized() {
-                  dispatch.logger.logError(`Error "Unauthorized"; could not update remote config ${prettyPrint(draft)}`)
-                  dispatch.feedback.notify({
+                  const notifyConfig: NotifyConfig = {
                     type: "error",
                     message: `You do not have permission to update this Global Config`,
-                  })
+                  }
+                  dispatch.logger.logError(`Error "Unauthorized"; could not update remote config ${prettyPrint(draft)}`)
+                  dispatch.feedback.notify(notifyConfig)
+                  return notifyConfig
                 },
                 OK() {
+                  const notifyConfig: NotifyConfig = {
+                    type: "success",
+                    message: `Global Config updated.`,
+                  }
                   executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.updateFunction)
                   dispatch.globalConfig.updateLocalConfig({
                     ...completeDraft,
                     config: some(completeDraft.config),
                   })
-                  dispatch.feedback.notify({
-                    type: "success",
-                    message: `Global Config updated.`,
-                  })
+                  dispatch.feedback.notify(notifyConfig)
+                  return notifyConfig
                 },
               })
             })

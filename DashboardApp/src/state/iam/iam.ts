@@ -4,6 +4,7 @@ import * as Store from "../store.types"
 import * as onelogin from "./iam.onelogin"
 import * as google from "./iam.google"
 import * as basic from "./iam.basic"
+import { NotifyConfig } from "../feedback"
 
 declare module "../store.types" {
   interface AppModels {
@@ -71,24 +72,28 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     dispatch.iam.update({ profile: some(profile) })
                   },
                   Unauthorized() {
+                    const notifyConfig: NotifyConfig = {
+                      type: "error",
+                      message: `Your session has expired or your access to this applications was revoked. Please login again.`,
+                    }
                     dispatch.remoteDataClient.update({ token: null })
                     dispatch.iam.update({ profile: none })
                     dispatch.logger.logError("Your account is not authorized")
-                    dispatch.feedback.notify({
-                      type: "error",
-                      message: `Your session has expired or your access to this applications was revoked. Please login again.`,
-                    })
+                    dispatch.feedback.notify(notifyConfig)
+                    return notifyConfig
                   },
                   ServerException({ reason }) {
+                    const notifyConfig: NotifyConfig = {
+                      type: "error",
+                      message: `An error occurred while restoring your session: ${reason}`,
+                    }
                     dispatch.remoteDataClient.update({ token: null })
                     dispatch.iam.update({ profile: none })
                     dispatch.logger.logError(
                       `Something went wrong while on our servers while authenticating your account:\n${reason}`
                     )
-                    dispatch.feedback.notify({
-                      type: "error",
-                      message: `An error occurred while restoring your session: ${reason}`,
-                    })
+                    dispatch.feedback.notify(notifyConfig)
+                    return notifyConfig
                   },
                 })
               })

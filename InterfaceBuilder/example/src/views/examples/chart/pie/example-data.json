@@ -1,0 +1,34 @@
+{
+  "value": [
+    {
+      "id": "stylus",
+      "label": "stylus",
+      "value": 587,
+      "color": "hsl(238, 70%, 50%)"
+    },
+    {
+      "id": "python",
+      "label": "python",
+      "value": 110,
+      "color": "hsl(324, 70%, 50%)"
+    },
+    {
+      "id": "lisp",
+      "label": "lisp",
+      "value": 368,
+      "color": "hsl(17, 70%, 50%)"
+    },
+    {
+      "id": "erlang",
+      "label": "erlang",
+      "value": 499,
+      "color": "hsl(291, 70%, 50%)"
+    },
+    {
+      "id": "make",
+      "label": "make",
+      "value": 553,
+      "color": "hsl(173, 70%, 50%)"
+    }
+  ]
+}

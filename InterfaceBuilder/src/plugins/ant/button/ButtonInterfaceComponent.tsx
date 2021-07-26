@@ -2,15 +2,12 @@ import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
 import React from "react"
 import { buttonManageForm } from "./button-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import {
-  ButtonInterfaceComponentProps,
-  ButtonInterfaceComponentState,
-  OnClickFunction,
-} from "../../../plugins/ant/button/types"
-import { EVENTS } from "../../../plugins/html/data-injector/types"
+import { ButtonInterfaceComponentProps, ButtonInterfaceComponentState } from "../../../plugins/ant/button/types"
+import { EVENTS } from "./types"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
 import { parseLBM } from "lib/parseLBM"
+import { EventBus } from "components/withEvents/EventBus"
 
 export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   ButtonInterfaceComponentProps,
@@ -35,7 +32,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static manageForm = buttonManageForm
-  static availableEvents = ["valueChanged"]
+  static availableEvents = [EVENTS.CLICK]
 
   constructor(props: ButtonInterfaceComponentProps) {
     super(props)
@@ -45,7 +42,6 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
   handleClick = (e: React.MouseEvent<HTMLInputElement>): void => {
     const { requireConfirmation, onChangeData, paramKVPMaps, disabled, useOnClick, onClickSrc } = this.props
     const { isShowingConfirmation } = this.state
@@ -66,11 +62,18 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
        */
 
       // Execute Configured Event Handler
-      const onClickFunction = useOnClick ? parseLBM<OnClickFunction>(onClickSrc) : undefined
+      const onClickFunction = useOnClick
+        ? parseLBM<ButtonInterfaceComponentProps, Record<string, unknown>, void>(onClickSrc)
+        : undefined
       if (useOnClick && onClickFunction && this.props.mode !== "edit") {
-        onClickFunction(this.props, {
-          setValue: this.setValue.bind(this),
-          getValue: this.getValue.bind(this),
+        onClickFunction({
+          props: this.props,
+          lib: {
+            getValue: this.getValue.bind(this),
+            setValue: this.setValue.bind(this),
+            raiseEvent: EventBus.raiseEvent,
+          },
+          args: {},
         })
       }
 
@@ -82,7 +85,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
           paramKVPMaps.values.forEach((map) => {
             eventPayload[map.targetKey] = this.getValue(map.sourceKey)
           })
-        this.raiseEvent(EVENTS.VALUE_CHANGED, eventPayload)
+        this.raiseEvent(EVENTS.CLICK, eventPayload)
       }
 
       // Close Popup
@@ -90,8 +93,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
-  handleCloseConfirmation = ({ target }: React.MouseEvent<HTMLInputElement>): void => {
+  handleCloseConfirmation = (/*{ target }: React.MouseEvent<HTMLInputElement>*/): void => {
     if (this.state.isShowingConfirmation) {
       this.setState({ isShowingConfirmation: false })
     }

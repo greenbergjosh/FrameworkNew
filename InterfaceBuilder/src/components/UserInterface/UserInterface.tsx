@@ -16,7 +16,7 @@ import "./userInterface.module.scss"
 import rainy_window_png from "../../images/rainy-window.png"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
 import styles from "./styles.scss"
-import { EditPanel } from "../EditPanel/EditPanel"
+import { EditPanel } from "../EditPanel/components/EditPanel"
 
 export class UserInterface extends React.Component<UserInterfaceProps, UserInterfaceState> {
   state = {
@@ -59,7 +59,8 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     this.setState({ collapsed: !this.state.collapsed })
   }
 
-  getRootUserInterfaceData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
+  getRootUserInterfaceData = () =>
+    (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
 
   // onChangeRootData = (newData: UserInterfaceProps["data"]): void =>
   //   this.props.onChangeRootData && this.props.onChangeRootData(newData)
@@ -203,7 +204,11 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                           <EditPanel
                             title={this.props.title || "User Interface"}
                             style={{ width: "100%" }}
-                            visibilityMode="user-interface">
+                            visibilityMode="user-interface"
+                            componentDefinition={
+                              (itemToAdd && itemToAdd.componentDefinition) ||
+                              (itemToEdit && itemToEdit.componentDefinition)
+                            }>
                             {contentWithContext}
                           </EditPanel>
                         </Layout.Content>

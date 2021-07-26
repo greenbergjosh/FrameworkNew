@@ -27,9 +27,17 @@ const tabsManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "tabs",
                 valueKey: "tabs",
-                ordinal: 20,
-                component: "list",
+                component: "repeater",
                 bindable: true,
+                readonly: false,
+                invisible: false,
+                hidden: false,
+                hasLastItemComponents: false,
+                hasInitialRecord: false,
+                emptyText: "No Tabs",
+                addItemLabel: "Add Tab",
+                label: "Repeater",
+                hideLabel: true,
                 components: [
                   {
                     key: "label",
@@ -37,6 +45,7 @@ const tabsManageFormDefinition: Partial<ComponentDefinition>[] = [
                     component: "input",
                     label: "Tab",
                     defaultValue: "Tab",
+                    size: "small",
                   },
                 ],
               },

@@ -2,7 +2,7 @@ import jsonLogic from "json-logic-js"
 import React from "react"
 import { ComponentModifierProps, RenderInterfaceComponentProps } from "../ComponentRenderer/types"
 import _, { forOwn } from "lodash"
-import { isEmpty } from "lodash/fp"
+import { isEmpty, set } from "lodash/fp"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
 
 /**
@@ -49,8 +49,37 @@ export const DataBinding: React.FC<
         $: props.userInterfaceData,
         ...props.userInterfaceData,
       })
-      def = { ...def, [key]: result }
+      def = set(key, result, def)
     })
+
+    /* INCOMING EVENT BINDINGS */
+    /*
+     * TODO: Either change EditDataBinding to put binding in main component's bindings,
+     *  and remove this loop below (problem may be that you don't have the parent component's context);
+     *  Or keep this loop below and make it more generic.
+     */
+    if (props.componentDefinition.incomingEventHandlers) {
+      const handlers = props.componentDefinition.incomingEventHandlers as any[]
+      handlers.forEach((handler, idx) => {
+        const hasEventBindings = !isEmpty(handler.bindings)
+
+        /* Nothing to bind so return the componentDefinition */
+        if (!hasEventBindings) {
+          return
+        }
+
+        /* Do bindings with jsonLogic */
+        forOwn(handler.bindings, (rule, key) => {
+          const result = jsonLogic.apply(rule, {
+            $root: props.getRootUserInterfaceData(),
+            $: props.userInterfaceData,
+            ...props.userInterfaceData,
+          })
+          def = set(`incomingEventHandlers[${idx}].${key}`, result, def)
+        })
+      })
+    }
+
     return def
   }, [props.userInterfaceData, props.componentDefinition])
 

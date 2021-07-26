@@ -15,6 +15,8 @@ export function getSlotConfigLayout(
       interleave: "round-robin",
       getRootUserInterfaceData,
       onChangeRootData,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
       components: [
         {
           key: "provider",

@@ -15,6 +15,9 @@ export const FrameworkMenu = (props: SubMenuProps): JSX.Element => {
       <Menu.Item key="/examples/framework/data-binding">
         <Link to="/examples/framework/data-binding">Data Binding</Link>
       </Menu.Item>
+      <Menu.Item key="/examples/framework/events">
+        <Link to="/examples/framework/events">Events</Link>
+      </Menu.Item>
     </Menu.SubMenu>
   )
 }

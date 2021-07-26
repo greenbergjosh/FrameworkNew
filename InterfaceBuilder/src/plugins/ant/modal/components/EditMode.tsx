@@ -31,6 +31,8 @@ export function EditMode(props: EditModeProps): JSX.Element {
             bindable: true,
             getRootUserInterfaceData: props.getRootUserInterfaceData,
             onChangeRootData: props.onChangeRootData,
+            incomingEventHandlers: [],
+            outgoingEventMap: {},
           }}
           userInterfaceData={props.userInterfaceSchema}
           dragDropDisabled={true}

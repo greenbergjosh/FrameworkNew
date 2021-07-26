@@ -4,14 +4,13 @@ export interface ITabsInterfaceComponentProps extends ComponentDefinitionNamedPr
   component: "tabs"
   defaultActiveKey: string
   onChangeData: UserInterfaceProps["onChangeData"]
-  tabs?: ComponentDefinition[]
+  tabs?: ITab[]
   userInterfaceData?: UserInterfaceProps["data"]
 }
 
 interface TabsInterfaceComponentDisplayModeProps extends ITabsInterfaceComponentProps {
   mode: "display"
 }
-
 interface TabsInterfaceComponentEditModeProps extends ITabsInterfaceComponentProps {
   mode: "edit"
   onChangeSchema?: (newSchema: ComponentDefinition) => void
@@ -19,3 +18,16 @@ interface TabsInterfaceComponentEditModeProps extends ITabsInterfaceComponentPro
 }
 
 export type TabsInterfaceComponentProps = TabsInterfaceComponentDisplayModeProps | TabsInterfaceComponentEditModeProps
+
+export interface TabsInterfaceComponentDisplayModeState {
+  activeTabKey: string | null
+}
+
+export enum EVENTS {
+  ACTIVE_TAB_CHANGED = "activeTabChanged",
+}
+
+export interface ITab extends ComponentDefinitionNamedProps {
+  tabKey: string
+  components: ComponentDefinition[]
+}

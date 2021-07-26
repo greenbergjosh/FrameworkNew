@@ -19,6 +19,7 @@ export interface RenderInterfaceComponentProps {
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema?: (newComponentDefinition: ComponentDefinition) => void
+  onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
   path: string
   submit?: UserInterfaceProps["submit"]
   userInterfaceData: UserInterfaceProps["data"]
@@ -42,6 +43,7 @@ export interface ComponentRendererProps {
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema: EditUserInterfaceProps["onChangeSchema"]
+  onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
   submit?: UserInterfaceProps["submit"]
   onDrop?: DroppableContextType["onDrop"]
   keyPrefix?: string
@@ -58,6 +60,7 @@ interface ModeProps {
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema: ((newComponentDefinition: ComponentDefinition) => void) | undefined
+  onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
   submit: (() => void) | undefined
   userInterfaceData: UserInterfaceProps["data"]
 }

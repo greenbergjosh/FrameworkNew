@@ -224,6 +224,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
         id: setoidString,
         name: setoidString,
         type: setoidString,
+        type_id: setoidString,
       }).equals(a, b)
     }
   }, [dispatch, fromStore.configs, updatedConfig])
@@ -406,11 +407,12 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                     </Tabs.TabPane>
                     <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
                       <CodeEditor
-                        content={props.config.config.getOrElse("")}
-                        contentDraft={some(form.values.config)}
+                        document={props.config.config.getOrElse("")}
+                        documentDraft={some(form.values.config)}
                         height={500}
                         language={configLang}
                         width="100%"
+                        outputType="string"
                         onChange={({ value, errors }) => {
                           errors.map((errors) => {
                             setConfigErrors(errors)
