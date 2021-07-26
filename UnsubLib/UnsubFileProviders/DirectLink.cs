@@ -4,9 +4,9 @@ using Utility.GenericEntity;
 
 namespace UnsubLib.UnsubFileProviders
 {
-    internal class SuppMeNow : IUnsubLocationProvider
+    class DirectLink : IUnsubLocationProvider
     {
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("suppmenow.com");
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => true;
 
         public Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri) => Task.FromResult(uri.ToString());
     }

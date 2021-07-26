@@ -1182,18 +1182,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+            }
 #if DEBUG
             }
 #endif
@@ -2027,14 +2027,11 @@ namespace UnsubLib
                 new UnsubFileProviders.UnsubCentralV2(_fw),
                 new UnsubFileProviders.Ezepo(_fw),
                 new UnsubFileProviders.Optizmo(_fw),
-                new UnsubFileProviders.MidEnity(_fw),
                 new UnsubFileProviders.W4(_fw),
                 new UnsubFileProviders.Unsubly(_fw),
-                new UnsubFileProviders.Ad1Media(),
-                new UnsubFileProviders.SuppMeNow(),
                 new UnsubFileProviders.WeOpt(),
-                new UnsubFileProviders.SiteMath(),
-                new UnsubFileProviders.UnsubscribeMe()
+                new UnsubFileProviders.UnsubscribeMe(),
+                new UnsubFileProviders.DirectLink()
             };
 
             try

@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "skipClean skipQueuedCheck n:\"OB Bing direct feed\" c:2493"
+      "commandLineArgs": "skipClean skipQueuedCampaigns n:\"Direct Agents\" c:36337"
     }
   }
 }
