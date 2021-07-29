@@ -625,11 +625,6 @@ from datasets.{mergedTableName};";
             {
                 var tableName = tableConfig.GetS("table_name");
 
-                if (tableName == "email_path")
-                {
-                    continue;
-                }
-
                 var export = tableConfig.GetE("export");
                 var path = export.GetS("target_path");
                 var filename = $"{tableName}_{parameters.StartDate:yyyy_MM_dd}.csv";
