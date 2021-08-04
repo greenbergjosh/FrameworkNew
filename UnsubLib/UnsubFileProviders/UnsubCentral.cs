@@ -34,7 +34,7 @@ namespace UnsubLib.UnsubFileProviders
             return false;
         }
 
-        public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             var uriStr = uri.ToString();
 
@@ -63,7 +63,7 @@ namespace UnsubLib.UnsubFileProviders
                     {
                         await _fw.Error("UV2C", $"{unsubRelationshipId} {uriStr} Response had no redirect");
                         await _fw.Error($"{_logMethod}.{nameof(GetFileUrl)}", "Response had no redirect");
-                        return defaultUrl;
+                        return (defaultUrl, null);
                     }
 
                     var qs = HttpUtility.ParseQueryString(redirectUrl.Query);
@@ -81,7 +81,7 @@ namespace UnsubLib.UnsubFileProviders
                 if (key.IsNullOrWhitespace() || secure.IsNullOrWhitespace())
                 {
                     await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} defaultUrl {defaultUrl}");
-                    return defaultUrl;
+                    return (defaultUrl, null);
                 }
 
                 // Try new style API first
@@ -95,7 +95,7 @@ namespace UnsubLib.UnsubFileProviders
 
                     await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} final result {url}");
 
-                    return url;
+                    return (url, null);
                 }
 
                 var data = new Dictionary<string, string> { { "key", key }, { "s", secure } };
@@ -110,7 +110,10 @@ namespace UnsubLib.UnsubFileProviders
 
                 var token = res.GetS("payload");
 
-                if (token.IsNullOrWhitespace()) return defaultUrl;
+                if (token.IsNullOrWhitespace())
+                {
+                    return (defaultUrl, null);
+                }
 
                 var fileIdUrl = $"https://go.unsubcentral.com/backend/api/keys?token={token}&find=ByAffiliateKeyStringEquals&keyString={key}";
 
@@ -139,13 +142,13 @@ namespace UnsubLib.UnsubFileProviders
 
                 await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} final result {result}");
 
-                return result;
+                return (result, null);
             }
             catch (Exception e)
             {
                 await _fw.Error("UV2C", $"{unsubRelationshipId} {uriStr} Unhandled exception getting unsub link: {e.UnwrapForLog()}");
                 await _fw.Error(_logMethod, $"Unhandled exception getting unsub link: {e.UnwrapForLog()}");
-                return defaultUrl;
+                return (defaultUrl, null);
             }
         }
     }

@@ -47,6 +47,12 @@ namespace UnsubClientWeb
                     case "IsUnsubList":
                         result = await unsub.IsUnsubList(dtv);
                         break;
+                    case "IsUnsubBatch":
+                        result = await unsub.IsUnsubBatch(dtv);
+                        break;
+                    case "IsUnsubBatch2":
+                        result = await unsub.IsUnsubBatch2(dtv);
+                        break;
                     case "GetCampaigns":
                         result = (await unsub.GetCampaigns())?.GetS("") ?? result;
                         break;

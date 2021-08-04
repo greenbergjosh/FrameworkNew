@@ -359,5 +359,19 @@ namespace Utility
                 deltaLineCount++;
             }
         }
+
+        public static async Task MergeFiles(string destinationFile, IEnumerable<string> inputFiles)
+        {
+            var pProcess = new Process();
+            pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
+            pProcess.StartInfo.Verb = "runas";
+            pProcess.StartInfo.Arguments = "/c " +
+                Fs.QuotePathParts(exeSed) + $" -n w{Fs.QuotePathParts(destinationFile)} {string.Join(' ', inputFiles.Select(Fs.QuotePathParts))}";
+            pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            pProcess.StartInfo.UseShellExecute = true;
+            pProcess.StartInfo.WorkingDirectory = @"C:\Windows\System32";
+            await pProcess.StartAndWaitForExitAsync();
+            pProcess.Close();
+        }
     }
 }

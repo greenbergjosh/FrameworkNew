@@ -101,17 +101,17 @@ namespace Utility
             return resp;
         }
 
-        public static async Task<Dictionary<string, object>> DownloadUnzipUnbuffered(string url, string basicAuthString, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds, int maxConnectionsPerServer, FrameworkWrapper fw)
+        public static async Task<Dictionary<string, IEnumerable<object>>> DownloadUnzipUnbuffered(string url, string basicAuthString, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds, int maxConnectionsPerServer, FrameworkWrapper fw, IDictionary<string, string> postData = null)
         {
             var responseBody = string.Empty;
 
             var ufn = Guid.NewGuid().ToString();
             var fileName = ufn + ".tmp";
-            var rs = new Dictionary<string, object>();
+            var rs = new Dictionary<string, IEnumerable<object>>();
 
             var client = GetHttpClient(maxConnectionsPerServer, timeoutSeconds: timeoutSeconds);
 
-            Task<HttpResponseMessage> GetResponse()
+            async Task<HttpResponseMessage> GetResponse()
             {
                 if (basicAuthString != null)
                 {
@@ -119,12 +119,21 @@ namespace Utility
                     using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
                     {
                         requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-                        return client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+                        return await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+                    }
+                }
+                else if (postData?.Count > 0)
+                {
+                    var postContent = new FormUrlEncodedContent(postData);
+                    using (var requestMessage = new HttpRequestMessage(HttpMethod.Post, url))
+                    {
+                        requestMessage.Content = postContent;
+                        return await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
                     }
                 }
                 else
                 {
-                    return client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                    return await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 }
             }
 
@@ -146,7 +155,7 @@ namespace Utility
                 {
                     await fw.Log(nameof(DownloadUnzipUnbuffered), $"File is not a zip, calling {nameof(ProcessFile)} for {url} -> {fileName}");
                     var (tr, pr) = await ProcessFile(new FileInfo(Path.Combine(workingDirectory, fileName)), zipEntryTester, zipEntryProcessors);
-                    rs[tr] = pr;
+                    rs[tr] = new[] { pr };
                 }
             }
             finally
@@ -165,10 +174,10 @@ namespace Utility
             return rs;
         }
 
-        public static async Task<Dictionary<string, object>> UnzipUnbuffered(string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory, int? timeout = null)
+        public static async Task<Dictionary<string, IEnumerable<object>>> UnzipUnbuffered(string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory, int? timeout = null)
         {
             var ufn = Guid.NewGuid().ToString();
-            var results = new Dictionary<string, object>();
+            var results = new Dictionary<string, IList<object>>();
             try
             {
                 if (timeout.HasValue)
@@ -184,7 +193,12 @@ namespace Utility
                 foreach (var f in dir.GetFiles("*", SearchOption.AllDirectories))
                 {
                     var (tr, pr) = await ProcessFile(f, zipEntryTester, zipEntryProcessors);
-                    results[tr] = pr;
+                    if (!results.TryGetValue(tr, out var prs))
+                    {
+                        prs = new List<object>();
+                        results[tr] = prs;
+                    }
+                    prs.Add(pr);
                 }
             }
             finally
@@ -196,7 +210,7 @@ namespace Utility
                 }
             }
 
-            return results;
+            return results.ToDictionary(kvp => kvp.Key, kvp => (IEnumerable<object>)kvp.Value);
         }
 
         public static async Task<(string, object)> ProcessFile(FileInfo file, Func<FileInfo, Task<string>> fileTester, Dictionary<string, Func<FileInfo, Task<object>>> fileProcessors)
