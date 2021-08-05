@@ -17,7 +17,7 @@ export function AppViewButtons(props: {
     <>
       {props.views &&
         props.views.map((view) => {
-          if (view.disabled || isEmpty(view.uri)) {
+          if (view.disabled || isEmpty(view.link)) {
             return null
           }
           return (
@@ -25,7 +25,7 @@ export function AppViewButtons(props: {
               title={`${props.appTitle} ${view.title}`}
               placement="bottom"
               key={`view-${props.appUri}-${view.uri}`}>
-              <Reach.Link to={`/${props.appRootPath}/${view.uri}`} style={{ lineHeight: 0 }}>
+              <Reach.Link to={`/${props.appRootPath}/${view.link}`} style={{ lineHeight: 0 }}>
                 <Button
                   htmlType="button"
                   type="link"

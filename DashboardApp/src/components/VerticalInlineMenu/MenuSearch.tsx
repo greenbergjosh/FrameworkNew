@@ -136,7 +136,7 @@ function getFilteredNavigationNodes(
   path: string
 ): NavigationNode[] {
   return mutableNavigationNodes.filter((node) => {
-    const currentPath = `${path}/${node.uri}`
+    const currentPath = `${path}/${node.link}`
 
     // Traverse branches
     if (!isEmpty(node.navigation)) {
@@ -179,7 +179,7 @@ function indexNavigationTree(
 ): void {
   navigationTree &&
     navigationTree.forEach((node) => {
-      const nextPath = `${path}/${node.uri}`
+      const nextPath = `${path}/${node.link}`
       addNodeToIndex(nextPath, node)
       if (!isEmpty(node.navigation)) {
         indexNavigationTree(node.navigation, addNodeToIndex, nextPath, node)

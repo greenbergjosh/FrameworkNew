@@ -1,13 +1,11 @@
-import { AppConfig, AppEntity, AppPageConfig, AppsStoreModel } from "./types"
+import { AppConfig, AppEntity, AppPageConfig, AppPageModel, AppsStoreModel } from "./types"
 import * as record from "fp-ts/lib/Record"
-import {
-  getAppEntityByIdOrUri,
-  getAppEntityFromPersistedConfig,
-  getNotFoundPage,
-  hydrateAppNavigationNodes,
-} from "./utils"
+import { getNotFoundPage } from "./utils/getNotFoundPage"
 import { DEFAULT_APP_CONFIG, DEFAULT_APP_PAGE_CONFIG } from "./constants"
 import { isEmpty } from "lodash/fp"
+import { hydrateNavigationNodes } from "./utils/hydrateNavigationNodes"
+import { getAppEntityFromPersistedConfig } from "./utils/getAppEntityFromPersistedConfig"
+import { getAppEntityByIdOrUri } from "./utils/getAppEntityByIdOrUri"
 
 const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps) => ({
   /**
@@ -47,8 +45,16 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
       (appConfigs, appPagePersistedConfigs, appPaths) => {
         const appConfig = getAppEntityByIdOrUri<AppConfig>(appConfigs, DEFAULT_APP_CONFIG, appPaths.appUri)
         if (appConfig && !isEmpty(appConfig) && !isEmpty(appPagePersistedConfigs)) {
-          appConfig.views = hydrateAppNavigationNodes(appConfig.views, appPagePersistedConfigs)
-          appConfig.navigation = hydrateAppNavigationNodes(appConfig.navigation, appPagePersistedConfigs)
+          appConfig.views = hydrateNavigationNodes({
+            navigationNodes: appConfig.views,
+            appPagePersistedConfigs,
+            appPaths,
+          })
+          appConfig.navigation = hydrateNavigationNodes({
+            navigationNodes: appConfig.navigation,
+            appPagePersistedConfigs,
+            appPaths,
+          })
         }
         return appConfig
       }
@@ -90,6 +96,21 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
           }
         }
         return appPageConfig
+      }
+    )
+  },
+
+  /**
+   * A model exposed on props.userInterfaceData.
+   * @param select
+   */
+  appPageModel(select) {
+    return createSelector(
+      select.apps.appPageConfig,
+      (appPageConfig): AppPageModel => {
+        return {
+          $app: { location: { parameters: appPageConfig.parameters } },
+        }
       }
     )
   },

@@ -11,7 +11,6 @@ import { ListGlobalConfig } from "../../themes/ant-default/views/global-config/r
 import { CreateGlobalConfig } from "../../themes/ant-default/views/global-config/routes/create"
 import { EditGlobalConfig } from "../../themes/ant-default/views/global-config/routes/edit"
 import { ShowGlobalConfig } from "../../themes/ant-default/views/global-config/routes/show"
-import { ThemeLoader } from "../../themes/ThemeLoader"
 
 export const routes = {
   login: {
@@ -202,29 +201,5 @@ export const routes = {
         },
       },
     },
-  },
-
-  rootPath: {
-    abs: `/app`,
-    component: ThemeLoader,
-    description: "",
-    title: "App",
-    iconType: "appstore",
-    path: `/app`,
-    redirectFrom: [],
-    requiresAuthentication: true as const,
-    subroutes: {},
-  },
-
-  appHome: {
-    abs: `/app`,
-    component: ThemeLoader,
-    description: "",
-    title: "App",
-    iconType: "appstore",
-    path: `/app/:appUri/*pagePath`,
-    redirectFrom: [],
-    requiresAuthentication: true as const,
-    subroutes: {},
   },
 }

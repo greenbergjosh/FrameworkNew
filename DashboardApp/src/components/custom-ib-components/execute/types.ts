@@ -288,5 +288,6 @@ export type ParsedConfig = {
   id: PersistedConfig["id"]
   name: PersistedConfig["name"]
   type: PersistedConfig["type"]
+  type_id: PersistedConfig["type_id"]
   config: JSONRecord | null
 }

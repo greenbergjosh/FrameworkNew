@@ -1,10 +1,13 @@
-import { WithRouteProps } from "../state/navigation"
-import { Profile } from "../state/iam/iam"
 import { AppConfig } from "../state/apps"
 import { UserInterfaceProps } from "@opg/interface-builder"
+import { RouteComponentProps } from "@reach/router"
+
+export interface ThemeLoaderProps {
+  path: string
+}
 
 export interface ThemeProps {
-  profile: Profile
+  appUri?: string
   pagePath?: string // May be human readable snake-case URI, or GUID
   appConfig: AppConfig
   appRootPath: string
@@ -14,6 +17,7 @@ export interface ThemeProps {
 
 export interface ContentPanelProps {
   appConfig: AppConfig
+  appUri?: string
   pagePath?: string // May be human readable snake-case URI, or GUID
   data: UserInterfaceProps["data"]
   onChangeData: UserInterfaceProps["onChangeData"]
@@ -22,7 +26,7 @@ export interface ContentPanelProps {
 }
 
 export interface ITheme {
-  Shell: (props: WithRouteProps<ThemeProps>) => JSX.Element
+  Shell: (props: RouteComponentProps<ThemeProps>) => JSX.Element | null
 }
 
 export interface LoginProps {
