@@ -8,6 +8,7 @@ import {
   htmlComponents,
   monacoComponents,
   nivoComponents,
+  reachRouterComponents,
   registry,
   syncfusionComponents,
 } from "@opg/interface-builder"
@@ -27,6 +28,7 @@ registry.register(ckeditorComponents)
 registry.register(htmlComponents)
 registry.register(monacoComponents)
 registry.register(nivoComponents)
+registry.register(reachRouterComponents)
 registry.register(syncfusionComponents)
 
 /* IB Overrides */
