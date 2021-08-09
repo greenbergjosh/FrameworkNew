@@ -10,9 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Utility\Utility.csproj" />
-    <ProjectReference Include="..\VisitorIdLib\VisitorIdLib.csproj">
-      <Private>true</Private>
-    </ProjectReference>
   </ItemGroup>
 
 </Project>

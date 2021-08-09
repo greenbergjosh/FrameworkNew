@@ -86,15 +86,13 @@ namespace Utility
 
         public static async Task<IGenericEntity> JsonToGenericEntityAsync(TextReader textReader, RoslynWrapper rw = null, object config = null)
         {
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                var gpstate = await JObject.LoadAsync(jsonReader);
-                // process JSON
-                //var gpstate = JsonConvert.DeserializeObject(json);
-                var gp = new GenericEntityJson();
-                gp.InitializeEntity(rw, config, gpstate);
-                return gp;
-            }
+            using var jsonReader = new JsonTextReader(textReader);
+            var gpstate = await JObject.LoadAsync(jsonReader);
+            // process JSON
+            //var gpstate = JsonConvert.DeserializeObject(json);
+            var gp = new GenericEntityJson();
+            gp.InitializeEntity(rw, config, gpstate);
+            return gp;
         }
 
         public static (string path, string propName) GetPropertyPathParts(string fullPath)
@@ -110,10 +108,11 @@ namespace Utility
         {
             if (o == null)
             {
-                return "{ }";
+                return "{}";
             }
+
             var t = o.GetType();
-            StringBuilder sb = new StringBuilder("{");
+            StringBuilder sb = new("{");
             int i = 0;
             foreach (PropertyInfo pi in t.GetProperties())
             {
@@ -126,10 +125,10 @@ namespace Utility
                     sb.Append("\"" + pi.Name + "\": \"" + val.ToString() + "\",");
                 else
                     sb.Append("\"" + pi.Name + "\": " + val.ToString() + ",");
-                i = i + 1;
+                i++;
             }
             sb.Remove(sb.Length - 1, 1);
-            sb.Append("}");
+            sb.Append('}');
             return sb.ToString();
         }
 
@@ -145,11 +144,11 @@ namespace Utility
         {
             if (o == null || o.Count == 0) return "[]";
 
-            StringBuilder sb = new StringBuilder("[");
+            StringBuilder sb = new("[");
             foreach (var le in o)
             {
                 var t = le.GetType();
-                sb.Append("{");
+                sb.Append('{');
                 for (int i = 0; i < names.Count; i++)
                 {
                     string pv = t.GetProperty("Item" + (i + 1).ToString()).GetValue(le).ToString();
@@ -162,24 +161,24 @@ namespace Utility
                 sb.Append("},");
             }
             sb.Remove(sb.Length - 1, 1);
-            sb.Append("]");
+            sb.Append(']');
 
             return sb.ToString();
         }
 
         public static string Json(string keyName, string valName, IDictionary<string, string> d)
         {
-            StringBuilder sb = new StringBuilder("");
+            StringBuilder sb = new("");
             if (d.Count > 0)
             {
-                sb.Append("[");
+                sb.Append('[');
                 foreach (var e in d)
                 {
                     sb.Append("{\"" + keyName + "\": \"" + e.Key + "\",");
                     sb.Append("\"" + valName + "\": \"" + e.Value + "\"},");
                 }
                 sb.Remove(sb.Length - 1, 1);
-                sb.Append("]");
+                sb.Append(']');
             }
             else
             {
@@ -202,7 +201,7 @@ namespace Utility
                 }
                 sb.Remove(sb.Length - 1, 1);
             }
-            sb = String.IsNullOrEmpty(name) ? sb.Append(wrap ? "}" : "") : sb.Append("}" + (wrap ? "}" : ""));
+            sb = String.IsNullOrEmpty(name) ? sb.Append(wrap ? '}' : "") : sb.Append("}" + (wrap ? '}' : ""));
 
             return sb.ToString();
         }
@@ -210,16 +209,16 @@ namespace Utility
         public static string Json(string keyName, List<string> data, bool wrap = true, bool quote = true)
         {
             if (data == null || data.Count == 0)
-                return (wrap ? "{" : "") + "\"" + keyName + "\": " + "[]" + (wrap ? "}" : "");
+                return (wrap ? '{' : "") + "\"" + keyName + "\": " + "[]" + (wrap ? '}' : "");
 
-            StringBuilder sb = new StringBuilder((wrap ? "{" : "") + "\"" + keyName + "\": ");
-            sb.Append("[");
+            StringBuilder sb = new((wrap ? '{' : "") + "\"" + keyName + "\": ");
+            sb.Append('[');
             foreach (var e in data)
             {
                 sb = quote ? sb.Append("\"" + data + "\",") : sb.Append(data + ",");
             }
             sb.Remove(sb.Length - 1, 1);
-            sb.Append("]" + (wrap ? "}" : ""));
+            sb.Append("]" + (wrap ? '}' : ""));
             return sb.ToString();
         }
 
@@ -227,13 +226,13 @@ namespace Utility
         {
             if (data == null || data.Count == 0) return "[]";
 
-            StringBuilder sb = new StringBuilder("[");
+            StringBuilder sb = new("[");
             foreach (var e in data)
             {
                 sb = quote ? sb.Append("\"" + e + "\",") : sb.Append(e + ",");
             }
             sb.Remove(sb.Length - 1, 1);
-            sb.Append("]");
+            sb.Append(']');
             return sb.ToString();
         }
 
@@ -243,28 +242,27 @@ namespace Utility
 
             using (var reader = new StringReader(csv))
             {
-                using (var csvReader = new CsvHelper.CsvReader(reader, CultureInfo.CurrentCulture))
+                using var csvReader = new CsvHelper.CsvReader(reader, CultureInfo.CurrentCulture);
+                while (csvReader.Read())
                 {
-                    while (csvReader.Read())
+                    if (excludeHeader)
                     {
-                        if (excludeHeader)
-                        {
-                            excludeHeader = false;
-                            continue;
-                        }
-
-                        var jObject = new JObject();
-
-                        for (var i = 0; i < names.Count; i++)
-                        {
-                            if (csvReader.TryGetField(i, out string value))
-                                jObject.Add(names[i], value);
-                        }
-
-                        jArray.Add(jObject);
+                        excludeHeader = false;
+                        continue;
                     }
+
+                    var jObject = new JObject();
+
+                    for (var i = 0; i < names.Count; i++)
+                    {
+                        if (csvReader.TryGetField(i, out string value))
+                            jObject.Add(names[i], value);
+                    }
+
+                    jArray.Add(jObject);
                 }
             }
+
             return Serialize(jArray);
         }
     }

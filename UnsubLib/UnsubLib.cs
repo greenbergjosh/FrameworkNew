@@ -27,34 +27,34 @@ namespace UnsubLib
     public class UnsubLib
     {
         // Set to true for debugging - always false in production
-        public bool CallLocalLoadUnsubFiles;
+        public readonly bool CallLocalLoadUnsubFiles;
 
         public bool UseLocalNetworkFile;
-        public string LocalNetworkFilePath;
-        public string ServerWorkingDirectory;
-        public string ClientWorkingDirectory;
-        public string SearchDirectory;
-        public string FileCacheDirectory;
-        public string FileImportDBDirectory;
-        public string FileImportStagingDirectory;
-        public string FileCacheFtpServer;
-        public string FileCacheFtpUser;
-        public string FileCacheFtpPassword;
-        public string ManualFilePath;
-        public long WorkingFileCacheSize;
-        public long SearchFileCacheSize;
-        public string UnsubServerUri;
-        public string UnsubJobServerUri;
-        public int MaxConnections;
+        public readonly string LocalNetworkFilePath;
+        public readonly string ServerWorkingDirectory;
+        public readonly string ClientWorkingDirectory;
+        public readonly string SearchDirectory;
+        public readonly string FileCacheDirectory;
+        public readonly string FileImportDBDirectory;
+        public readonly string FileImportStagingDirectory;
+        public readonly string FileCacheFtpServer;
+        public readonly string FileCacheFtpUser;
+        public readonly string FileCacheFtpPassword;
+        public readonly string ManualFilePath;
+        public readonly long WorkingFileCacheSize;
+        public readonly long SearchFileCacheSize;
+        public readonly string UnsubServerUri;
+        public readonly string UnsubJobServerUri;
+        public readonly int MaxConnections;
         public int MaxParallelism;
-        public string SeleniumChromeDriverPath;
-        public string FileCacheFtpServerPath;
-        public string SortBufferSize;
-        public int FileCopyTimeout;
+        public readonly string SeleniumChromeDriverPath;
+        public readonly string FileCacheFtpServerPath;
+        public readonly string SortBufferSize;
+        public readonly int FileCopyTimeout;
 
         private readonly FrameworkWrapper _fw;
 
-        public RoslynWrapper RosWrap;
+        public readonly RoslynWrapper RosWrap;
 
         public const string MD5HANDLER = "Md5Handler";
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
@@ -741,7 +741,7 @@ namespace UnsubLib
 
             try
             {
-                task = campaigns.ForEachAsync(parallelism, cancelToken.Token, async campaign =>
+                task = campaigns.ForEachAsync(parallelism, async campaign =>
                 {
                     var campaignId = campaign.GetS("NetworkCampaignId");
                     var fileDownloadUri = campaign.GetS("UnsubFileDownloadUri");
@@ -776,7 +776,7 @@ namespace UnsubLib
                             return list;
                         });
                     }
-                });
+                }, cancelToken.Token);
 
                 await task;
             }
@@ -817,7 +817,7 @@ namespace UnsubLib
                 {
                     await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Iteration({networkName}):: for url {uri.Key} for {logCtx}");
 
-                    IDictionary<string, IEnumerable<object>> cfl = new Dictionary<string, IEnumerable<object>>();
+                    IDictionary<string, IEnumerable<Guid>> cfl;
                     if (!isManual)
                     {
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
@@ -826,19 +826,19 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
                     }
-                    else if (isManual)
+                    else
                     {
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling UnzipUnbuffered({networkName}):: for url {uri.Key}");
 
                         var fis = new FileInfo(uri.Key.url);
                         cfl = await ProtocolClient.UnzipUnbuffered(fis.Name,
                                 ZipTester,
-                                new Dictionary<string, Func<FileInfo, Task<object>>>()
+                                new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                                 {
-                                    { MD5HANDLER, f => Md5ZipHandler(f, logCtx) },
-                                    { PLAINTEXTHANDLER, f => PlainTextHandler(f, logCtx) },
-                                    { DOMAINHANDLER, f => DomainZipHandler(f, logCtx) },
-                                    { SHA512HANDLER, f => Sha512ZipHandler(f, logCtx) },
+                                    { MD5HANDLER, f => Md5ZipHandler(f) },
+                                    { PLAINTEXTHANDLER, f => PlainTextHandler(f) },
+                                    { DOMAINHANDLER, f => DomainZipHandler(f) },
+                                    { SHA512HANDLER, f => Sha512ZipHandler(f) },
                                     { UNKNOWNHANDLER, f => UnknownTypeHandler(f, logCtx) }
                                 },
                                 fis.DirectoryName,
@@ -849,12 +849,12 @@ namespace UnsubLib
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UnzipUnbuffered({networkName}):: for url {uri.Key}");
                     }
 
-                    var cf = new Dictionary<string, object>();
+                    var cf = new Dictionary<string, Guid>();
                     foreach (var item in cfl)
                     {
                         if (item.Value.Count() == 1)
                         {
-                            cf[item.Key] = item.Value;
+                            cf[item.Key] = item.Value.First();
                         }
                         else
                         {
@@ -1237,18 +1237,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+            }
 #if DEBUG
             }
 #endif
@@ -1831,86 +1831,6 @@ namespace UnsubLib
             }
         }
 
-        public async Task<string> IsUnsub(IGenericEntity dtve)
-        {
-            var campaignId = dtve.GetS("CampaignId");
-            var digest = dtve.GetS("EmailMd5");
-            var email = dtve.GetS("Email");
-            var globalSuppGroup = FlexStringArray(dtve, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-            if (globalSuppGroup.Count == 0)
-            {
-                globalSuppGroup = FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-            }
-
-            try
-            {
-                (var foundCampaign, var fileId, var type, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
-                if (foundCampaign == false)
-                {
-                    return Jw.Serialize(new { Error = $"Invalid campaignId {campaignId}." });
-                }
-                else if (string.IsNullOrWhiteSpace(fileId))
-                {
-                    return Jw.Serialize(new { Error = $"No file for campaign {campaignId}." });
-                }
-
-                unsubRefreshPeriod ??= _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10;
-                if ((DateTime.Now - mostRecentFileDate).TotalDays > unsubRefreshPeriod)
-                {
-                    await _fw.Error(nameof(IsUnsub), $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old.");
-                    return Jw.Serialize(new { Error = $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old." });
-                }
-
-                var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
-
-                if (!email.IsNullOrWhitespace())
-                {
-                    digest = Hashing.CalculateMD5Hash(email.ToLower());
-                }
-                else if (digest?.Contains("@") == true)
-                {
-                    email = digest;
-                    digest = type.IsNullOrWhitespace() || type == "md5" ? Hashing.CalculateMD5Hash(digest.ToLower()) : Hashing.CalculateSHA512Hash(digest.ToLower());
-                }
-
-                if (fileName.IsNullOrWhitespace())
-                {
-                    await _fw.Error(nameof(IsUnsub), $"Unsub file missing for campaign id {campaignId}");
-                    return Jw.Json(new { Result = false, Error = "Missing unsub file" });
-                }
-
-                await _fw.Trace(nameof(IsUnsub), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
-                var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName), (type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digest);
-
-                if (!isUnsub)
-                {
-                    var input = new Dictionary<string, object>
-                    {
-                        {"SignalGroups", globalSuppGroup.Select(sg => sg.ToString() == "Tier1" ? "Tier1 Suppression": sg) }
-                    };
-                    if (!string.IsNullOrWhiteSpace(email))
-                    {
-                        input["Emails"] = new[] { email };
-                    }
-                    if (type == "md5" && !string.IsNullOrWhiteSpace(digest))
-                    {
-                        input["EmailMd5s"] = new[] { digest };
-                    }
-
-                    var res = await Data.CallFn("Signal", "inSignalGroupsNew", Jw.Serialize(input));
-
-                    isUnsub = res?.GetL("in").Any() ?? true;
-                }
-
-                return Jw.Json(new { Result = isUnsub });
-            }
-            catch (Exception ex)
-            {
-                await _fw.Error(nameof(IsUnsub), $"Search failed: {campaignId}::{digest}::{ex}");
-                throw;
-            }
-        }
-
         private static JArray FlexStringArray(IGenericEntity ge, string path)
         {
             var tok = Jw.TryParse(ge.GetS(path) ?? "[]");
@@ -1924,421 +1844,48 @@ namespace UnsubLib
 
         public async Task<string> IsUnsubList(IGenericEntity dtve)
         {
+            var request = new
+            {
+                batch = new[]
+                {
+                    dtve
+                }
+            };
+
+            var result = GenericEntityJson.Parse(await IsUnsubBatch(GenericEntityJson.CreateFromObject(request)));
+
             var campaignId = dtve.GetS("CampaignId");
-            var globalSuppGroup = FlexStringArray(dtve, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-            if (globalSuppGroup.Count == 0)
-            {
-                globalSuppGroup = FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-            }
 
-            List<string> emailsNotFound = null;
-
-            try
-            {
-                (var foundCampaign, var fileId, var fileType, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
-                if (foundCampaign == false)
-                {
-                    return Jw.Serialize(new { Error = $"Invalid campaignId {campaignId}." });
-                }
-                else if (string.IsNullOrWhiteSpace(fileId))
-                {
-                    return Jw.Serialize(new { Error = $"No file for campaign {campaignId}." });
-                }
-
-                unsubRefreshPeriod ??= _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10;
-                if ((DateTime.Now - mostRecentFileDate).TotalDays > unsubRefreshPeriod)
-                {
-                    await _fw.Error(nameof(IsUnsubList), $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old.");
-                    return Jw.Serialize(new { Error = $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old." });
-                }
-
-                await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileId} in database with digest type '{fileType ?? string.Empty}' returned from campaign record (md5 if empty)");
-
-                try
-                {
-                    var emails = dtve.GetL("EmailMd5").Select(e => e.GetS("")).ToList();
-
-                    if (emails.Count == 1)
-                    {
-                        var result = await Data.CallFn(Conn, "IsSuppressed", Jw.Serialize(new
-                        {
-                            email = emails[0],
-                            fileId,
-                            fileType
-                        }));
-
-                        if (result.GetS("Result") == "OK")
-                        {
-                            emailsNotFound = new List<string>();
-                            if (result.GetB("NotUnsub"))
-                            {
-                                emailsNotFound.Add(emails[0]);
-                            }
-                        }
-                        else
-                        {
-                            await _fw.Error(nameof(IsUnsubList), $"Database search failed: {campaignId}::{result.GetS("")}");
-                        }
-                    }
-                    else
-                    {
-                        var result = await Data.CallFn(Conn, "AreSuppressed", Jw.Serialize(new
-                        {
-                            emails,
-                            fileId,
-                            fileType
-                        }));
-
-                        if (result.GetS("Result") == "OK")
-                        {
-                            emailsNotFound = result.GetL("NotUnsub").Select(e => e.GetS("")).ToList();
-                        }
-                        else
-                        {
-                            await _fw.Error(nameof(IsUnsubList), $"Database search failed: {campaignId}::{result.GetS("")}");
-                        }
-                    }
-                }
-                catch (Exception dbException)
-                {
-                    await _fw.Error(nameof(IsUnsubList), $"Database search failed: {campaignId}::{dbException.UnwrapForLog()}");
-                }
-
-                if (emailsNotFound == null)
-                {
-                    var digests = new List<string>();
-                    var requestDigests = new List<string>();
-                    var requestemails = new Dictionary<string, string>();
-                    (List<string> found, List<string> notFound) binarySearchResults;
-
-                    var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
-
-                    foreach (var y in dtve.GetL("EmailMd5"))
-                    {
-                        var digest = y.GetS("");
-
-                        if (digest.Contains("@"))
-                        {
-                            var email = digest;
-
-                            digest = fileType == "sha512" ? ("0x" + Hashing.CalculateSHA512Hash(email.ToLower())) : Hashing.CalculateMD5Hash(email.ToLower());
-
-                            if (!requestemails.ContainsKey(digest))
-                            {
-                                digests.Add(digest);
-                                requestemails.Add(digest, email);
-                            }
-                        }
-                        else
-                        {
-                            requestDigests.Add(digest);
-                            digests.Add(digest);
-                        }
-                    }
-
-                    if (fileName.IsNullOrWhitespace())
-                    {
-                        await _fw.Error(nameof(IsUnsubList), $"Unsub file missing for campaign id {campaignId}");
-
-                        return JsonConvert.SerializeObject(new { NotUnsub = Array.Empty<string>(), Error = "Missing unsub file" });
-                    }
-
-                    await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{fileType ?? string.Empty}' returned from campaign record (md5 if empty)");
-                    // SHA512 unsub files currently have a "0x" prefix.  Better handling needed if that's optional in the future
-                    binarySearchResults = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName), (fileType.IsNullOrWhitespace() || fileType == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digests);
-
-                    emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToList();
-                    emailsNotFound.AddRange(requestDigests.Where(m => binarySearchResults.notFound.Contains(m.ToLower())).Select(m => m).ToList());
-                }
-            }
-            catch (Exception ex)
-            {
-                await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex.UnwrapForLog()}");
-                throw;
-            }
-
-            if (emailsNotFound.Any())
-            {
-                try
-                {
-                    var args = Jw.Serialize(new { SignalGroups = globalSuppGroup.Select(sg => sg.ToString() == "Tier1" ? "Tier1 Suppression" : sg), Emails = emailsNotFound.Where(e => e.Contains("@")).ToArray(), EmailMd5s = emailsNotFound.Where(e => !e.Contains("@")).ToArray() });
-
-                    await _fw.Trace(nameof(IsUnsubList), $"Checking global suppression\n{args}");
-
-                    var res = await Data.CallFn("Signal", "inSignalGroupsNew", args);
-
-                    emailsNotFound = emailsNotFound.Except(res?.GetL("emails_in").Select(g => g.GetS(""))).ToList();
-                }
-                catch (Exception e)
-                {
-                    await _fw.Error(nameof(IsUnsubList), $"Global suppression check failed: {campaignId}::{e.UnwrapForLog()}");
-                    throw;
-                }
-            }
-
-            return Jw.Serialize(new { NotUnsub = emailsNotFound });
+            var campaignResult = result.GetDe("").First(r => r.key == campaignId);
+            return campaignResult.entity.GetS("");
         }
 
         public record BatchResult(IEnumerable<string> NotUnsub = null, string Error = null, string Exception = null);
 
         public async Task<string> IsUnsubBatch(IGenericEntity batchRequest)
         {
-            // Gather "good" emails from each campaign, then run Signal Group suppression against them by batching by the array of Groups to check
-            var batch = batchRequest.GetL("batch");
-            var requests = new ConcurrentDictionary<string, IGenericEntity>();
-            var unsubResults = new ConcurrentDictionary<string, BatchResult>();
-
-            await Task.WhenAll(Partitioner.Create(batch).GetPartitions(10).Select(partition => Task.Run(async () =>
-            {
-                while (partition.MoveNext())
-                {
-                    var item = partition.Current;
-                    var campaignId = item.GetS("CampaignId");
-                    requests.TryAdd(campaignId, item);
-
-                    (var foundCampaign, var fileId, var fileType, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
-                    if (foundCampaign == false)
-                    {
-                        unsubResults.TryAdd(campaignId, new BatchResult { Error = $"Invalid campaignId {campaignId}." });
-                        continue;
-                    }
-                    else if (string.IsNullOrWhiteSpace(fileId))
-                    {
-                        unsubResults.TryAdd(campaignId, new BatchResult { Error = $"No file for campaign {campaignId}." });
-                        continue;
-                    }
-
-                    unsubRefreshPeriod ??= _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10;
-                    if ((DateTime.Now - mostRecentFileDate).TotalDays > unsubRefreshPeriod)
-                    {
-                        await _fw.Error(nameof(IsUnsubBatch), $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old.");
-                        unsubResults.TryAdd(campaignId, new BatchResult { Error = $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old." });
-                        continue;
-                    }
-
-                    await _fw.Trace(nameof(IsUnsubBatch), $"Preparing to search {fileId} in database with digest type '{fileType ?? string.Empty}' returned from campaign record (md5 if empty)");
-
-                    List<string> emailsNotFound = null;
-
-                    try
-                    {
-                        var emails = item.GetL("EmailMd5").Select(e => e.GetS("")).ToList();
-
-                        if (emails.Count == 1)
-                        {
-                            var result = await Data.CallFn(Conn, "IsSuppressed", Jw.Serialize(new
-                            {
-                                email = emails[0],
-                                fileId,
-                                fileType
-                            }));
-
-                            if (result.GetS("Result") == "OK")
-                            {
-                                emailsNotFound = new List<string>();
-                                if (result.GetB("NotUnsub"))
-                                {
-                                    emailsNotFound.Add(emails[0]);
-                                }
-                            }
-                            else
-                            {
-                                await _fw.Error(nameof(IsUnsubBatch), $"Database search failed: {campaignId}::{result.GetS("")}");
-                            }
-                        }
-                        else
-                        {
-                            var result = await Data.CallFn(Conn, "AreSuppressed", Jw.Serialize(new
-                            {
-                                emails,
-                                fileId,
-                                fileType
-                            }));
-
-                            if (result.GetS("Result") == "OK")
-                            {
-                                emailsNotFound = result.GetL("NotUnsub").Select(e => e.GetS("")).ToList();
-                            }
-                            else
-                            {
-                                await _fw.Error(nameof(IsUnsubBatch), $"Database search failed: {campaignId}::{result.GetS("")}");
-                            }
-                        }
-                    }
-                    catch (Exception dbException)
-                    {
-                        await _fw.Error(nameof(IsUnsubBatch), $"Database search failed: {campaignId}::{dbException.UnwrapForLog()}");
-                    }
-
-                    try
-                    {
-                        if (emailsNotFound == null)
-                        {
-                            var digests = new List<string>();
-                            var requestDigests = new List<string>();
-                            var requestemails = new Dictionary<string, string>();
-                            (List<string> found, List<string> notFound) binarySearchResults;
-
-                            var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
-
-                            foreach (var y in item.GetL("EmailMd5"))
-                            {
-                                var digest = y.GetS("");
-
-                                if (digest.Contains("@"))
-                                {
-                                    var email = digest;
-
-                                    digest = fileType == "sha512" ? ("0x" + Hashing.CalculateSHA512Hash(email.ToLower())) : Hashing.CalculateMD5Hash(email.ToLower());
-
-                                    if (!requestemails.ContainsKey(digest))
-                                    {
-                                        digests.Add(digest);
-                                        requestemails.Add(digest, email);
-                                    }
-                                }
-                                else
-                                {
-                                    requestDigests.Add(digest);
-                                    digests.Add(digest);
-                                }
-                            }
-
-                            if (fileName.IsNullOrWhitespace())
-                            {
-                                await _fw.Error(nameof(IsUnsubBatch), $"Unsub file missing for campaign id {campaignId}");
-
-                                unsubResults.TryAdd(campaignId, new BatchResult { NotUnsub = Enumerable.Empty<string>(), Error = "Missing unsub file" });
-                                continue;
-                            }
-
-                            await _fw.Trace(nameof(IsUnsubBatch), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{fileType ?? string.Empty}' returned from campaign record (md5 if empty)");
-                            // SHA512 unsub files currently have a "0x" prefix.  Better handling needed if that's optional in the future
-                            binarySearchResults = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName), (fileType.IsNullOrWhitespace() || fileType == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digests);
-
-                            emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToList();
-                            emailsNotFound.AddRange(requestDigests.Where(m => binarySearchResults.notFound.Contains(m.ToLower())).Select(m => m).ToList());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        await _fw.Error(nameof(IsUnsubBatch), $"File Search failed: {campaignId}::{ex.UnwrapForLog()}");
-                        unsubResults.TryAdd(campaignId, new BatchResult { Error = "File  Search failed", Exception = ex.Message });
-                        continue;
-                    }
-
-                    unsubResults.TryAdd(campaignId, new BatchResult { NotUnsub = emailsNotFound });
-                }
-            })));
-
-            var signalGroupsToQuery = new Dictionary<string, IEnumerable<string>>();
-
-            bool TryGetSignalGroups(IGenericEntity request, out string groups)
-            {
-                var globalSuppGroup = FlexStringArray(request, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-                if (globalSuppGroup.Count == 0)
-                {
-                    globalSuppGroup = FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-                }
-
-                groups = globalSuppGroup.ToString();
-                return globalSuppGroup.Any();
-            }
-
-            foreach (var result in unsubResults)
-            {
-                if (result.Value.NotUnsub?.Any() == true)
-                {
-                    if (!requests.TryGetValue(result.Key, out var request))
-                    {
-                        await _fw.Error(nameof(IsUnsubBatch), $"Have result for campaignId {result.Key} but no request");
-                        continue;
-                    }
-
-                    if (TryGetSignalGroups(request, out var signalGroups))
-                    {
-                        if (!signalGroupsToQuery.TryGetValue(signalGroups, out var emailsToCheck))
-                        {
-                            signalGroupsToQuery[signalGroups] = result.Value.NotUnsub;
-                        }
-                        else
-                        {
-                            signalGroupsToQuery[signalGroups] = emailsToCheck.Concat(result.Value.NotUnsub);
-                        }
-                    }
-                }
-            }
-
-            var signalGroupsNotUnsub = new ConcurrentDictionary<string, IEnumerable<string>>();
-
-            await Task.WhenAll(Partitioner.Create(signalGroupsToQuery).GetPartitions(10).Select(partition => Task.Run(async () =>
-            {
-                while (partition.MoveNext())
-                {
-                    var item = partition.Current;
-                    try
-                    {
-                        var args = Jw.Serialize(new { SignalGroups = JArray.Parse(item.Key).Select(sg => sg.ToString() == "Tier1" ? "Tier1 Suppression" : sg), Emails = item.Value.Where(e => e.Contains("@")).ToArray(), EmailMd5s = item.Value.Where(e => !e.Contains("@")).ToArray() });
-
-                        await _fw.Trace(nameof(IsUnsubBatch), $"Checking global suppression\n{args}");
-
-                        var res = await Data.CallFn("Signal", "inSignalGroupsNew", args);
-
-                        var emailsNotFound = item.Value.Except(res?.GetL("emails_in").Select(g => g.GetS(""))).ToList();
-                        signalGroupsNotUnsub.TryAdd(item.Key, emailsNotFound);
-                    }
-                    catch (Exception e)
-                    {
-                        await _fw.Error(nameof(IsUnsubBatch), $"Global suppression check failed: {item.Key}::{e.UnwrapForLog()}");
-                        throw;
-                    }
-                }
-            })));
-
-            foreach (var unsubResult in unsubResults.Where(r => r.Value.NotUnsub?.Any() == true).ToList())
-            {
-                if (!requests.TryGetValue(unsubResult.Key, out var request))
-                {
-                    await _fw.Error(nameof(IsUnsubBatch), $"Have result for campaignId {unsubResult.Key} but no request");
-                    continue;
-                }
-
-                if (TryGetSignalGroups(request, out var signalGroups))
-                {
-                    var signalGroupResult = signalGroupsNotUnsub[signalGroups];
-
-                    unsubResults[unsubResult.Key] = unsubResult.Value with { NotUnsub = unsubResult.Value.NotUnsub.Join(signalGroupResult, s => s, s => s, (s1, s2) => s1) };
-                }
-            }
-
-            return Jw.Serialize(unsubResults);
-        }
-
-        public async Task<string> IsUnsubBatch2(IGenericEntity batchRequest)
-        {
             var requests = batchRequest.GetL("batch").ToDictionary(e => e.GetS("CampaignId"));
 
-            var dbResults = await Data.CallFn(Conn, "IsUnsubBatch", batchRequest.GetS(""));
-            var dbResult = dbResults.GetS("result");
-            if (dbResult == "failed")
+            try
             {
-                return dbResults.GetS("");
-            }
-
-            var unsubResults = new ConcurrentDictionary<string, BatchResult>();
-
-            await Task.WhenAll(Partitioner.Create(dbResults.GetDe("")).GetPartitions(10).Select(partition => Task.Run(async () =>
-            {
-                while (partition.MoveNext())
+                var dbResults = await Data.CallFn(Conn, "IsUnsubBatch", batchRequest.GetS(""));
+                var dbResult = dbResults.GetS("result");
+                if (dbResult == "failed")
                 {
-                    var item = partition.Current;
+                    return dbResults.GetS("");
+                }
+
+                var unsubResults = new ConcurrentDictionary<string, BatchResult>();
+
+                await dbResults.GetDe("").ForEachAsync(10, async item =>
+                {
                     var campaignId = item.key;
                     var result = item.entity;
 
                     if (!requests.TryGetValue(campaignId, out var request))
                     {
-                        await _fw.Error(nameof(IsUnsubBatch2), $"Have result for campaignId {campaignId} but no request");
-                        continue;
+                        await _fw.Error(nameof(IsUnsubBatch), $"Have result for campaignId {campaignId} but no request");
+                        return;
                     }
 
                     var error = result.GetS("Error");
@@ -2350,11 +1897,11 @@ namespace UnsubLib
                     }
                     else
                     {
-                        await _fw.Error(nameof(IsUnsubBatch2), error);
+                        await _fw.Error(nameof(IsUnsubBatch), error);
                         if (!error.Contains("No file"))
                         {
                             unsubResults.TryAdd(campaignId, new BatchResult { Error = error });
-                            continue;
+                            return;
                         }
 
                         try
@@ -2362,7 +1909,7 @@ namespace UnsubLib
                             var fileId = result.GetS("FileId");
                             if (string.IsNullOrWhiteSpace(fileId))
                             {
-                                continue;
+                                return;
                             }
 
                             var fileType = result.GetS("FileType");
@@ -2401,7 +1948,7 @@ namespace UnsubLib
                                 await _fw.Error(nameof(IsUnsubBatch), $"Unsub file missing for campaign id {campaignId}");
 
                                 unsubResults.TryAdd(campaignId, new BatchResult { Error = "Missing unsub file" });
-                                continue;
+                                return;
                             }
 
                             await _fw.Trace(nameof(IsUnsubBatch), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{fileType ?? string.Empty}' returned from campaign record (md5 if empty)");
@@ -2416,57 +1963,52 @@ namespace UnsubLib
                         {
                             await _fw.Error(nameof(IsUnsubBatch), $"File Search failed: {campaignId}::{ex.UnwrapForLog()}");
                             unsubResults.TryAdd(campaignId, new BatchResult { Error = "File  Search failed", Exception = ex.Message });
+                        }
+                    }
+                });
+
+                var signalGroupsToQuery = new Dictionary<string, IEnumerable<string>>();
+
+                bool TryGetSignalGroups(IGenericEntity request, out string groups)
+                {
+                    var globalSuppGroup = FlexStringArray(request, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+                    if (globalSuppGroup.Count == 0)
+                    {
+                        globalSuppGroup = FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+                    }
+
+                    groups = globalSuppGroup.ToString();
+                    return globalSuppGroup.Any();
+                }
+
+                foreach (var result in unsubResults)
+                {
+                    if (result.Value.NotUnsub?.Any() == true)
+                    {
+                        if (!requests.TryGetValue(result.Key, out var request))
+                        {
+                            await _fw.Error(nameof(IsUnsubBatch), $"Have result for campaignId {result.Key} but no request");
                             continue;
                         }
-                    }
-                }
-            })));
 
-            var signalGroupsToQuery = new Dictionary<string, IEnumerable<string>>();
-
-            bool TryGetSignalGroups(IGenericEntity request, out string groups)
-            {
-                var globalSuppGroup = FlexStringArray(request, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-                if (globalSuppGroup.Count == 0)
-                {
-                    globalSuppGroup = FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-                }
-
-                groups = globalSuppGroup.ToString();
-                return globalSuppGroup.Any();
-            }
-
-            foreach (var result in unsubResults)
-            {
-                if (result.Value.NotUnsub?.Any() == true)
-                {
-                    if (!requests.TryGetValue(result.Key, out var request))
-                    {
-                        await _fw.Error(nameof(IsUnsubBatch), $"Have result for campaignId {result.Key} but no request");
-                        continue;
-                    }
-
-                    if (TryGetSignalGroups(request, out var signalGroups))
-                    {
-                        if (!signalGroupsToQuery.TryGetValue(signalGroups, out var emailsToCheck))
+                        if (TryGetSignalGroups(request, out var signalGroups))
                         {
-                            signalGroupsToQuery[signalGroups] = result.Value.NotUnsub;
-                        }
-                        else
-                        {
-                            signalGroupsToQuery[signalGroups] = emailsToCheck.Concat(result.Value.NotUnsub);
+                            if (!signalGroupsToQuery.TryGetValue(signalGroups, out var emailsToCheck))
+                            {
+                                signalGroupsToQuery[signalGroups] = result.Value.NotUnsub;
+                            }
+                            else
+                            {
+                                signalGroupsToQuery[signalGroups] = emailsToCheck.Concat(result.Value.NotUnsub);
+                            }
                         }
                     }
                 }
-            }
 
-            var signalGroupsNotUnsub = new ConcurrentDictionary<string, IEnumerable<string>>();
+                var signalGroupsNotUnsub = new ConcurrentDictionary<string, IEnumerable<string>>();
 
-            await Task.WhenAll(Partitioner.Create(signalGroupsToQuery).GetPartitions(10).Select(partition => Task.Run(async () =>
-            {
-                while (partition.MoveNext())
+                await signalGroupsToQuery.ForEachAsync(10, async item =>
                 {
-                    var item = partition.Current;
                     try
                     {
                         var args = Jw.Serialize(new { SignalGroups = JArray.Parse(item.Key).Select(sg => sg.ToString() == "Tier1" ? "Tier1 Suppression" : sg), Emails = item.Value.Where(e => e.Contains("@")).ToArray(), EmailMd5s = item.Value.Where(e => !e.Contains("@")).ToArray() });
@@ -2483,26 +2025,30 @@ namespace UnsubLib
                         await _fw.Error(nameof(IsUnsubBatch), $"Global suppression check failed: {item.Key}::{e.UnwrapForLog()}");
                         throw;
                     }
-                }
-            })));
+                });
 
-            foreach (var unsubResult in unsubResults.Where(r => r.Value.NotUnsub?.Any() == true).ToList())
-            {
-                if (!requests.TryGetValue(unsubResult.Key, out var request))
+                foreach (var unsubResult in unsubResults.Where(r => r.Value.NotUnsub?.Any() == true).ToList())
                 {
-                    await _fw.Error(nameof(IsUnsubBatch), $"Have result for campaignId {unsubResult.Key} but no request");
-                    continue;
-                }
+                    if (!requests.TryGetValue(unsubResult.Key, out var request))
+                    {
+                        await _fw.Error(nameof(IsUnsubBatch), $"Have result for campaignId {unsubResult.Key} but no request");
+                        continue;
+                    }
 
-                if (TryGetSignalGroups(request, out var signalGroups))
-                {
-                    var signalGroupResult = signalGroupsNotUnsub[signalGroups];
+                    if (TryGetSignalGroups(request, out var signalGroups))
+                    {
+                        var signalGroupResult = signalGroupsNotUnsub[signalGroups];
 
-                    unsubResults[unsubResult.Key] = unsubResult.Value with { NotUnsub = unsubResult.Value.NotUnsub.Join(signalGroupResult, s => s, s => s, (s1, s2) => s1) };
+                        unsubResults[unsubResult.Key] = unsubResult.Value with { NotUnsub = unsubResult.Value.NotUnsub.Join(signalGroupResult, s => s, s => s, (s1, s2) => s1) };
+                    }
                 }
+                return Jw.Serialize(unsubResults);
             }
-
-            return Jw.Serialize(unsubResults);
+            catch (Exception ex)
+            {
+                await _fw.Error(nameof(IsUnsubBatch), $"Exception processing: {string.Join(Environment.NewLine, requests.Select(kvp => $"{kvp.Key}: {kvp.Value.GetL("EmailMd5").Count()}"))}{Environment.NewLine}Exception: {ex}");
+                throw;
+            }
         }
 
         public async Task<(string url, IDictionary<string, string> postData)> GetSuppressionFileUri(IGenericEntity network, IGenericEntity campaign, INetworkProvider networkProvider, int maxConnections, string fileDownloadUri)
@@ -2576,9 +2122,9 @@ namespace UnsubLib
             return default;
         }
 
-        public async Task<IDictionary<string, IEnumerable<object>>> DownloadSuppressionFiles(IGenericEntity network, (string url, IDictionary<string, string> postData) unsubUrl, string logContext)
+        public async Task<IDictionary<string, IEnumerable<Guid>>> DownloadSuppressionFiles(IGenericEntity network, (string url, IDictionary<string, string> postData) unsubUrl, string logContext)
         {
-            IDictionary<string, IEnumerable<object>> dr = null;
+            IDictionary<string, IEnumerable<Guid>> dr = null;
             var networkName = network.GetS("Name");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
             var uri = new Uri(unsubUrl.url);
@@ -2589,12 +2135,12 @@ namespace UnsubLib
                 try
                 {
                     dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl.url, authString, ZipTester,
-                      new Dictionary<string, Func<FileInfo, Task<object>>>()
+                      new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                       {
-                        { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
-                        { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
-                        { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
-                        { SHA512HANDLER, f => Sha512ZipHandler(f, logContext) },
+                        { MD5HANDLER, f =>  Md5ZipHandler(f) },
+                        { PLAINTEXTHANDLER, f =>  PlainTextHandler(f) },
+                        { DOMAINHANDLER, f =>  DomainZipHandler(f) },
+                        { SHA512HANDLER, f => Sha512ZipHandler(f) },
                         { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
                       },
                       ClientWorkingDirectory, 30 * 60, parallelism, _fw, unsubUrl.postData);
@@ -2602,7 +2148,7 @@ namespace UnsubLib
                 catch (Exception ex)
                 {
                     await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"Error downloading file: {networkName} {unsubUrl} {logContext} {ex}");
-                    dr = new Dictionary<string, IEnumerable<object>>();
+                    dr = new Dictionary<string, IEnumerable<Guid>>();
                 }
 
                 if (dr?.Any() == false) await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"No file downloaded {networkName} {unsubUrl} {logContext}");
@@ -2610,7 +2156,7 @@ namespace UnsubLib
             catch (Exception ex)
             {
                 await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"Error downloading file (outer catch): {networkName} {unsubUrl} {logContext} {ex}");
-                dr = new Dictionary<string, IEnumerable<object>>();
+                dr = new Dictionary<string, IEnumerable<Guid>>();
             }
 
             return dr;
@@ -2706,38 +2252,38 @@ namespace UnsubLib
             return handler ?? UNKNOWNHANDLER;
         }
 
-        public Task<object> Md5ZipHandler(FileInfo f, string logContext)
+        public Task<Guid> Md5ZipHandler(FileInfo f)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return Task.FromResult<object>(fileName);
+            return Task.FromResult<Guid>(fileName);
         }
 
-        public Task<object> PlainTextHandler(FileInfo f, string logContext)
+        public Task<Guid> PlainTextHandler(FileInfo f)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return Task.FromResult<object>(fileName);
+            return Task.FromResult<Guid>(fileName);
         }
 
-        public Task<object> DomainZipHandler(FileInfo f, string logContext)
+        public Task<Guid> DomainZipHandler(FileInfo f)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return Task.FromResult<object>(fileName);
+            return Task.FromResult<Guid>(fileName);
         }
 
-        public Task<object> Sha512ZipHandler(FileInfo f, string logContext)
+        public Task<Guid> Sha512ZipHandler(FileInfo f)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return Task.FromResult<object>(fileName);
+            return Task.FromResult<Guid>(fileName);
         }
 
-        public async Task<object> UnknownTypeHandler(FileInfo fi, string logContext)
+        public async Task<Guid> UnknownTypeHandler(FileInfo fi, string logContext)
         {
             await _fw.Error(nameof(UnknownTypeHandler), $"Unknown file type: {fi.FullName} {logContext}");
-            return new object();
+            return default;
         }
 
         public async Task LoadQueuedCampaigns()

@@ -9,7 +9,7 @@ namespace Utility.DataLayer
 {
     public class PostgreSqlDataLayerClient : IDataLayerClient
     {
-        private string PrepareConnectionString(string connectionString)
+        private static string PrepareConnectionString(string connectionString)
         {
             var builder = new NpgsqlConnectionStringBuilder(connectionString);
             if (string.IsNullOrWhiteSpace(builder.ApplicationName))
@@ -21,49 +21,45 @@ namespace Utility.DataLayer
 
         public async Task<List<Dictionary<string, object>>> CallStoredFunction(IDictionary<string, object> parameters, string sproc, string connectionString, int timeout = 120)
         {
-	        await using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
+            await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
+            var results = new List<Dictionary<string, object>>();
+
+            cn.Open();
+            var sql = $"SELECT * from {sproc}({parameters.Select(p => $"{p.Key} := '{p.Value}'").Join(",")})";
+
+
+            await using (var cmd = new NpgsqlCommand(sql, cn) { CommandTimeout = timeout })
             {
-                var results = new List<Dictionary<string, object>>();
+                await using var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false);
+                var fields = new string[rdr.FieldCount];
 
-                cn.Open();
-                var sql = $"SELECT * from {sproc}({parameters.Select(p => $"{p.Key} := '{p.Value}'").Join(",")})";
-
-
-                await using (var cmd = new NpgsqlCommand(sql, cn) { CommandTimeout = timeout })
+                for (var i = 0; i < rdr.FieldCount; i++)
                 {
-	                await using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false))
-                    {
-                        var fields = new string[rdr.FieldCount];
-
-                        for (var i = 0; i < rdr.FieldCount; i++)
-                        {
-                            fields[i] = rdr.GetName(i);
-                        }
-
-                        while (await rdr.ReadAsync())
-                        {
-                            var row = new Dictionary<string, object>();
-
-                            foreach (var f in fields)
-                            {
-                                var val = rdr[f];
-
-                                if (val == DBNull.Value)
-                                {
-                                    val = null;
-                                }
-
-                                row.Add(f, val);
-                            }
-
-                            results.Add(row);
-                        }
-                    }
+                    fields[i] = rdr.GetName(i);
                 }
-                await cn.CloseAsync();
 
-                return results;
+                while (await rdr.ReadAsync())
+                {
+                    var row = new Dictionary<string, object>();
+
+                    foreach (var f in fields)
+                    {
+                        var val = rdr[f];
+
+                        if (val == DBNull.Value)
+                        {
+                            val = null;
+                        }
+
+                        row.Add(f, val);
+                    }
+
+                    results.Add(row);
+                }
             }
+            await cn.CloseAsync();
+
+            return results;
         }
 
         // TODO: deal with SQL Nulls (cast doesn't work)
@@ -95,19 +91,15 @@ namespace Utility.DataLayer
 
             try
             {
-	            await using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
-                {
-                    cn.Open();
-                    await using (var cmd = new NpgsqlCommand($"SELECT edw.submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout })
-                    {
-                        cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, payload);
-                        cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
-                        cmd.CommandTimeout = timeout;
-                        await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                        outval = (string)cmd.Parameters["@Return"].Value;
-                        await cn.CloseAsync();
-                    }
-                }
+                await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
+                cn.Open();
+                await using var cmd = new NpgsqlCommand($"SELECT edw.submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout };
+                cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, payload);
+                cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
+                await cn.CloseAsync();
             }
             catch (NpgsqlException sqlex)
             {
@@ -131,24 +123,20 @@ namespace Utility.DataLayer
 
             try
             {
-	            await using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
-                {
-                    cn.Open();
-                    await using (var cmd = new NpgsqlCommand($"SELECT error_log.insert_error_log(@sequence, @severity, @process, @method, @descriptor, @message)", cn) { CommandTimeout = timeout })
-                    {
-                        cmd.Parameters.AddWithValue("@sequence", NpgsqlTypes.NpgsqlDbType.Integer, sequence);
-                        cmd.Parameters.AddWithValue("@severity", NpgsqlTypes.NpgsqlDbType.Integer, severity);
-                        cmd.Parameters.AddWithValue("@process", NpgsqlTypes.NpgsqlDbType.Text, process);
-                        cmd.Parameters.AddWithValue("@method", NpgsqlTypes.NpgsqlDbType.Text, method);
-                        cmd.Parameters.AddWithValue("@descriptor", NpgsqlTypes.NpgsqlDbType.Text, descriptor);
-                        cmd.Parameters.AddWithValue("@message", NpgsqlTypes.NpgsqlDbType.Text, message);
-                        cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
-                        cmd.CommandTimeout = timeout;
-                        await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                        outval = (string)cmd.Parameters["@Return"].Value;
-                        await cn.CloseAsync();
-                    }
-                }
+                await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
+                cn.Open();
+                await using var cmd = new NpgsqlCommand($"SELECT error_log.insert_error_log(@sequence, @severity, @process, @method, @descriptor, @message)", cn) { CommandTimeout = timeout };
+                cmd.Parameters.AddWithValue("@sequence", NpgsqlTypes.NpgsqlDbType.Integer, sequence);
+                cmd.Parameters.AddWithValue("@severity", NpgsqlTypes.NpgsqlDbType.Integer, severity);
+                cmd.Parameters.AddWithValue("@process", NpgsqlTypes.NpgsqlDbType.Text, process);
+                cmd.Parameters.AddWithValue("@method", NpgsqlTypes.NpgsqlDbType.Text, method);
+                cmd.Parameters.AddWithValue("@descriptor", NpgsqlTypes.NpgsqlDbType.Text, descriptor);
+                cmd.Parameters.AddWithValue("@message", NpgsqlTypes.NpgsqlDbType.Text, message);
+                cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
+                await cn.CloseAsync();
             }
             catch (NpgsqlException sqlex)
             {
@@ -171,22 +159,17 @@ namespace Utility.DataLayer
 
             try
             {
-	            await using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
-                {
-                    cn.Open();
-                    await using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout })
-                    {
-                        cmd.Parameters.AddWithValue("@post_type", NpgsqlTypes.NpgsqlDbType.Text, postType);
-                        cmd.Parameters.AddWithValue("@post_date", NpgsqlTypes.NpgsqlDbType.TimestampTz, postDate);
-                        cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
-                        cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
-                        cmd.CommandTimeout = timeout;
-                        await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                        outval = (string)cmd.Parameters["@Return"].Value;
-                        await cn.CloseAsync();
-                    }
-
-                }
+                await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
+                cn.Open();
+                await using var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout };
+                cmd.Parameters.AddWithValue("@post_type", NpgsqlTypes.NpgsqlDbType.Text, postType);
+                cmd.Parameters.AddWithValue("@post_date", NpgsqlTypes.NpgsqlDbType.TimestampTz, postDate);
+                cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
+                cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
+                await cn.CloseAsync();
             }
             catch (NpgsqlException sqlex)
             {
@@ -197,7 +180,7 @@ namespace Utility.DataLayer
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.ToString()}";
+                outval = $"Exception::{ex}";
             }
 
             return outval;
@@ -209,20 +192,15 @@ namespace Utility.DataLayer
 
             try
             {
-	            await using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
-                {
-                    cn.Open();
-                    await using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue_bulk(@payload)", cn) { CommandTimeout = timeout })
-                    {
-                        cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
-                        cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
-                        cmd.CommandTimeout = timeout;
-                        await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                        outval = (string)cmd.Parameters["@Return"].Value;
-                        await cn.CloseAsync();
-                    }
-
-                }
+                await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
+                cn.Open();
+                await using var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue_bulk(@payload)", cn) { CommandTimeout = timeout };
+                cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
+                cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
+                await cn.CloseAsync();
             }
             catch (NpgsqlException sqlex)
             {
@@ -233,7 +211,7 @@ namespace Utility.DataLayer
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.ToString()}";
+                outval = $"Exception::{ex}";
             }
 
             return outval;
