@@ -3,11 +3,11 @@ import { useRematch } from "../hooks"
 import { store } from "../state/store"
 import OpgCorporateTheme from "../themes/opg-corporate"
 import { isEmpty } from "lodash/fp"
-import { WithRouteProps } from "../state/navigation"
-import { ITheme, ThemeProps } from "./types"
+import { ITheme, ThemeLoaderProps } from "./types"
 import { UserInterfaceProps } from "@opg/interface-builder"
+import { Router, RouteComponentProps } from "@reach/router"
 
-export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
+export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.Element {
   /*
    * For now, the user interacts with state, but it is not persisted.
    */
@@ -27,13 +27,15 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
 
   // Keep the app sync'd with the URL
   React.useEffect(() => {
-    const url = `${props.location.host}${props.location.pathname}`
-    if (url !== fromStore.appPaths.currentUrl) {
-      // Remove data from the page we navigated from
-      setData({})
-      dispatch.apps.updateAppPaths()
+    if (props.location) {
+      const url = `${props.location.host}${props.location.pathname}`
+      if (url !== fromStore.appPaths.currentUrl) {
+        // Remove data from the page we navigated from
+        setData({})
+        dispatch.apps.updateAppPaths()
+      }
     }
-  }, [dispatch, fromStore.appPaths.currentUrl, props.location.host, props.location.pathname])
+  }, [dispatch, fromStore.appPaths.currentUrl, props.location])
 
   const SelectedTheme: ITheme = React.useMemo(() => {
     if (!isEmpty(fromStore.appConfig)) {
@@ -50,13 +52,16 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
   }
 
   return (
-    <SelectedTheme.Shell
-      {...props}
-      appConfig={fromStore.appConfig}
-      children={props.children}
-      appRootPath={fromStore.appPaths.appRootPath}
-      data={data}
-      onChangeData={handleChangeData}
-    />
+    <Router>
+      <SelectedTheme.Shell
+        {...props}
+        path={`/:appUri/*`}
+        appConfig={fromStore.appConfig}
+        appRootPath={fromStore.appPaths.appRootPath}
+        pagePath={fromStore.appPaths.pagePathSegments.join("/")}
+        data={data}
+        onChangeData={handleChangeData}
+      />
+    </Router>
   )
 }

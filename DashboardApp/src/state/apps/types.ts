@@ -7,6 +7,9 @@ export interface AppEntity {
   title: string
   shortTitle?: string
   uri: string
+  link: string
+  path?: string
+  parameters: Record<string, string>
   description?: string | null
   icon?: string | null
   disabled: boolean
@@ -15,6 +18,7 @@ export interface AppEntity {
 export interface NavigationNode extends AppEntity {
   navigation: NavigationNode[]
   default?: boolean // For View nodes, indicates this is the default view
+  parent?: NavigationNode
 }
 
 export interface AppConfig extends AppEntity {
@@ -26,6 +30,17 @@ export interface AppConfig extends AppEntity {
 
 export interface AppPageConfig extends AppEntity {
   layout: ComponentDefinition[]
+}
+
+/**
+ * A model exposed to the page's props.userInterfaceData
+ */
+export interface AppPageModel {
+  $app: {
+    location: {
+      parameters: Record<string, string>
+    }
+  }
 }
 
 declare module "../store.types" {
@@ -44,7 +59,7 @@ export type AppPaths = {
   appUri?: string
   pageUri?: string
   appRootPath: string
-  pagePath: string[]
+  pagePathSegments: string[]
   currentUrl: string
 }
 
@@ -65,6 +80,12 @@ export interface Selectors {
   appConfigs(state: Store.AppState): AppConfig[]
   appConfig(state: Store.AppState): AppConfig
   appPageConfig(state: Store.AppState): AppPageConfig
+  appPageModel(state: Store.AppState): AppPageModel
 }
 
 export type AppsStoreModel = Store.AppModel<State, Reducers, Effects, Selectors>
+
+/**
+ * path is a full relative URL path to this resource
+ */
+export type NavigationNodeFlatMap = { path: string; node: NavigationNode }

@@ -7,30 +7,32 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
     updateAppPaths() {
       const { pathname, host, hostname } = window.location
       const currentUrl = `${host}${pathname}`
-      const pathParts = pathname.split("/")
-      pathParts.shift() // remove leading "/" element
-      const useAppPath = pathParts[0] === "app"
+      const pathSegments = pathname.split("/")
+      pathSegments.shift() // remove leading "/" element
+      const useAppPath = pathSegments[0] === "app"
 
       /*
        * USE REACT ROUTER TO GET APP
-       * Example pathname: /app/app-uri/group-uri/page-uri
+       * Example: /app/app-uri/group-uri/page-uri
+       * Example: /app/admin/global-configs/*
+       * Example: /app/admin/global-configs/:configId
+       * Example: /app/admin/global-configs/:configId/edit
        */
       if (useAppPath) {
-        pathParts.shift() // remove "app"
+        pathSegments.shift() // remove "app"
 
         // App
-        const appUri = pathParts[0]
+        const appUri = pathSegments[0]
         const rootUri = "app"
         const appRootPath = !isEmpty(appUri) ? `${rootUri}/${appUri}` : rootUri
-        pathParts.shift() // remove the app name
+        pathSegments.shift() // remove the app name
 
         // Page
-        const lastPart = pathParts[pathParts.length - 1]
-        const pageUri = isEmpty(lastPart) ? undefined : lastPart
-        const pagePath = pathParts.length === 1 && isEmpty(pathParts[0]) ? [] : pathParts
+        const pageUri = isEmpty(pathSegments) ? undefined : pathSegments.join("/")
+        const pagePathSegments = pathSegments.length === 1 && isEmpty(pathSegments[0]) ? [] : pathSegments // remove empty string
 
         // Dispatch results
-        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePath, currentUrl }
+        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePathSegments, currentUrl }
         dispatch.apps.update({ appPaths })
         // console.log("store.apps.effects.updateAppPaths", { appPaths })
       } else {
@@ -38,14 +40,14 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
          * USE SUBDOMAIN TO GET APP
          * Example hostname: app-uri.techopg.com
          */
-        const pageUri = pathParts[pathParts.length - 1]
+        const pageUri = pathSegments[pathSegments.length - 1]
         const rootUri = ""
         const appRootPath = ""
         const regex = /^(?<appname>[^.]+)(?<middle>\.?.*)(?<domain>techopg\.com|localhost)$/
         const matches = regex.exec(hostname)
         const appUri = matches && matches.groups ? matches.groups.appname : ""
-        const pagePath = pathParts
-        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePath, currentUrl }
+        const pagePathSegments = pathSegments
+        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePathSegments, currentUrl }
         dispatch.apps.update({ appPaths })
         // console.log("store.apps.effects.updateAppPaths", { appPaths })
       }

@@ -22,7 +22,7 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
         className={styles.tabRadio}
         type="radio"
         id={`tab-${props.componentId}`}
-        name={`tab-group-${props.data.id}`}
+        name={`tab-group-${props.componentId}`}
         checked={checked}
         onChange={handleChange}
       />

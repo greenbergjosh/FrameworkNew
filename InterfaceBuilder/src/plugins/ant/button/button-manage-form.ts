@@ -44,6 +44,14 @@ const dataTab = {
       },
     },
     {
+      key: "loading",
+      valueKey: "loading",
+      component: "toggle",
+      defaultValue: false,
+      label: "Loading",
+      bindable: true,
+    },
+    {
       key: "useOnClick",
       valueKey: "useOnClick",
       label: "onClick",

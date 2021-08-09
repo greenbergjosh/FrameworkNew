@@ -84,7 +84,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
 
   private handleIconClick = () => {
     const value = this.getValue(this.props.valueKey)
-    value && window.open(`${window.location.origin}/dashboard/global-config/${value}`)
+    value && window.open(`${window.location.origin}/app/admin/global-config/${value}`)
   }
 
   /****************************************************************

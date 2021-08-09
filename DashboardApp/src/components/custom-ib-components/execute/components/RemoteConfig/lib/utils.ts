@@ -99,6 +99,7 @@ export function configToJson(persistedConfig: PersistedConfig): ParsedConfig {
     id: persistedConfig.id,
     name: persistedConfig.name,
     type: persistedConfig.type,
+    type_id: persistedConfig.type_id,
     config: parsedConfig,
   }
 }

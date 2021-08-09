@@ -30,7 +30,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         className={styles.tabRadio}
         type="radio"
         id={`tab-${props.componentId}`}
-        name={`tab-group-${props.data.id}`}
+        name={`tab-group-${props.componentId}`}
         checked={activeTabKey === props.tabKey}
         onChange={handleChange}
       />

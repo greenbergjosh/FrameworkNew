@@ -55,7 +55,7 @@ function sortedGroupedComponents(componentRegistry: ComponentRegistryCache): Dic
     Object.values(componentRegistry)
       .map((componentClass) => componentClass.getLayoutDefinition())
       .sort((a, b) => {
-        return a.category.localeCompare(b.category) || a.title.localeCompare(b.title)
+        return (a.category && a.category.localeCompare(b.category)) || a.title.localeCompare(b.title)
       })
   )
 }

@@ -7,6 +7,7 @@ import { Option } from "fp-ts/lib/Option"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { Profile } from "../iam/iam"
 import { routes } from "./routes"
+import { appRoutes } from "./appRoutes"
 
 export type NavigationGroupAutomaticChildType = iots.TypeOf<typeof NavigationGroupAutomaticChildTypeCodec>
 const NavigationGroupAutomaticChildTypeCodec = iots.type({
@@ -47,7 +48,7 @@ export const NavigationItemCodec = iots.type({
 declare module "../store.types" {
   interface AppModels {
     navigation: {
-      state: State<RoutesMap>
+      state: State<RoutesMap, AppRoutesMap>
       reducers: Reducers
       effects: Effects
       selectors: Selectors
@@ -56,8 +57,9 @@ declare module "../store.types" {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export interface State<RouteMap extends object> {
+export interface State<RouteMap extends object, AppRoutesMap extends object> {
   routes: { [K in keyof RouteMap]: RouteMap[K] }
+  appRoutes: { [K in keyof AppRoutesMap]: AppRoutesMap[K] }
 }
 
 export interface Selectors {
@@ -116,3 +118,4 @@ export type WithRouteProps<P> = P &
   RouteMeta &
   Required<Reach.RouteComponentProps> & { "*"?: string; children: JSX.Element }
 export type RoutesMap = typeof routes
+export type AppRoutesMap = typeof appRoutes

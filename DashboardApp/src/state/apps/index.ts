@@ -9,7 +9,7 @@ export const apps: AppsStoreModel = {
     appPaths: {
       appRootPath: "",
       appUri: "",
-      pagePath: [],
+      pagePathSegments: [],
       pageUri: "",
       rootUri: "",
       currentUrl: "",

@@ -69,6 +69,32 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<LinkInterfaceComponentProps>): void {
+    const { useLinkLabelKey, linkLabelKey, linkLabel } = this.props
+
+    /*
+     * Recalculate Label
+     */
+    const prevUseLinkLabelKey = prevProps.useLinkLabelKey
+    const nextUxeLinkLableKey = this.props.useLinkLabelKey
+    const prevLinkLabelKey = prevProps.linkLabelKey
+    const nextLinkLabelKey = this.props.linkLabelKey
+    const prevLinkLabel = prevProps.linkLabel
+    const nextLinkLabel = this.props.linkLabel
+    if (
+      prevUseLinkLabelKey !== nextUxeLinkLableKey ||
+      prevLinkLabelKey !== nextLinkLabelKey ||
+      prevLinkLabel !== nextLinkLabel
+    ) {
+      if (useLinkLabelKey && !isEmpty(linkLabelKey)) {
+        const label = this.getValue(linkLabelKey) || "Link"
+        this.setState({ linkLabel: label })
+      } else if (!isEmpty(linkLabel)) {
+        this.setState({ linkLabel })
+      } else {
+        this.setState({ linkLabel: "Link" })
+      }
+    }
+
     /*
      * Recalculate URI if:
      * User just turned tokens on or off

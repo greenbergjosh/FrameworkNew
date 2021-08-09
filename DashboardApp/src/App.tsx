@@ -1,16 +1,12 @@
 import * as Reach from "@reach/router"
 import { getPersistor } from "@rematch/persist"
-import { flatten } from "fp-ts/lib/Array"
-import * as record from "fp-ts/lib/Record"
 import React from "react"
 import * as ReactRedux from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
 import styles from "./App.module.scss"
 import "./App.scss"
 import "@opg/interface-builder/dist/main.css"
-import { None, Some } from "./data/Option"
 import { useRematch } from "./hooks"
-import { NotFound } from "./views/not-found"
 import { store } from "./state/store"
 import {
   antComponents,
@@ -18,6 +14,7 @@ import {
   htmlComponents,
   monacoComponents,
   nivoComponents,
+  reachRouterComponents,
   registerMonacoEditorMount,
   registry,
   syncfusionComponents,
@@ -35,8 +32,9 @@ import { TableInterfaceComponent } from "./components/custom-ib-components/table
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
 import { PieInterfaceComponent } from "./components/custom-ib-components/pie/PieInterfaceComponent"
 import { LinkInterfaceComponent } from "./components/custom-ib-components/link/LinkInterfaceComponent"
-import { RouteMeta } from "./state/navigation"
 import { SplashScreen } from "./components/SplashScreen/SplashScreen"
+import { ThemeLoader } from "./themes/ThemeLoader"
+import { LegacyThemeLoader } from "./themes/ant-default/LegacyThemeLoader"
 
 const persistor = getPersistor()
 
@@ -44,6 +42,9 @@ export function App(): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
     profile: appState.iam.profile,
     isCheckingSession: appState.loading.effects.iam.attemptResumeSession,
+    routes: store.select.navigation.routes(appState),
+    appConfig: store.select.apps.appConfig(appState),
+    appPaths: appState.apps.appPaths,
   }))
 
   React.useEffect(() => {
@@ -55,6 +56,7 @@ export function App(): JSX.Element {
     registry.register(htmlComponents)
     registry.register(monacoComponents)
     registry.register(nivoComponents)
+    registry.register(reachRouterComponents)
     registry.register(syncfusionComponents)
     registry.register({ query: QueryInterfaceComponent })
     registry.register({ execute: ExecuteInterfaceComponent })
@@ -79,60 +81,14 @@ export function App(): JSX.Element {
             {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
               <SplashScreen title="Checking Session Authentication..." />
             ) : (
-              <Routes />
+              <Reach.Router>
+                <ThemeLoader path={`/app/*`} />
+                <LegacyThemeLoader path={`/*`} />
+              </Reach.Router>
             )}
           </DragDropContext.HTML5>
         </ReactRedux.Provider>
       </div>
     </PersistGate>
-  )
-}
-
-function Routes() {
-  const [fromStore /* , dispatch */] = useRematch((appState) => ({
-    profile: appState.iam.profile,
-    routes: store.select.navigation.routes(appState),
-  }))
-  return (
-    <Reach.Router>
-      {(function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-        return record.toArray(routes).map(([k, route]) =>
-          route.requiresAuthentication === true ? (
-            fromStore.profile.foldL(
-              None(() => (
-                <Reach.Redirect
-                  key={route.abs}
-                  from={`${route.abs}/*`}
-                  state={{ redirectedFrom: window.location.pathname }}
-                  noThrow
-                  to={fromStore.routes.login.abs}
-                />
-              )),
-              Some((prof) => (
-                <route.component key={route.abs} profile={prof} {...route}>
-                  {renderRoutes(route.subroutes)}
-                </route.component>
-              ))
-            )
-          ) : (
-            <route.component key={route.abs} {...route}>
-              {renderRoutes(route.subroutes)}
-            </route.component>
-          )
-        )
-      })(fromStore.routes)}
-
-      {(function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-        return flatten(
-          record.toArray(routes).map(([k, route]) => {
-            return route.redirectFrom
-              .map((url) => <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />)
-              .concat(renderRedirects(route.subroutes))
-          })
-        )
-      })(fromStore.routes)}
-
-      <NotFound default />
-    </Reach.Router>
   )
 }

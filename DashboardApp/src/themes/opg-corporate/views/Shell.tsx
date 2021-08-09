@@ -5,18 +5,20 @@ import { Icon, Layout, Spin } from "antd"
 import { ContentPanel } from "../../../components/ContentPanel"
 import { Header } from "../components/Header/Header"
 import { Sidebar } from "../components/Sidebar/Sidebar"
-import { WithRouteProps } from "../../../state/navigation"
 import { ThemeProps } from "../../types"
 import { UserInterfaceProps } from "@opg/interface-builder"
+import { RouteComponentProps } from "@reach/router"
 
-export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
+export function Shell(props: RouteComponentProps<ThemeProps>): JSX.Element | null {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
-    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
   }))
 
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
   const [sidebarPinned, setSidebarPinned] = React.useState(true)
+
+  if (!props.appConfig || !props.appRootPath) return null
 
   return (
     <Layout className={styles.layoutContainer} hasSider={true}>
@@ -24,9 +26,9 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
         appConfig={props.appConfig}
         appRootPath={props.appRootPath}
         globalConfigPath={fromStore.globalConfigPath}
-        location={props.location}
+        location={({} as unknown) as any}
         pagePath={props.pagePath}
-        subroutes={props.subroutes}
+        subroutes={{}}
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
         pinned={sidebarPinned}

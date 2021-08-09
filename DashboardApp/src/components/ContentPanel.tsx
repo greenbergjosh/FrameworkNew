@@ -3,18 +3,40 @@ import { useRematch } from "../hooks"
 import { store } from "../state/store"
 import { Helmet } from "react-helmet"
 import { Button, Icon, PageHeader, Tooltip } from "antd"
-import * as Reach from "@reach/router"
+import { Link, Router } from "@reach/router"
 import { AdminUserInterfaceContextManagerProvider } from "../data/AdminUserInterfaceContextManager"
-import { UserInterface } from "@opg/interface-builder"
+import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import BreadcrumbNav from "./BreadcrumbNav"
 import { ContentPanelProps } from "../themes/types"
+import { AppPageConfig, AppPaths } from "../state/apps"
+
+function RouteRenderer(
+  props: {
+    path: string
+    components: ComponentDefinition[]
+    appPageConfig: AppPageConfig
+    appPaths: AppPaths
+  } & ContentPanelProps
+) {
+  return (
+    <AdminUserInterfaceContextManagerProvider>
+      {(userInterfaceContextManager) => (
+        <UserInterface
+          {...props}
+          contextManager={userInterfaceContextManager}
+          keyPrefix={`${props.appPaths.appRootPath}/${props.appPaths.pagePathSegments.join("/")}/`}
+          mode="display"
+        />
+      )}
+    </AdminUserInterfaceContextManagerProvider>
+  )
+}
 
 export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
-    configsById: store.select.globalConfig.configsById(appState),
-    configsByType: store.select.globalConfig.configsByType(appState),
-    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
     appPageConfig: store.select.apps.appPageConfig(appState),
+    appPageModel: store.select.apps.appPageModel(appState),
     appPaths: appState.apps.appPaths,
   }))
 
@@ -39,11 +61,11 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
             {appPageConfig.id ? (
               <Tooltip
                 title={
-                  <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}`}>
+                  <Link to={`${globalConfigPath}/${appPageConfig.id}`}>
                     <Button type="link" icon="edit" size="small">
                       Edit Page
                     </Button>
-                  </Reach.Link>
+                  </Link>
                 }>
                 {appPageConfig.title}
               </Tooltip>
@@ -54,20 +76,19 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
         }
         subTitle={appPageConfig.description}
       />
-      <AdminUserInterfaceContextManagerProvider>
-        {(userInterfaceContextManager) => (
-          <UserInterface
-            components={(appPageConfig && appPageConfig.layout) || []}
-            contextManager={userInterfaceContextManager}
-            data={props.data}
-            getRootUserInterfaceData={props.getRootUserInterfaceData}
-            onChangeRootData={props.onChangeRootData}
-            keyPrefix={`${appPaths.appRootPath}/${appPaths.pagePath.join("/")}/`}
-            mode="display"
-            onChangeData={props.onChangeData}
-          />
-        )}
-      </AdminUserInterfaceContextManagerProvider>
+      <Router>
+        <RouteRenderer
+          components={(appPageConfig && appPageConfig.layout) || []}
+          data={{ ...props.data, ...fromStore.appPageModel }}
+          getRootUserInterfaceData={props.getRootUserInterfaceData}
+          onChangeRootData={props.onChangeRootData}
+          onChangeData={props.onChangeData}
+          appPageConfig={appPageConfig}
+          appPaths={appPaths}
+          path={"*"}
+          appConfig={props.appConfig}
+        />
+      </Router>
     </div>
   )
 }
