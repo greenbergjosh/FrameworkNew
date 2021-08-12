@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet"
 import { BusinessApplicationPageId } from "../../../components/business-application/types"
 import { BusinessApplication } from "../../../components/business-application/BusinessApplication"
 import { WithRouteProps } from "../../../../../state/navigation"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 type BusinessApplicationId = string
 
@@ -31,6 +32,14 @@ export const SummaryView = (props: WithRouteProps<SummaryViewProps>): JSX.Elemen
           title={props.title}
         />
       )}
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: props.title,
+        }}
+        pageReady={!!props.title && props.title.length > 0}
+      />
     </>
   )
 }

@@ -31,6 +31,7 @@ import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"
 import styles from "./edit.module.scss"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {
   configId: string
@@ -429,6 +430,14 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
           </>
         )}
       </Formik.Formik>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: "Global Configs - Edit Config",
+        }}
+        pageReady={true}
+      />
     </>
   )
 }

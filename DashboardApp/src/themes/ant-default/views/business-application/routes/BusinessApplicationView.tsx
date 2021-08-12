@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet"
 import { BusinessApplicationPageId } from "../../../components/business-application/types"
 import { BusinessApplication } from "../../../components/business-application/BusinessApplication"
 import { WithRouteProps } from "../../../../../state/navigation"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 type BusinessApplicationId = string
 
@@ -26,6 +27,14 @@ export function BusinessApplicationView(props: WithRouteProps<ViewProps>): JSX.E
       ) : (
         <BusinessApplication applicationId={props.id} pageId={props.pageId} title={props.title} />
       )}
+      <PageBeacon
+        data={{
+          reportId: `${props.id}/${props.pageId}`,
+          appName: "Legacy Site",
+          pageTitle: props.title,
+        }}
+        pageReady={!!props.pageId && props.pageId.length > 0}
+      />
     </>
   )
 }

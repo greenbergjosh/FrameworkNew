@@ -14,6 +14,7 @@ import { useRematch } from "../../../../../hooks/use-rematch"
 import { store } from "../../../../../state/store"
 import { CodeEditor, ComponentDefinition, EditorLangCodec, UserInterface } from "@opg/interface-builder"
 import { WithRouteProps } from "../../../../../state/navigation"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {
   configId: string
@@ -137,6 +138,7 @@ export function ShowGlobalConfig({
 
   const association = focusedConfig.chain(({ id }) => record.lookup(id, fromStore.associations))
   return (
+    <>
     <Skeleton active loading={fromStore.configs.isPending()}>
       <Helmet>
         <title>No Configuration Found | Channel Admin | OPG</title>
@@ -303,6 +305,15 @@ export function ShowGlobalConfig({
         ))
       )}
     </Skeleton>
+    <PageBeacon
+      data={{
+        reportId: null,
+        appName: "Legacy Site",
+        pageTitle: "Global Configs - Show Config",
+      }}
+      pageReady={true}
+    />
+    </>
   )
 }
 

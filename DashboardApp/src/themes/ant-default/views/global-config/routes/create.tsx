@@ -32,6 +32,7 @@ import { fromEither, getSetoid as getOptionSetoid, none, Option, option, some, t
 import { InProgressLocalDraftConfig, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {
   configId: "create"
@@ -172,6 +173,7 @@ export function CreateGlobalConfig({
   //
 
   return (
+    <>
     <Skeleton active loading={fromStore.configs.isPending()}>
       <Formik.Formik
         initialValues={initialFormState}
@@ -427,6 +429,15 @@ export function CreateGlobalConfig({
         }}
       </Formik.Formik>
     </Skeleton>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: "Global Configs - Create Config",
+        }}
+        pageReady={true}
+      />
+    </>
   )
 }
 

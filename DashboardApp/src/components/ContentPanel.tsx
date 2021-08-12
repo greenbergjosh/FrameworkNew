@@ -9,6 +9,7 @@ import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import BreadcrumbNav from "./BreadcrumbNav"
 import { ContentPanelProps } from "../themes/types"
 import { AppPageConfig, AppPaths } from "../state/apps"
+import { PageBeacon } from "./PageBeacon"
 
 function RouteRenderer(
   props: {
@@ -21,12 +22,22 @@ function RouteRenderer(
   return (
     <AdminUserInterfaceContextManagerProvider>
       {(userInterfaceContextManager) => (
-        <UserInterface
-          {...props}
-          contextManager={userInterfaceContextManager}
-          keyPrefix={`${props.appPaths.appRootPath}/${props.appPaths.pagePathSegments.join("/")}/`}
-          mode="display"
-        />
+        <>
+          <UserInterface
+            {...props}
+            contextManager={userInterfaceContextManager}
+            keyPrefix={`${props.appPaths.appRootPath}/${props.appPaths.pagePathSegments.join("/")}/`}
+            mode="display"
+          />
+          <PageBeacon
+            data={{
+              reportId: null,
+              appName: props.appConfig.title,
+              pageTitle: props.appPageConfig.title,
+            }}
+            pageReady={props.appConfig.title !== "..."}
+          />
+        </>
       )}
     </AdminUserInterfaceContextManagerProvider>
   )

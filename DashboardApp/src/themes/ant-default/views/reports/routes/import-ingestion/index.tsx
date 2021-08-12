@@ -19,6 +19,7 @@ import ImportIngestionTable from "./ImportIngestionTable"
 import ExportTable from "./ExportTable"
 import "./import-ingestion.scss"
 import { WithRouteProps } from "../../../../../../state/navigation"
+import { PageBeacon } from "../../../../../../components/PageBeacon"
 
 /* *************************
  * INTERFACES
@@ -240,6 +241,14 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
           </Row>
         </PageHeader>
       </>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: "Reports - Import Ingestion",
+        }}
+        pageReady={true}
+      />
     </UserInterfaceContext.Provider>
   )
 }

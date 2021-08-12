@@ -13,6 +13,7 @@ import { ReportOrErrors } from "./reportOrErrors/ReportOrErrors"
 import { ReportProps } from "./types"
 import { QueryParams } from "../query/QueryParams"
 import { UserInterfaceProps } from "@opg/interface-builder"
+import { PageBeacon } from "../PageBeacon"
 
 export const Report = (props: ReportProps): JSX.Element => {
   const [fromStore /*dispatch*/] = useRematch((appState) => ({
@@ -101,6 +102,14 @@ export const Report = (props: ReportProps): JSX.Element => {
           </QueryParams>
         )}
       </ReportOrErrors>
+      <PageBeacon
+        data={{
+          reportId: reportId.toUndefined(),
+          appName: "Legacy Site",
+          pageTitle: reportGlobalConfig && reportGlobalConfig.name,
+        }}
+        pageReady={!!reportGlobalConfig && reportGlobalConfig.name.length > 0}
+      />
     </div>
   )
 }
