@@ -26,6 +26,13 @@ module.exports = function customizeCRA(config, env) {
   config.plugins = config.plugins || []
   config.module.rules = config.module.rules || []
 
+  // config.resolve = {
+  //   alias: {
+  //     react: path.resolve("./node_modules/react"),
+  //     antd: path.resolve("./node_modules/antd"),
+  //   },
+  // }
+
   // // This may be necessary for react-monaco-editor according to docs:
   // // https://github.com/react-monaco-editor/react-monaco-editor/tree/2df830b0fe953527905950c79b02f935221f7186#using-with-webpack
   // // I dug into the react-script webpack config to find where to override

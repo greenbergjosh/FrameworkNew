@@ -67,6 +67,10 @@ export interface Effects {
     query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
   ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
 
+  globalConfigsGetAppConfigs(
+    query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
+  ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
+
   globalConfigsGetMetaOnly(p: {
     id?: string
     name?: string | RegExp
@@ -345,6 +349,29 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
             return payload["config:get"].r === 0
               ? AdminApi.OK(payload["config:get"].result)
               : AdminApi.mkAdminApiError(payload["config:get"].r)
+          }
+        )
+      )
+    },
+
+    async globalConfigsGetAppConfigs(params, { remoteDataClient }) {
+      return request({
+        body: {
+          i: remoteDataClient.token,
+          "config:getApps": params,
+        },
+        expect: AdminApi.globalConfigResponsePayloadCodec.getApps,
+        headers: {},
+        method: "POST",
+        timeout: none,
+        url: apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
+            return payload["config:getApps"].r === 0
+              ? AdminApi.OK(payload["config:getApps"].result)
+              : AdminApi.mkAdminApiError(payload["config:getApps"].r)
           }
         )
       )

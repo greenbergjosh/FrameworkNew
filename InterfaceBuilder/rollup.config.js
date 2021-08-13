@@ -51,6 +51,7 @@ export default {
       nanoid: "nanoid$1",
       tinycolor2: "tinycolor",
       "react-colorful": "reactColorful",
+      "@reach/router": "router",
     },
   },
   external: [

@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid"
-import { EnrichedColumnDefinition, JSONRecord } from "@opg/interface-builder"
+import { StandardGridTypes, JSONRecord } from "@opg/interface-builder"
 
 /**
  * When assigned to a column via the Table columns configuration,
@@ -12,7 +12,7 @@ import { EnrichedColumnDefinition, JSONRecord } from "@opg/interface-builder"
  * @param options - The options configured for this Custom Aggregate
  */
 const customAggregateFunction = (
-  columns: EnrichedColumnDefinition,
+  columns: StandardGridTypes.EnrichedColumnDefinition,
   columnCounts: number,
   options: JSONRecord
 ) => {

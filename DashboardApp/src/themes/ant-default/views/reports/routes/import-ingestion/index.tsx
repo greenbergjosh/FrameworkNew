@@ -1,6 +1,6 @@
 import React from "react"
 import { Col, PageHeader, Row, Typography } from "antd"
-import { RowDataBoundEventArgs } from "@syncfusion/ej2-react-grids"
+import { StandardGridTypes, UserInterfaceContext } from "@opg/interface-builder"
 import * as iots from "io-ts"
 import { reporter } from "io-ts-reporters"
 import * as record from "fp-ts/lib/Record"
@@ -12,7 +12,6 @@ import { QueryProps } from "../../../../../../components/query/types"
 import { useRematch } from "../../../../../../hooks"
 import { PartnerStatus } from "../../../../../../state/import-ingestion-report"
 import { store } from "../../../../../../state/store"
-import { UserInterfaceContext } from "@opg/interface-builder"
 import { createUIContext } from "../../../../../../data/AdminUserInterfaceContextManager"
 import { EXPORT_STATUS_QUERY_CONFIG_ID, INGESTION_STATUS_QUERY_CONFIG_ID, PARTNER_QUERY_CONFIG_ID } from "./constants"
 import ImportIngestionTable from "./ImportIngestionTable"
@@ -129,7 +128,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
   const isSelectedPartnerExport = (selectedPartner: PartnerStatus | null) => (item: ExportStatus) =>
     !!selectedPartner && selectedPartner.name.toLowerCase() === item.partner.toLowerCase()
 
-  function importIngestionRowDataBound(rowDataBoundEventArgs?: RowDataBoundEventArgs): void {
+  function importIngestionRowDataBound(rowDataBoundEventArgs?: StandardGridTypes.RowDataBoundEventArgs): void {
     if (!rowDataBoundEventArgs) {
       return
     }
@@ -155,7 +154,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     )
   }
 
-  function exportRowDataBound(rowDataBoundEventArgs?: RowDataBoundEventArgs): void {
+  function exportRowDataBound(rowDataBoundEventArgs?: StandardGridTypes.RowDataBoundEventArgs): void {
     if (!rowDataBoundEventArgs) {
       return
     }

@@ -72,8 +72,8 @@ export { FormInterfaceComponentProps } from "./plugins/ant/form/FormInterfaceCom
 /* Component piecemeal */
 // TODO: Get rid of references to these and use the plugins
 export { SortableGroupableColumnModel } from "./plugins/syncfusion/table/types"
-export { EnrichedColumnDefinition } from "./plugins/syncfusion/table/StandardGrid/types"
+export * as StandardGridTypes from "./plugins/syncfusion/table/StandardGrid/types"
 export { default as StandardGrid } from "./plugins/syncfusion/table/StandardGrid/StandardGrid"
-export { CodeEditor, supportedEditorTheme } from "./plugins/monaco/code-editor/CodeEditor"
+export { CodeEditor, supportedEditorTheme, editor, languages, Range } from "./plugins/monaco/code-editor/CodeEditor"
 export { editorLanguages, EditorLangCodec, registerMonacoEditorMount } from "./plugins/monaco/code-editor/constants"
-export { EditorLang, EditorTheme } from "./plugins/monaco/code-editor/types"
+export * as CodeEditorTypes from "./plugins/monaco/code-editor/types"

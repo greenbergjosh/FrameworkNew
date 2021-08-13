@@ -1,5 +1,5 @@
 import { store } from "../../state/store"
-import { CancellationToken, editor, IDisposable, IPosition, languages, Range } from "monaco-editor"
+import { CodeEditorTypes, editor, languages, Range } from "@opg/interface-builder"
 import { some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 
@@ -8,7 +8,9 @@ type guidRangeItem = {
   guid: string
 }
 
-export const getCustomEditorConstructionOptions = (monaco: editor.IStandaloneCodeEditor): IDisposable[] => {
+export const getCustomEditorConstructionOptions = (
+  monaco: editor.IStandaloneCodeEditor
+): CodeEditorTypes.IDisposable[] => {
   const adapter = new GUIDEditorServiceAdapter(monaco, store)
   const linkDisposable = languages.registerLinkProvider("json", adapter)
   const hoverDisposable = languages.registerHoverProvider("json", adapter)
@@ -18,11 +20,14 @@ export const getCustomEditorConstructionOptions = (monaco: editor.IStandaloneCod
 class GUIDEditorServiceAdapter implements languages.LinkProvider, languages.HoverProvider {
   constructor(private monaco: editor.IStandaloneCodeEditor, private applicationStore: typeof store) {}
 
-  provideLinks(model: editor.ITextModel, token: CancellationToken): languages.ProviderResult<languages.ILinksList> {
+  provideLinks(
+    model: editor.ITextModel,
+    token: CodeEditorTypes.CancellationToken
+  ): languages.ProviderResult<languages.ILinksList> {
     return { links: extractGuidRangeItems(model).map((item) => item.link) }
   }
 
-  provideHover(model: editor.ITextModel, position: IPosition) {
+  provideHover(model: editor.ITextModel, position: CodeEditorTypes.IPosition) {
     const hoveredGuid = extractGuidRangeItems(model).find(({ link, guid }) => link.range.containsPosition(position))
 
     if (hoveredGuid) {
@@ -55,7 +60,7 @@ function extractGuidRangeItems(model: editor.ITextModel): guidRangeItem[] {
   const items: guidRangeItem[] = []
 
   while ((match = guidPattern.exec(text)) !== null) {
-    const {index} = match
+    const { index } = match
     const textBeforeMatch = text.substr(0, index)
     const lines = textBeforeMatch.split(/\n/g)
     const lineNumber = lines.length

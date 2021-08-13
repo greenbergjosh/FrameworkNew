@@ -1,3 +1,4 @@
+export { ColumnDirective, ColumnsDirective, GridComponent, Inject, PagerComponent } from "@syncfusion/ej2-react-grids"
 export {
   ITableInterfaceComponentProps,
   TableInterfaceComponentProps,

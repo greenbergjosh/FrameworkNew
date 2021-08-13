@@ -27,6 +27,7 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
   // Make sure that remote configs are loaded
   React.useEffect(() => {
     if (fromStore.profile.isSome()) {
+      dispatch.apps.loadAppConfigs()
       dispatch.globalConfig.loadRemoteConfigs()
     }
   }, [dispatch, fromStore.profile])

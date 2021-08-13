@@ -5,6 +5,8 @@ import * as iots from "io-ts"
 import { EditorLangCodec } from "plugins/monaco/code-editor/constants"
 import { ComponentDefinitionNamedProps, UserInterfaceDataType, UserInterfaceProps } from "globalTypes"
 
+export { CancellationToken, IDisposable, IPosition } from "monaco-editor"
+
 export interface CodeEditorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "code-editor"
   defaultLanguage: EditorLang

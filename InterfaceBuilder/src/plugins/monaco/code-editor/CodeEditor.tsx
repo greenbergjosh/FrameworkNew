@@ -10,6 +10,7 @@ import { diffEditorSettings, inactiveEditorSettings, willMountRegistry } from ".
 import { isNull, isString, isUndefined } from "lodash/fp"
 import { UserInterfaceDataType } from "globalTypes"
 
+export { editor, languages, Range } from "monaco-editor"
 export { supportedEditorTheme } from "./code-editor-manage-form"
 
 /* ########################################################################

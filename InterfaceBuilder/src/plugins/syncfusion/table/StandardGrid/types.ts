@@ -11,6 +11,17 @@ import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { DurationUnits } from "../../../../lib/valueFormatter/types"
 
+export {
+  ColumnModel,
+  GroupSettingsModel,
+  PageSettingsModel,
+  SortSettingsModel,
+  RowDataBoundEventArgs,
+  SortDescriptorModel,
+} from "@syncfusion/ej2-react-grids"
+
+export { EmitType } from "@syncfusion/ej2-base"
+
 export interface StandardGridComponentProps {
   autoFitColumns?: boolean
   useSmallFont?: boolean

@@ -13,7 +13,6 @@
     "@rematch/loading": "2.0.0",
     "@rematch/persist": "2.0.0",
     "@rematch/select": "3.0.0",
-    "@syncfusion/ej2-react-grids": "18.4.34",
     "antd": "3.26.17",
     "axios": "0.18.1",
     "classnames": "2.2.6",
@@ -23,6 +22,7 @@
     "formik": "1.5.8",
     "fp-ts": "1.19.5",
     "fp-ts-contrib": "0.0.3",
+    "hoist-non-react-statics": "3.3.2",
     "io-ts": "1.10.4",
     "io-ts-reporters": "0.0.21",
     "io-ts-types": "0.4.8",
@@ -30,8 +30,8 @@
     "json5": "2.1.1",
     "lodash": "4.17.15",
     "lodash.debounce": "4.0.8",
-    "monaco-editor": "0.22.3",
     "oidc-client": "1.9.1",
+    "prop-types": "15.7.2",
     "query-string": "6.13.1",
     "react": "16.8.6",
     "react-copy-to-clipboard": "5.0.2",
@@ -39,8 +39,7 @@
     "react-helmet": "6.0.0",
     "react-redux": "7.2.2",
     "react-scripts": "3.0.0",
-    "redux": "4.0.5",
-    "hoist-non-react-statics": "3.3.2"
+    "redux": "4.0.5"
   },
   "scripts": {
     "start": "concurrently \"npm:start-rewired\"  \"npm:watch-*\"",
@@ -67,7 +66,6 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@syncfusion/ej2-base": "18.4.34",
     "@types/classnames": "2.2.11",
     "@types/gapi.auth2": "0.0.52",
     "@types/jest": "26.0.15",

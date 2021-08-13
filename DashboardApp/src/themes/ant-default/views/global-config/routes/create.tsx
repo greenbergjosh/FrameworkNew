@@ -23,7 +23,6 @@ import {
   EditorLangCodec,
   editorLanguages,
   getDefaultsFromComponentDefinitions,
-  JSONRecord,
   UserInterface,
   UserInterfaceProps,
 } from "@opg/interface-builder"
