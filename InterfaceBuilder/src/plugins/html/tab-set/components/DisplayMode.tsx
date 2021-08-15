@@ -1,12 +1,12 @@
 import React from "react"
-import { ComponentRenderer } from "components/ComponentRenderer"
-import { DataPathContext } from "contexts/DataPathContext"
+import { ComponentRenderer } from "../../../../components/ComponentRenderer"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
 import styles from "../styles.scss"
 import { TabSetContext } from "../TabSetContext"
 import { DisplayModeProps } from "../types"
-import { ITab } from "plugins/html/tab/types"
+import { ITab } from "../../../../plugins/html/tab/types"
 import { isNull, isUndefined } from "lodash/fp"
-import { UserInterfaceProps } from "globalTypes"
+import { UserInterfaceProps } from "../../../../globalTypes"
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {
   const { activeTabKey, setActiveTabKey, availableTabs, isUserInteracting } = React.useContext(TabSetContext)

@@ -6,7 +6,7 @@ import React from "react"
 import { getTimeFormat } from "../_shared/common-include-time-form"
 import { dateRangeManageForm } from "./date-range-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { DateRangeInterfaceComponentProps, DateRangeInterfaceComponentState, EVENTS } from "./types"
 import { LayoutDefinition } from "../../../globalTypes"
 

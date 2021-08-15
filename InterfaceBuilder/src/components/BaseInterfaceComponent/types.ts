@@ -6,7 +6,7 @@ import {
   ComponentRenderMetaProps,
   UserInterfaceProps,
 } from "../../globalTypes"
-import { EventPayloadType } from "components/withEvents/types"
+import { EventPayloadType } from "../../components/withEvents/types"
 
 export type DataBindings = { [K in keyof ComponentDefinitionNamedProps]: JSONRecord }
 export type BaseInterfaceComponentProps = ComponentDefinition & ComponentRenderMetaProps

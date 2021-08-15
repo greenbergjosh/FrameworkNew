@@ -3,7 +3,7 @@ import { Icon } from "antd"
 import styles from "../styles.scss"
 import { EditPanelProps } from "../types"
 import classNames from "classnames"
-import { Summary } from "components/EditPanel/components/Summary"
+import { Summary } from "../../../components/EditPanel/components/Summary"
 
 export const EditPanel: React.FC<EditPanelProps> = (props): JSX.Element => {
   let modeStyle: string

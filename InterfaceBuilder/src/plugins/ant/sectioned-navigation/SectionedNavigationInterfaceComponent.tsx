@@ -2,7 +2,7 @@ import { Button, Card, Menu, PageHeader, Popover } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../contexts/DataPathContext"
-import { ComponentRenderer } from "components/ComponentRenderer/ComponentRenderer"
+import { ComponentRenderer } from "../../../components/ComponentRenderer/ComponentRenderer"
 import { sectionedNavigationManageForm } from "./sectioned-navigation-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import {

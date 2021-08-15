@@ -1,7 +1,7 @@
 import { Card } from "antd"
 import React from "react"
 import { DataPathContext } from "../../../contexts/DataPathContext"
-import { ComponentRenderer } from "components/ComponentRenderer/ComponentRenderer"
+import { ComponentRenderer } from "../../../components/ComponentRenderer/ComponentRenderer"
 import { cardManageForm } from "./card-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { set } from "lodash/fp"

@@ -1,10 +1,10 @@
 import React from "react"
-import { ComponentDefinition } from "globalTypes"
-import { ComponentRenderer, RenderInterfaceComponent } from "components/ComponentRenderer"
-import { DataPathContext } from "contexts/DataPathContext"
+import { ComponentDefinition } from "../../../../globalTypes"
+import { ComponentRenderer, RenderInterfaceComponent } from "../../../../components/ComponentRenderer"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
 import { set } from "lodash/fp"
-import { registry } from "services/ComponentRegistry"
-import { EditModeProps } from "plugins/ant/modal/types"
+import { registry } from "../../../../services/ComponentRegistry"
+import { EditModeProps } from "../../../../plugins/ant/modal/types"
 
 export function EditMode(props: EditModeProps): JSX.Element {
   const handleTitleChangeData = (newData: ComponentDefinition): void => {

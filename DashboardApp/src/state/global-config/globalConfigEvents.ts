@@ -50,7 +50,7 @@ export function executeParentTypeEventHandler(
   }
 
   const oldState = "prevState" in config ? flattenPersistedConfig(config.prevState) : null
-  const newState = "nextState" in config ? ((config.nextState as unknown) as JSONRecord) : null
+  const newState = "nextState" in config ? (config.nextState as unknown as JSONRecord) : null
 
   dispatch.remoteDataClient
     .reportQueryGet({

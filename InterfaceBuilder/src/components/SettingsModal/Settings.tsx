@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentRenderer } from "components/ComponentRenderer"
+import { ComponentRenderer } from "../../components/ComponentRenderer"
 import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
 
 export interface ManageComponentFormProps {

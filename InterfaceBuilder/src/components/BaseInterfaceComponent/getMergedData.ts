@@ -1,6 +1,6 @@
-import { KVPTuple, TargetType } from "components/BaseInterfaceComponent/types"
+import { KVPTuple, TargetType } from "../../components/BaseInterfaceComponent/types"
 import { isObjectLike, isString, set } from "lodash/fp"
-import { UserInterfaceProps } from "globalTypes"
+import { UserInterfaceProps } from "../../globalTypes"
 
 /**
  * Returns data with a value merged at the provided key path.

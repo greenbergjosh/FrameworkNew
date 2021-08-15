@@ -1,5 +1,5 @@
 import React from "react"
-import { DroppablePlaceholderState, DroppableTargetProps, DraggedItemProps } from "components/DragAndDrop"
+import { DroppablePlaceholderState, DroppableTargetProps, DraggedItemProps } from "../components/DragAndDrop"
 
 export interface DroppableContextType {
   droppableId: string

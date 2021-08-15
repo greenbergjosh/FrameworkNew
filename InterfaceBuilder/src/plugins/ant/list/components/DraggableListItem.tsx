@@ -2,9 +2,9 @@ import { DraggableListItemProps } from "../types"
 import { Draggable } from "../../../../components/DragAndDrop"
 import { ListItem } from "./ListItem"
 import React from "react"
-import { EditPanelWrapper } from "components/ComponentModifiers/EditPanelWrapper"
-import { JSONRecord } from "globalTypes/JSONTypes"
-import { BaseInterfaceComponent } from "components/BaseInterfaceComponent/BaseInterfaceComponent"
+import { EditPanelWrapper } from "../../../../components/ComponentModifiers/EditPanelWrapper"
+import { JSONRecord } from "../../../../globalTypes/JSONTypes"
+import { BaseInterfaceComponent } from "../../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 
 export default function DraggableListItem({
   data,

@@ -112,7 +112,7 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
           if (!isEmpty(appConfig.id)) {
             // Get the app's default view
             appPageConfig =
-              ((appConfig.views.find((view) => view.default) as AppEntity) as AppPageConfig) || DEFAULT_APP_PAGE_CONFIG
+              (appConfig.views.find((view) => view.default) as AppEntity as AppPageConfig) || DEFAULT_APP_PAGE_CONFIG
           }
         } else {
           // Get the page
@@ -140,14 +140,11 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appPageModel(select) {
-    return createSelector(
-      select.apps.appPageConfig,
-      (appPageConfig): AppPageModel => {
-        return {
-          $app: { location: { parameters: appPageConfig.parameters } },
-        }
+    return createSelector(select.apps.appPageConfig, (appPageConfig): AppPageModel => {
+      return {
+        $app: { location: { parameters: appPageConfig.parameters } },
       }
-    )
+    })
   },
 })
 

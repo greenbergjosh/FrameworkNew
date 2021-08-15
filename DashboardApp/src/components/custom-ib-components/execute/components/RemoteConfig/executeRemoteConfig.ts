@@ -9,10 +9,10 @@ import { fetch } from "./lib/fetch"
  * @return State object with load status and data
  */
 export async function executeRemoteConfig(params: ExecuteRemoteConfigParams): Promise<LoadStatus> {
-  return Promise.resolve(({
+  return Promise.resolve({
     remoteConfigLoggingName: params.queryConfig.query,
     loadStatus: LOADSTATUSCODES.loading,
-  } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() => {
+  } as unknown as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() => {
     switch (params.actionType) {
       case "create":
         return create(params)

@@ -1,9 +1,9 @@
 import React from "react"
-import { DataPathContext } from "contexts/DataPathContext"
-import { ComponentRenderer, RenderInterfaceComponent } from "components/ComponentRenderer"
-import { registry } from "services/ComponentRegistry"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
+import { ComponentRenderer, RenderInterfaceComponent } from "../../../../components/ComponentRenderer"
+import { registry } from "../../../../services/ComponentRegistry"
 import { RouteRendererProps } from "../types"
-import { ComponentDefinition } from "globalTypes"
+import { ComponentDefinition } from "../../../../globalTypes"
 import { set } from "lodash/fp"
 
 export function RouteRenderer(props: RouteRendererProps): JSX.Element {

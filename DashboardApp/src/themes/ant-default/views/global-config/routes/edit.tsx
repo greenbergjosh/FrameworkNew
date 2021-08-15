@@ -108,10 +108,10 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
 
   const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
 
-  const entityTypeConfig = React.useMemo(() => record.lookup(props.config.type, fromStore.entityTypes), [
-    fromStore.entityTypes,
-    props.config.type,
-  ])
+  const entityTypeConfig = React.useMemo(
+    () => record.lookup(props.config.type, fromStore.entityTypes),
+    [fromStore.entityTypes, props.config.type]
+  )
 
   const isRootConfig = entityTypeConfig.map(({ id }) => id === props.config.id).getOrElse(false)
   const configComponents = isRootConfig

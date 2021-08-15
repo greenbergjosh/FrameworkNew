@@ -1,6 +1,6 @@
 import jsonLogic from "json-logic-js"
 import React from "react"
-import { ComponentModifierProps } from "components/ComponentRenderer"
+import { ComponentModifierProps } from "../../components/ComponentRenderer"
 import { tryCatch } from "../../lib/Option"
 import { LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
 

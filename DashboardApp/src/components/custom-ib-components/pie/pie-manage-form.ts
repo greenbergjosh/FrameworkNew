@@ -44,8 +44,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "sliceLabelValueType",
                 valueKey: "sliceLabelValueType",
                 label: "Slice Label Value Type",
-                help:
-                  "How to display the slice label: \
+                help: "How to display the slice label: \
                 Default: The value of the slice\
                 Key: The property to display\
                 Function: A function that receives the slice and returns a formatted string displayed as the value of the slice.",
@@ -135,8 +134,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "useTooltipFunction",
                 component: "toggle",
                 label: "Tooltip Custom Formatter",
-                help:
-                  "A function that receives the slice and returns a formatted string displayed as the tooltip of the slice.",
+                help: "A function that receives the slice and returns a formatted string displayed as the tooltip of the slice.",
                 bindable: true,
               },
               {
@@ -290,8 +288,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "threshold",
                 valueKey: "threshold",
                 label: "Threshold",
-                help:
-                  'Set the cutoff value to display. Values below this amount will be aggregated into an "Other" slice.',
+                help: 'Set the cutoff value to display. Values below this amount will be aggregated into an "Other" slice.',
                 component: "number-input",
                 defaultValue: 0,
                 bindable: true,

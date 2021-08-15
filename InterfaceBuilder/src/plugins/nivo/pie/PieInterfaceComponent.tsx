@@ -11,7 +11,7 @@ import { Icon, Spin } from "antd"
 import { parseLBM } from "../../../lib/parseLBM"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
-import { EventBus } from "components/withEvents/EventBus"
+import { EventBus } from "../../../components/withEvents/EventBus"
 
 export class PieInterfaceComponent extends BaseInterfaceComponent<
   PieInterfaceComponentProps,

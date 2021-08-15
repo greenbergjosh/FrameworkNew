@@ -1,4 +1,4 @@
-import { ComponentDefinitionNamedProps } from "globalTypes"
+import { ComponentDefinitionNamedProps } from "../../../globalTypes"
 import { DividerProps } from "antd/lib/divider"
 
 export interface DividerInterfaceComponentProps extends ComponentDefinitionNamedProps {

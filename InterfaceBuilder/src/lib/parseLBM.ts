@@ -1,6 +1,6 @@
 import { tryCatch } from "fp-ts/lib/Option"
-import { IBaseInterfaceComponent } from "components/BaseInterfaceComponent/types"
-import { ComponentDefinitionNamedProps } from "globalTypes"
+import { IBaseInterfaceComponent } from "../components/BaseInterfaceComponent/types"
+import { ComponentDefinitionNamedProps } from "../globalTypes"
 
 export type LBMFunctionType<
   PropType extends ComponentDefinitionNamedProps,

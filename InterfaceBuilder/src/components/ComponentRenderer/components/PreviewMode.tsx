@@ -1,9 +1,9 @@
 import React from "react"
-import { DataBinding } from "components/ComponentModifiers/DataBinding"
-import { FormField } from "components/ComponentModifiers/FormField"
+import { DataBinding } from "../../../components/ComponentModifiers/DataBinding"
+import { FormField } from "../../../components/ComponentModifiers/FormField"
 import { DisplayVisibility } from "../../ComponentModifiers/DisplayVisibility"
-import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
-import { PreviewModeProps } from "components/ComponentRenderer"
+import { ReplaceTokens } from "../../../components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
+import { PreviewModeProps } from "../../../components/ComponentRenderer"
 
 export function PreviewMode(props: PreviewModeProps): JSX.Element {
   return (

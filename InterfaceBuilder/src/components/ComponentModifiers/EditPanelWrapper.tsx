@@ -6,9 +6,9 @@ import { EditPanelWithTools } from "../EditPanel/EditPanelWithTools"
 import { EditPanelWithToolsProps } from "../EditPanel/types"
 import { tryCatch } from "lib/Option"
 import { UserInterfaceProps } from "../../globalTypes"
-import { DraggedItemProps } from "components/DragAndDrop"
+import { DraggedItemProps } from "../../components/DragAndDrop"
 import { isBoolean, isFunction } from "lodash/fp"
-import { BaseInterfaceComponent } from "components/BaseInterfaceComponent/BaseInterfaceComponent"
+import { BaseInterfaceComponent } from "../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 
 interface EditPanelWrapperProps extends ComponentModifierProps, Omit<EditPanelWithToolsProps, "draggableItem"> {
   component: typeof BaseInterfaceComponent

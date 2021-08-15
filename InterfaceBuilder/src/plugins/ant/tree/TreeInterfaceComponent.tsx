@@ -1,6 +1,6 @@
 import React from "react"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { TreeInterfaceComponentProps } from "plugins/ant/tree/types"
+import { TreeInterfaceComponentProps } from "../../../plugins/ant/tree/types"
 import { LayoutDefinition } from "../../../globalTypes"
 import { treeManageForm } from "./tree-manage-form"
 import { DisplayMode } from "./components/DisplayMode"

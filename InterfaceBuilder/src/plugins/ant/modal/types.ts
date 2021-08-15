@@ -4,7 +4,7 @@ import {
   ComponentRenderMetaProps,
   IBaseInterfaceComponent,
   UserInterfaceProps,
-} from "globalTypes"
+} from "../../../globalTypes"
 
 export interface ModalInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "modal"

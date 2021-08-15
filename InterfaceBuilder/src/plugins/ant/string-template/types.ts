@@ -1,6 +1,6 @@
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
-import { LBMFunctionType } from "lib/parseLBM"
+import { LBMFunctionType } from "../../../lib/parseLBM"
 
 export interface StringTemplateInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // Core props

@@ -157,13 +157,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
@@ -179,13 +177,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
@@ -203,13 +199,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
@@ -227,13 +221,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
@@ -321,13 +313,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
-            return payload["config:insert"].r === 0
-              ? AdminApi.OK(payload["config:insert"].result)
-              : AdminApi.mkAdminApiError(payload["config:insert"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
+          return payload["config:insert"].r === 0
+            ? AdminApi.OK(payload["config:insert"].result)
+            : AdminApi.mkAdminApiError(payload["config:insert"].r)
+        })
       )
     },
 
@@ -344,13 +334,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
-            return payload["config:get"].r === 0
-              ? AdminApi.OK(payload["config:get"].result)
-              : AdminApi.mkAdminApiError(payload["config:get"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
+          return payload["config:get"].r === 0
+            ? AdminApi.OK(payload["config:get"].result)
+            : AdminApi.mkAdminApiError(payload["config:get"].r)
+        })
       )
     },
 
@@ -367,13 +355,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
-            return payload["config:getApps"].r === 0
-              ? AdminApi.OK(payload["config:getApps"].result)
-              : AdminApi.mkAdminApiError(payload["config:getApps"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
+          return payload["config:getApps"].r === 0
+            ? AdminApi.OK(payload["config:getApps"].result)
+            : AdminApi.mkAdminApiError(payload["config:getApps"].r)
+        })
       )
     },
 
@@ -393,13 +379,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
-            return payload["config:get"].r === 0
-              ? AdminApi.OK(payload["config:get"].result)
-              : AdminApi.mkAdminApiError(payload["config:get"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
+          return payload["config:get"].r === 0
+            ? AdminApi.OK(payload["config:get"].result)
+            : AdminApi.mkAdminApiError(payload["config:get"].r)
+        })
       )
     },
 
@@ -437,12 +421,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
-            const p = payload[query]
-            return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
+          const p = payload[query]
+          return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
+        })
       )
     },
 
@@ -459,12 +441,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<JSONRecord> => {
-            const p = payload[query]
-            return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<JSONRecord> => {
+          const p = payload[query]
+          return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
+        })
       )
     },
 
@@ -497,12 +477,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
-            const payloadArray = isArray(payload) ? payload : [payload]
-            return payload ? AdminApi.OK(payloadArray) : AdminApi.mkAdminApiError(1)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
+          const payloadArray = isArray(payload) ? payload : [payload]
+          return payload ? AdminApi.OK(payloadArray) : AdminApi.mkAdminApiError(1)
+        })
       )
     },
   }),

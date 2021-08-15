@@ -254,44 +254,42 @@ const ReportBody = ({
    * Provide layout components and formatters to columns.
    */
   const columns: ColumnConfig[] = React.useMemo(() => {
-    return reportConfig.columns.map(
-      (column: ColumnConfig): ColumnConfig => {
-        const template = getDetailTemplate({
-          dispatch,
-          columnDetails: column.details,
-          getRootUserInterfaceData,
-          onChangeRootData,
-          parameterValues: parameterValues.toUndefined(),
-          parentData,
-          handleChangeData: onChangeData,
-          columnType: column.type,
-        })
+    return reportConfig.columns.map((column: ColumnConfig): ColumnConfig => {
+      const template = getDetailTemplate({
+        dispatch,
+        columnDetails: column.details,
+        getRootUserInterfaceData,
+        onChangeRootData,
+        parameterValues: parameterValues.toUndefined(),
+        parentData,
+        handleChangeData: onChangeData,
+        columnType: column.type,
+      })
 
-        /*
-         * Render a formatted string (that may include HTML) into a cell.
-         * NOTE: A cell can have either a "layout" or a "formatter" but not both.
-         */
-        const formatter = getCustomCellFormatter({
-          cellFormatter: column.cellFormatter,
-          cellFormatterOptions: column.cellFormatterOptions,
-          columnType: column.type,
-          configsById: fromStore.configsById,
-          formatter: column.formatter,
-          queryParams: parameterValues.toUndefined(),
-        })
+      /*
+       * Render a formatted string (that may include HTML) into a cell.
+       * NOTE: A cell can have either a "layout" or a "formatter" but not both.
+       */
+      const formatter = getCustomCellFormatter({
+        cellFormatter: column.cellFormatter,
+        cellFormatterOptions: column.cellFormatterOptions,
+        columnType: column.type,
+        configsById: fromStore.configsById,
+        formatter: column.formatter,
+        queryParams: parameterValues.toUndefined(),
+      })
 
-        /*
-         * Render a formatted string (that may include HTML) into a summary row cell.
-         */
-        const customAggregateFunction = getCustomAggregateFunction(
-          column.customAggregateId,
-          fromStore.configsById,
-          column.aggregationFunction
-        )
+      /*
+       * Render a formatted string (that may include HTML) into a summary row cell.
+       */
+      const customAggregateFunction = getCustomAggregateFunction(
+        column.customAggregateId,
+        fromStore.configsById,
+        column.aggregationFunction
+      )
 
-        return { ...cloneDeep(column), template, formatter, customAggregateFunction }
-      }
-    )
+      return { ...cloneDeep(column), template, formatter, customAggregateFunction }
+    })
   }, [
     onChangeData,
     dispatch,

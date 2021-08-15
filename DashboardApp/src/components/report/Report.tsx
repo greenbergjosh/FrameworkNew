@@ -38,9 +38,10 @@ export const Report = (props: ReportProps): JSX.Element => {
     [fromStore.configsById, props.report]
   )
 
-  const reportId = React.useMemo(() => (props.report.type === "GlobalConfigReference" ? some(props.report.id) : none), [
-    props.report,
-  ])
+  const reportId = React.useMemo(
+    () => (props.report.type === "GlobalConfigReference" ? some(props.report.id) : none),
+    [props.report]
+  )
 
   const queryConfig = React.useMemo(
     () =>

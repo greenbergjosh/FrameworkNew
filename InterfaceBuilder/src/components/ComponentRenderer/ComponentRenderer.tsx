@@ -6,8 +6,8 @@ import { Droppable } from "../DragAndDrop"
 import { ComponentRendererProps } from "./types"
 import { ComponentRendererModeContext } from "../../contexts/ComponentRendererModeContext"
 import { ComponentDefinition } from "../../globalTypes"
-import { RenderInterfaceComponent } from "components/ComponentRenderer/components/RenderInterfaceComponent"
-import { registry } from "services/ComponentRegistry"
+import { RenderInterfaceComponent } from "../../components/ComponentRenderer/components/RenderInterfaceComponent"
+import { registry } from "../../services/ComponentRegistry"
 
 export const UI_ROOT = "UI-Root"
 

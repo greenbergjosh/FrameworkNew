@@ -6,8 +6,8 @@ import { ButtonInterfaceComponentProps, ButtonInterfaceComponentState } from "..
 import { EVENTS } from "./types"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { LayoutDefinition } from "../../../globalTypes"
-import { parseLBM } from "lib/parseLBM"
-import { EventBus } from "components/withEvents/EventBus"
+import { parseLBM } from "../../../lib/parseLBM"
+import { EventBus } from "../../../components/withEvents/EventBus"
 
 export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   ButtonInterfaceComponentProps,

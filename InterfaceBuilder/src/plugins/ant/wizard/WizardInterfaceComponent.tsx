@@ -2,7 +2,7 @@ import { Button, Icon, Steps } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../contexts/DataPathContext"
-import { ComponentRenderer } from "components/ComponentRenderer/ComponentRenderer"
+import { ComponentRenderer } from "../../../components/ComponentRenderer/ComponentRenderer"
 import { wizardManageForm } from "./wizard-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import {

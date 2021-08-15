@@ -1,11 +1,11 @@
-import { default as monacoEditor, editor, IDisposable } from "monaco-editor"
+import { CancellationToken, default as monacoEditor, editor, IDisposable, IPosition } from "monaco-editor"
 import { EditorProps } from "@monaco-editor/react"
 import { Option } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
-import { EditorLangCodec } from "plugins/monaco/code-editor/constants"
-import { ComponentDefinitionNamedProps, UserInterfaceDataType, UserInterfaceProps } from "globalTypes"
+import { EditorLangCodec } from "../../../plugins/monaco/code-editor/constants"
+import { ComponentDefinitionNamedProps, UserInterfaceDataType, UserInterfaceProps } from "../../../globalTypes"
 
-export { CancellationToken, IDisposable, IPosition } from "monaco-editor"
+export type { CancellationToken, IDisposable, IPosition }
 
 export interface CodeEditorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "code-editor"

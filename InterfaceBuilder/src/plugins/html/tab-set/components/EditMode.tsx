@@ -1,6 +1,6 @@
 import React from "react"
-import { ComponentRenderer } from "components/ComponentRenderer"
-import { DataPathContext } from "contexts/DataPathContext"
+import { ComponentRenderer } from "../../../../components/ComponentRenderer"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
 import styles from "../styles.scss"
 import classNames from "classnames"
 import { TabSetContext } from "../TabSetContext"

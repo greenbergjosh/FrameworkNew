@@ -4,7 +4,7 @@ import React from "react"
 import { getTimeFormat, TimeSettings } from "../_shared/common-include-time-form"
 import { dateManageForm } from "./date-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface DateInterfaceComponentProps extends ComponentDefinitionNamedProps {

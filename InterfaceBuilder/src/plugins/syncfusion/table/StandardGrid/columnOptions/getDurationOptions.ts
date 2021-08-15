@@ -1,5 +1,5 @@
 import { ColumnOptions, EnrichedColumnDefinition } from "../types"
-import { JSONRecord } from "globalTypes/JSONTypes"
+import { JSONRecord } from "../../../../../globalTypes/JSONTypes"
 import moment from "moment"
 import { isUndefined } from "lodash/fp"
 import { durationFormats, DurationUnits } from "../../../../../lib/valueFormatter"

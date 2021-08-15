@@ -1,5 +1,5 @@
 import React from "react"
-import { ConfirmableDeleteButton } from "components/ConfirmableDeleteButton"
+import { ConfirmableDeleteButton } from "../../../../components/ConfirmableDeleteButton"
 import { Divider, Tree } from "antd"
 import { TreeNodeNormal } from "antd/lib/tree/Tree"
 

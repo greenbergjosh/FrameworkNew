@@ -1,5 +1,5 @@
 import React from "react"
-import { DraggedItemProps } from "components/DragAndDrop"
+import { DraggedItemProps } from "../components/DragAndDrop"
 
 export interface EditableContextProps {
   canDelete?: boolean

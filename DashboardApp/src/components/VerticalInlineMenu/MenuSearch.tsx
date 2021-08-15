@@ -64,7 +64,7 @@ export function MenuSearch({
       setHasSearched(true)
       // "search()" is an overloaded method that also returns an array,
       // but TS doesn't see that so we cast the results.
-      const searchResultUris = (searchDB.search(searchText) as unknown) as string[]
+      const searchResultUris = searchDB.search(searchText) as unknown as string[]
       if (isEmpty(searchResultUris)) {
         // User searched, but no results
         setFilteredNavigationTree([])

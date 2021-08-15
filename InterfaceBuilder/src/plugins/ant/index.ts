@@ -41,7 +41,7 @@ import { UserInterfaceInterfaceComponent } from "./user-interface/UserInterfaceI
 import { WizardInterfaceComponent } from "./wizard/WizardInterfaceComponent"
 import { ComponentRegistryCache } from "../../services/ComponentRegistry"
 /* TODO: Menu needs to implement data fetching and updates with Selectable. Patrick mentioned possibly changing Selectable to use Query. */
-// import { MenuInterfaceComponent } from "components/interface-builder/components/display/menu/MenuInterfaceComponent"
+// import { MenuInterfaceComponent } from "../../../components/interface-builder/components/display/menu/MenuInterfaceComponent"
 
 const plugin: ComponentRegistryCache = {
   button: ButtonInterfaceComponent,

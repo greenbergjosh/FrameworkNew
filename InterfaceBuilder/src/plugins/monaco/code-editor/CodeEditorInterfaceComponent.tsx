@@ -8,7 +8,7 @@ import { LayoutDefinition, UserInterfaceDataType } from "../../../globalTypes"
 import {
   CodeEditorInterfaceComponentProps,
   CodeEditorInterfaceComponentState,
-} from "plugins/monaco/code-editor/types.js"
+} from "../../../plugins/monaco/code-editor/types.js"
 import { CodeEditorProps } from "./types"
 
 export class CodeEditorInterfaceComponent extends BaseInterfaceComponent<

@@ -6,7 +6,7 @@ import styles from "../styles.scss"
 import classNames from "classnames"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 import { isEqual } from "lodash/fp"
-import { ComponentDefinition } from "globalTypes"
+import { ComponentDefinition } from "../../../../globalTypes"
 
 export function _RepeaterItem({
   components,

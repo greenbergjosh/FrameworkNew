@@ -1,5 +1,5 @@
 import { DraggedItemProps, DropHelperResult, DroppableTargetProps } from "../types"
-import { UI_ROOT } from "components/ComponentRenderer"
+import { UI_ROOT } from "../../../components/ComponentRenderer"
 import { getOr, set } from "lodash/fp"
 import { moveInList } from "../../../lib/moveInList"
 import { ComponentDefinition, LayoutDefinition } from "../../../globalTypes"

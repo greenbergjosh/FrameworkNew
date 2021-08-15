@@ -136,7 +136,10 @@ function getPathSegments(node: NavigationNode, pathSegments: string[] = []): str
 /**
  *
  */
-export function getParameters(pathSegments: string[], pagePathSegments: AppPaths["pagePathSegments"]): Record<string, string> {
+export function getParameters(
+  pathSegments: string[],
+  pagePathSegments: AppPaths["pagePathSegments"]
+): Record<string, string> {
   return pathSegments.reduce((acc, pathSegment, i) => {
     if (pathSegment.startsWith(":")) {
       const paramName = pathSegment.substring(1)

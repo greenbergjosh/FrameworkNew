@@ -1,4 +1,4 @@
-import { ComponentDefinition } from "globalTypes"
+import { ComponentDefinition } from "../../../globalTypes"
 
 /**
  *

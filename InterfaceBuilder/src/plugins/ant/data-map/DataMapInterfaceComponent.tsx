@@ -1,7 +1,7 @@
 import React from "react"
 import { DataMap } from "./DataMap"
 import { DataPathContext } from "../../../contexts/DataPathContext"
-import { ComponentRenderer } from "components/ComponentRenderer/ComponentRenderer"
+import { ComponentRenderer } from "../../../components/ComponentRenderer/ComponentRenderer"
 import { dataMapManageForm } from "./data-map-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import {

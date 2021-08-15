@@ -8,8 +8,8 @@ import { LayoutDefinition } from "../../../globalTypes"
 import { Input, Popover } from "antd"
 import { isEmpty, isEqual } from "lodash/fp"
 import { RgbaColor, RgbaColorPicker } from "react-colorful"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
-import { ColorPickerInterfaceComponentProps, ColorPickerInterfaceComponentState } from "plugins/ant/color-picker/types"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
+import { ColorPickerInterfaceComponentProps, ColorPickerInterfaceComponentState } from "../../../plugins/ant/color-picker/types"
 
 const _rgbWhite = "rgb(255, 255, 255)"
 

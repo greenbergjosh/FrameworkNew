@@ -1,9 +1,9 @@
 import React from "react"
 import { EditableContextProps } from "../../contexts/EditableContext"
 import { DraggedItemProps } from "../DragAndDrop"
-import { ComponentDefinition, ComponentDefinitionNamedProps } from "globalTypes"
-import { BaseInterfaceComponent } from "components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { EventMapItem } from "components/withEvents/types"
+import { ComponentDefinition, ComponentDefinitionNamedProps } from "../../globalTypes"
+import { BaseInterfaceComponent } from "../../components/BaseInterfaceComponent/BaseInterfaceComponent"
+import { EventMapItem } from "../../components/withEvents/types"
 
 export type IEditButtons = (props: EditButtonsProps) => JSX.Element | null
 export type EventMapItemKVP = [string, EventMapItem]

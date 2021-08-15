@@ -6,7 +6,7 @@ import { ComponentDefinition, ComponentDefinitionNamedProps, LayoutDefinition } 
 import { BaseInterfaceComponentProps, GetValue, SetValue } from "./types"
 import { getDefaultsFromComponentDefinitions } from "./componentDefinitionUtils"
 import { getMergedData } from "./getMergedData"
-import { EventPayloadType } from "components/withEvents/types"
+import { EventPayloadType } from "../../components/withEvents/types"
 
 /**
  * BaseInterfaceComponent

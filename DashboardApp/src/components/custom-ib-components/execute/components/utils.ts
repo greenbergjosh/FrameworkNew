@@ -34,15 +34,15 @@ export function getConfig(
   return queryConfig.fold(
     () => {
       console.error("ExecuteInterfaceComponent.getConfig", "Invalid Query", reporter(queryConfig))
-      return ({
+      return {
         loadStatus: LOADSTATUSCODES.error,
         loadError: "Query was invalid. Check developer tools for details.",
-      } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
+      } as unknown as Readonly<Partial<ExecuteInterfaceComponentState>>
     },
     Right((queryConfig) => {
-      return ({
+      return {
         queryConfig,
-      } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
+      } as unknown as Readonly<Partial<ExecuteInterfaceComponentState>>
     })
   )
 }
