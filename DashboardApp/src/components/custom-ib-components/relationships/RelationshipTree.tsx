@@ -9,7 +9,7 @@ import { none } from "fp-ts/lib/Option"
 
 const normalizeURLParams = (param: string) => (typeof param === "string" ? param.toLowerCase() : param)
 
-export function RelationshipTree({ configId }: RelationshipTreeProps): JSX.Element | null {
+export function RelationshipTree({ configId, linkPath }: RelationshipTreeProps): JSX.Element | null {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     associations: store.select.globalConfig.associations(appState),
     configsById: store.select.globalConfig.configsById(appState),
@@ -45,7 +45,7 @@ export function RelationshipTree({ configId }: RelationshipTreeProps): JSX.Eleme
                           title={
                             <>
                               <Tag>Unknown GUID</Tag>
-                              <Reach.Link to={`/${guid}`}>{guid}</Reach.Link> is not a known Global Config ID
+                              <Reach.Link to={`${linkPath}${guid}`}>{guid}</Reach.Link> is not a known Global Config ID
                             </>
                           }
                           key={guid}
@@ -58,7 +58,7 @@ export function RelationshipTree({ configId }: RelationshipTreeProps): JSX.Eleme
                           title={
                             <>
                               <Tag>{r.type}</Tag>
-                              <Reach.Link to={`/${guid}`}>{r.name}</Reach.Link>
+                              <Reach.Link to={`${linkPath}${guid}`}>{r.name}</Reach.Link>
                             </>
                           }
                           key={guid}

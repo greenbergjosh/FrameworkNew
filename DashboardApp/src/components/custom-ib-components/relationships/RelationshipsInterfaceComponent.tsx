@@ -48,6 +48,6 @@ export class RelationshipsInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    return <RelationshipTree configId={this.state.configId} />
+    return <RelationshipTree configId={this.state.configId} linkPath={this.props.linkPath || ""} />
   }
 }

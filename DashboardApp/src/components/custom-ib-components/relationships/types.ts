@@ -3,6 +3,7 @@ import { ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interfac
 export interface RelationshipsInterfaceComponentProps extends ComponentDefinitionNamedProps {
   userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
+  linkPath?: string
 }
 
 export interface RelationshipsInterfaceComponentState {
@@ -11,4 +12,5 @@ export interface RelationshipsInterfaceComponentState {
 
 export interface RelationshipTreeProps {
   configId?: string | null
+  linkPath: string
 }
