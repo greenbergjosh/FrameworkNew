@@ -1,5 +1,5 @@
 import React from "react"
-import { BaseInterfaceComponent, Pie, UserInterfaceContext } from "@opg/interface-builder"
+import { BaseInterfaceComponent, Pie, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
 import { pieManageForm } from "./pie-manage-form"
 import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../../../lib/loadRemoteLBM"
@@ -19,7 +19,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
     }
   }
   context!: React.ContextType<typeof UserInterfaceContext>
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static getLayoutDefinition = Pie.PieInterfaceComponent.getLayoutDefinition
   static manageForm = pieManageForm
 

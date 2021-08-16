@@ -9,7 +9,14 @@ import React from "react"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import { QueryConfigCodec } from "../../../../data/Report"
-import { BaseInterfaceComponent, cheapHash, JSONRecord, Right, UserInterfaceContext } from "@opg/interface-builder"
+import {
+  BaseInterfaceComponent,
+  cheapHash,
+  JSONRecord,
+  Right,
+  UserInterfaceContext,
+  UserInterfaceContextManager,
+} from "@opg/interface-builder"
 import {
   KeyValuePairConfig,
   RemoteDataHandlerType,
@@ -44,7 +51,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     }
   }*/
 
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
   // static manageForm = selectManageForm

@@ -1,4 +1,4 @@
-import { UserInterfaceContext } from "@opg/interface-builder"
+import { UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
 import { Alert, Icon, Spin } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
@@ -25,7 +25,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     dataKey: "data",
   }
 
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
   constructor(props: QueryProps<T>) {

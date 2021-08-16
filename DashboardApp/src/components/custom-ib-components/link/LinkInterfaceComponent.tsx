@@ -1,5 +1,5 @@
 import React from "react"
-import { BaseInterfaceComponent, Link, UserInterfaceContext } from "@opg/interface-builder"
+import { BaseInterfaceComponent, Link, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
 import { linkManageForm } from "./link-manage-form"
 import { LinkInterfaceComponentProps, LinkInterfaceComponentState } from "./types"
 import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
@@ -19,7 +19,7 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
     }
   }
   context!: React.ContextType<typeof AdminUserInterfaceContext>
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static defaultProps = {
     ...Link.LinkInterfaceComponent.defaultProps,
     useRouter: true,

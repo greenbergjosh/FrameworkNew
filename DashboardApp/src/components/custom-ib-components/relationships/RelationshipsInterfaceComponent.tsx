@@ -1,5 +1,10 @@
 import React from "react"
-import { BaseInterfaceComponent, LayoutDefinition, UserInterfaceContext } from "@opg/interface-builder"
+import {
+  BaseInterfaceComponent,
+  LayoutDefinition,
+  UserInterfaceContext,
+  UserInterfaceContextManager,
+} from "@opg/interface-builder"
 import { relationshipsManageForm } from "./relationships-manage-form"
 import { RelationshipsInterfaceComponentProps, RelationshipsInterfaceComponentState } from "./types"
 import { ExecuteInterfaceComponentProps, LoadStatusCode } from "../execute/types"
@@ -36,7 +41,7 @@ export class RelationshipsInterfaceComponent extends BaseInterfaceComponent<
     }
   }
   static manageForm = relationshipsManageForm
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static availableEvents: LoadStatusCode[] = []
   context!: React.ContextType<typeof AdminUserInterfaceContext>
 

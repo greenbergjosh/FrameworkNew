@@ -10,6 +10,7 @@ import {
   ComponentDefinitionNamedProps,
   ComponentRenderer,
   UserInterfaceContext,
+  UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { isPlainObject } from "lodash/fp"
@@ -50,7 +51,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
   }
 
   static manageForm = remoteComponentManageForm
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof AdminUserInterfaceContext>
 
   handleChange = (newData: UserInterfaceProps["data"]): void => {
