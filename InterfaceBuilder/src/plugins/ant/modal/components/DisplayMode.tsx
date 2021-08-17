@@ -1,10 +1,10 @@
 import { Modal } from "antd"
 import React from "react"
-import { UserInterfaceProps } from "globalTypes"
+import { UserInterfaceProps } from "../../../../globalTypes"
 import { isBoolean } from "lodash/fp"
-import { ComponentRenderer } from "components/ComponentRenderer"
-import { DataPathContext } from "contexts/DataPathContext"
-import { DisplayModeProps } from "plugins/ant/modal/types"
+import { ComponentRenderer } from "../../../../components/ComponentRenderer"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
+import { DisplayModeProps } from "../../../../plugins/ant/modal/types"
 import { tryCatch } from "fp-ts/lib/Option"
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {

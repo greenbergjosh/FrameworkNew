@@ -3,7 +3,7 @@ import {
   ComponentDefinitionNamedProps,
   IBaseInterfaceComponent,
   UserInterfaceProps,
-} from "globalTypes"
+} from "../../../globalTypes"
 import { TreeNodeNormal } from "antd/lib/tree/Tree"
 
 export type EntryType = "standard" | "leaf" | "parent"

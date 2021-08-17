@@ -1,6 +1,6 @@
 import React from "react"
 import { Col, Divider, Row } from "antd"
-import { TreeInterfaceComponentProps } from "plugins/ant/tree/types"
+import { TreeInterfaceComponentProps } from "../../../../plugins/ant/tree/types"
 
 export function orientTreeAndDetails(
   orientation: TreeInterfaceComponentProps["detailsOrientation"],

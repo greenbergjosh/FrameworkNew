@@ -10,8 +10,9 @@ import { useRematch } from "../../hooks/use-rematch"
 import image from "./go-get-em-coffee-mug.jpg"
 import styles from "./landing.module.css"
 import { WithRouteProps } from "../../state/navigation"
+import { PageBeacon } from "../../components/PageBeacon"
 
-interface Props {
+export interface LandingProps {
   location: {
     state?: {
       redirectedFrom?: string
@@ -19,7 +20,7 @@ interface Props {
   }
 }
 
-export function Landing(props: WithRouteProps<Props>) {
+export function Landing(props: WithRouteProps<LandingProps>) {
   const [fromStore, dispatch] = useRematch((appState) => ({
     iam: appState.iam,
     routes: appState.navigation.routes,
@@ -153,6 +154,14 @@ export function Landing(props: WithRouteProps<Props>) {
           </Col>
         </Row>
       </Layout.Content>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: null,
+          pageTitle: "Login",
+        }}
+        pageReady={true}
+      />
     </Layout>
   )
 }

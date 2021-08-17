@@ -3,8 +3,8 @@ import { BaseInterfaceComponent } from "../../../components/BaseInterfaceCompone
 import { modalManageForm } from "./modal-manage-form"
 import { LayoutDefinition } from "../../../globalTypes"
 import { ModalInterfaceComponentProps } from "./types"
-import { DisplayMode } from "plugins/ant/modal/components/DisplayMode"
-import { EditMode } from "plugins/ant/modal/components/EditMode"
+import { DisplayMode } from "../../../plugins/ant/modal/components/DisplayMode"
+import { EditMode } from "../../../plugins/ant/modal/components/EditMode"
 
 export class ModalInterfaceComponent extends BaseInterfaceComponent<ModalInterfaceComponentProps> {
   static defaultProps = {

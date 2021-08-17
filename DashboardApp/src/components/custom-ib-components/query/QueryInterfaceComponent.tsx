@@ -8,6 +8,7 @@ import {
   DataPathContext,
   getMergedData,
   UserInterfaceContext,
+  UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { QueryInterfaceComponentProps, QueryInterfaceComponentState } from "./types"
@@ -36,7 +37,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static manageForm = queryManageForm
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
   private getQueryResultUIData(result: QueryChildProps<any>): UserInterfaceProps["data"] {

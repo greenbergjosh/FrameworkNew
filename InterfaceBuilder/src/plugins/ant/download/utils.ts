@@ -1,6 +1,6 @@
 import { ParamKVPMapsType } from "../../../plugins/ant/download/types"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
-import { IBaseInterfaceComponent } from "components/BaseInterfaceComponent/types"
+import { IBaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/types"
 
 /**
  *

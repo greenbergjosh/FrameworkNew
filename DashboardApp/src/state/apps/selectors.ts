@@ -6,6 +6,8 @@ import { isEmpty } from "lodash/fp"
 import { hydrateNavigationNodes } from "./utils/hydrateNavigationNodes"
 import { getAppEntityFromPersistedConfig } from "./utils/getAppEntityFromPersistedConfig"
 import { getAppEntityByIdOrUri } from "./utils/getAppEntityByIdOrUri"
+import { AppSelectors } from "../store.types"
+import { PersistedConfig } from "../../data/GlobalConfig.Config"
 
 const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps) => ({
   /**
@@ -13,9 +15,38 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * is cached for select.appConfig if select.appConfigs changes
    * @param select
    */
-  appPagePersistedConfigs(select) {
+  appPagePersistedConfigsOLD(select) {
     return createSelector(select.globalConfig.configsByType, (configsByType) => {
       return record.lookup("App.Page", configsByType).getOrElse([])
+    })
+  },
+
+  /**
+   * "App.Page" typed records. We separate this selector so that the selection
+   * is cached for select.appConfig if select.appConfigs changes
+   * @param select
+   */
+  appPagePersistedConfigs(select) {
+    return createSelector(
+      slice((state) => state.configs),
+      (configs) => {
+        const persistedConfigs = configs.getOrElse([])
+        return persistedConfigs.filter((cfg) => cfg.type === "App.Page").sort((a, b) => a.name.localeCompare(b.name))
+      }
+    )
+  },
+
+  /**
+   * A collection of "lean" AppConfigs (views and navigation properties
+   * do not contain full records but only overrides).
+   * @param select
+   */
+  appConfigsOLD(select) {
+    return createSelector(select.globalConfig.configsByType, (configsByType) => {
+      const persistedConfigs = record.lookup("App", configsByType).getOrElse([])
+      return persistedConfigs.map((appPersistedConfig) => {
+        return getAppEntityFromPersistedConfig(appPersistedConfig, DEFAULT_APP_CONFIG)
+      })
     })
   },
 
@@ -24,13 +55,17 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * do not contain full records but only overrides).
    * @param select
    */
-  appConfigs(select) {
-    return createSelector(select.globalConfig.configsByType, (configsByType) => {
-      const persistedConfigs = record.lookup("App", configsByType).getOrElse([])
-      return persistedConfigs.map((appPersistedConfig) => {
-        return getAppEntityFromPersistedConfig<AppConfig>(appPersistedConfig, DEFAULT_APP_CONFIG)
-      })
-    })
+  appConfigs(select: AppSelectors) {
+    return createSelector(
+      slice((state) => state.configs),
+      (configs) => {
+        const persistedConfigs = configs.getOrElse([])
+        return persistedConfigs
+          .filter((cfg) => cfg.type === "App")
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((cfg) => getAppEntityFromPersistedConfig<AppConfig>(cfg, DEFAULT_APP_CONFIG))
+      }
+    )
   },
 
   /**
@@ -77,7 +112,7 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
           if (!isEmpty(appConfig.id)) {
             // Get the app's default view
             appPageConfig =
-              ((appConfig.views.find((view) => view.default) as AppEntity) as AppPageConfig) || DEFAULT_APP_PAGE_CONFIG
+              (appConfig.views.find((view) => view.default) as AppEntity as AppPageConfig) || DEFAULT_APP_PAGE_CONFIG
           }
         } else {
           // Get the page
@@ -105,14 +140,11 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appPageModel(select) {
-    return createSelector(
-      select.apps.appPageConfig,
-      (appPageConfig): AppPageModel => {
-        return {
-          $app: { location: { parameters: appPageConfig.parameters } },
-        }
+    return createSelector(select.apps.appPageConfig, (appPageConfig): AppPageModel => {
+      return {
+        $app: { location: { parameters: appPageConfig.parameters } },
       }
-    )
+    })
   },
 })
 

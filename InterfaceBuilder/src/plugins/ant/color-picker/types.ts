@@ -1,4 +1,4 @@
-import { ComponentDefinitionNamedProps } from "globalTypes"
+import { ComponentDefinitionNamedProps } from "../../../globalTypes"
 import { InputProps } from "antd/lib/input"
 import { RgbaColor } from "react-colorful"
 

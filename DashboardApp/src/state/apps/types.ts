@@ -1,6 +1,8 @@
 import { ComponentDefinition } from "@opg/interface-builder"
 import * as Store from "../store.types"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
+import { NotifyConfig } from "../feedback"
+import { RemoteData } from "@devexperts/remote-data-ts"
 
 export interface AppEntity {
   id: string
@@ -65,19 +67,24 @@ export type AppPaths = {
 
 export interface State {
   appPaths: AppPaths
+  configs: RemoteData<Error, Array<PersistedConfig>>
 }
 
 export interface Reducers {
   update(payload: Partial<State>): void
+  updateAppConfigs(payload: Partial<State>): void
 }
 
 export interface Effects {
   updateAppPaths(): void
+  loadAppConfigs(): Promise<NotifyConfig>
 }
 
 export interface Selectors {
   appPagePersistedConfigs(state: Store.AppState): PersistedConfig[]
+  appPagePersistedConfigsOLD(state: Store.AppState): PersistedConfig[]
   appConfigs(state: Store.AppState): AppConfig[]
+  appConfigsOLD(state: Store.AppState): AppConfig[]
   appConfig(state: Store.AppState): AppConfig
   appPageConfig(state: Store.AppState): AppPageConfig
   appPageModel(state: Store.AppState): AppPageModel

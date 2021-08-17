@@ -3,7 +3,7 @@ import { SwitchProps } from "antd/lib/switch"
 import React from "react"
 import { toggleManageForm } from "./toggle-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 import { isBoolean } from "lodash/fp"
 

@@ -5,7 +5,11 @@ import OpgCorporateTheme from "../themes/opg-corporate"
 import { isEmpty } from "lodash/fp"
 import { ITheme, ThemeLoaderProps } from "./types"
 import { UserInterfaceProps } from "@opg/interface-builder"
-import { Router, RouteComponentProps } from "@reach/router"
+import { Router, RouteComponentProps, Redirect } from "@reach/router"
+import { Landing, LandingProps } from "../views/login"
+import { WithRouteProps } from "../state/navigation"
+import { NotFound } from "../views/not-found"
+import { None, Some } from "../data/Option"
 
 export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.Element {
   /*
@@ -22,8 +26,11 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
 
   // Make sure that remote configs are loaded
   React.useEffect(() => {
-    dispatch.globalConfig.loadRemoteConfigs()
-  }, [dispatch])
+    if (fromStore.profile.isSome()) {
+      dispatch.apps.loadAppConfigs()
+      dispatch.globalConfig.loadRemoteConfigs()
+    }
+  }, [dispatch, fromStore.profile])
 
   // Keep the app sync'd with the URL
   React.useEffect(() => {
@@ -51,17 +58,49 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
     setData(newData)
   }
 
+  const abs = `${fromStore.appPaths.appRootPath}/${fromStore.appPaths.pagePathSegments.join("/")}`
+
   return (
     <Router>
-      <SelectedTheme.Shell
-        {...props}
-        path={`/:appUri/*`}
-        appConfig={fromStore.appConfig}
-        appRootPath={fromStore.appPaths.appRootPath}
-        pagePath={fromStore.appPaths.pagePathSegments.join("/")}
-        data={data}
-        onChangeData={handleChangeData}
+      {fromStore.profile.foldL(
+        None(() => (
+          <Redirect
+            key={abs}
+            from={`${abs}/*`}
+            state={{ redirectedFrom: window.location.pathname }}
+            noThrow
+            to={"/login"}
+          />
+        )),
+        Some((prof) => (
+          <SelectedTheme.Shell
+            {...props}
+            path={`/:appUri/*`}
+            appConfig={fromStore.appConfig}
+            appRootPath={fromStore.appPaths.appRootPath}
+            pagePath={fromStore.appPaths.pagePathSegments.join("/")}
+            data={data}
+            onChangeData={handleChangeData}
+          />
+        ))
+      )}
+      <Landing
+        location={props.location as WithRouteProps<LandingProps>["location"]}
+        default={false}
+        navigate={props.navigate!}
+        uri={props.uri || ""}
+        requiresAuthentication={false}
+        component={Landing}
+        abs={"/login"}
+        description={""}
+        title={"Home"}
+        iconType={"home"}
+        path={"login"}
+        redirectFrom={["/"]}
+        subroutes={{}}
+        children={<></>}
       />
+      <NotFound default />
     </Router>
   )
 }

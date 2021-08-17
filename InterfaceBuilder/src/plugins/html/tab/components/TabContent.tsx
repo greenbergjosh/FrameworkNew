@@ -1,6 +1,6 @@
-import { ComponentDefinition, UserInterfaceProps } from "globalTypes"
+import { ComponentDefinition, UserInterfaceProps } from "../../../../globalTypes"
 import React from "react"
-import { ComponentRenderer } from "components/ComponentRenderer"
+import { ComponentRenderer } from "../../../../components/ComponentRenderer"
 import classNames from "classnames"
 import styles from "../../tab-set/styles.scss"
 

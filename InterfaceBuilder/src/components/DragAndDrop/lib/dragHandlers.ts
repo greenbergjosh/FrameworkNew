@@ -1,4 +1,4 @@
-import { DraggableInnerProps } from "components/DragAndDrop"
+import { DraggableInnerProps } from "../../../components/DragAndDrop"
 import { DraggedItemProps } from "../types"
 
 export const dragHandlers = {

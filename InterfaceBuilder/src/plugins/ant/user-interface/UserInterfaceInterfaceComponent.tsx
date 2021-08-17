@@ -1,5 +1,5 @@
 import React from "react"
-import { UserInterface } from "components/UserInterface/UserInterface"
+import { UserInterface } from "../../../components/UserInterface/UserInterface"
 import { userInterfaceManageForm } from "./user-interface-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import {

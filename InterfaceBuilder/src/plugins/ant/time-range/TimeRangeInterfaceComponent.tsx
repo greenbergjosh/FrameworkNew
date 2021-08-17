@@ -4,7 +4,7 @@ import { set } from "lodash/fp"
 import moment from "moment"
 import { timeRangeManageForm } from "./time-range-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface TimeRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {

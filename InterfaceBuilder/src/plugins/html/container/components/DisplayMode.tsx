@@ -1,7 +1,7 @@
 import React from "react"
 import { DisplayModeProps } from "../types"
-import { ComponentRenderer } from "components/ComponentRenderer"
-import { DataPathContext } from "contexts/DataPathContext"
+import { ComponentRenderer } from "../../../../components/ComponentRenderer"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
 import styled, { css } from "styled-components"
 
 const Div = styled.div`

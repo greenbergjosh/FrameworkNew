@@ -1,11 +1,11 @@
 import React from "react"
-import { DataBinding } from "components/ComponentModifiers/DataBinding"
-import { DraggableWrapper } from "components/ComponentModifiers/DraggableWrapper"
-import { EditPanelWrapper } from "components/ComponentModifiers/EditPanelWrapper"
-import { EditDataBinding } from "components/ComponentModifiers/EditDataBinding/EditDataBinding"
-import { FormField } from "components/ComponentModifiers/FormField"
-import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
-import { EditModeProps } from "components/ComponentRenderer"
+import { DataBinding } from "../../../components/ComponentModifiers/DataBinding"
+import { DraggableWrapper } from "../../../components/ComponentModifiers/DraggableWrapper"
+import { EditPanelWrapper } from "../../../components/ComponentModifiers/EditPanelWrapper"
+import { EditDataBinding } from "../../../components/ComponentModifiers/EditDataBinding/EditDataBinding"
+import { FormField } from "../../../components/ComponentModifiers/FormField"
+import { ReplaceTokens } from "../../../components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
+import { EditModeProps } from "../../../components/ComponentRenderer"
 
 export function EditMode(props: EditModeProps): JSX.Element {
   return (

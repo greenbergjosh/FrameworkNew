@@ -35,7 +35,7 @@ export function fetch({
     case "all":
       if (!entityTypeId || isEmpty(entityTypeId)) {
         return Promise.resolve({
-          data: (fromStore.configs.getOrElse([]) as unknown) as JSONRecord,
+          data: fromStore.configs.getOrElse([]) as unknown as JSONRecord,
           loadStatus: LOADSTATUSCODES.loaded,
         })
       }

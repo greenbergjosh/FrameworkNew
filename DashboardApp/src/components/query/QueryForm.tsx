@@ -145,7 +145,7 @@ export const QueryForm = React.memo(
       return (
         <>
           <UserInterface
-            components={(layout as unknown) as ComponentDefinition[]}
+            components={layout as unknown as ComponentDefinition[]}
             contextManager={fromStore.privilegedUserInterfaceContextManager}
             data={formState}
             getRootUserInterfaceData={getRootUserInterfaceData}

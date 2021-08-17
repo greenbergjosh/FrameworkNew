@@ -5,7 +5,7 @@ import { inputManageForm } from "./input-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import CharCounter from "../_shared/CharCounter"
 import styles from "./input.module.scss"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition } from "../../../globalTypes"
 
 export interface InputInterfaceComponentProps extends ComponentDefinitionNamedProps {

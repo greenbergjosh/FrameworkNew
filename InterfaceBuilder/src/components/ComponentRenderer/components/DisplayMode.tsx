@@ -1,10 +1,10 @@
 import React from "react"
-import { DataBinding } from "components/ComponentModifiers/DataBinding"
-import { FormField } from "components/ComponentModifiers/FormField"
+import { DataBinding } from "../../../components/ComponentModifiers/DataBinding"
+import { FormField } from "../../../components/ComponentModifiers/FormField"
 import { DisplayVisibility } from "../../ComponentModifiers/DisplayVisibility"
-import { EditDataBinding } from "components/ComponentModifiers/EditDataBinding/EditDataBinding"
-import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
-import { DisplayModeProps } from "components/ComponentRenderer"
+import { EditDataBinding } from "../../../components/ComponentModifiers/EditDataBinding/EditDataBinding"
+import { ReplaceTokens } from "../../../components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
+import { DisplayModeProps } from "../../../components/ComponentRenderer"
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {
   return (

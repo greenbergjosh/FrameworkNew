@@ -1,6 +1,12 @@
 import { commonDateForm } from "./common-date-form"
+import { ComponentDefinition } from "../../../../globalTypes"
 
-export const tableDataTypes = [
+interface TableDataType {
+  option: { label: string; value: string }
+  form: Partial<ComponentDefinition>[]
+}
+
+export const tableDataTypes: TableDataType[] = [
   {
     option: {
       label: "Text",

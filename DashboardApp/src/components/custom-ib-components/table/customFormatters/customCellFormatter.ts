@@ -1,8 +1,7 @@
-import { EnrichedColumnDefinition } from "@opg/interface-builder"
+import { StandardGridTypes } from "@opg/interface-builder"
 import { AppSelectors } from "../../../../state/store.types"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
-import { ColumnModel } from "@syncfusion/ej2-react-grids"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
 
@@ -32,13 +31,13 @@ export function getCustomCellFormatter({
   formatter,
   queryParams,
 }: {
-  cellFormatter: EnrichedColumnDefinition["cellFormatter"]
-  cellFormatterOptions: EnrichedColumnDefinition["cellFormatterOptions"]
-  columnType: EnrichedColumnDefinition["type"]
+  cellFormatter: StandardGridTypes.EnrichedColumnDefinition["cellFormatter"]
+  cellFormatterOptions: StandardGridTypes.EnrichedColumnDefinition["cellFormatterOptions"]
+  columnType: StandardGridTypes.EnrichedColumnDefinition["type"]
   configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>
-  formatter: EnrichedColumnDefinition["formatter"]
+  formatter: StandardGridTypes.EnrichedColumnDefinition["formatter"]
   queryParams?: JSONRecord
-}): EnrichedColumnDefinition["formatter"] {
+}): StandardGridTypes.EnrichedColumnDefinition["formatter"] {
   if (!cellFormatter && columnType === "layout") return
 
   // See note above for cellFormatterQueryParams
@@ -68,7 +67,7 @@ export function getCustomCellFormatter({
       }, {})
 
     if (typeof formatter === "function") {
-      return (column: EnrichedColumnDefinition, data: any) => {
+      return (column: StandardGridTypes.EnrichedColumnDefinition, data: any) => {
         /*
          * Wrap the LBM with a try-catch because the LBM may have a bug,
          * and also LBMs use column.formatFn(value) which will throw

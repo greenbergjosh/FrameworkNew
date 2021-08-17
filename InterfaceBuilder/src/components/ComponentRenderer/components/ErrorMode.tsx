@@ -1,9 +1,9 @@
 import { Alert, Collapse, Icon } from "antd"
 import React from "react"
-import { EditPanelWrapper } from "components/ComponentModifiers/EditPanelWrapper"
-import { DraggableWrapper } from "components/ComponentModifiers/DraggableWrapper"
-import { DataBinding } from "components/ComponentModifiers/DataBinding"
-import { ReplaceTokens } from "components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
+import { EditPanelWrapper } from "../../../components/ComponentModifiers/EditPanelWrapper"
+import { DraggableWrapper } from "../../../components/ComponentModifiers/DraggableWrapper"
+import { DataBinding } from "../../../components/ComponentModifiers/DataBinding"
+import { ReplaceTokens } from "../../../components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
 import { ErrorModeProps } from "../types"
 
 export function ErrorMode(props: ErrorModeProps): JSX.Element {

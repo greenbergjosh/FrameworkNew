@@ -1,6 +1,7 @@
 import * as Reach from "@reach/router"
 import React from "react"
 import { Helmet } from "react-helmet"
+import { PageBeacon } from "../../components/PageBeacon"
 
 interface Props extends Reach.RouteComponentProps {}
 
@@ -12,6 +13,14 @@ export function NotFound(props: Props): JSX.Element {
       </Helmet>
 
       <p>{`You seem lost. ${props.location && props.location.pathname} doesn't go anywhere`}</p>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: null,
+          pageTitle: "Not Found",
+        }}
+        pageReady={true}
+      />
     </div>
   )
 }

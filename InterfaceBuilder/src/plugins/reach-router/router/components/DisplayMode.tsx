@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentDefinition } from "globalTypes"
+import { ComponentDefinition } from "../../../../globalTypes"
 import { Router } from "@reach/router"
 import { RouteRenderer } from "./RouteRenderer"
 import { DisplayModeProps, RouteRendererProps } from "../types"

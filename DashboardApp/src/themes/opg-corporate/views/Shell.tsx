@@ -26,7 +26,7 @@ export function Shell(props: RouteComponentProps<ThemeProps>): JSX.Element | nul
         appConfig={props.appConfig}
         appRootPath={props.appRootPath}
         globalConfigPath={fromStore.globalConfigPath}
-        location={({} as unknown) as any}
+        location={{} as unknown as any}
         pagePath={props.pagePath}
         subroutes={{}}
         collapsed={sidebarCollapsed}

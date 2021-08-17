@@ -1,6 +1,6 @@
 import React from "react"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { ComponentDefinition, LayoutDefinition } from "globalTypes"
+import { ComponentDefinition, LayoutDefinition } from "../../../globalTypes"
 import { ComponentRenderer } from "../../../components/ComponentRenderer/ComponentRenderer"
 import { DataPathContext } from "../../../contexts/DataPathContext"
 import { RouteInterfaceComponentProps, RouteInterfaceComponentState } from "./types"

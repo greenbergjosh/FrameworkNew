@@ -16,7 +16,6 @@ import { prettyPrint } from "../../lib/json"
 import { Config as mockGlobalConfigs } from "./global-config.json"
 import * as Store from "../store.types"
 import { APITypeEventHandlerKey, executeParentTypeEventHandler } from "./globalConfigEvents"
-import { HttpError } from "../../lib/http"
 import { NotifyConfig } from "../feedback"
 
 declare module "../store.types" {

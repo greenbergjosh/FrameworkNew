@@ -2,8 +2,8 @@ import React from "react"
 import { EditModeProps } from "../types"
 import { set } from "lodash/fp"
 import { ComponentDefinition } from "../../../../globalTypes"
-import { ComponentRenderer } from "components/ComponentRenderer"
-import { DataPathContext } from "contexts/DataPathContext"
+import { ComponentRenderer } from "../../../../components/ComponentRenderer"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
 import styled, { css } from "styled-components"
 
 const Div = styled.div`

@@ -6,6 +6,7 @@ import { AppConfig } from "../../../../state/apps"
 import { AppViewButtons } from "../AppButtons/AppViewButtons"
 import { SyncConfigButton } from "../AppButtons/SyncConfigButton"
 import { ProfileButton } from "../AppButtons/ProfileButton"
+import opgLogo from "../../../../images/on_point_tm_logo.svg"
 
 export function Header(props: {
   appConfig: AppConfig
@@ -34,12 +35,7 @@ export function Header(props: {
           />
           <SyncConfigButton />
           <AppsMenu />
-          <img
-            alt="OnPoint Global"
-            src={require("../../../../images/on_point_tm_logo.svg")}
-            height={32}
-            style={{ marginRight: 24, marginLeft: 24 }}
-          />
+          <img alt="OnPoint Global" src={opgLogo} height={32} style={{ marginRight: 24, marginLeft: 24 }} />
           <ProfileButton />
         </div>
       </Layout.Header>

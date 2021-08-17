@@ -5,6 +5,7 @@ import {
   ComponentDefinitionNamedProps,
   getMergedData,
   UserInterfaceContext,
+  UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { executeManageForm } from "./execute-manage-form"
@@ -47,7 +48,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
   }
   static manageForm = executeManageForm
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static availableEvents: LoadStatusCode[] = [
     LOADSTATUSCODES.loading,
     LOADSTATUSCODES.loaded,

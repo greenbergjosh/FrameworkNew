@@ -3,7 +3,7 @@ import { CheckboxChangeEvent } from "antd/lib/checkbox"
 import React from "react"
 import { checkboxManageForm } from "./checkbox-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 import { isBoolean } from "lodash/fp"
 

@@ -31,6 +31,7 @@ import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"
 import styles from "./edit.module.scss"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {
   configId: string
@@ -107,10 +108,10 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
 
   const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
 
-  const entityTypeConfig = React.useMemo(() => record.lookup(props.config.type, fromStore.entityTypes), [
-    fromStore.entityTypes,
-    props.config.type,
-  ])
+  const entityTypeConfig = React.useMemo(
+    () => record.lookup(props.config.type, fromStore.entityTypes),
+    [fromStore.entityTypes, props.config.type]
+  )
 
   const isRootConfig = entityTypeConfig.map(({ id }) => id === props.config.id).getOrElse(false)
   const configComponents = isRootConfig
@@ -429,6 +430,14 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
           </>
         )}
       </Formik.Formik>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: "Global Configs - Edit Config",
+        }}
+        pageReady={true}
+      />
     </>
   )
 }

@@ -13,7 +13,7 @@ import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
 import { mapData, unMapData } from "./mapData"
 import { ReportDetailsType } from "./types"
-import { EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
+import { StandardGridTypes, UserInterfaceProps } from "@opg/interface-builder"
 import { ColumnConfig } from "../../custom-ib-components/table/types"
 
 /***************************************************************************
@@ -52,7 +52,7 @@ export const getDetailTemplate = ({
   handleChangeData?: (oldData: JSONRecord, newData: JSONRecord) => void
   onChangeData?: UserInterfaceProps["onChangeData"]
   columnType: ColumnConfig["type"]
-}): EnrichedColumnDefinition["template"] => {
+}): StandardGridTypes.EnrichedColumnDefinition["template"] => {
   if (columnType !== "layout") return
   const resolved = resolveDetails(columnDetails)
 

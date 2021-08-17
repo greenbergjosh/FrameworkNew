@@ -1,5 +1,5 @@
 import { editor } from "monaco-editor"
-import { CustomEditorWillMount } from "plugins/monaco/code-editor/types"
+import { CustomEditorWillMount } from "../../../plugins/monaco/code-editor/types"
 import * as iots from "io-ts"
 
 /*******************************

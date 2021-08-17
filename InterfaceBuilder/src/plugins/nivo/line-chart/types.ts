@@ -2,8 +2,8 @@ import { LineProps, Serie } from "@nivo/line"
 import { LinearScale, PointScale } from "@nivo/scales"
 import { DataFormatter } from "@nivo/core"
 import { ComponentDefinitionNamedProps, UserInterfaceProps } from "../../../globalTypes"
-import { LBMFunctionType } from "lib/parseLBM"
-import { JSONRecord } from "globalTypes/JSONTypes"
+import { LBMFunctionType } from "../../../lib/parseLBM"
+import { JSONRecord } from "../../../globalTypes/JSONTypes"
 
 export type ScaleType = PointScale | LinearScale
 

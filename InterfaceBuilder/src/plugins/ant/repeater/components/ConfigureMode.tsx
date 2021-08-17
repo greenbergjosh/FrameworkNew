@@ -6,7 +6,7 @@ import { Badge, Card, Icon } from "antd"
 import classNames from "classnames"
 import styles from "../styles.scss"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
-import { ComponentDefinition } from "globalTypes"
+import { ComponentDefinition } from "../../../../globalTypes"
 
 export function ConfigureMode({
   components,

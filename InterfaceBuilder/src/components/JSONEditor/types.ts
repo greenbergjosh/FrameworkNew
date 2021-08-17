@@ -1,4 +1,4 @@
-import { JSONRecord } from "globalTypes/JSONTypes"
+import { JSONRecord } from "../../globalTypes/JSONTypes"
 
 export type JSONEditorProps = {
   data: JSONRecord | JSONRecord[] | undefined

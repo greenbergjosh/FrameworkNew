@@ -23,7 +23,6 @@ import {
   EditorLangCodec,
   editorLanguages,
   getDefaultsFromComponentDefinitions,
-  JSONRecord,
   UserInterface,
   UserInterfaceProps,
 } from "@opg/interface-builder"
@@ -32,6 +31,7 @@ import { fromEither, getSetoid as getOptionSetoid, none, Option, option, some, t
 import { InProgressLocalDraftConfig, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {
   configId: "create"
@@ -172,261 +172,271 @@ export function CreateGlobalConfig({
   //
 
   return (
-    <Skeleton active loading={fromStore.configs.isPending()}>
-      <Formik.Formik
-        initialValues={initialFormState}
-        validate={(vs) =>
-          new Identity({})
-            .map((errs) => ({
-              ...errs,
-              config: configErrors.length
-                ? some(configErrors.join("\n"))
-                : isWhitespace(vs.config)
-                ? some("Cannot be empty")
-                : none,
-            }))
-            .map((errs) => ({
-              ...errs,
-              name: isWhitespace(vs.name)
-                ? some("Cannot be empty")
-                : fromStore.configNames.map((n) => n.toLowerCase()).includes(vs.name.toLowerCase())
-                ? some("Name already taken")
-                : none,
-            }))
-            .map((errs) => ({
-              ...errs,
-              type: isWhitespace(vs.type)
-                ? some("Cannot be empty")
-                : !entityTypeNames.some((name) => name === vs.type)
-                ? some("Type does not exist")
-                : none,
-            }))
-            .map(record.compact)
-            .extract()
-        }
-        onSubmit={(values, { setSubmitting }) => {
-          setState({ createdConfig: some(values) })
-          dispatch.globalConfig
-            .createRemoteConfig({
-              nextState: values,
-              parent: record.lookup(values.type, fromStore.entityTypes).toUndefined(),
-            })
-            .then(() => setSubmitting(false))
-        }}>
-        {(form) => {
-          const entityTypeConfig = record.lookup(form.values.type, fromStore.entityTypes)
+    <>
+      <Skeleton active loading={fromStore.configs.isPending()}>
+        <Formik.Formik
+          initialValues={initialFormState}
+          validate={(vs) =>
+            new Identity({})
+              .map((errs) => ({
+                ...errs,
+                config: configErrors.length
+                  ? some(configErrors.join("\n"))
+                  : isWhitespace(vs.config)
+                  ? some("Cannot be empty")
+                  : none,
+              }))
+              .map((errs) => ({
+                ...errs,
+                name: isWhitespace(vs.name)
+                  ? some("Cannot be empty")
+                  : fromStore.configNames.map((n) => n.toLowerCase()).includes(vs.name.toLowerCase())
+                  ? some("Name already taken")
+                  : none,
+              }))
+              .map((errs) => ({
+                ...errs,
+                type: isWhitespace(vs.type)
+                  ? some("Cannot be empty")
+                  : !entityTypeNames.some((name) => name === vs.type)
+                  ? some("Type does not exist")
+                  : none,
+              }))
+              .map(record.compact)
+              .extract()
+          }
+          onSubmit={(values, { setSubmitting }) => {
+            setState({ createdConfig: some(values) })
+            dispatch.globalConfig
+              .createRemoteConfig({
+                nextState: values,
+                parent: record.lookup(values.type, fromStore.entityTypes).toUndefined(),
+              })
+              .then(() => setSubmitting(false))
+          }}>
+          {(form) => {
+            const entityTypeConfig = record.lookup(form.values.type, fromStore.entityTypes)
 
-          const configComponents = determineLayoutComponents(
-            fromStore.configsById,
-            fromStore.configsByType,
-            entityTypeConfig
-          )
+            const configComponents = determineLayoutComponents(
+              fromStore.configsById,
+              fromStore.configsByType,
+              entityTypeConfig
+            )
 
-          return (
-            <>
-              <Helmet>
-                <title>{form.values.name || "New Item"} | Create Configuration | Channel Admin | OPG</title>
-              </Helmet>
+            return (
+              <>
+                <Helmet>
+                  <title>{form.values.name || "New Item"} | Create Configuration | Channel Admin | OPG</title>
+                </Helmet>
 
-              <Card
-                bordered={false}
-                extra={
-                  <>
-                    {/* --------- Save Button ----------- */}
-                    <Button
-                      htmlType="submit"
-                      form="create-config-form"
-                      icon={fromStore.isCreatingConfig ? "loading" : "save"}
-                      key="save"
-                      loading={fromStore.isCreatingConfig}
-                      size="small"
-                      type="primary">
-                      Save
-                    </Button>
-                  </>
-                }
-                title={`Create Config`}>
-                <Form
-                  id="create-config-form"
-                  labelAlign="left"
-                  layout="horizontal"
-                  onSubmit={form.handleSubmit}
-                  {...formItemLayout}
-                  style={{ width: "100%" }}>
-                  {/* ---------- Config.Type Input ---------------- */}
-                  <Form.Item
-                    hasFeedback={form.touched.type}
-                    help={form.touched.type && form.errors.type}
-                    label="Type"
-                    required={true}
-                    validateStatus={form.touched.type && form.errors.type ? "error" : "success"}>
-                    <Select
-                      dropdownRender={(menu) => (
-                        <>
-                          {menu}
-                          <Button block ghost type="primary" onMouseDown={toggleCreateEntityTypeModal}>
-                            <Icon type="plus-circle" /> New Entity Type
-                          </Button>
-                        </>
-                      )}
-                      open={state.shouldShowConfigTypeSelectDropdown}
-                      placeholder="Select a config type"
-                      style={{ width: "100%" }}
-                      onDropdownVisibleChange={setShouldShowConfigTypeSelectDropdown}
-                      value={form.values.type}
-                      onBlur={() => form.handleBlur({ target: { name: "type" } })}
-                      onChange={(val: any) => {
-                        form.setFieldValue("type", val)
-                        const typeConfig = record.lookup(val, fromStore.entityTypeConfigs).toUndefined()
-                        if (typeConfig) {
-                          form.setFieldValue("type_id", typeConfig.id)
-                        }
-                        const countConfigLines = form.values.config.split("\n").length
-
-                        if (countConfigLines <= 3) {
-                          // When changing the type, if there are 3 or fewer lines of config
-                          // then it's pretty safe to assume that the config has not been edited
-                          // So, set the form to its defaults
-                          const configDefaults = determineConfigDefaults(
-                            val,
-                            fromStore.entityTypes,
-                            fromStore.configsByType,
-                            fromStore.configsById
-                          )
-                          form.setFieldValue("config", configDefaults)
-                        }
-                      }}>
-                      {entityTypeNames.map((type) => (
-                        <Select.Option key={type}>{type}</Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-
-                  {/* ---------- Config.Name Input ---------------- */}
-                  <Form.Item
-                    hasFeedback={form.touched.name}
-                    help={form.touched.name && form.errors.name}
-                    label="Name"
-                    required={true}
-                    validateStatus={form.touched.name && form.errors.name ? "error" : "success"}>
-                    <Input
-                      placeholder="Enter a unique config name"
-                      name="name"
-                      value={form.values.name}
-                      onBlur={form.handleBlur}
-                      onChange={form.handleChange}
-                      maxLength={getConfigNameMaxLengthCallback()(form.values.type)}
-                    />
-                  </Form.Item>
-
-                  {/* ---------- Config.Config Input ---------------- */}
-                  <Form.Item
-                    hasFeedback={form.touched.config}
-                    help={form.touched.config && form.errors.config}
-                    label="Config"
-                    required={true}
-                    validateStatus={form.errors.config ? "error" : "success"}>
-                    <Tabs defaultActiveKey={configComponents && configComponents.length ? "form" : "editor"}>
-                      <Tabs.TabPane
-                        key={"form"}
-                        tab={"Properties"}
-                        disabled={!configComponents || !configComponents.length || !!form.errors.config}>
-                        {form.errors.config ? (
-                          <Alert
-                            type="error"
-                            description="Please correct errors in the JSON before attempting to edit the layout."
-                            message="JSON Errors"
-                          />
-                        ) : (
-                          <UserInterface
-                            contextManager={userInterfaceContextManager}
-                            data={getData(form)}
-                            getRootUserInterfaceData={() => getData(form)}
-                            onChangeRootData={(value: any) => {
-                              form.setFieldValue("config", JSON.stringify(value, null, 2))
-                              form.setFieldTouched("config", true)
-                            }}
-                            onChangeData={(value) => {
-                              console.log("edit", "UserInterface.onChangeData", "new config", value)
-                              form.setFieldValue("config", JSON.stringify(value, null, 2))
-                              form.setFieldTouched("config", true)
-                            }}
-                            mode="display"
-                            components={configComponents}
-                          />
+                <Card
+                  bordered={false}
+                  extra={
+                    <>
+                      {/* --------- Save Button ----------- */}
+                      <Button
+                        htmlType="submit"
+                        form="create-config-form"
+                        icon={fromStore.isCreatingConfig ? "loading" : "save"}
+                        key="save"
+                        loading={fromStore.isCreatingConfig}
+                        size="small"
+                        type="primary">
+                        Save
+                      </Button>
+                    </>
+                  }
+                  title={`Create Config`}>
+                  <Form
+                    id="create-config-form"
+                    labelAlign="left"
+                    layout="horizontal"
+                    onSubmit={form.handleSubmit}
+                    {...formItemLayout}
+                    style={{ width: "100%" }}>
+                    {/* ---------- Config.Type Input ---------------- */}
+                    <Form.Item
+                      hasFeedback={form.touched.type}
+                      help={form.touched.type && form.errors.type}
+                      label="Type"
+                      required={true}
+                      validateStatus={form.touched.type && form.errors.type ? "error" : "success"}>
+                      <Select
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                            <Button block ghost type="primary" onMouseDown={toggleCreateEntityTypeModal}>
+                              <Icon type="plus-circle" /> New Entity Type
+                            </Button>
+                          </>
                         )}
-                        {/* <Alert type="info" message={form.values.config} /> */}
-                      </Tabs.TabPane>
-                      <Tabs.TabPane key={"display"} tab={"Preview"} disabled={!!form.errors.config}>
-                        {form.errors.config ? (
-                          <Alert
-                            type="error"
-                            description="Please correct errors in the JSON before attempting to preview the layout."
-                            message="JSON Errors"
-                          />
-                        ) : (
-                          <UserInterface
-                            contextManager={userInterfaceContextManager}
-                            data={previewData}
-                            getRootUserInterfaceData={() => getData(form)}
-                            onChangeRootData={(value: any) => {
-                              form.setFieldValue("config", JSON.stringify(value, null, 2))
+                        open={state.shouldShowConfigTypeSelectDropdown}
+                        placeholder="Select a config type"
+                        style={{ width: "100%" }}
+                        onDropdownVisibleChange={setShouldShowConfigTypeSelectDropdown}
+                        value={form.values.type}
+                        onBlur={() => form.handleBlur({ target: { name: "type" } })}
+                        onChange={(val: any) => {
+                          form.setFieldValue("type", val)
+                          const typeConfig = record.lookup(val, fromStore.entityTypeConfigs).toUndefined()
+                          if (typeConfig) {
+                            form.setFieldValue("type_id", typeConfig.id)
+                          }
+                          const countConfigLines = form.values.config.split("\n").length
+
+                          if (countConfigLines <= 3) {
+                            // When changing the type, if there are 3 or fewer lines of config
+                            // then it's pretty safe to assume that the config has not been edited
+                            // So, set the form to its defaults
+                            const configDefaults = determineConfigDefaults(
+                              val,
+                              fromStore.entityTypes,
+                              fromStore.configsByType,
+                              fromStore.configsById
+                            )
+                            form.setFieldValue("config", configDefaults)
+                          }
+                        }}>
+                        {entityTypeNames.map((type) => (
+                          <Select.Option key={type}>{type}</Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+
+                    {/* ---------- Config.Name Input ---------------- */}
+                    <Form.Item
+                      hasFeedback={form.touched.name}
+                      help={form.touched.name && form.errors.name}
+                      label="Name"
+                      required={true}
+                      validateStatus={form.touched.name && form.errors.name ? "error" : "success"}>
+                      <Input
+                        placeholder="Enter a unique config name"
+                        name="name"
+                        value={form.values.name}
+                        onBlur={form.handleBlur}
+                        onChange={form.handleChange}
+                        maxLength={getConfigNameMaxLengthCallback()(form.values.type)}
+                      />
+                    </Form.Item>
+
+                    {/* ---------- Config.Config Input ---------------- */}
+                    <Form.Item
+                      hasFeedback={form.touched.config}
+                      help={form.touched.config && form.errors.config}
+                      label="Config"
+                      required={true}
+                      validateStatus={form.errors.config ? "error" : "success"}>
+                      <Tabs defaultActiveKey={configComponents && configComponents.length ? "form" : "editor"}>
+                        <Tabs.TabPane
+                          key={"form"}
+                          tab={"Properties"}
+                          disabled={!configComponents || !configComponents.length || !!form.errors.config}>
+                          {form.errors.config ? (
+                            <Alert
+                              type="error"
+                              description="Please correct errors in the JSON before attempting to edit the layout."
+                              message="JSON Errors"
+                            />
+                          ) : (
+                            <UserInterface
+                              contextManager={userInterfaceContextManager}
+                              data={getData(form)}
+                              getRootUserInterfaceData={() => getData(form)}
+                              onChangeRootData={(value: any) => {
+                                form.setFieldValue("config", JSON.stringify(value, null, 2))
+                                form.setFieldTouched("config", true)
+                              }}
+                              onChangeData={(value) => {
+                                console.log("edit", "UserInterface.onChangeData", "new config", value)
+                                form.setFieldValue("config", JSON.stringify(value, null, 2))
+                                form.setFieldTouched("config", true)
+                              }}
+                              mode="display"
+                              components={configComponents}
+                            />
+                          )}
+                          {/* <Alert type="info" message={form.values.config} /> */}
+                        </Tabs.TabPane>
+                        <Tabs.TabPane key={"display"} tab={"Preview"} disabled={!!form.errors.config}>
+                          {form.errors.config ? (
+                            <Alert
+                              type="error"
+                              description="Please correct errors in the JSON before attempting to preview the layout."
+                              message="JSON Errors"
+                            />
+                          ) : (
+                            <UserInterface
+                              contextManager={userInterfaceContextManager}
+                              data={previewData}
+                              getRootUserInterfaceData={() => getData(form)}
+                              onChangeRootData={(value: any) => {
+                                form.setFieldValue("config", JSON.stringify(value, null, 2))
+                                form.setFieldTouched("config", true)
+                              }}
+                              onChangeData={(value) => {
+                                console.log("edit", "UserInterface.onChangeData", "display config", value)
+                                setPreviewData(value)
+                                // form.setFieldValue("config", JSON.stringify(value, null, 2))
+                                // form.setFieldTouched("config", true)
+                              }}
+                              mode="display"
+                              components={tryCatch(() => {
+                                const { layout } = JSON5.parse(form.values.config)
+                                return layout && (Array.isArray(layout) ? layout : [layout])
+                              }).getOrElse([])}
+                            />
+                          )}
+                        </Tabs.TabPane>
+                        <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
+                          <CodeEditor
+                            document={""}
+                            documentDraft={some(form.values.config)}
+                            height={500}
+                            language={record
+                              .lookup(form.values.type, fromStore.entityTypeConfigs)
+                              .chain((etc) => etc.config)
+                              .chain(fromStrToJSONRec)
+                              .chain((config) => record.lookup("lang", config))
+                              .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
+                              .getOrElse(fromStore.defaultEntityTypeConfig.lang)}
+                            width="100%"
+                            outputType="string"
+                            onChange={({ value, errors }) => {
+                              errors.map((errors) => {
+                                setConfigErrors(errors)
+                              })
+                              form.setFieldValue("config", value)
                               form.setFieldTouched("config", true)
                             }}
-                            onChangeData={(value) => {
-                              console.log("edit", "UserInterface.onChangeData", "display config", value)
-                              setPreviewData(value)
-                              // form.setFieldValue("config", JSON.stringify(value, null, 2))
-                              // form.setFieldTouched("config", true)
-                            }}
-                            mode="display"
-                            components={tryCatch(() => {
-                              const { layout } = JSON5.parse(form.values.config)
-                              return layout && (Array.isArray(layout) ? layout : [layout])
-                            }).getOrElse([])}
                           />
-                        )}
-                      </Tabs.TabPane>
-                      <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
-                        <CodeEditor
-                          document={""}
-                          documentDraft={some(form.values.config)}
-                          height={500}
-                          language={record
-                            .lookup(form.values.type, fromStore.entityTypeConfigs)
-                            .chain((etc) => etc.config)
-                            .chain(fromStrToJSONRec)
-                            .chain((config) => record.lookup("lang", config))
-                            .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
-                            .getOrElse(fromStore.defaultEntityTypeConfig.lang)}
-                          width="100%"
-                          outputType="string"
-                          onChange={({ value, errors }) => {
-                            errors.map((errors) => {
-                              setConfigErrors(errors)
-                            })
-                            form.setFieldValue("config", value)
-                            form.setFieldTouched("config", true)
-                          }}
-                        />
-                      </Tabs.TabPane>
-                    </Tabs>
-                  </Form.Item>
-                </Form>
-              </Card>
-              <CreateEntityTypeModal
-                isVisible={state.shouldShowCreateEntityModal}
-                onDidCreate={(config) => {
-                  form.setFieldValue("type", config.name)
-                  form.setFieldValue("type_id", config.id)
-                }}
-                onRequestClose={toggleCreateEntityTypeModal}
-              />
-            </>
-          )
+                        </Tabs.TabPane>
+                      </Tabs>
+                    </Form.Item>
+                  </Form>
+                </Card>
+                <CreateEntityTypeModal
+                  isVisible={state.shouldShowCreateEntityModal}
+                  onDidCreate={(config) => {
+                    form.setFieldValue("type", config.name)
+                    form.setFieldValue("type_id", config.id)
+                  }}
+                  onRequestClose={toggleCreateEntityTypeModal}
+                />
+              </>
+            )
+          }}
+        </Formik.Formik>
+      </Skeleton>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: "Global Configs - Create Config",
         }}
-      </Formik.Formik>
-    </Skeleton>
+        pageReady={true}
+      />
+    </>
   )
 }
 

@@ -1,5 +1,10 @@
 import React from "react"
-import { BaseInterfaceComponent, StringTemplate, UserInterfaceContext } from "@opg/interface-builder"
+import {
+  BaseInterfaceComponent,
+  StringTemplate,
+  UserInterfaceContext,
+  UserInterfaceContextManager,
+} from "@opg/interface-builder"
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../../../lib/loadRemoteLBM"
@@ -18,7 +23,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     }
   }
   context!: React.ContextType<typeof UserInterfaceContext>
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static defaultProps = StringTemplate.StringTemplateInterfaceComponent.defaultProps
   static getLayoutDefinition = StringTemplate.StringTemplateInterfaceComponent.getLayoutDefinition
   static manageForm = stringTemplateManageForm

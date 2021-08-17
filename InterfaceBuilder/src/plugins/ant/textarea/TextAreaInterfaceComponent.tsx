@@ -3,7 +3,7 @@ import React from "react"
 import { textAreaManageForm } from "./text-area-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import CharCounter from "../_shared/CharCounter"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface TextAreaInterfaceComponentProps extends ComponentDefinitionNamedProps {

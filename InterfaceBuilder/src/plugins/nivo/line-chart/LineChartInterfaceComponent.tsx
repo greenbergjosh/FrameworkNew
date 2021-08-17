@@ -12,7 +12,7 @@ import { parseLBM } from "../../../lib/parseLBM"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { getNivoColorScheme } from "../_shared/nivoColors"
 import { LayoutDefinition } from "../../../globalTypes"
-import { EventBus } from "components/withEvents/EventBus"
+import { EventBus } from "../../../components/withEvents/EventBus"
 
 export class LineChartInterfaceComponent extends BaseInterfaceComponent<
   LineChartInterfaceComponentProps,

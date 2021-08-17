@@ -1,5 +1,5 @@
 import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceContextManager } from "../globalTypes"
-import { JSONRecord } from "globalTypes/JSONTypes"
+import { JSONRecord } from "../globalTypes/JSONTypes"
 
 export type UserInterfaceDataType = string | number | boolean | JSONRecord | JSONRecord[] | null | undefined
 

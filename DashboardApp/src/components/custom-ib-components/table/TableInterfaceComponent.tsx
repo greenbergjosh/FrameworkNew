@@ -4,6 +4,7 @@ import {
   ComponentDefinitionNamedProps,
   Table,
   UserInterfaceContext,
+  UserInterfaceContextManager,
 } from "@opg/interface-builder"
 import { tableManageForm } from "./table-manage-form"
 import { TableInterfaceComponentProps, TableInterfaceComponentState } from "./types"
@@ -23,7 +24,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
     }
   }
   context!: React.ContextType<typeof UserInterfaceContext>
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static defaultProps = Table.TableInterfaceComponent.defaultProps
   static getLayoutDefinition = Table.TableInterfaceComponent.getLayoutDefinition
   static manageForm = tableManageForm

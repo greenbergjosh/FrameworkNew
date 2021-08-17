@@ -1,6 +1,9 @@
 import * as Store from "../store.types"
 import { AppsStoreModel } from "./types"
 import { isEmpty } from "lodash/fp"
+import { failure, pending, success } from "@devexperts/remote-data-ts"
+import { Left, Right } from "../../data/Either"
+import { NotifyConfig } from "../feedback"
 
 const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
   return {
@@ -51,6 +54,50 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
         dispatch.apps.update({ appPaths })
         // console.log("store.apps.effects.updateAppPaths", { appPaths })
       }
+    },
+
+    async loadAppConfigs() {
+      dispatch.apps.update({ configs: pending })
+
+      const response = await dispatch.remoteDataClient.globalConfigsGetAppConfigs({})
+
+      return response.fold(
+        Left((HttpErr) => dispatch.remoteDataClient.defaultHttpErrorHandler(HttpErr)),
+        Right((GlobalConfigApiResponse) => {
+          return GlobalConfigApiResponse({
+            ServerException({ reason }) {
+              const notifyConfig: NotifyConfig = {
+                type: "error",
+                message: `Failed to load remote configs: ${reason}`,
+              }
+              dispatch.apps.update({ configs: failure(new Error(reason)) })
+              dispatch.logger.logError(`ServerException "${reason}" occured while attempting to load remote configs`)
+              dispatch.feedback.notify(notifyConfig)
+              return notifyConfig
+            },
+            Unauthorized: () => {
+              const notifyConfig: NotifyConfig = {
+                type: "error",
+                message: `You do not have permission to load the Global Config list`,
+              }
+              dispatch.apps.update({
+                configs: failure(new Error(`Unauthorized to load GlobalConfig`)),
+              })
+              dispatch.logger.logError(`Unauthorized attempt to load remote configs`)
+              dispatch.feedback.notify(notifyConfig)
+              return notifyConfig
+            },
+            OK: (configs) => {
+              const notifyConfig: NotifyConfig = {
+                type: "success",
+                message: `Config loaded successfully`,
+              }
+              dispatch.apps.update({ configs: success(configs) })
+              return notifyConfig
+            },
+          })
+        })
+      )
     },
   }
 }

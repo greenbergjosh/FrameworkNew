@@ -1,8 +1,8 @@
 import React from "react"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { DisplayMode } from "plugins/reach-router/router/components/DisplayMode"
-import { EditMode } from "plugins/reach-router/router/components/EditMode"
-import { LayoutDefinition } from "globalTypes"
+import { DisplayMode } from "../../../plugins/reach-router/router/components/DisplayMode"
+import { EditMode } from "../../../plugins/reach-router/router/components/EditMode"
+import { LayoutDefinition } from "../../../globalTypes"
 import { RouterInterfaceComponentProps, RouterInterfaceComponentState } from "./types"
 import { routerManageForm } from "./router-manage-form"
 

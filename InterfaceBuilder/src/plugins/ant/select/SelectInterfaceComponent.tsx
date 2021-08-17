@@ -5,7 +5,7 @@ import { MODES, SelectableChildProps, SelectableProps } from "../_shared/selecta
 import { Selectable } from "../_shared/selectable/Selectable"
 import { selectManageForm } from "./select-manage-form"
 import { ISelectProps, SelectProps, SelectState } from "./types"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { LayoutDefinition } from "../../../globalTypes"
 
 export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
@@ -47,7 +47,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
   }
 
   handleChange = (value: string | string[]): void => {
-    const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    const { valueKey, valuePrefix, valueSuffix } = this.props
 
     const newValue =
       valuePrefix || valueSuffix

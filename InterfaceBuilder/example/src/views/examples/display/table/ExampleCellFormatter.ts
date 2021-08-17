@@ -1,6 +1,6 @@
-import { EnrichedColumnDefinition, JSONRecord } from "@opg/interface-builder"
+import { StandardGridTypes, JSONRecord } from "@opg/interface-builder"
 
-interface EnrichedColumnDefinitionWithFormatFn extends EnrichedColumnDefinition {
+interface EnrichedColumnDefinitionWithFormatFn extends StandardGridTypes.EnrichedColumnDefinition {
   formatFn: (value: unknown) => unknown
 }
 

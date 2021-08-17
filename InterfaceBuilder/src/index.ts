@@ -1,6 +1,15 @@
 // import "./lib/why-did-you-render"  // <-- Enable to trace unnecessary rendering
 import "./styles/index.scss"
 import { getRegistry } from "./services/registrySingleton"
+import { UserInterfaceContextManager } from "./globalTypes/UserInterfaceContextManager"
+import { JSONRecord } from "./globalTypes/JSONTypes"
+import { TSEnum } from "./@types/ts-enum"
+import { BaseInterfaceComponentProps, GetValue } from "./components/BaseInterfaceComponent/types"
+import { LBMFunctionType } from "./lib/parseLBM"
+import { CodeEditorProps } from "./plugins/monaco/code-editor/types"
+import { EventPayloadType } from "./components/withEvents/types"
+import { FormInterfaceComponentProps } from "./plugins/ant/form/FormInterfaceComponent"
+import { SortableGroupableColumnModel } from "./plugins/syncfusion/table/types"
 
 /*
  * IMPORTANT:
@@ -12,12 +21,12 @@ import { getRegistry } from "./services/registrySingleton"
  * Types
  */
 export * from "./globalTypes"
-export { UserInterfaceContextManager } from "./globalTypes/UserInterfaceContextManager"
-export { JSONRecord } from "./globalTypes/JSONTypes"
-export { TSEnum } from "./@types/ts-enum"
-export { BaseInterfaceComponentProps, GetValue } from "./components/BaseInterfaceComponent/types"
-export { LBMFunctionType } from "./lib/parseLBM"
-export { CodeEditorProps } from "./plugins/monaco/code-editor/types"
+export type { UserInterfaceContextManager }
+export type { JSONRecord }
+export type { TSEnum }
+export type { BaseInterfaceComponentProps, GetValue }
+export type { LBMFunctionType }
+export type { CodeEditorProps }
 
 /**
  * Contexts
@@ -36,7 +45,7 @@ export { baseManageForm } from "./components/BaseInterfaceComponent/base-manage-
 export { getDefaultsFromComponentDefinitions } from "./components/BaseInterfaceComponent/componentDefinitionUtils"
 export { JSONEditor } from "./components/JSONEditor/JSONEditor"
 export { getMergedData } from "./components/BaseInterfaceComponent/getMergedData"
-export { EventPayloadType } from "./components/withEvents/types"
+export type { EventPayloadType }
 
 /**
  * Services
@@ -67,13 +76,13 @@ export * as QueryBuilder from "./plugins/ant/query-builder"
 export * as StringTemplate from "./plugins/ant/string-template"
 export * as Table from "./plugins/syncfusion/table"
 export { getIconSelectConfig } from "./plugins/ant/_shared/icon-select-form-config"
-export { FormInterfaceComponentProps } from "./plugins/ant/form/FormInterfaceComponent"
+export type { FormInterfaceComponentProps }
 
 /* Component piecemeal */
 // TODO: Get rid of references to these and use the plugins
-export { SortableGroupableColumnModel } from "./plugins/syncfusion/table/types"
-export { EnrichedColumnDefinition } from "./plugins/syncfusion/table/StandardGrid/types"
+export type { SortableGroupableColumnModel }
+export * as StandardGridTypes from "./plugins/syncfusion/table/StandardGrid/types"
 export { default as StandardGrid } from "./plugins/syncfusion/table/StandardGrid/StandardGrid"
-export { CodeEditor, supportedEditorTheme } from "./plugins/monaco/code-editor/CodeEditor"
+export { CodeEditor, supportedEditorTheme, editor, languages, Range } from "./plugins/monaco/code-editor/CodeEditor"
 export { editorLanguages, EditorLangCodec, registerMonacoEditorMount } from "./plugins/monaco/code-editor/constants"
-export { EditorLang, EditorTheme } from "./plugins/monaco/code-editor/types"
+export * as CodeEditorTypes from "./plugins/monaco/code-editor/types"

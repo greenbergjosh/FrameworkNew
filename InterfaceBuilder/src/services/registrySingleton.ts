@@ -1,5 +1,5 @@
 import { registry, ComponentRegistry } from "./ComponentRegistry"
-import { withEvents } from "components/withEvents/withEvents"
+import { withEvents } from "../components/withEvents/withEvents"
 
 registry._withEvents = withEvents
 

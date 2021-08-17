@@ -13,7 +13,7 @@ import { JsonGroup } from "react-awesome-query-builder"
 import { emptyQBDataJsonTree, getQueryableFields } from "./components/utils"
 import { tryCatch } from "fp-ts/lib/Option"
 import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
-import { KVPTuple } from "components/BaseInterfaceComponent/types"
+import { KVPTuple } from "../../../components/BaseInterfaceComponent/types"
 
 export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   QueryBuilderInterfaceComponentProps,

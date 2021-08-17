@@ -9,7 +9,7 @@ import {
 } from "../../../plugins/nivo/pie/types"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
-import { IBaseInterfaceComponent } from "components/BaseInterfaceComponent/types"
+import { IBaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/types"
 
 export const emptyDataSet = [{ pieDatum: { id: "None", label: "No data", value: 1 }, slice: {} }]
 

@@ -5,11 +5,25 @@ import {
   GridComponent,
   GroupSettingsModel,
   PageSettingsModel,
+  RowDataBoundEventArgs,
+  SortDescriptorModel,
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import { JSONRecord } from "../../../../globalTypes/JSONTypes"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { DurationUnits } from "../../../../lib/valueFormatter/types"
+import { EmitType } from "@syncfusion/ej2-base"
+
+export type {
+  ColumnModel,
+  GroupSettingsModel,
+  PageSettingsModel,
+  SortSettingsModel,
+  RowDataBoundEventArgs,
+  SortDescriptorModel,
+}
+
+export type { EmitType }
 
 export interface StandardGridComponentProps {
   autoFitColumns?: boolean

@@ -4,7 +4,7 @@ import {
   ComponentRenderMetaProps,
   UserInterfaceProps,
 } from "../../../globalTypes"
-import { ITab } from "plugins/html/tab/types"
+import { ITab } from "../../../plugins/html/tab/types"
 
 export interface TabSetInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "tab-set"

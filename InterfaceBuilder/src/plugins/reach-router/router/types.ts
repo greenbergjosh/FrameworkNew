@@ -4,7 +4,7 @@ import {
   ComponentRenderMetaProps,
   UserInterfaceProps,
 } from "../../../globalTypes"
-import { ComponentRendererProps } from "components/ComponentRenderer"
+import { ComponentRendererProps } from "../../../components/ComponentRenderer"
 import { RouteComponentProps } from "@reach/router"
 
 export interface RouterInterfaceComponentProps extends ComponentDefinitionNamedProps {

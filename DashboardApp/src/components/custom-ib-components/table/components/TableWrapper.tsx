@@ -9,14 +9,7 @@ import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 
 export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
-  const {
-    columns,
-    getRootUserInterfaceData,
-    onChangeRootData,
-    onChangeData,
-    parameterValues,
-    parentData,
-  } = props
+  const { columns, getRootUserInterfaceData, onChangeRootData, onChangeData, parameterValues, parentData } = props
 
   /* **********************************************************************
    *
@@ -35,35 +28,33 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
    * Provide layout components and formatters to columns
    */
   const enrichedColumns = React.useMemo((): SortableGroupableColumnModel[] => {
-    return columns.map(
-      (column): SortableGroupableColumnModel => {
-        const template = getDetailTemplate({
-          columnDetails: (column as ColumnConfig).details,
-          columnType: column.type,
-          dispatch,
-          getRootUserInterfaceData,
-          onChangeRootData,
-          onChangeData,
-          parameterValues: parameterValues && parameterValues.toUndefined(),
-          parentData,
-        })
-        const formatter = getCustomCellFormatter({
-          cellFormatter: column.cellFormatter,
-          cellFormatterOptions: column.cellFormatterOptions,
-          columnType: column.type,
-          configsById: fromStore.configsById,
-          formatter: column.formatter,
-          queryParams: parameterValues && parameterValues.toUndefined(),
-        })
-        const customAggregateFunction = getCustomAggregateFunction(
-          column.customAggregateId,
-          fromStore.configsById,
-          column.aggregationFunction
-        )
+    return columns.map((column): SortableGroupableColumnModel => {
+      const template = getDetailTemplate({
+        columnDetails: (column as ColumnConfig).details,
+        columnType: column.type,
+        dispatch,
+        getRootUserInterfaceData,
+        onChangeRootData,
+        onChangeData,
+        parameterValues: parameterValues && parameterValues.toUndefined(),
+        parentData,
+      })
+      const formatter = getCustomCellFormatter({
+        cellFormatter: column.cellFormatter,
+        cellFormatterOptions: column.cellFormatterOptions,
+        columnType: column.type,
+        configsById: fromStore.configsById,
+        formatter: column.formatter,
+        queryParams: parameterValues && parameterValues.toUndefined(),
+      })
+      const customAggregateFunction = getCustomAggregateFunction(
+        column.customAggregateId,
+        fromStore.configsById,
+        column.aggregationFunction
+      )
 
-        return { ...cloneDeep(column), template, formatter, customAggregateFunction }
-      }
-    )
+      return { ...cloneDeep(column), template, formatter, customAggregateFunction }
+    })
   }, [
     onChangeData,
     dispatch,

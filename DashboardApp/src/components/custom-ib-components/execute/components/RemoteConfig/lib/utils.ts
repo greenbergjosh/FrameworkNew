@@ -57,7 +57,7 @@ export function getRemoteConfigId({
   let id
   // Get the remoteConfigId from queryFormValues which is populated
   // via querystring params or persisted params from QueryParams component.
-  id = (get("id", queryFormValues) as unknown) as PersistedConfig["id"]
+  id = get("id", queryFormValues) as unknown as PersistedConfig["id"]
 
   if (!id) {
     // TODO: Should we be able to get config ID from any UI control at a designated location?

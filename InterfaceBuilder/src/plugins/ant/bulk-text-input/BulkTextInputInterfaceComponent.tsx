@@ -3,7 +3,7 @@ import React from "react"
 import { bulkTextInputManageForm } from "./bulk-text-input-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { Codec, getCodec, separator } from "./codec"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface BulkTextInputInterfaceComponentProps extends ComponentDefinitionNamedProps {

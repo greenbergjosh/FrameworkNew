@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentRenderer } from "components/ComponentRenderer"
+import { ComponentRenderer } from "../../../components/ComponentRenderer"
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
@@ -11,7 +11,7 @@ import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { parseLBM } from "../../../lib/parseLBM"
 import { tryCatch } from "fp-ts/lib/Option"
 import { ComponentDefinition, LayoutDefinition } from "../../../globalTypes"
-import { EventBus } from "components/withEvents/EventBus"
+import { EventBus } from "../../../components/withEvents/EventBus"
 
 export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   StringTemplateInterfaceComponentProps,

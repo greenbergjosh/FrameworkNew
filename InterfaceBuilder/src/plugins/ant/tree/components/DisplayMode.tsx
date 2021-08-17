@@ -1,12 +1,12 @@
 import React from "react"
 import { Button, Empty, Icon, Tree } from "antd"
 import { cloneDeep, get, getOr } from "lodash/fp"
-import { ComponentRenderer } from "components/ComponentRenderer"
-import { DataPathContext } from "contexts/DataPathContext"
+import { ComponentRenderer } from "../../../../components/ComponentRenderer"
+import { DataPathContext } from "../../../../contexts/DataPathContext"
 import { DisplayModeProps, EntryType } from "../types"
-import { findTreeNode } from "plugins/ant/tree/components/findTreeNode"
-import { orientTreeAndDetails } from "plugins/ant/tree/components/orientTreeAndDetails"
-import { renderTreeNodes } from "plugins/ant/tree/components/renderTreeNodes"
+import { findTreeNode } from "../../../../plugins/ant/tree/components/findTreeNode"
+import { orientTreeAndDetails } from "../../../../plugins/ant/tree/components/orientTreeAndDetails"
+import { renderTreeNodes } from "../../../../plugins/ant/tree/components/renderTreeNodes"
 import { AntTreeNodeDropEvent, AntTreeNodeSelectedEvent, TreeNodeNormal } from "antd/lib/tree/Tree"
 
 export function DisplayMode({

@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentModifierProps } from "components/ComponentRenderer"
+import { ComponentModifierProps } from "../../components/ComponentRenderer"
 import { Form, Icon, Tooltip } from "antd"
 import { isEmpty } from "lodash/fp"
 import { LayoutDefinition } from "../../globalTypes"

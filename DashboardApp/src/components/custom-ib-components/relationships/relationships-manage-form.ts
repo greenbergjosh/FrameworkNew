@@ -28,6 +28,15 @@ export const relationshipsManageFormDefinition: Partial<ComponentDefinition>[] =
                 defaultValue: "id",
                 bindable: true,
               },
+              {
+                key: "linkPath",
+                valueKey: "linkPath",
+                label: "Path",
+                component: "input",
+                help: "Path to this resource.",
+                defaultValue: "/global-config/",
+                bindable: true,
+              },
             ],
           },
           {

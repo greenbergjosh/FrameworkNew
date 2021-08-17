@@ -9,13 +9,7 @@ import { JSONRecord } from "../../data/JSON"
 import { getDefaultFormValues, QueryForm } from "../query/QueryForm"
 import { store } from "../../state/store"
 import { useRematch } from "../../hooks"
-import {
-  GridComponent,
-  GroupSettingsModel,
-  PageSettingsModel,
-  SortDescriptorModel,
-  SortSettingsModel,
-} from "@syncfusion/ej2-react-grids"
+import { StandardGridTypes, Table } from "@opg/interface-builder"
 import { getDetailTemplate } from "./detailTemplate/getDetailTemplate"
 import { ColumnConfig } from "../custom-ib-components/table/types"
 import { getCustomAggregateFunction } from "../custom-ib-components/table/customFormatters/customAggregateFunction"
@@ -54,7 +48,7 @@ const ReportBody = ({
 
   const [automaticQueryErrorState, setAutomaticQueryErrorState] = React.useState(null)
 
-  const grid = React.useRef<GridComponent>(null)
+  const grid = React.useRef<Table.GridComponent>(null)
 
   /* **********************************************************************
    *
@@ -219,17 +213,17 @@ const ReportBody = ({
     onChangeRootData,
   ])
 
-  const sortSettings: SortSettingsModel = {
+  const sortSettings: StandardGridTypes.SortSettingsModel = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columns: sortBy("sortOrder", reportConfig.columns as any[]).reduce((acc, column) => {
       if (column.sortDirection && column.field) {
         acc.push({ field: column.field, direction: column.sortDirection })
       }
       return acc
-    }, [] as SortDescriptorModel[]),
+    }, [] as StandardGridTypes.SortDescriptorModel[]),
   }
 
-  const pageSettings: PageSettingsModel | undefined =
+  const pageSettings: StandardGridTypes.PageSettingsModel | undefined =
     reportConfig.defaultPageSize === "All"
       ? {
           pageSize: 999999,
@@ -240,7 +234,7 @@ const ReportBody = ({
         }
       : undefined
 
-  const groupSettings: GroupSettingsModel = {
+  const groupSettings: StandardGridTypes.GroupSettingsModel = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columns: sortBy("groupOrder", reportConfig.columns as any[]).reduce((acc, column) => {
       if (column.field && typeof column.groupOrder !== "undefined") {
@@ -260,44 +254,42 @@ const ReportBody = ({
    * Provide layout components and formatters to columns.
    */
   const columns: ColumnConfig[] = React.useMemo(() => {
-    return reportConfig.columns.map(
-      (column: ColumnConfig): ColumnConfig => {
-        const template = getDetailTemplate({
-          dispatch,
-          columnDetails: column.details,
-          getRootUserInterfaceData,
-          onChangeRootData,
-          parameterValues: parameterValues.toUndefined(),
-          parentData,
-          handleChangeData: onChangeData,
-          columnType: column.type,
-        })
+    return reportConfig.columns.map((column: ColumnConfig): ColumnConfig => {
+      const template = getDetailTemplate({
+        dispatch,
+        columnDetails: column.details,
+        getRootUserInterfaceData,
+        onChangeRootData,
+        parameterValues: parameterValues.toUndefined(),
+        parentData,
+        handleChangeData: onChangeData,
+        columnType: column.type,
+      })
 
-        /*
-         * Render a formatted string (that may include HTML) into a cell.
-         * NOTE: A cell can have either a "layout" or a "formatter" but not both.
-         */
-        const formatter = getCustomCellFormatter({
-          cellFormatter: column.cellFormatter,
-          cellFormatterOptions: column.cellFormatterOptions,
-          columnType: column.type,
-          configsById: fromStore.configsById,
-          formatter: column.formatter,
-          queryParams: parameterValues.toUndefined(),
-        })
+      /*
+       * Render a formatted string (that may include HTML) into a cell.
+       * NOTE: A cell can have either a "layout" or a "formatter" but not both.
+       */
+      const formatter = getCustomCellFormatter({
+        cellFormatter: column.cellFormatter,
+        cellFormatterOptions: column.cellFormatterOptions,
+        columnType: column.type,
+        configsById: fromStore.configsById,
+        formatter: column.formatter,
+        queryParams: parameterValues.toUndefined(),
+      })
 
-        /*
-         * Render a formatted string (that may include HTML) into a summary row cell.
-         */
-        const customAggregateFunction = getCustomAggregateFunction(
-          column.customAggregateId,
-          fromStore.configsById,
-          column.aggregationFunction
-        )
+      /*
+       * Render a formatted string (that may include HTML) into a summary row cell.
+       */
+      const customAggregateFunction = getCustomAggregateFunction(
+        column.customAggregateId,
+        fromStore.configsById,
+        column.aggregationFunction
+      )
 
-        return { ...cloneDeep(column), template, formatter, customAggregateFunction }
-      }
-    )
+      return { ...cloneDeep(column), template, formatter, customAggregateFunction }
+    })
   }, [
     onChangeData,
     dispatch,

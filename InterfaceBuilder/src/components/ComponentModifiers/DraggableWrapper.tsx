@@ -1,6 +1,6 @@
 import React from "react"
-import { ComponentModifierProps } from "components/ComponentRenderer"
-import { Draggable, DraggableChildProps } from "components/DragAndDrop"
+import { ComponentModifierProps } from "../../components/ComponentRenderer"
+import { Draggable, DraggableChildProps } from "../../components/DragAndDrop"
 import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
 
 export const DraggableWrapper: React.FC<

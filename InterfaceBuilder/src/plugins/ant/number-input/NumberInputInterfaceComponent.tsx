@@ -4,7 +4,7 @@ import { isEmpty, isNumber, isUndefined, parseInt } from "lodash/fp"
 import React from "react"
 import { numberInputManageForm } from "./number-input-manage-form"
 import { BaseInterfaceComponent } from "../../../components/BaseInterfaceComponent/BaseInterfaceComponent"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { ComponentDefinitionNamedProps, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 

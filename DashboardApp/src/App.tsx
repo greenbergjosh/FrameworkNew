@@ -21,7 +21,6 @@ import {
 } from "@opg/interface-builder"
 import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
 import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
-import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
 import { RelationshipsInterfaceComponent } from "./components/custom-ib-components/relationships/RelationshipsInterfaceComponent"
 import { RemoteComponentInterfaceComponent } from "./components/custom-ib-components/remote-component/RemoteComponentInterfaceComponent"
 import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/slot-config/SlotConfigInterfaceComponent"
@@ -60,7 +59,6 @@ export function App(): JSX.Element {
     registry.register(syncfusionComponents)
     registry.register({ query: QueryInterfaceComponent })
     registry.register({ execute: ExecuteInterfaceComponent })
-    registry.register({ "path-editor": PathEditorInterfaceComponent })
     registry.register({ relationships: RelationshipsInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
     registry.register({ "slot-config": SlotConfigInterfaceComponent })

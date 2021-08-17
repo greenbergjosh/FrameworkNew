@@ -5,7 +5,7 @@ import { MODES, SelectableChildProps, SelectableProps } from "../_shared/selecta
 import { Selectable } from "../_shared/selectable/Selectable"
 import { radioManageForm } from "./radio-manage-form"
 import { IRadioProps, RadioProps } from "./types"
-import { Undraggable } from "components/DragAndDrop/Undraggable"
+import { Undraggable } from "../../../components/DragAndDrop/Undraggable"
 import { RadioChangeEvent } from "antd/lib/radio"
 import { LayoutDefinition } from "../../../globalTypes"
 
