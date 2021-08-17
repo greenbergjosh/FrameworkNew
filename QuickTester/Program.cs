@@ -12,15 +12,16 @@ namespace QuickTester
     {
         private async static Task Main(string[] _args)
         {
-            Config.Test();
-            await ClickhouseImportTest.ImportTest();
+            var fw = new FrameworkWrapper();
+            await SingletonEventTester.Run(fw);
+
+            //Config.Test();
+            //await ClickhouseImportTest.ImportTest();
             return;
             //var ge = JsonWrapper.GenericEntityFromFile(@"json.txt").GetAwaiter().GetResult();
             //string q = ClickhouseQueryGenerator.generateClickhouseQuery(ge);
             //Console.WriteLine(q);
             //EdwTestDataGenerator.GenerateTestData();
-
-            var fw = new FrameworkWrapper();
 
             var signalWriter = new SignalWriter();
             signalWriter.AddSignal("LRW Test", new { a = 1, b = 2, c = "this is c" });
