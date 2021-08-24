@@ -18,6 +18,9 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     getRootUserInterfaceData,
     onChangeRootData,
     isCRUD,
+    notifyOkShow,
+    notifyUnauthorizedShow,
+    notifyServerExceptionShow,
     mode,
     onResults,
     onRaiseEvent,
@@ -76,7 +79,10 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
       queryConfig as HTTPRequestQueryConfig,
       queryFormValues,
       executeHTTPRequestQuery,
-      isCRUD
+      isCRUD,
+      notifyOkShow,
+      notifyUnauthorizedShow,
+      notifyServerExceptionShow
     ).then((newLoadingState) => {
       // Put response data into userInterfaceData (via onResults)
       if (onResults) {

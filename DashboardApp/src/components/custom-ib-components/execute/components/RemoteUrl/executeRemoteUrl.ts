@@ -4,6 +4,7 @@ import { ExecuteInterfaceComponentState, LoadStatus, LOADSTATUSCODES, RemoteUrlF
 import { cheapHash } from "../../../../../lib/json"
 import { notification } from "antd"
 import { getErrorState } from "../utils"
+import { isUndefined } from "lodash/fp"
 
 /**
  * "Remote URL" is aka "HTTP Request" to another domain
@@ -11,15 +12,22 @@ import { getErrorState } from "../utils"
  * @param queryFormValues
  * @param executeHTTPRequestQuery
  * @param isCRUD
+ * @param notifyOkShow
+ * @param notifyUnauthorizedShow
+ * @param notifyServerExceptionShow
  * @return State object with load status (Note: executeHTTPRequestQuery puts the response data into cache.)
  */
 export async function executeRemoteUrl(
   queryConfig: HTTPRequestQueryConfig,
   queryFormValues: JSONRecord,
   executeHTTPRequestQuery: RemoteUrlFromStore["executeHTTPRequestQuery"],
-  isCRUD?: boolean
+  isCRUD?: boolean,
+  notifyOkShow?: boolean,
+  notifyUnauthorizedShow?: boolean,
+  notifyServerExceptionShow?: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
   const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
+  const notifyOkShowOrDefault = isUndefined(notifyOkShow) || notifyOkShow
 
   return Promise.resolve({
     remoteQueryLoggingName: queryConfig.query,
@@ -30,9 +38,14 @@ export async function executeRemoteUrl(
       resultURI: queryResultURI,
       query: queryConfig,
       params: { ...queryFormValues },
+      notifyOptions: {
+        OK: { show: notifyOkShow },
+        Unauthorized: { show: notifyUnauthorizedShow },
+        ServerException: { show: notifyServerExceptionShow },
+      },
     })
       .then((data) => {
-        if (isCRUD) {
+        if (isCRUD && notifyOkShowOrDefault) {
           notification.success({
             type: "success",
             message: "Successfully saved your changes",

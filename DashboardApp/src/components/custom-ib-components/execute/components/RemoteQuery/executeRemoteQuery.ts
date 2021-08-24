@@ -11,6 +11,9 @@ import { getErrorState } from "../utils"
  * @param executeQuery
  * @param executeQueryUpdate
  * @param isCRUD
+ * @param notifyOkShow
+ * @param notifyUnauthorizedShow
+ * @param notifyServerExceptionShow
  * @return State object with load status (Note: executeQuery and executeQueryUpdate put the response data into cache.)
  */
 export async function executeRemoteQuery(
@@ -18,7 +21,10 @@ export async function executeRemoteQuery(
   queryFormValues: JSONRecord,
   executeQuery: RemoteQueryFromStore["executeQuery"],
   executeQueryUpdate: RemoteQueryFromStore["executeQueryUpdate"],
-  isCRUD?: boolean
+  isCRUD?: boolean,
+  notifyOkShow?: boolean,
+  notifyUnauthorizedShow?: boolean,
+  notifyServerExceptionShow?: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
   const executeStrategy = isCRUD ? executeQueryUpdate : executeQuery
   const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
@@ -32,6 +38,11 @@ export async function executeRemoteQuery(
       resultURI: queryResultURI,
       query: queryConfig,
       params: { ...queryFormValues },
+      notifyOptions: {
+        OK: { show: notifyOkShow },
+        Unauthorized: { show: notifyUnauthorizedShow },
+        ServerException: { show: notifyServerExceptionShow },
+      },
     })
       // TODO: return loadStatus of "create", "update", "delete", "loaded" to support onRaiseEvent
       .then((data) => ({ data, loadStatus: LOADSTATUSCODES.loaded } as LoadStatus))

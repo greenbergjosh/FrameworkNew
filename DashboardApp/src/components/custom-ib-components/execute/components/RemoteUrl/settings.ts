@@ -45,6 +45,66 @@ export const remoteUrlSettings = [
     },
   },
   {
+    key: "RemoteUrl_notifyOkShow",
+    valueKey: "RemoteUrl_notifyOkShow",
+    component: "toggle",
+    defaultValue: true,
+    label: "Show Success Message",
+    bindable: true,
+    visibilityConditions: {
+      or: [
+        {
+          "===": [
+            "remote-url",
+            {
+              var: ["queryType"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteUrl_notifyUnauthorizedShow",
+    valueKey: "RemoteUrl_notifyUnauthorizedShow",
+    component: "toggle",
+    defaultValue: true,
+    label: "Show Unauthorized Message",
+    bindable: true,
+    visibilityConditions: {
+      or: [
+        {
+          "===": [
+            "remote-url",
+            {
+              var: ["queryType"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteUrl_notifyServerExceptionShow",
+    valueKey: "RemoteUrl_notifyServerExceptionShow",
+    component: "toggle",
+    defaultValue: true,
+    label: "Show Server Exception Message",
+    bindable: true,
+    visibilityConditions: {
+      or: [
+        {
+          "===": [
+            "remote-url",
+            {
+              var: ["queryType"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     key: "remoteUrl",
     valueKey: "remoteUrl",
     label: "URL Query",

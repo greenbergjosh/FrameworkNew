@@ -135,6 +135,9 @@ export interface ExecuteRemoteQueryInterfaceComponentProps extends IExecuteInter
   // RemoteQuery Settings
   remoteQuery?: PersistedConfig["id"]
   RemoteQuery_isCRUD?: boolean
+  RemoteQuery_notifyOkShow?: boolean
+  RemoteQuery_notifyUnauthorizedShow?: boolean
+  RemoteQuery_notifyServerExceptionShow?: boolean
 }
 
 export interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceComponentProps {
@@ -157,6 +160,9 @@ export interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfa
   // RemoteUrl Settings
   remoteUrl?: PersistedConfig["id"]
   RemoteUrl_isCRUD?: boolean
+  RemoteUrl_notifyOkShow?: boolean
+  RemoteUrl_notifyUnauthorizedShow?: boolean
+  RemoteUrl_notifyServerExceptionShow?: boolean
 }
 
 export type ExecuteInterfaceComponentProps = (
@@ -221,6 +227,9 @@ export interface RemoteQueryFromStore extends FromStore {
 
 export interface RemoteQueryProps extends RemoteComponentProps, RemoteQueryFromStore {
   isCRUD?: boolean
+  notifyOkShow?: boolean
+  notifyUnauthorizedShow?: boolean
+  notifyServerExceptionShow?: boolean
   onResults: IExecuteInterfaceComponentProps["onChangeData"]
   queryConfigId: PersistedConfig["id"]
 }
@@ -236,6 +245,9 @@ export interface RemoteUrlFromStore extends FromStore {
 
 export interface RemoteUrlProps extends RemoteComponentProps, RemoteUrlFromStore {
   isCRUD?: boolean
+  notifyOkShow?: boolean
+  notifyUnauthorizedShow?: boolean
+  notifyServerExceptionShow?: boolean
   onResults: IExecuteInterfaceComponentProps["onChangeData"]
   queryConfigId: PersistedConfig["id"]
 }

@@ -39,7 +39,7 @@
     "react-dom": "17.0.2",
     "react-helmet": "6.0.0",
     "react-redux": "7.2.4",
-    "react-scripts": "4.0.3",
+    "react-scripts": "4.0.1",
     "redux": "4.1.1",
     "web-vitals": "1.0.1"
   },
@@ -111,7 +111,7 @@
     "eslint-plugin-prettier": "3.4.0",
     "eslint-plugin-react": "7.24.0",
     "eslint-plugin-react-hooks": "4.2.0",
-    "node-sass": "6.0.1",
+    "node-sass": "4.14.1",
     "prettier": "2.3.2",
     "svg-inline-loader": "^0.8.2",
     "typed-css-modules": "0.6.4",

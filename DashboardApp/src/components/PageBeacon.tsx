@@ -1,12 +1,14 @@
 import React from "react"
-import { ComponentDefinition } from "@opg/interface-builder/src/globalTypes/index"
-import { ComponentRenderer } from "@opg/interface-builder"
+import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import { useRematch } from "../hooks"
 import * as record from "fp-ts/lib/Record"
 import { store } from "../state/store"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
-import { isEqual } from "lodash/fp"
+import { isEmpty, isEqual } from "lodash/fp"
+import { AdminUserInterfaceContextManagerProvider } from "../data/AdminUserInterfaceContextManager"
+import { usePrevious } from "../hooks/usePrevious"
+import { useLocation } from "@reach/router"
 
 // https://admin.techopg.com/app/admin/global-config/b8a9abe3-aacd-4e05-b14a-3f2703c02b09
 const EXECUTE_COMPONENT_ID = "b8a9abe3-aacd-4e05-b14a-3f2703c02b09"
@@ -25,9 +27,10 @@ interface PageBeaconProps {
 }
 
 export function PageBeacon(props: PageBeaconProps): JSX.Element | null {
-  const [sent, setSent] = React.useState(false)
-  const [prevData, setPrevData] = React.useState<PageBeaconProps["data"]>({})
-  const [fromStore /*dispatch*/] = useRematch((appState) => ({
+  const location = useLocation()
+  const [lastPageUrlBeaconed, setLastPageUrlBeaconed] = React.useState<string | undefined>()
+  const [wasChangingPages, setWasChangingPages] = React.useState(false)
+  const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
     profile: appState.iam.profile,
     loadExecuteConfig: (): ComponentDefinition[] => {
@@ -38,35 +41,86 @@ export function PageBeacon(props: PageBeaconProps): JSX.Element | null {
     },
   }))
 
-  if (!props.pageReady) {
-    return null
-  }
-  if (sent) {
-    // Fire the beacon if this is a new page
-    if (isEqual(props.data, prevData)) {
-      return null
+  /**
+   * Create the beacon payload
+   */
+  const data = React.useMemo(() => {
+    if (!isEmpty(props.data.appName)) {
+      return {
+        ...props.data,
+        pageUrl: location.href,
+        userName: fromStore.profile.map((profile) => profile.Name).toUndefined(),
+        userEmail: fromStore.profile.map((profile) => profile.Email).toUndefined(),
+      }
     }
-  }
-  setSent(true)
-  setPrevData(props.data)
-  const data = {
-    ...props.data,
-    pageUrl: window.location.href,
-    userName: fromStore.profile.map((profile) => profile.Name).toUndefined(),
-    userEmail: fromStore.profile.map((profile) => profile.Email).toUndefined(),
-  }
-  console.log("PageBeacon emitted", data)
+    return undefined
+  }, [fromStore.profile, props.data, location.href])
 
-  return (
-    <ComponentRenderer
-      key={"page-beacon"}
-      components={fromStore.loadExecuteConfig()}
-      data={data}
-      getRootUserInterfaceData={() => void 0}
-      onChangeRootData={() => void 0}
-      dragDropDisabled
-      onChangeData={() => void 0}
-      onChangeSchema={() => void 0}
-    />
-  )
+  const prevPage = usePrevious<string>(location.href)
+
+  /**
+   * Is this a page transition or have we arrived?
+   */
+  React.useEffect(() => {
+    if (prevPage !== undefined) {
+      setWasChangingPages(prevPage !== location.href)
+    }
+  }, [prevPage, location.href])
+
+  /**
+   * Determine if the beacon should be fired
+   */
+  const send = React.useMemo(() => {
+    const isSamePage = isEqual(prevPage, location.href)
+    const isDoneChangingPages = isSamePage && wasChangingPages
+    const isInitial = isInitialPage(prevPage, wasChangingPages, location.href)
+    const isPageBeaconed = location.href === lastPageUrlBeaconed
+
+    if (props.pageReady && !isPageBeaconed && (isDoneChangingPages || isInitial)) {
+      setLastPageUrlBeaconed(location.href)
+      return true
+    }
+
+    return false
+  }, [data, props.pageReady, location.href, prevPage, wasChangingPages, lastPageUrlBeaconed])
+
+  /**
+   * Render
+   */
+  return React.useMemo(() => {
+    if (send) {
+      console.log("PageBeacon emitted", data)
+    }
+    return (
+      <AdminUserInterfaceContextManagerProvider>
+        {(userInterfaceContextManager) => (
+          <>
+            {send ? (
+              <UserInterface
+                contextManager={userInterfaceContextManager}
+                data={data}
+                getRootUserInterfaceData={() => data}
+                onChangeRootData={() => void 0}
+                onChangeData={() => void 0}
+                mode="display"
+                components={fromStore.loadExecuteConfig()}
+              />
+            ) : null}
+          </>
+        )}
+      </AdminUserInterfaceContextManagerProvider>
+    )
+  }, [send, data, fromStore])
+}
+
+/**
+ * Is this the first page that we have landed on?
+ * @param prevPage
+ * @param wasChangingPages
+ * @param currentLocation
+ */
+function isInitialPage(prevPage: string | undefined, wasChangingPages: boolean, currentLocation: string): boolean {
+  const isNew = prevPage === undefined
+  const isSamePage = isEqual(prevPage, currentLocation)
+  return isNew || (!wasChangingPages && isSamePage)
 }

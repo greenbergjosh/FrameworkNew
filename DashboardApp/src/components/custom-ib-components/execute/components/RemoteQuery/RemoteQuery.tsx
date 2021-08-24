@@ -18,6 +18,9 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     getRootUserInterfaceData,
     onChangeRootData,
     isCRUD,
+    notifyOkShow,
+    notifyUnauthorizedShow,
+    notifyServerExceptionShow,
     mode,
     onResults,
     onRaiseEvent,
@@ -70,7 +73,10 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
       queryFormValues,
       executeQuery,
       executeQueryUpdate,
-      isCRUD
+      isCRUD,
+      notifyOkShow,
+      notifyUnauthorizedShow,
+      notifyServerExceptionShow
     ).then((newLoadingState) => {
       // Put response data into userInterfaceData (via onResults)
 

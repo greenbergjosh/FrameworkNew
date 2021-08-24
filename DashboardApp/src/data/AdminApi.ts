@@ -148,12 +148,19 @@ export const reportResponsePayloadCodecs = {
     }),
   update: (query: string) =>
     iots.type({
-      [query]: iots.type({
-        r: iots.literal(0),
-        result: iots.type({
-          result: iots.literal("success"),
+      [query]: iots.union([
+        iots.type({
+          r: iots.literal(0),
+          result: iots.array(JSONRecordCodec),
         }),
-      }),
+        iots.type({
+          r: iots.literal(0),
+          result: iots.type({
+            result: iots.literal("success"),
+          }),
+        }),
+        ErrorPayload,
+      ]),
     }),
 }
 
