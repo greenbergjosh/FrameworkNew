@@ -5,7 +5,7 @@ import * as record from "fp-ts/lib/Record"
 import { store } from "../state/store"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
-import { isEmpty, isEqual } from "lodash/fp"
+import { isEmpty, isEqual, isUndefined } from "lodash/fp"
 import { AdminUserInterfaceContextManagerProvider } from "../data/AdminUserInterfaceContextManager"
 import { usePrevious } from "../hooks/usePrevious"
 import { useLocation } from "@reach/router"
@@ -28,14 +28,13 @@ interface PageBeaconProps {
 
 export function PageBeacon(props: PageBeaconProps): JSX.Element | null {
   const location = useLocation()
-  const [lastPageUrlBeaconed, setLastPageUrlBeaconed] = React.useState<string | undefined>()
-  const [wasChangingPages, setWasChangingPages] = React.useState(false)
+  const prevPage = usePrevious<string>(location.href)
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
     profile: appState.iam.profile,
     loadExecuteConfig: (): ComponentDefinition[] => {
       return record
-        .lookup(EXECUTE_COMPONENT_ID, fromStore.configsById)
+        .lookup(EXECUTE_COMPONENT_ID, store.select.globalConfig.configsById(appState))
         .chain(({ config }) => tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[]))
         .getOrElse([])
     },
@@ -56,71 +55,32 @@ export function PageBeacon(props: PageBeaconProps): JSX.Element | null {
     return undefined
   }, [fromStore.profile, props.data, location.href])
 
-  const prevPage = usePrevious<string>(location.href)
-
   /**
-   * Is this a page transition or have we arrived?
-   */
-  React.useEffect(() => {
-    if (prevPage !== undefined) {
-      setWasChangingPages(prevPage !== location.href)
-    }
-  }, [prevPage, location.href])
-
-  /**
-   * Determine if the beacon should be fired
+   * Should the beacon fire?
    */
   const send = React.useMemo(() => {
-    const isSamePage = isEqual(prevPage, location.href)
-    const isDoneChangingPages = isSamePage && wasChangingPages
-    const isInitial = isInitialPage(prevPage, wasChangingPages, location.href)
-    const isPageBeaconed = location.href === lastPageUrlBeaconed
+    const isInitialPage = isUndefined(prevPage)
+    const isChangingPages = !isInitialPage && !isEqual(prevPage, location.href)
+    return !isChangingPages
+  }, [location.href, prevPage])
 
-    if (props.pageReady && !isPageBeaconed && (isDoneChangingPages || isInitial)) {
-      setLastPageUrlBeaconed(location.href)
-      return true
-    }
-
-    return false
-  }, [data, props.pageReady, location.href, prevPage, wasChangingPages, lastPageUrlBeaconed])
-
-  /**
-   * Render
-   */
-  return React.useMemo(() => {
-    if (send) {
-      console.log("PageBeacon emitted", data)
-    }
-    return (
-      <AdminUserInterfaceContextManagerProvider>
-        {(userInterfaceContextManager) => (
-          <>
-            {send ? (
-              <UserInterface
-                contextManager={userInterfaceContextManager}
-                data={data}
-                getRootUserInterfaceData={() => data}
-                onChangeRootData={() => void 0}
-                onChangeData={() => void 0}
-                mode="display"
-                components={fromStore.loadExecuteConfig()}
-              />
-            ) : null}
-          </>
-        )}
-      </AdminUserInterfaceContextManagerProvider>
-    )
-  }, [send, data, fromStore])
-}
-
-/**
- * Is this the first page that we have landed on?
- * @param prevPage
- * @param wasChangingPages
- * @param currentLocation
- */
-function isInitialPage(prevPage: string | undefined, wasChangingPages: boolean, currentLocation: string): boolean {
-  const isNew = prevPage === undefined
-  const isSamePage = isEqual(prevPage, currentLocation)
-  return isNew || (!wasChangingPages && isSamePage)
+  return (
+    <AdminUserInterfaceContextManagerProvider>
+      {(userInterfaceContextManager) => (
+        <>
+          {send ? (
+            <UserInterface
+              contextManager={userInterfaceContextManager}
+              data={data}
+              getRootUserInterfaceData={() => data}
+              onChangeRootData={() => void 0}
+              onChangeData={() => void 0}
+              mode="display"
+              components={fromStore.loadExecuteConfig()}
+            />
+          ) : null}
+        </>
+      )}
+    </AdminUserInterfaceContextManagerProvider>
+  )
 }
