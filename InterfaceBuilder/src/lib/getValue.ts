@@ -1,4 +1,4 @@
-import { get } from "lodash/fp"
+import { get, isEmpty, isString } from "lodash/fp"
 import { UserInterfaceProps } from "../globalTypes"
 
 /**
@@ -13,7 +13,7 @@ export function getValue(
   userInterfaceData: UserInterfaceProps["data"],
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
 ): UserInterfaceProps["data"] {
-  if (!valueKey) return
+  if (!isString(valueKey) || isEmpty(valueKey)) return
   if (valueKey === "$root") {
     return getRootUserInterfaceData()
   }

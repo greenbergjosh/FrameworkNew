@@ -49,6 +49,66 @@ export const remoteQuerySettings = [
     },
   },
   {
+    key: "RemoteQuery_notifyOkShow",
+    valueKey: "RemoteQuery_notifyOkShow",
+    component: "toggle",
+    defaultValue: true,
+    label: "Show Success Message",
+    bindable: true,
+    visibilityConditions: {
+      or: [
+        {
+          "===": [
+            "remote-query",
+            {
+              var: ["queryType"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteQuery_notifyUnauthorizedShow",
+    valueKey: "RemoteQuery_notifyUnauthorizedShow",
+    component: "toggle",
+    defaultValue: true,
+    label: "Show Unauthorized Message",
+    bindable: true,
+    visibilityConditions: {
+      or: [
+        {
+          "===": [
+            "remote-query",
+            {
+              var: ["queryType"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteQuery_notifyServerExceptionShow",
+    valueKey: "RemoteQuery_notifyServerExceptionShow",
+    component: "toggle",
+    defaultValue: true,
+    label: "Show Server Exception Message",
+    bindable: true,
+    visibilityConditions: {
+      or: [
+        {
+          "===": [
+            "remote-query",
+            {
+              var: ["queryType"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     key: "remoteQuery",
     valueKey: "remoteQuery",
     label: "TGWD Query",

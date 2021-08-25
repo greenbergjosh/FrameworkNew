@@ -1,7 +1,7 @@
 import { array } from "fp-ts/lib/Array"
 import { identity, tuple } from "fp-ts/lib/function"
 import * as record from "fp-ts/lib/Record"
-import { isArray, isEmpty, has } from "lodash/fp"
+import { isArray, isEmpty, merge } from "lodash/fp"
 import { JSONFromString } from "io-ts-types"
 import json5 from "json5"
 import { Left, Right } from "../../data/Either"
@@ -40,15 +40,38 @@ export interface Reducers {
   updateReportDataByQuery(payload: Partial<State["reportDataByQuery"]>): State
 }
 
-export interface Effects {
-  executeQuery(payload: { resultURI: string; query: QueryConfig; params: JSONRecord | JSONArray }): Promise<any>
+export type NotifyOptions = {
+  OK?: { show?: boolean }
+  Unauthorized?: { show?: boolean }
+  ServerException?: { show?: boolean }
+}
 
-  executeQueryUpdate(payload: { resultURI: string; query: QueryConfig; params: JSONRecord | JSONArray }): Promise<any>
+const notifyOptionDefaults: NotifyOptions = {
+  OK: { show: true },
+  Unauthorized: { show: true },
+  ServerException: { show: true },
+}
+
+export interface Effects {
+  executeQuery(payload: {
+    resultURI: string
+    query: QueryConfig
+    params: JSONRecord | JSONArray
+    notifyOptions?: NotifyOptions
+  }): Promise<any>
+
+  executeQueryUpdate(payload: {
+    resultURI: string
+    query: QueryConfig
+    params: JSONRecord | JSONArray
+    notifyOptions?: NotifyOptions
+  }): Promise<any>
 
   executeHTTPRequestQuery(payload: {
     resultURI: string
     query: HTTPRequestQueryConfig
     params: JSONRecord | JSONArray
+    notifyOptions?: NotifyOptions
   }): Promise<any>
 }
 
@@ -76,12 +99,14 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
   },
 
   effects: (dispatch) => ({
-    executeQuery({ resultURI: lookupKey, query, params }) {
+    executeQuery({ resultURI: lookupKey, query, params, notifyOptions }) {
+      const notifyOptionsWithDefaults = merge(notifyOptionDefaults, notifyOptions)
       if (query.format === "HTTPRequest") {
         return dispatch.reports.executeHTTPRequestQuery({
           resultURI: lookupKey,
           query,
           params,
+          notifyOptions,
         })
       }
       return dispatch.remoteDataClient
@@ -103,7 +128,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     const notifyConfig = payload as NotifyConfig
                     if (notifyConfig.type === "error") {
                       dispatch.logger.logError("Error in executeQuery")
-                      dispatch.feedback.notify(notifyConfig)
+                      if (notifyOptionsWithDefaults.OK?.show) {
+                        dispatch.feedback.notify(notifyConfig)
+                      }
                     }
                     return notifyConfig
                   }
@@ -118,7 +145,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     message: `You do not have permission to run this report`,
                   }
                   dispatch.logger.logError("unauthed")
-                  dispatch.feedback.notify(notifyConfig)
+                  if (notifyOptionsWithDefaults.Unauthorized?.show) {
+                    dispatch.feedback.notify(notifyConfig)
+                  }
                   // throw new Error(error.message)
                   return notifyConfig
                 },
@@ -128,7 +157,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     message: `An error occurred while running this report: ${err.reason}`,
                   }
                   dispatch.logger.logError(err.reason)
-                  dispatch.feedback.notify(notifyConfig)
+                  if (notifyOptionsWithDefaults.ServerException?.show) {
+                    dispatch.feedback.notify(notifyConfig)
+                  }
                   // throw new Error(error.message)
                   return notifyConfig
                 },
@@ -137,7 +168,8 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
           )
         )
     },
-    executeQueryUpdate({ resultURI: lookupKey, query, params }) {
+    executeQueryUpdate({ resultURI: lookupKey, query, params, notifyOptions }) {
+      const notifyOptionsWithDefaults = merge(notifyOptionDefaults, notifyOptions)
       return dispatch.remoteDataClient
         .reportQueryUpdate({
           query: query.query,
@@ -156,7 +188,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     type: "success",
                     message: "Successfully saved your changes",
                   }
-                  dispatch.feedback.notify(notifyConfig)
+                  if (notifyOptionsWithDefaults.OK?.show) {
+                    dispatch.feedback.notify(notifyConfig)
+                  }
                   return isArray(payload) ? payload[0] : payload
                 },
                 Unauthorized() {
@@ -165,7 +199,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     message: "You do not have permission to execute this query",
                   }
                   dispatch.logger.logError("unauthed")
-                  dispatch.feedback.notify(notifyConfig)
+                  if (notifyOptionsWithDefaults.Unauthorized?.show) {
+                    dispatch.feedback.notify(notifyConfig)
+                  }
                   // throw new Error(error.message)
                   return notifyConfig
                 },
@@ -175,7 +211,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     message: `An error occurred while executing this query: ${err.reason}`,
                   }
                   dispatch.logger.logError(err.reason)
-                  dispatch.feedback.notify(notifyConfig)
+                  if (notifyOptionsWithDefaults.ServerException?.show) {
+                    dispatch.feedback.notify(notifyConfig)
+                  }
                   // throw new Error(error.message)
                   return notifyConfig
                 },
@@ -184,7 +222,8 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
           )
         )
     },
-    executeHTTPRequestQuery({ resultURI: lookupKey, query, params }) {
+    executeHTTPRequestQuery({ resultURI: lookupKey, query, params, notifyOptions }) {
+      const notifyOptionsWithDefaults = merge(notifyOptionDefaults, notifyOptions)
       return dispatch.remoteDataClient
         .httpRequest({
           uri: query.query,
@@ -221,7 +260,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     message: `You do not have permission to run this report`,
                   }
                   dispatch.logger.logError("unauthed")
-                  dispatch.feedback.notify(notifyConfig)
+                  if (notifyOptionsWithDefaults.Unauthorized?.show) {
+                    dispatch.feedback.notify(notifyConfig)
+                  }
                   // throw new Error(error.message)
                   return notifyConfig
                 },
@@ -231,7 +272,9 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     message: `An error occurred while running this report: ${err.reason}`,
                   }
                   dispatch.logger.logError(err.reason)
-                  dispatch.feedback.notify(notifyConfig)
+                  if (notifyOptionsWithDefaults.ServerException?.show) {
+                    dispatch.feedback.notify(notifyConfig)
+                  }
                   // throw new Error(error.message)
                   return notifyConfig
                 },

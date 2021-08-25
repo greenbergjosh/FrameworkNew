@@ -301,6 +301,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             getRootUserInterfaceData={getRootUserInterfaceData}
             onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteQuery_isCRUD}
+            notifyOkShow={castProps.RemoteQuery_notifyOkShow}
+            notifyUnauthorizedShow={castProps.RemoteQuery_notifyUnauthorizedShow}
+            notifyServerExceptionShow={castProps.RemoteQuery_notifyServerExceptionShow}
             loadById={loadById}
             mode={mode}
             onChangeData={onChangeData}
@@ -326,6 +329,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             getRootUserInterfaceData={getRootUserInterfaceData}
             onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteUrl_isCRUD}
+            notifyOkShow={castProps.RemoteUrl_notifyOkShow}
+            notifyUnauthorizedShow={castProps.RemoteUrl_notifyUnauthorizedShow}
+            notifyServerExceptionShow={castProps.RemoteUrl_notifyServerExceptionShow}
             loadById={loadById}
             mode={mode}
             onChangeData={onChangeData}

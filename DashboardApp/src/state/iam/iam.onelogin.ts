@@ -6,7 +6,7 @@ import { globalHistory } from "@reach/router"
 import { NotifyConfig } from "../feedback"
 
 const ONELOGIN_CONFIG: UserManagerSettings = {
-  authority: "https://onpoint.onelogin.com/oidc",
+  authority: "https://onpoint.onelogin.com/oidc/2",
   client_id: "2d4a9f30-dd76-0137-cba6-0265d75027d4148697",
   redirect_uri: window.location.origin,
   response_type: "id_token token",

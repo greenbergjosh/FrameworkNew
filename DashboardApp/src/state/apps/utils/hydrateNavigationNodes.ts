@@ -12,6 +12,7 @@ import { getAppEntityFromPersistedConfig } from "./getAppEntityFromPersistedConf
  * @param navigationNodes
  * @param parentLinkPathSegments
  * @param parent
+ * @param appPaths
  */
 export function hydrateNavigationNodes({
   navigationNodes,

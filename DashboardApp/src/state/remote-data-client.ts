@@ -89,7 +89,7 @@ export interface Effects {
   reportQueryUpdate(payload: {
     query: QueryConfig["query"]
     params: JSONRecord | JSONArray
-  }): Promise<Either<HttpError, AdminApi.ApiResponse<JSONRecord>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord> | NotifyConfig | JSONRecord>>>
 
   httpRequest(payload: {
     uri: string
@@ -441,7 +441,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map((payload): AdminApi.ApiResponse<JSONRecord> => {
+        result.map((payload): AdminApi.ApiResponse<Array<JSONRecord> | JSONRecord> => {
           const p = payload[query]
           return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
         })

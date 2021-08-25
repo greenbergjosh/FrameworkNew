@@ -2,34 +2,34 @@
   "compilerOptions": {
     "incremental": true,
     "target": "es5",
-    "module": "ESNext",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
-    "jsx": "react-jsx",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./",
     "declaration": true,
     "declarationDir": "./dist",
     "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
     "downlevelIteration": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "moduleResolution": "node",
-    "baseUrl": "./",
     "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "noEmit": true
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
   },
   "include": [
-    "src/**/*"
+    "src"
   ],
   "exclude": [
     "src/test.ts"
