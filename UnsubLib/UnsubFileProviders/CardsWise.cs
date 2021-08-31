@@ -17,7 +17,6 @@ namespace UnsubLib.UnsubFileProviders
             _fw = fw;
         }
 
-
         public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("cardswise.com");
 
         public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
