@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Utility;
@@ -80,7 +79,6 @@ namespace UnsubLib.NetworkProviders
         public async Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
         {
             var networkName = network.GetS("Name");
-            var networkId = network.GetS("Id");
             var downloadUrlPath = network.GetS("Credentials/DownloadUrlPath");
             var url = BuildUrl(network.GetS("Credentials/BaseUrl"), network.GetS("Credentials/GetSuppressionPath"),
                 network.GetS("Credentials/NetworkApiKey"), network.GetS("Credentials/NetworkAffiliateId"), unsubRelationshipId);
@@ -113,20 +111,13 @@ namespace UnsubLib.NetworkProviders
             }
         }
 
-        private string BuildUrl(string baseUrl, string path, string apiKey, string affiliateId, string unsubRelationshipId = null, Dictionary<string, string> qs = null)
+        private static string BuildUrl(string baseUrl, string path, string apiKey, string affiliateId, string unsubRelationshipId = null, Dictionary<string, string> qs = null)
         {
-            var url = $"{baseUrl}";
+            qs ??= new Dictionary<string, string>();
+            qs["api_key"] = apiKey;
+            qs["affiliate_id"] = affiliateId;
 
-            if (!baseUrl.EndsWith("/") && !path.StartsWith("/")) url += "/";
-
-            url += path;
-
-            if (!url.Contains("?")) url += "?";
-            else url += "&";
-
-            url += $"api_key={apiKey}&affiliate_id={affiliateId}";
-
-            if (qs?.Any() == true) url += qs.Select(p => $"&{p.Key}={p.Value}").Join("&");
+            var url = INetworkProvider.BuildUrl(baseUrl, path, qs);
 
             if (unsubRelationshipId != null) url = url.Replace("{unsubRelationshipId}", unsubRelationshipId);
 

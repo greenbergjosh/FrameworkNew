@@ -1237,18 +1237,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+                }
 #if DEBUG
             }
 #endif
@@ -2070,6 +2070,7 @@ namespace UnsubLib
                 new UnsubFileProviders.Unsubly(_fw),
                 new UnsubFileProviders.WeOpt(),
                 new UnsubFileProviders.UnsubscribeMe(),
+                new UnsubFileProviders.CardsWise(_fw),
                 new UnsubFileProviders.DirectLink()
             };
 
