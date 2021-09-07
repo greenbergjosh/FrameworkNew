@@ -4,6 +4,7 @@ import { registry } from "../../services/ComponentRegistry"
 import { Settings } from "./Settings"
 import { isEmpty } from "lodash/fp"
 import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
+import { AbstractBaseInterfaceComponentType } from "components/BaseInterfaceComponent/types"
 
 export interface ManageComponentModalProps {
   componentDefinition: null | Partial<ComponentDefinition>
@@ -14,48 +15,53 @@ export interface ManageComponentModalProps {
   userInterfaceData: UserInterfaceProps["data"]
 }
 
-export const SettingsModal = ({
-  componentDefinition: propComponentDefinition,
-  onCancel,
-  onConfirm,
-  getRootUserInterfaceData,
-  onChangeRootData,
-}: ManageComponentModalProps) => {
-  const [componentDefinition, updateComponentDefinition] = React.useState(propComponentDefinition)
+export const SettingsModal = (props: ManageComponentModalProps): JSX.Element | null => {
+  const { componentDefinition, onCancel, onConfirm, getRootUserInterfaceData, onChangeRootData } = props
+  const [Component, setComponent] = React.useState<AbstractBaseInterfaceComponentType>()
+  const [draftComponentDefinition, setDraftComponentDefinition] = React.useState(componentDefinition)
 
   React.useEffect(() => {
-    if (!componentDefinition && propComponentDefinition) {
-      const Component = propComponentDefinition.component && registry.lookup(propComponentDefinition.component)
-
+    if (!draftComponentDefinition && componentDefinition) {
       // Determine the default values for this component
       const defaults = (Component && Component.getManageFormDefaults()) || {}
-      const newComponentDefinition = { ...defaults, ...propComponentDefinition }
+      const newComponentDefinition = { ...defaults, ...componentDefinition }
       // Set the active component in the modal to be the one with all the defaults entered
-      updateComponentDefinition(newComponentDefinition)
-    } else if (!propComponentDefinition) {
-      updateComponentDefinition(propComponentDefinition)
+      setDraftComponentDefinition(newComponentDefinition)
     }
-  }, [componentDefinition, propComponentDefinition])
+  }, [Component, draftComponentDefinition, componentDefinition])
 
-  const Component =
-    componentDefinition &&
-    componentDefinition.component &&
-    registry.lookup(componentDefinition && componentDefinition.component)
-  const layoutDefinition = Component && Component.getLayoutDefinition()
-  const manageForm = Component && Component.manageForm()
+  React.useEffect(() => {
+    if (draftComponentDefinition && draftComponentDefinition.component) {
+      registry.lookup(draftComponentDefinition.component).then((component) => {
+        // Why do we need to set an anonymous function into state?
+        // Otherwise we get "Can't set props of undefined" error.
+        setComponent(() => component)
+      })
+    }
+  }, [draftComponentDefinition])
+
+  const { layoutDefinition, manageForm } = React.useMemo(() => {
+    const layoutDefinition = Component && Component.getLayoutDefinition()
+    const manageForm = Component && Component.manageForm()
+    return { layoutDefinition, manageForm }
+  }, [Component])
+
+  if (!layoutDefinition || !manageForm) {
+    return null
+  }
 
   return (
     <Modal
       title={`${layoutDefinition && layoutDefinition.title} component`}
-      visible={!!propComponentDefinition}
+      visible={!!componentDefinition}
       okText="Save"
       onCancel={(e) => {
         console.log("ManageComponentModal.onCancel", e)
         onCancel()
       }}
       onOk={(e) => {
-        console.log("ManageComponentModal.onOk", e, componentDefinition)
-        onConfirm(componentDefinition as ComponentDefinition)
+        console.log("ManageComponentModal.onOk", e, draftComponentDefinition)
+        onConfirm(draftComponentDefinition as ComponentDefinition)
       }}
       style={{ maxWidth: "1200px", width: "95%" }}
       width="95%">
@@ -66,12 +72,12 @@ export const SettingsModal = ({
               <p>{layoutDefinition && layoutDefinition.description}</p>
             )}
             <Typography.Title level={4}>Definition</Typography.Title>
-            {layoutDefinition && componentDefinition && manageForm && (
+            {layoutDefinition && draftComponentDefinition && manageForm && (
               <Settings
-                componentDefinition={componentDefinition as ComponentDefinition}
+                componentDefinition={draftComponentDefinition as ComponentDefinition}
                 onChangeDefinition={(newDefinition) => {
                   console.log("ManageComponentModal.onChangeDefinition", newDefinition)
-                  updateComponentDefinition({ ...componentDefinition, ...newDefinition })
+                  setDraftComponentDefinition({ ...draftComponentDefinition, ...newDefinition })
                 }}
                 manageForm={manageForm}
                 layoutDefinition={layoutDefinition}

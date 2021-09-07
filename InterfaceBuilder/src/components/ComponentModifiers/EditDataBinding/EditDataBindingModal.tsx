@@ -1,7 +1,7 @@
 import jsonLogic from "json-logic-js"
 import React from "react"
 import { Alert, Button, Modal, Popconfirm, Typography } from "antd"
-import { CodeEditorInterfaceComponent } from "../../../plugins/monaco/code-editor/CodeEditorInterfaceComponent"
+import { CodeEditorInterfaceComponent } from "../../../components/code-editor/CodeEditorInterfaceComponent"
 import { isEmpty, isString } from "lodash/fp"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { tryCatch } from "fp-ts/lib/Option"

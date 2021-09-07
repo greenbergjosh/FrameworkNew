@@ -1,5 +1,5 @@
 import { tryCatch } from "fp-ts/lib/Option"
-import { IBaseInterfaceComponent } from "../components/BaseInterfaceComponent/types"
+import { AbstractBaseInterfaceComponentType } from "../components/BaseInterfaceComponent/types"
 import { ComponentDefinitionNamedProps } from "../globalTypes"
 
 export type LBMFunctionType<
@@ -9,9 +9,9 @@ export type LBMFunctionType<
 > = (params: {
   props: PropType // The calling component's props
   lib: {
-    getValue: IBaseInterfaceComponent["getValue"]
-    setValue: IBaseInterfaceComponent["setValue"]
-    raiseEvent: IBaseInterfaceComponent["raiseEvent"]
+    getValue: AbstractBaseInterfaceComponentType["prototype"]["getValue"]
+    setValue: AbstractBaseInterfaceComponentType["prototype"]["setValue"]
+    raiseEvent: AbstractBaseInterfaceComponentType["prototype"]["raiseEvent"]
   }
   args: ArgType // Any additional args that the function needs
 }) => ReturnType

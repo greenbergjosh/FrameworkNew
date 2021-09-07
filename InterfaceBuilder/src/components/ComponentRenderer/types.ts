@@ -1,16 +1,14 @@
-import { BaseInterfaceComponent } from "../../components/BaseInterfaceComponent/BaseInterfaceComponent"
 import { DroppableContextType } from "../../contexts/DroppableContext"
 import {
   ComponentDefinition,
   ComponentDefinitionNamedProps,
   ComponentDefinitionRecursiveProp,
   EditUserInterfaceProps,
-  LayoutDefinition,
   UserInterfaceProps,
 } from "../../globalTypes"
+import { AbstractBaseInterfaceComponentType } from "../../components/BaseInterfaceComponent/types"
 
 export interface RenderInterfaceComponentProps {
-  Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
   dragDropDisabled?: boolean
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
@@ -23,10 +21,6 @@ export interface RenderInterfaceComponentProps {
   path: string
   submit?: UserInterfaceProps["submit"]
   userInterfaceData: UserInterfaceProps["data"]
-}
-
-export interface RenderInterfaceComponentState {
-  error: ErrorModeProps["error"]
 }
 
 export interface ComponentModifierProps {
@@ -53,9 +47,7 @@ interface ModeProps {
   componentDefinition:
     | ComponentDefinitionNamedProps
     | (ComponentDefinitionNamedProps & ComponentDefinitionRecursiveProp)
-  Component: typeof BaseInterfaceComponent
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  layoutDefinition: LayoutDefinition
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
@@ -65,16 +57,24 @@ interface ModeProps {
   userInterfaceData: UserInterfaceProps["data"]
 }
 
-export interface DisplayModeProps extends ModeProps {}
+export interface DisplayModeProps extends ModeProps {
+  Component: AbstractBaseInterfaceComponentType //React.ComponentType<BaseInterfaceComponentProps>
+}
 
-export interface PreviewModeProps extends ModeProps {}
+export interface PreviewModeProps extends ModeProps {
+  Component: AbstractBaseInterfaceComponentType //React.ComponentType<BaseInterfaceComponentProps>
+}
 
 export interface EditModeProps extends ModeProps {
+  Component: AbstractBaseInterfaceComponentType //React.ComponentType<BaseInterfaceComponentProps>
   dragDropDisabled: boolean | undefined
   index: number
   path: string
 }
 
-export interface ErrorModeProps extends EditModeProps {
+export interface ErrorModeProps extends ModeProps {
   error: string | null
+  dragDropDisabled: boolean | undefined
+  index: number
+  path: string
 }

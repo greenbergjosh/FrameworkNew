@@ -1,29 +1,29 @@
 import { ComponentDefinition } from "../../globalTypes"
 import { merge, mergeWith } from "lodash/fp"
-import { registry } from "../../services/ComponentRegistry"
+import { AbstractBaseInterfaceComponentType } from "components/BaseInterfaceComponent/types"
 
 /**
  * Returns a collection of the default values from each of this component's schema definitions.
  * @param componentDefinitions
  */
-export function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]): ComponentDefinition {
+export function getDefaultsFromComponentDefinitions(
+  componentDefinitions: ComponentDefinition[],
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+): ComponentDefinition {
   // Iterate over all the definitions to accumulate their defaults
   return componentDefinitions.reduce<ComponentDefinition>((acc, componentDefinition) => {
     // If there are child lists of in the component's definitions
     const nestedValues: { [key: string]: any } = Object.entries(componentDefinition).reduce((acc2, [key, value]) => {
       if (Array.isArray(value) && value.length && value[0].component) {
         // Merge in child list values if they exist
-        return merge(getDefaultsFromComponentDefinitions(value), acc2)
+        return merge(getDefaultsFromComponentDefinitions(value, getDefinitionDefaultValue), acc2)
       }
 
       return acc2
     }, {})
 
-    // Check to see if there's a component type for this object
-    const Component = registry.lookup(componentDefinition.component)
-
-    // If this component has a value itself, get it
-    const thisValue = (Component && Component.getDefinitionDefaultValue(componentDefinition)) || {}
+    // Get the component's default values
+    const thisValue = getDefinitionDefaultValue(componentDefinition) || {}
 
     // Combine the existing values with this level's value and any nested values
     return merge(nestedValues, merge(thisValue, acc))

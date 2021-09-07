@@ -1,21 +1,18 @@
 import { Icon, Menu, Tag } from "antd"
-import { Dictionary } from "lodash"
 import { groupBy } from "lodash/fp"
 import React from "react"
 import { Draggable } from "../DragAndDrop"
-import { ComponentRegistryCache, ComponentRegistryContext } from "../../services/ComponentRegistry"
+import { CachedComponent, ComponentRegistryCache, ComponentRegistryContext } from "../../services/ComponentRegistry"
 import { LayoutDefinition } from "../../globalTypes"
 import styles from "./styles.scss"
 
-interface InterfaceComponentChoicesProps {}
-
-export const ComponentMenu = ({}: InterfaceComponentChoicesProps) => {
+export const ComponentMenu = () => {
   const { componentRegistry } = React.useContext(ComponentRegistryContext)
 
   return (
     <div className={styles.componentMenuWrapper}>
       <Menu mode="inline" inlineIndent={0} className={styles.componentMenu}>
-        {Object.entries(sortedGroupedComponents(componentRegistry.cache)).map(([category, layoutDefinitions]) => (
+        {getLayoutDefinitions(componentRegistry._cache).map(([category, layoutDefinitions]) => (
           <Menu.SubMenu key={category} title={category}>
             {layoutDefinitions.map((layoutDefinition, index) => (
               <Menu.Item key={layoutDefinition.name}>
@@ -49,13 +46,19 @@ export const ComponentMenu = ({}: InterfaceComponentChoicesProps) => {
   )
 }
 
-function sortedGroupedComponents(componentRegistry: ComponentRegistryCache): Dictionary<LayoutDefinition[]> {
-  return groupBy(
-    (layoutDefinition: LayoutDefinition) => layoutDefinition.category,
-    Object.values(componentRegistry)
-      .map((componentClass) => componentClass.getLayoutDefinition())
-      .sort((a, b) => {
-        return (a.category && a.category.localeCompare(b.category)) || a.title.localeCompare(b.title)
-      })
+const sortLayoutDefinition = (a: LayoutDefinition, b: LayoutDefinition): number => {
+  const groupRank = a.category.localeCompare(b.category)
+  const titleRank = a.title.localeCompare(b.title)
+  return groupRank || titleRank
+}
+
+function getLayoutDefinitions(componentRegistry: ComponentRegistryCache) {
+  const cachedComponents = Object.values(componentRegistry)
+  const layoutDefinitions = cachedComponents.map(
+    (componentPkg: CachedComponent) => componentPkg.layoutDefinition as unknown as LayoutDefinition
   )
+  const sorted: LayoutDefinition[] = layoutDefinitions.sort(sortLayoutDefinition)
+  const grouped = groupBy((layoutDefinition: LayoutDefinition) => layoutDefinition.category, sorted)
+
+  return Object.entries(grouped)
 }

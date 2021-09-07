@@ -4,8 +4,12 @@ import { FormField } from "../../../components/ComponentModifiers/FormField"
 import { DisplayVisibility } from "../../ComponentModifiers/DisplayVisibility"
 import { ReplaceTokens } from "../../../components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
 import { PreviewModeProps } from "../../../components/ComponentRenderer"
+import { LayoutDefinition } from "globalTypes"
 
 export function PreviewMode(props: PreviewModeProps): JSX.Element {
+  const { Component } = props
+  const layoutDefinition: LayoutDefinition = Component.getLayoutDefinition()
+
   return (
     <DataBinding
       componentDefinition={props.componentDefinition}
@@ -24,14 +28,12 @@ export function PreviewMode(props: PreviewModeProps): JSX.Element {
           {({ tokenReplacedComponentDefinition }) => (
             <DisplayVisibility
               componentDefinition={tokenReplacedComponentDefinition}
-              layoutDefinition={props.layoutDefinition}
+              layoutDefinition={layoutDefinition}
               mode={props.mode}
               onVisibilityChange={props.onVisibilityChange}
               userInterfaceData={props.userInterfaceData}>
-              <FormField
-                componentDefinition={tokenReplacedComponentDefinition}
-                layoutDefinition={props.layoutDefinition}>
-                <props.Component
+              <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={layoutDefinition}>
+                <Component
                   {...tokenReplacedComponentDefinition}
                   userInterfaceData={props.userInterfaceData}
                   getRootUserInterfaceData={props.getRootUserInterfaceData}

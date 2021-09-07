@@ -11,6 +11,6 @@ registry._withEvents = withEvents
  *       -> withEvents
  *         -> BaseInterfaceComponent
  */
-export function getRegistry(): ComponentRegistry {
+export default function getRegistry(): ComponentRegistry {
   return registry
 }

@@ -7,7 +7,8 @@ import { ComponentRendererProps } from "./types"
 import { ComponentRendererModeContext } from "../../contexts/ComponentRendererModeContext"
 import { ComponentDefinition } from "../../globalTypes"
 import { RenderInterfaceComponent } from "../../components/ComponentRenderer/components/RenderInterfaceComponent"
-import { registry } from "../../services/ComponentRegistry"
+import { ErrorFallback } from "./components/ErrorFallback"
+import { ErrorBoundary } from "react-error-boundary"
 
 export const UI_ROOT = "UI-Root"
 
@@ -42,21 +43,36 @@ export const ComponentRenderer = React.memo(
       return (
         <DataPathContext path={index} key={`${keyPrefix || ""}${componentDefinition.component}-${index}`}>
           {(path) => (
-            <RenderInterfaceComponent
-              Component={registry.lookup(componentDefinition.component)}
-              componentDefinition={componentDefinition}
-              userInterfaceData={data}
-              dragDropDisabled={dragDropDisabled}
-              getRootUserInterfaceData={getRootUserInterfaceData}
-              onChangeRootData={onChangeRootData}
-              onVisibilityChange={onVisibilityChange}
-              index={index}
-              mode={mode}
-              onChangeData={onChangeData}
-              onChangeSchema={handleChangeSchema(index)}
-              path={path}
-              submit={submit}
-            />
+            <ErrorBoundary
+              FallbackComponent={ErrorFallback({
+                componentDefinition,
+                dragDropDisabled,
+                getRootUserInterfaceData,
+                index,
+                mode,
+                onChangeData,
+                onChangeRootData,
+                onChangeSchema: handleChangeSchema(index),
+                onVisibilityChange,
+                path,
+                submit,
+                userInterfaceData: data,
+              })}>
+              <RenderInterfaceComponent
+                componentDefinition={componentDefinition}
+                userInterfaceData={data}
+                dragDropDisabled={dragDropDisabled}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
+                onVisibilityChange={onVisibilityChange}
+                index={index}
+                mode={mode}
+                onChangeData={onChangeData}
+                onChangeSchema={handleChangeSchema(index)}
+                path={path}
+                submit={submit}
+              />
+            </ErrorBoundary>
           )}
         </DataPathContext>
       )

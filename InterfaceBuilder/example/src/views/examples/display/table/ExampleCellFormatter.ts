@@ -1,4 +1,5 @@
-import { StandardGridTypes, JSONRecord } from "@opg/interface-builder"
+import StandardGridTypes from "@opg/interface-builder-plugins/lib/syncfusion/table/StandardGrid/types"
+import { JSONRecord } from "@opg/interface-builder"
 
 interface EnrichedColumnDefinitionWithFormatFn extends StandardGridTypes.EnrichedColumnDefinition {
   formatFn: (value: unknown) => unknown

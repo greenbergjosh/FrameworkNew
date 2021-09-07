@@ -1,0 +1,9 @@
+.editorconfig
+.eslintrc
+.idea
+.prettierrc
+.travis.yml
+example
+README.md
+src
+tsconfig.json

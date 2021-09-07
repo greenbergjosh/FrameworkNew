@@ -1,10 +1,10 @@
 import React from "react"
 import {
   BaseInterfaceComponent,
-  Table,
   UserInterfaceContext,
   UserInterfaceContextManager,
 } from "@opg/interface-builder"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { tableManageForm } from "./table-manage-form"
 import { TableInterfaceComponentProps, TableInterfaceComponentState } from "./types"
 

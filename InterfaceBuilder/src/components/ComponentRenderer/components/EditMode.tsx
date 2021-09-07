@@ -6,8 +6,12 @@ import { EditDataBinding } from "../../../components/ComponentModifiers/EditData
 import { FormField } from "../../../components/ComponentModifiers/FormField"
 import { ReplaceTokens } from "../../../components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
 import { EditModeProps } from "../../../components/ComponentRenderer"
+import { LayoutDefinition } from "globalTypes"
 
 export function EditMode(props: EditModeProps): JSX.Element {
+  const { Component } = props
+  const layoutDefinition: LayoutDefinition = Component.getLayoutDefinition()
+
   return (
     <DataBinding
       componentDefinition={props.componentDefinition}
@@ -28,30 +32,28 @@ export function EditMode(props: EditModeProps): JSX.Element {
               componentDefinition={tokenReplacedComponentDefinition}
               dragDropDisabled={props.dragDropDisabled}
               index={props.index}
-              layoutDefinition={props.layoutDefinition}
+              layoutDefinition={layoutDefinition}
               mode={props.mode}
               path={props.path}>
               {({ isDragging, draggableItem }) => (
                 <EditPanelWrapper
-                  component={props.Component}
+                  component={Component}
                   componentDefinition={tokenReplacedComponentDefinition}
                   draggableItem={draggableItem}
                   hidden={tokenReplacedComponentDefinition.hidden}
                   index={props.index}
                   invisible={tokenReplacedComponentDefinition.invisible}
                   isDragging={isDragging}
-                  title={props.layoutDefinition.title}
+                  title={layoutDefinition.title}
                   userInterfaceData={props.userInterfaceData}>
-                  <FormField
-                    componentDefinition={tokenReplacedComponentDefinition}
-                    layoutDefinition={props.layoutDefinition}>
+                  <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={layoutDefinition}>
                     <EditDataBinding
                       componentDefinition={tokenReplacedComponentDefinition}
                       mode={props.mode}
                       onChangeData={props.onChangeData}
                       onChangeSchema={props.onChangeSchema}
                       userInterfaceData={props.userInterfaceData}>
-                      <props.Component
+                      <Component
                         {...tokenReplacedComponentDefinition}
                         userInterfaceData={props.userInterfaceData}
                         getRootUserInterfaceData={props.getRootUserInterfaceData}

@@ -1,13 +1,13 @@
 {
-  "name": "interface-builder-example",
+  "name": "@opg/interface-builder-example",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "craco start",
+    "build": "craco build",
     "lint": "eslint './src/**/*.{ts,tsx}' --fix",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "test": "craco test",
+    "eject": "craco eject"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -25,32 +25,38 @@
     ]
   },
   "dependencies": {
-    "@opg/interface-builder": "link:..",
-    "@types/jest": "26.0.15",
-    "@types/node": "14.14.8",
-    "@types/react": "16.9.56",
-    "@types/react-dom": "16.9.9",
-    "@types/react-helmet": "6.1.0",
-    "@types/react-router-dom": "5.1.6",
+    "@craco/craco": "6.2.0",
+    "@loadable/component": "5.15.0",
+    "@opg/interface-builder": "link:../",
+    "@opg/interface-builder-plugins": "link:../interface-builder-plugins",
     "antd": "3.26.20",
-    "classnames": "2.2.6",
+    "classnames": "2.3.1",
     "lodash.debounce": "4.0.8",
     "prop-types": "15.7.2",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "react-helmet": "6.1.0",
-    "react-router-dom": "5.2.0",
-    "react-scripts": "4.0.0"
+    "react-router-dom": "5.2.1",
+    "react-scripts": "4.0.3"
   },
   "devDependencies": {
-    "eslint-config-prettier": "6.15.0",
+    "@types/jest": "27.0.1",
+    "@types/node": "16.7.10",
+    "@types/react": "17.0.19",
+    "@types/react-dom": "17.0.9",
+    "@types/react-helmet": "6.1.2",
+    "@types/react-router-dom": "5.1.8",
+    "@types/uuid": "8.3.1",
+    "eslint-config-prettier": "8.3.0",
     "eslint-config-problems": "5.0.0",
-    "eslint-plugin-flowtype": "5.2.0",
-    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-flowtype": "5.9.2",
+    "eslint-plugin-import": "2.24.2",
     "eslint-plugin-jsx-a11y": "6.4.1",
-    "eslint-plugin-prettier": "3.1.4",
-    "eslint-plugin-react": "7.21.5",
+    "eslint-plugin-prettier": "3.4.1",
+    "eslint-plugin-react": "7.25.1",
     "eslint-plugin-react-hooks": "4.2.0",
-    "typescript": "4.0.5"
+    "prettier": "2.3.2",
+    "typescript": "4.4.2",
+    "webpack-build-notifier": "2.3.0"
   }
 }

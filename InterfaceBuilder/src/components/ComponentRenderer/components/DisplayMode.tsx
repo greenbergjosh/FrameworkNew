@@ -5,8 +5,12 @@ import { DisplayVisibility } from "../../ComponentModifiers/DisplayVisibility"
 import { EditDataBinding } from "../../../components/ComponentModifiers/EditDataBinding/EditDataBinding"
 import { ReplaceTokens } from "../../../components/ComponentModifiers/ReplaceTokens/ReplaceTokens"
 import { DisplayModeProps } from "../../../components/ComponentRenderer"
+import { LayoutDefinition } from "globalTypes"
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {
+  const { Component } = props
+  const layoutDefinition: LayoutDefinition = Component.getLayoutDefinition()
+
   return (
     <DataBinding
       componentDefinition={props.componentDefinition}
@@ -25,13 +29,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
           {({ tokenReplacedComponentDefinition }) => (
             <DisplayVisibility
               componentDefinition={tokenReplacedComponentDefinition}
-              layoutDefinition={props.layoutDefinition}
+              layoutDefinition={layoutDefinition}
               mode={props.mode}
               onVisibilityChange={props.onVisibilityChange}
               userInterfaceData={props.userInterfaceData}>
-              <FormField
-                componentDefinition={tokenReplacedComponentDefinition}
-                layoutDefinition={props.layoutDefinition}>
+              <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={layoutDefinition}>
                 {props.componentDefinition.bindable ? (
                   <EditDataBinding
                     componentDefinition={tokenReplacedComponentDefinition}
@@ -39,7 +41,8 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
                     onChangeData={props.onChangeData}
                     onChangeSchema={props.onChangeSchema}
                     userInterfaceData={props.userInterfaceData}>
-                    <props.Component
+                    {/*<React.Suspense fallback="Loading...">*/}
+                    <Component
                       {...tokenReplacedComponentDefinition}
                       userInterfaceData={props.userInterfaceData}
                       getRootUserInterfaceData={props.getRootUserInterfaceData}
@@ -52,7 +55,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
                     />
                   </EditDataBinding>
                 ) : (
-                  <props.Component
+                  <Component
                     {...tokenReplacedComponentDefinition}
                     userInterfaceData={props.userInterfaceData}
                     getRootUserInterfaceData={props.getRootUserInterfaceData}

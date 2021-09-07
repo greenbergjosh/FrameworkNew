@@ -10,12 +10,12 @@ import * as utils from "../../lib/parseLBM"
 import { isEmpty } from "lodash/fp"
 import { getManageForm } from "./manage-form/getManageForm"
 
-class EventManagerProps {
+export class EventManagerProps {
   outgoingEventMap: OutgoingEventMap = {}
   incomingEventHandlers: IncomingEventHandler[] = []
 }
 
-class EventManagerState {
+export class EventManagerState {
   mutatedProps: Record<string, any> = {}
 }
 

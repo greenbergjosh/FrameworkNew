@@ -1,14 +1,15 @@
-import { Table, JSONRecord } from "@opg/interface-builder"
+import table from "@opg/interface-builder-plugins/lib/syncfusion/table/types"
+import { JSONRecord } from "@opg/interface-builder"
 import { Option } from "fp-ts/lib/Option"
 
 interface AugmentedTableInterfaceComponentDisplayModeProps
-  extends Table.TableInterfaceComponentDisplayModeProps {
+  extends table.TableInterfaceComponentDisplayModeProps {
   parameterValues: Option<JSONRecord>
   parentData?: JSONRecord
 }
 
 interface AugmentedTableInterfaceComponentEditModeProps
-  extends Table.TableInterfaceComponentDisplayModeProps {
+  extends table.TableInterfaceComponentDisplayModeProps {
   parameterValues: Option<JSONRecord>
   parentData?: JSONRecord
 }
@@ -17,4 +18,4 @@ export type TableInterfaceComponentProps =
   | AugmentedTableInterfaceComponentDisplayModeProps
   | AugmentedTableInterfaceComponentEditModeProps
 
-export interface TableInterfaceComponentState extends Table.TableInterfaceComponentState {}
+export interface TableInterfaceComponentState extends table.TableInterfaceComponentState {}

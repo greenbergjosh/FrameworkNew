@@ -3,7 +3,7 @@ import { getValue } from "../../lib/getValue"
 import { set } from "lodash/fp"
 import { v4 as uuid } from "uuid"
 import { ComponentDefinition, ComponentDefinitionNamedProps, LayoutDefinition } from "../../globalTypes"
-import { BaseInterfaceComponentProps, GetValue, SetValue } from "./types"
+import { AbstractBaseInterfaceComponent, BaseInterfaceComponentProps, GetValue, SetValue } from "./types"
 import { getDefaultsFromComponentDefinitions } from "./componentDefinitionUtils"
 import { getMergedData } from "./getMergedData"
 import { EventPayloadType } from "../../components/withEvents/types"
@@ -16,9 +16,9 @@ import { EventPayloadType } from "../../components/withEvents/types"
  * @method raiseEvent - Raise events by calling this method with an event name and a payload
  */
 export abstract class BaseInterfaceComponent<
-  T extends BaseInterfaceComponentProps, // Component's props
-  Y = Record<string, unknown> // Component's state
-> extends React.Component<T, Y> {
+  P extends BaseInterfaceComponentProps,
+  S = Record<string, unknown>
+> extends AbstractBaseInterfaceComponent<P, S> {
   private _componentId: string | null = null
 
   public get componentId(): string {
@@ -54,18 +54,19 @@ export abstract class BaseInterfaceComponent<
   }
 
   static getManageFormDefaults(): { [key: string]: any } {
-    return getDefaultsFromComponentDefinitions(this.manageForm())
+    return getDefaultsFromComponentDefinitions(this.manageForm(), this.getDefinitionDefaultValue)
   }
 
+  // eslint-disable-next-line no-unused-vars
   static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
     return undefined
   }
 
-  getDefaultValue(): unknown {
+  getDefaultValue = (): unknown => {
     if (typeof this.props.defaultValue !== "undefined") {
       return this.props.defaultValue
     }
-    return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
+    return (this.constructor as unknown as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
   }
 
   /**
@@ -102,7 +103,7 @@ export abstract class BaseInterfaceComponent<
     }
   }
 
-  anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
+  anyPropsChanged = (prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean => {
     return propsToCheck.some(
       (prop) =>
         this.props[prop] !== prevProps[prop] || (this.props[prop] !== undefined && prevProps[prop] === undefined)
@@ -116,7 +117,7 @@ export abstract class BaseInterfaceComponent<
    * @param eventName
    * @param eventPayload
    */
-  raiseEvent(eventName: string, eventPayload: EventPayloadType): void {
+  raiseEvent = (eventName: string, eventPayload: EventPayloadType): void => {
     console.log(`BaseInterfaceComponent: Component raised event "${eventName}"`, eventPayload)
     if (this.props.onRaiseEvent) {
       this.props.onRaiseEvent(eventName, eventPayload, this)

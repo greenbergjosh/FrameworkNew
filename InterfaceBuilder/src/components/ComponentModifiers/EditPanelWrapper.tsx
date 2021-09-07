@@ -8,10 +8,10 @@ import { tryCatch } from "lib/Option"
 import { UserInterfaceProps } from "../../globalTypes"
 import { DraggedItemProps } from "../../components/DragAndDrop"
 import { isBoolean, isFunction } from "lodash/fp"
-import { BaseInterfaceComponent } from "../../components/BaseInterfaceComponent/BaseInterfaceComponent"
+import { AbstractBaseInterfaceComponentType } from "../../components/BaseInterfaceComponent/types"
 
 interface EditPanelWrapperProps extends ComponentModifierProps, Omit<EditPanelWithToolsProps, "draggableItem"> {
-  component: typeof BaseInterfaceComponent
+  component: AbstractBaseInterfaceComponentType
   userInterfaceData: UserInterfaceProps["data"]
   index: number
   draggableItem?: DraggedItemProps

@@ -2,7 +2,7 @@ import React from "react"
 import { EditableContextProps } from "../../contexts/EditableContext"
 import { DraggedItemProps } from "../DragAndDrop"
 import { ComponentDefinition, ComponentDefinitionNamedProps } from "../../globalTypes"
-import { BaseInterfaceComponent } from "../../components/BaseInterfaceComponent/BaseInterfaceComponent"
+import { AbstractBaseInterfaceComponentType } from "../../components/BaseInterfaceComponent/types"
 import { EventMapItem } from "../../components/withEvents/types"
 
 export type IEditButtons = (props: EditButtonsProps) => JSX.Element | null
@@ -17,7 +17,7 @@ export enum VISIBILITY_MODES {
 }
 
 export interface EditPanelProps {
-  component?: typeof BaseInterfaceComponent
+  component?: AbstractBaseInterfaceComponentType
   componentDefinition: Partial<ComponentDefinitionNamedProps> | null
   showGripper?: boolean
   style?: React.CSSProperties
@@ -27,7 +27,7 @@ export interface EditPanelProps {
 }
 
 export interface SummaryProps {
-  component?: typeof BaseInterfaceComponent
+  component?: AbstractBaseInterfaceComponentType
   componentDefinition: Partial<ComponentDefinitionNamedProps> | null
 }
 
@@ -44,7 +44,7 @@ export interface EventsSummaryProps {
 
 export interface EditPanelWithToolsProps extends EditableContextProps {
   blocked?: boolean
-  component: typeof BaseInterfaceComponent
+  component: AbstractBaseInterfaceComponentType
   componentDefinition: ComponentDefinition
   draggableItem?: DraggedItemProps
   editable?: boolean
