@@ -1,4 +1,5 @@
 import {
+  AbstractBaseInterfaceComponentType,
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
@@ -16,6 +17,7 @@ import { PropsFromQueryParams } from "../../query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { NotifyConfig } from "../../../state/feedback"
+import { AbstractBaseInterfaceComponent } from "@opg/interface-builder/dist/components/BaseInterfaceComponent/types"
 
 export enum LOADSTATUSCODES {
   none = "none",
@@ -208,6 +210,7 @@ export interface RemoteComponentProps {
   getParams: () => JSONRecord
   onExecute?: () => void
   onComplete?: () => void
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
 }
 
 export interface FromStore {

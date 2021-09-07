@@ -25,8 +25,9 @@ import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../../data/JSON"
 import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
+import layoutDefinition from "./layoutDefinition"
 
-export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
+export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
   ExecuteInterfaceComponentState
 > {
@@ -35,17 +36,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     valueKey: "data",
   }
   static getLayoutDefinition() {
-    return {
-      category: "Special",
-      name: "execute",
-      title: "Execute",
-      icon: "thunderbolt",
-      componentDefinition: {
-        component: "execute",
-        hideLabel: true,
-        components: [],
-      },
-    }
+    return layoutDefinition
   }
   static manageForm = executeManageForm
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
@@ -286,6 +277,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             useRedirect={castProps.RemoteConfig_useRedirect}
             userInterfaceData={userInterfaceData}
             getValue={this.getValue.bind(this)}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       case "remote-query":
@@ -316,6 +308,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       case "remote-url":
@@ -344,6 +337,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       default:

@@ -17,7 +17,7 @@ interface SummaryViewProps {
   pageId: BusinessApplicationPageId
 }
 
-export const SummaryView = (props: WithRouteProps<SummaryViewProps>): JSX.Element => {
+export function SummaryView(props: WithRouteProps<SummaryViewProps>): JSX.Element {
   return (
     <>
       <Helmet>
@@ -43,3 +43,5 @@ export const SummaryView = (props: WithRouteProps<SummaryViewProps>): JSX.Elemen
     </>
   )
 }
+
+export default SummaryView

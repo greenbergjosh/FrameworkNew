@@ -14,6 +14,7 @@ import {
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { isPlainObject } from "lodash/fp"
+import layoutDefinition from "./layoutDefinition"
 
 export interface RemoteComponentInterfaceComponentProps extends ComponentDefinitionNamedProps {
   collapsible?: boolean
@@ -31,23 +32,14 @@ export interface RemoteComponentInterfaceComponentProps extends ComponentDefinit
   modeOverride: UserInterfaceProps["mode"]
 }
 
-export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<RemoteComponentInterfaceComponentProps> {
+export default class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<RemoteComponentInterfaceComponentProps> {
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "values",
   }
 
   static getLayoutDefinition() {
-    return {
-      category: "Special",
-      name: "remote-component",
-      title: "Remote Component",
-      icon: "select",
-      componentDefinition: {
-        component: "remote-component",
-        label: "Remote Component",
-      },
-    }
+    return layoutDefinition
   }
 
   static manageForm = remoteComponentManageForm

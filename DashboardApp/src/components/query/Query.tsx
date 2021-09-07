@@ -151,6 +151,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
           !!promptParameters.length &&
           promptParameters.some(({ required }) => required === true) && (
             <QueryForm
+              getDefinitionDefaultValue={this.props.getDefinitionDefaultValue}
               getRootUserInterfaceData={getRootUserInterfaceData}
               onChangeRootData={onChangeRootData}
               layout={promptLayout}

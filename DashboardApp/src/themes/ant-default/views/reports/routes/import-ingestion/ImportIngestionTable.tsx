@@ -1,6 +1,6 @@
 import React from "react"
 import { Icon, Typography } from "antd"
-import { Table, StandardGridTypes } from "@opg/interface-builder"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { DEFAULT_PAGE_SIZE } from "./constants"
 import "./import-ingestion.scss"
 import { IngestionStatus } from "./index"
@@ -12,7 +12,7 @@ import { IngestionStatus } from "./index"
 interface ExportTableProps<T> {
   data: T[]
   title?: string
-  onRowDataBind?: StandardGridTypes.EmitType<StandardGridTypes.RowDataBoundEventArgs> | undefined
+  onRowDataBind?: Table.StandardGridTypes.EmitType<Table.StandardGridTypes.RowDataBoundEventArgs> | undefined
 }
 
 interface SucceededColProps {
@@ -50,7 +50,7 @@ function RowsProcessedCol(props: RowsProcessedColProps): JSX.Element {
 }
 
 export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTableProps<IngestionStatus>): JSX.Element {
-  const pageSettings: StandardGridTypes.PageSettingsModel = {
+  const pageSettings: Table.StandardGridTypes.PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
     pageSizes: false,
   }

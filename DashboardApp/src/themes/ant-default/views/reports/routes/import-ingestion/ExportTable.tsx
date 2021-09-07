@@ -1,6 +1,6 @@
 import React from "react"
 import { Typography } from "antd"
-import { StandardGridTypes, Table } from "@opg/interface-builder"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { DEFAULT_PAGE_SIZE } from "./constants"
 import "./import-ingestion.scss"
 import { ExportStatus } from "./index"
@@ -12,7 +12,7 @@ import { ExportStatus } from "./index"
 interface ExportTableProps<T> {
   data: T[]
   title?: string
-  onRowDataBind?: StandardGridTypes.EmitType<StandardGridTypes.RowDataBoundEventArgs> | undefined
+  onRowDataBind?: Table.StandardGridTypes.EmitType<Table.StandardGridTypes.RowDataBoundEventArgs> | undefined
 }
 
 interface RowCountColProps {
@@ -28,7 +28,7 @@ function RowCountCol(props: RowCountColProps): JSX.Element {
 }
 
 export function ExportTable({ data, title, onRowDataBind }: ExportTableProps<ExportStatus>): JSX.Element {
-  const pageSettings: StandardGridTypes.PageSettingsModel = {
+  const pageSettings: Table.StandardGridTypes.PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
     pageSizes: false,
   }

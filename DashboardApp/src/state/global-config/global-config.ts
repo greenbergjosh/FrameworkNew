@@ -401,7 +401,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
 
               return associationsMap
             })
-            .getOrElse([])
+            .getOrElse({})
 
           function toAssociationsTuple(c: GC.PersistedConfig) {
             return tuple(

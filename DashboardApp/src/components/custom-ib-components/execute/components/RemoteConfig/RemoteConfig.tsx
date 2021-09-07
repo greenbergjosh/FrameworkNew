@@ -39,6 +39,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     useRedirect,
     userInterfaceData,
     getValue,
+    getDefinitionDefaultValue,
   } = props
 
   /* *************************************
@@ -183,6 +184,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
           submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
+          getDefinitionDefaultValue={getDefinitionDefaultValue}
         />
       )}
     </QueryParams>

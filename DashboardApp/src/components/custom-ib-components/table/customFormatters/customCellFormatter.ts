@@ -1,4 +1,4 @@
-import { StandardGridTypes } from "@opg/interface-builder"
+import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { AppSelectors } from "../../../../state/store.types"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"

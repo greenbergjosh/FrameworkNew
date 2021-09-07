@@ -47,7 +47,7 @@ export async function authViaGoogleOAuth(dispatch: Store.AppDispatch) {
   try {
     await gAPI().client.init(GOOGLE_AUTH_CONFIG)
     dispatch.iam.handleGoogleAuthSignedIn(await gAuth().signIn())
-  } catch (err) {
+  } catch (err: any) {
     const errorCode: SignInErrorCode = err.error
 
     switch (errorCode) {

@@ -19,13 +19,12 @@ import { isWhitespace } from "../../../../../lib/string"
 import { store } from "../../../../../state/store"
 import { AppSelectors } from "../../../../../state/store.types"
 import {
-  CodeEditor,
-  EditorLangCodec,
-  editorLanguages,
+  BaseInterfaceComponent,
   getDefaultsFromComponentDefinitions,
   UserInterface,
   UserInterfaceProps,
 } from "@opg/interface-builder"
+import { CodeEditor, EditorLangCodec, editorLanguages } from "@opg/interface-builder-plugins/lib/monaco/code-editor"
 import { Alert, Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton, Tabs } from "antd"
 import { fromEither, getSetoid as getOptionSetoid, none, Option, option, some, tryCatch } from "fp-ts/lib/Option"
 import { InProgressLocalDraftConfig, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
@@ -640,15 +639,17 @@ const formItemLayout = {
 const determineConfigDefaults = (
   selectedType: string,
   entityTypes: ReturnType<AppSelectors["globalConfig"]["entityTypeConfigs"]>,
-  configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>,
-  configsByType: ReturnType<AppSelectors["globalConfig"]["configsByType"]>
+  configsByType: ReturnType<AppSelectors["globalConfig"]["configsByType"]>,
+  configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>
 ) => {
   const newEntityTypeConfig = record.lookup(selectedType, entityTypes)
 
   const newComponents = determineLayoutComponents(configsById, configsByType, newEntityTypeConfig)
 
   return newComponents
-    ? JSON.stringify(getDefaultsFromComponentDefinitions(newComponents))
+    ? JSON.stringify(
+        getDefaultsFromComponentDefinitions(newComponents, BaseInterfaceComponent.getDefinitionDefaultValue)
+      )
     : newEntityTypeConfig
         .chain(({ config }) => config.chain((cfg) => tryCatch(() => JSON5.parse(cfg).lang as string)))
         .map((lang) => (lang === "json" ? JSON.stringify({ lang: "json" }) : ""))

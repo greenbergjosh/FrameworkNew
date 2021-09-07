@@ -13,7 +13,8 @@ import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
 import { mapData, unMapData } from "./mapData"
 import { ReportDetailsType } from "./types"
-import { StandardGridTypes, UserInterfaceProps } from "@opg/interface-builder"
+import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"
+import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { ColumnConfig } from "../../custom-ib-components/table/types"
 
 /***************************************************************************
@@ -42,6 +43,7 @@ export const getDetailTemplate = ({
   handleChangeData,
   onChangeData,
   columnType,
+  getDefinitionDefaultValue,
 }: {
   dispatch: AppDispatch
   columnDetails: ColumnConfig["details"]
@@ -52,6 +54,7 @@ export const getDetailTemplate = ({
   handleChangeData?: (oldData: JSONRecord, newData: JSONRecord) => void
   onChangeData?: UserInterfaceProps["onChangeData"]
   columnType: ColumnConfig["type"]
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
 }): StandardGridTypes.EnrichedColumnDefinition["template"] => {
   if (columnType !== "layout") return
   const resolved = resolveDetails(columnDetails)
@@ -66,6 +69,7 @@ export const getDetailTemplate = ({
         report={resolved}
         data={getData(columnDetails, parentData, parameterValues, rowData)}
         withoutHeader
+        getDefinitionDefaultValue={getDefinitionDefaultValue}
       />
     )
   }

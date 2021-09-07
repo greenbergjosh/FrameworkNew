@@ -1,4 +1,4 @@
-import { StandardGridTypes, Table } from "@opg/interface-builder"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { AppSelectors } from "../../../../state/store.types"
 import * as record from "fp-ts/lib/Record"
 import { tryCatch } from "fp-ts/lib/Option"
@@ -13,9 +13,9 @@ import JSON5 from "json5"
  * @return string - Aggregate "summary" row cell
  */
 export function getCustomAggregateFunction(
-  customAggregateId: StandardGridTypes.EnrichedColumnDefinition["customAggregateId"],
+  customAggregateId: Table.StandardGridTypes.EnrichedColumnDefinition["customAggregateId"],
   configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>,
-  aggregationFunction: StandardGridTypes.EnrichedColumnDefinition["aggregationFunction"]
+  aggregationFunction: Table.StandardGridTypes.EnrichedColumnDefinition["aggregationFunction"]
 ): Table.CustomAggregateFunction | undefined {
   if (!customAggregateId || aggregationFunction !== "Custom") return
   const remoteConfig = record.lookup(customAggregateId, configsById).toUndefined()

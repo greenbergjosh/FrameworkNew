@@ -1,5 +1,5 @@
 import { store } from "../../state/store"
-import { CodeEditorTypes, editor, languages, Range } from "@opg/interface-builder"
+import { CodeEditorTypes, editor, languages, Range } from "@opg/interface-builder-plugins/lib/monaco/code-editor"
 import { some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 
@@ -8,9 +8,7 @@ type guidRangeItem = {
   guid: string
 }
 
-export const getCustomEditorConstructionOptions = (
-  monaco: editor.IStandaloneCodeEditor
-): CodeEditorTypes.IDisposable[] => {
+export const getCustomEditorConstructionOptions = (monaco: unknown): CodeEditorTypes.IDisposable[] => {
   const adapter = new GUIDEditorServiceAdapter(monaco, store)
   const linkDisposable = languages.registerLinkProvider("json", adapter)
   const hoverDisposable = languages.registerHoverProvider("json", adapter)
@@ -18,7 +16,7 @@ export const getCustomEditorConstructionOptions = (
 }
 
 class GUIDEditorServiceAdapter implements languages.LinkProvider, languages.HoverProvider {
-  constructor(private monaco: editor.IStandaloneCodeEditor, private applicationStore: typeof store) {}
+  constructor(private monaco: unknown, private applicationStore: typeof store) {}
 
   provideLinks(
     model: editor.ITextModel,

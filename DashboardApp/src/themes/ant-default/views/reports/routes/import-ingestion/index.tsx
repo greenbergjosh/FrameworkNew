@@ -1,6 +1,7 @@
 import React from "react"
 import { Col, PageHeader, Row, Typography } from "antd"
-import { StandardGridTypes, UserInterfaceContext } from "@opg/interface-builder"
+import { BaseInterfaceComponent, UserInterfaceContext } from "@opg/interface-builder"
+import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import * as iots from "io-ts"
 import { reporter } from "io-ts-reporters"
 import * as record from "fp-ts/lib/Record"
@@ -201,7 +202,8 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 onChangeRootData={() => void 0}
                 queryType="remote-query"
                 remoteQuery={partnerQueryId}
-                refresh={{ interval: 120, stopOnFailure: true }}>
+                refresh={{ interval: 120, stopOnFailure: true }}
+                getDefinitionDefaultValue={BaseInterfaceComponent.getDefinitionDefaultValue}>
                 {partnerMenu}
               </Query>
             </Col>
@@ -211,7 +213,8 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 onChangeRootData={() => void 0}
                 queryType="remote-query"
                 refresh={{ interval: 30, stopOnFailure: true }}
-                remoteQuery={ingestionStatusQueryConfigId}>
+                remoteQuery={ingestionStatusQueryConfigId}
+                getDefinitionDefaultValue={BaseInterfaceComponent.getDefinitionDefaultValue}>
                 {({ data }) => (
                   <ImportIngestionTable
                     title="Ingestion"
@@ -227,7 +230,8 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 onChangeRootData={() => void 0}
                 queryType="remote-query"
                 refresh={{ interval: 30, stopOnFailure: true }}
-                remoteQuery={exportStatusQueryConfigId}>
+                remoteQuery={exportStatusQueryConfigId}
+                getDefinitionDefaultValue={BaseInterfaceComponent.getDefinitionDefaultValue}>
                 {({ data }) => (
                   <ExportTable
                     title="Export"

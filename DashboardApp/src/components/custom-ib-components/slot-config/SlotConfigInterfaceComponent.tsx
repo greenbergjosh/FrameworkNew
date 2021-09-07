@@ -8,6 +8,7 @@ import {
 } from "@opg/interface-builder"
 import { slotConfigManageForm } from "./slot-config-manage-form"
 import { getSlotConfigLayout } from "./getSlotConfigLayout"
+import layoutDefinition from "./layoutDefinition"
 
 export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNamedProps {
   actionType: string
@@ -22,24 +23,14 @@ export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNa
   valueKey: string
 }
 
-export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotConfigInterfaceComponentProps> {
+export default class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotConfigInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "seqs",
     defaultValue: [],
   }
 
   static getLayoutDefinition() {
-    return {
-      category: "Special",
-      name: "slot-config",
-      title: "Slot Config",
-      icon: "border-outer",
-      formControl: true,
-      componentDefinition: {
-        component: "slot-config",
-        label: "Slot Config",
-      },
-    }
+    return layoutDefinition
   }
 
   static manageForm = slotConfigManageForm

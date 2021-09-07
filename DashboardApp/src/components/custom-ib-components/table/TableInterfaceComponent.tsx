@@ -2,15 +2,15 @@ import React from "react"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
-  Table,
   UserInterfaceContext,
   UserInterfaceContextManager,
 } from "@opg/interface-builder"
+import Table from "@opg/interface-builder-plugins/lib/syncfusion/table/TableInterfaceComponent"
 import { tableManageForm } from "./table-manage-form"
 import { TableInterfaceComponentProps, TableInterfaceComponentState } from "./types"
 import { TableWrapper } from "./components/TableWrapper"
 
-export class TableInterfaceComponent extends BaseInterfaceComponent<
+export default class TableInterfaceComponent extends BaseInterfaceComponent<
   TableInterfaceComponentProps,
   TableInterfaceComponentState
 > {
@@ -25,8 +25,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
   }
   context!: React.ContextType<typeof UserInterfaceContext>
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
-  static defaultProps = Table.TableInterfaceComponent.defaultProps
-  static getLayoutDefinition = Table.TableInterfaceComponent.getLayoutDefinition
+  static defaultProps = Table.defaultProps
+  static getLayoutDefinition = Table.getLayoutDefinition
   static manageForm = tableManageForm
 
   /**
@@ -55,6 +55,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    return <TableWrapper {...this.props} />
+    return (
+      <TableWrapper {...this.props} getDefinitionDefaultValue={TableInterfaceComponent.getDefinitionDefaultValue} />
+    )
   }
 }

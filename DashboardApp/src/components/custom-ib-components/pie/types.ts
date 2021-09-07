@@ -1,4 +1,4 @@
-import { Pie } from "@opg/interface-builder"
+import * as Pie from "@opg/interface-builder-plugins/lib/nivo/pie"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 
 export interface PieInterfaceComponentProps extends Pie.PieInterfaceComponentProps {

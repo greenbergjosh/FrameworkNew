@@ -1,11 +1,12 @@
 import React from "react"
-import { BaseInterfaceComponent, Pie, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
+import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
+import Pie from "@opg/interface-builder-plugins/lib/nivo/pie/PieInterfaceComponent"
 import { pieManageForm } from "./pie-manage-form"
 import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../../../lib/loadRemoteLBM"
 import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
-export class PieInterfaceComponent extends BaseInterfaceComponent<
+export default class PieInterfaceComponent extends BaseInterfaceComponent<
   PieInterfaceComponentProps,
   PieInterfaceComponentState
 > {
@@ -20,7 +21,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
   }
   context!: React.ContextType<typeof UserInterfaceContext>
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
-  static getLayoutDefinition = Pie.PieInterfaceComponent.getLayoutDefinition
+  static getLayoutDefinition = Pie.getLayoutDefinition
   static manageForm = pieManageForm
 
   componentDidMount(): void {
@@ -43,7 +44,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
 
   render(): JSX.Element {
     return (
-      <Pie.PieInterfaceComponent
+      <Pie
         {...this.props}
         sliceLabelValueFunctionSrc={this.state.sliceLabelValueFunctionSrc}
         tooltipFunctionSrc={this.state.sliceTooltipFunctionSrc}
