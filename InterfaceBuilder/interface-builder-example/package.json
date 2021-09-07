@@ -27,7 +27,7 @@
   "dependencies": {
     "@craco/craco": "6.2.0",
     "@loadable/component": "5.15.0",
-    "@opg/interface-builder": "link:../",
+    "@opg/interface-builder": "link:../interface-builder",
     "@opg/interface-builder-plugins": "link:../interface-builder-plugins",
     "antd": "3.26.20",
     "classnames": "2.3.1",

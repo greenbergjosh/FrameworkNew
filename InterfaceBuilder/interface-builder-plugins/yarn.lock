@@ -502,6 +502,10 @@
   version "0.0.0"
   uid ""
 
+"@opg/interface-builder@link:../interface-builder":
+  version "0.0.0"
+  uid ""
+
 "@reach/component-component@0.16.0":
   version "0.16.0"
   resolved "https://registry.yarnpkg.com/@reach/component-component/-/component-component-0.16.0.tgz#2b3a20e27b7ec038252d954f40cf6d6d1697151e"

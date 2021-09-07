@@ -1751,7 +1751,7 @@
   version "0.0.0"
   uid ""
 
-"@opg/interface-builder@link:../InterfaceBuilder":
+"@opg/interface-builder@link:../InterfaceBuilder/interface-builder":
   version "0.0.0"
   uid ""
 
