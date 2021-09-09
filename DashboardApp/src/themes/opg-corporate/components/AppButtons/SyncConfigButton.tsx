@@ -4,6 +4,7 @@ import React from "react"
 import { useRematch } from "../../../../hooks"
 
 export function SyncConfigButton(): JSX.Element {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fromStore, dispatch] = useRematch((appState) => ({}))
 
   return (

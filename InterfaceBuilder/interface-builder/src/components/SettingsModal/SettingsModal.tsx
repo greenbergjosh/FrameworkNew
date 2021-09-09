@@ -7,9 +7,9 @@ import { ComponentDefinition, UserInterfaceProps } from "../../globalTypes"
 import { AbstractBaseInterfaceComponentType } from "components/BaseInterfaceComponent/types"
 
 export interface ManageComponentModalProps {
-  componentDefinition: null | Partial<ComponentDefinition>
+  componentDefinition: Partial<ComponentDefinition> | null
   onCancel: () => void
-  onConfirm: (componentDefinition: ComponentDefinition) => void
+  onConfirm: (componentDefinition: Partial<ComponentDefinition> | null) => void
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   userInterfaceData: UserInterfaceProps["data"]
@@ -20,6 +20,9 @@ export const SettingsModal = (props: ManageComponentModalProps): JSX.Element | n
   const [Component, setComponent] = React.useState<AbstractBaseInterfaceComponentType>()
   const [draftComponentDefinition, setDraftComponentDefinition] = React.useState(componentDefinition)
 
+  /*
+   * Put an mutable copy of the componentDefinition with default values into the modal
+   */
   React.useEffect(() => {
     if (!draftComponentDefinition && componentDefinition) {
       // Determine the default values for this component
@@ -27,18 +30,23 @@ export const SettingsModal = (props: ManageComponentModalProps): JSX.Element | n
       const newComponentDefinition = { ...defaults, ...componentDefinition }
       // Set the active component in the modal to be the one with all the defaults entered
       setDraftComponentDefinition(newComponentDefinition)
+    } else if (!componentDefinition) {
+      setDraftComponentDefinition(componentDefinition)
     }
   }, [Component, draftComponentDefinition, componentDefinition])
 
+  /*
+   * Get the component from the registry
+   */
   React.useEffect(() => {
-    if (draftComponentDefinition && draftComponentDefinition.component) {
-      registry.lookup(draftComponentDefinition.component).then((component) => {
+    if (componentDefinition && componentDefinition.component) {
+      registry.lookup(componentDefinition.component).then((component) => {
         // Why do we need to set an anonymous function into state?
         // Otherwise we get "Can't set props of undefined" error.
         setComponent(() => component)
       })
     }
-  }, [draftComponentDefinition])
+  }, [componentDefinition])
 
   const { layoutDefinition, manageForm } = React.useMemo(() => {
     const layoutDefinition = Component && Component.getLayoutDefinition()
@@ -61,7 +69,7 @@ export const SettingsModal = (props: ManageComponentModalProps): JSX.Element | n
       }}
       onOk={(e) => {
         console.log("ManageComponentModal.onOk", e, draftComponentDefinition)
-        onConfirm(draftComponentDefinition as ComponentDefinition)
+        onConfirm(draftComponentDefinition)
       }}
       style={{ maxWidth: "1200px", width: "95%" }}
       width="95%">

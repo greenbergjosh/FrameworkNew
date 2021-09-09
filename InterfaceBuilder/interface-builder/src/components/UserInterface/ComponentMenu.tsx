@@ -6,13 +6,16 @@ import { CachedComponent, ComponentRegistryCache, ComponentRegistryContext } fro
 import { LayoutDefinition } from "../../globalTypes"
 import styles from "./styles.scss"
 
+type MenuCategory = [category: string, layoutDefinitions: LayoutDefinition[]]
+
 export const ComponentMenu = () => {
   const { componentRegistry } = React.useContext(ComponentRegistryContext)
+  const menuCategories = getMenuCategories(componentRegistry._cache)
 
   return (
     <div className={styles.componentMenuWrapper}>
       <Menu mode="inline" inlineIndent={0} className={styles.componentMenu}>
-        {getLayoutDefinitions(componentRegistry._cache).map(([category, layoutDefinitions]) => (
+        {menuCategories.map(([category, layoutDefinitions]) => (
           <Menu.SubMenu key={category} title={category}>
             {layoutDefinitions.map((layoutDefinition, index) => (
               <Menu.Item key={layoutDefinition.name}>
@@ -52,7 +55,7 @@ const sortLayoutDefinition = (a: LayoutDefinition, b: LayoutDefinition): number 
   return groupRank || titleRank
 }
 
-function getLayoutDefinitions(componentRegistry: ComponentRegistryCache) {
+function getMenuCategories(componentRegistry: ComponentRegistryCache): MenuCategory[] {
   const cachedComponents = Object.values(componentRegistry)
   const layoutDefinitions = cachedComponents.map(
     (componentPkg: CachedComponent) => componentPkg.layoutDefinition as unknown as LayoutDefinition
