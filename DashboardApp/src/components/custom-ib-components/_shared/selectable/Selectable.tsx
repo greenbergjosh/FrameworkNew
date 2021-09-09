@@ -432,16 +432,18 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 
     // console.log("Selectable.getCleanValue", { anyCaseResult, options })
     if (!Array.isArray(anyCaseResult)) {
-      return (
-        options &&
-        (
-          options.find(
-            ({ value }) =>
-              value === anyCaseResult ||
-              (typeof value === "string" && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
-          ) || { value: anyCaseResult }
-        ).value
-      )
+      if (options) {
+        const option = options.find(({ value }) => {
+          if (value === anyCaseResult) {
+            return true
+          }
+          const a = typeof value === "string" ? value.toLowerCase() : value
+          const b = typeof anyCaseResult === "string" ? anyCaseResult.toLowerCase() : anyCaseResult
+          return a === b
+        })
+        return (option && option.value) || anyCaseResult
+      }
+      return
     }
     return options
       ? anyCaseResult.map(
