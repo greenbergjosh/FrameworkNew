@@ -1,4 +1,4 @@
-import { editor } from "monaco-editor"
+import { editor, languages, Range } from "monaco-editor"
 import { CustomEditorWillMount } from "../../components/code-editor/types"
 import * as iots from "io-ts"
 
@@ -7,8 +7,18 @@ import * as iots from "io-ts"
  */
 
 export const willMountRegistry: CustomEditorWillMount[] = []
+export type GetCustomEditorWillMount = (
+  registerLinkProvider: typeof languages.registerLinkProvider,
+  registerHoverProvider: typeof languages.registerHoverProvider,
+  Range: any
+) => CustomEditorWillMount
 
-export const registerMonacoEditorMount = (customEditorWillMount: CustomEditorWillMount): void => {
+export const registerMonacoEditorMount = (getCustomEditorWillMount: GetCustomEditorWillMount): void => {
+  const customEditorWillMount = getCustomEditorWillMount(
+    languages.registerLinkProvider,
+    languages.registerHoverProvider,
+    Range
+  )
   willMountRegistry.push(customEditorWillMount)
 }
 
