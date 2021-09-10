@@ -1,4 +1,4 @@
-import { store } from "../../state/store"
+import { store } from "../state/store"
 import { some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 
@@ -15,7 +15,7 @@ interface HoverProvider {}
  * @param registerHoverProvider From monaco languages namespace
  * @param Range From monaco Range
  */
-export default function getCustomEditorConstructionOptions(
+export default function getMonacoEditorConstructionOptions(
   registerLinkProvider: any,
   registerHoverProvider: any,
   Range: any

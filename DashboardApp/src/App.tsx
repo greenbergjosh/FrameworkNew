@@ -9,7 +9,7 @@ import "@opg/interface-builder/dist/index.css"
 import { useRematch } from "./hooks"
 import { store } from "./state/store"
 import { DragDropContext, registerMonacoEditorMount, registry, ImportFactory } from "@opg/interface-builder"
-import getCustomEditorConstructionOptions from "./components/custom-ib-components/code-editor-mount"
+import getMonacoEditorConstructionOptions from "./data/getMonacoEditorConstructionOptions"
 import { SplashScreen } from "./components/SplashScreen/SplashScreen"
 import { ThemeLoader } from "./themes/ThemeLoader"
 import { LegacyThemeLoader } from "./themes/ant-default/LegacyThemeLoader"
@@ -251,7 +251,7 @@ export function App(): JSX.Element {
       link: Link,
     })
 
-    registerMonacoEditorMount(getCustomEditorConstructionOptions)
+    registerMonacoEditorMount(getMonacoEditorConstructionOptions)
   }, [])
 
   return (
