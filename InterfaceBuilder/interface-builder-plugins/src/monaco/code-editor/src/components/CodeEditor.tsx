@@ -1,17 +1,14 @@
 import Component from "@reach/component-component"
-import { Button, Card, Icon } from "antd"
-import { none, some, tryCatch } from "fp-ts/lib/Option"
-import { editor, IDisposable, MarkerSeverity } from "monaco-editor"
 import React from "react"
+import { Button, Card, Icon } from "antd"
+import { CodeEditorProps, CustomEditorWillMount, MonacoEditorProps } from "../types"
 import { ControlledEditor, DiffEditor, EditorProps } from "@monaco-editor/react"
-import { None, Some } from "../../lib/Option"
-import { CodeEditorProps, CustomEditorWillMount, MonacoEditorProps } from "./types"
-import { diffEditorSettings, inactiveEditorSettings, willMountRegistry } from "./constants"
+import { diffEditorSettings, inactiveEditorSettings } from "../constants"
+import { editor, IDisposable, MarkerSeverity, languages, Range } from "monaco-editor"
 import { isNull, isString, isUndefined } from "lodash/fp"
-import { UserInterfaceDataType } from "../../globalTypes"
-
-export { editor, languages, Range } from "monaco-editor"
-export { supportedEditorTheme } from "./code-editor-manage-form"
+import { none, some, tryCatch } from "fp-ts/lib/Option"
+import { None, Some, UserInterfaceDataType } from "@opg/interface-builder"
+import { _registerMonacoEditorMount } from "../registerMonacoEditorMount"
 
 /* ########################################################################
  *
@@ -137,7 +134,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
     (getEditorValue, monaco: editor.IStandaloneCodeEditor, argsSetState) => {
       /* https://github.com/microsoft/monaco-editor/issues/32 */
       // monaco.getAction("editor.action.formatDocument").run()
-
+      const willMountRegistry = registerMonacoEditorMount()
       const disposables = willMountRegistry.reduce(
         (acc: IDisposable[], customEditorWillMount: CustomEditorWillMount) => [
           ...acc,
@@ -217,7 +214,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
           ) : (
             <Component
               initialState={{ disposables: [] as IDisposable[] }}
-              willUnmount={({ state }) => state.disposables.forEach((f) => f.dispose())}>
+              willUnmount={({ state }) => state.disposables.forEach((f: IDisposable) => f.dispose())}>
               {(args) => (
                 <ControlledEditor
                   editorDidMount={(getEditorValue, editor) =>
@@ -241,3 +238,12 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
     />
   )
 })
+
+function registerMonacoEditorMount(): CustomEditorWillMount[] {
+  const customEditorWillMount = _registerMonacoEditorMount(
+    languages.registerLinkProvider,
+    languages.registerHoverProvider,
+    Range
+  )
+  return [customEditorWillMount]
+}

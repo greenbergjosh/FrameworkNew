@@ -22,12 +22,18 @@ export function RenderInterfaceComponent(props: RenderInterfaceComponentProps): 
     userInterfaceData,
   } = props
   const [Component, setComponent] = React.useState<AbstractBaseInterfaceComponentType>()
+  const [CodeEditor, setCodeEditor] = React.useState<AbstractBaseInterfaceComponentType>()
 
   React.useEffect(() => {
     registry.lookup(props.componentDefinition.component).then((component) => {
       // Why do we need to set an anonymous function into state?
       // Otherwise we get "Can't set props of undefined" error.
       setComponent(() => component)
+    })
+    registry.lookup("code-editor").then((codeEditor) => {
+      // Why do we need to set an anonymous function into state?
+      // Otherwise we get "Can't set props of undefined" error.
+      setCodeEditor(() => codeEditor)
     })
   }, [props.componentDefinition.component])
 
@@ -40,6 +46,7 @@ export function RenderInterfaceComponent(props: RenderInterfaceComponentProps): 
       return (
         <DisplayMode
           Component={Component}
+          CodeEditor={CodeEditor}
           componentDefinition={componentDefinition}
           getRootUserInterfaceData={getRootUserInterfaceData}
           mode={mode}
@@ -70,6 +77,7 @@ export function RenderInterfaceComponent(props: RenderInterfaceComponentProps): 
       return (
         <EditMode
           Component={Component}
+          CodeEditor={CodeEditor}
           componentDefinition={componentDefinition}
           dragDropDisabled={dragDropDisabled}
           getRootUserInterfaceData={getRootUserInterfaceData}

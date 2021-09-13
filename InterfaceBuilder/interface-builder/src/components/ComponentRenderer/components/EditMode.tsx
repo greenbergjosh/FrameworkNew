@@ -48,6 +48,7 @@ export function EditMode(props: EditModeProps): JSX.Element {
                   userInterfaceData={props.userInterfaceData}>
                   <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={layoutDefinition}>
                     <EditDataBinding
+                      CodeEditor={props.CodeEditor}
                       componentDefinition={tokenReplacedComponentDefinition}
                       mode={props.mode}
                       onChangeData={props.onChangeData}

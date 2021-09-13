@@ -1,5 +1,5 @@
 import * as iots from "io-ts"
-import { CancellationToken, default as monacoEditor, editor, IDisposable, IPosition } from "monaco-editor"
+import { CancellationToken, default as monacoEditor, editor, IDisposable, IPosition, languages } from "monaco-editor"
 import { ComponentDefinitionNamedProps, UserInterfaceDataType, UserInterfaceProps } from "@opg/interface-builder"
 import { EditorLangCodec } from "./constants"
 import { EditorProps } from "@monaco-editor/react"
@@ -49,3 +49,9 @@ export type MonacoEditorProps = {
   originalValue: EditorProps["value"]
   value: EditorProps["value"]
 }
+
+export type GetCustomEditorWillMount = (
+  registerLinkProvider: typeof languages.registerLinkProvider,
+  registerHoverProvider: typeof languages.registerHoverProvider,
+  Range: any
+) => CustomEditorWillMount

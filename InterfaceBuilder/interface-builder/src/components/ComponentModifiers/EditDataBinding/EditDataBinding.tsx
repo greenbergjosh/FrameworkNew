@@ -5,7 +5,7 @@ import { ComponentModifierProps, RenderInterfaceComponentProps } from "../../Com
 import { EditDataBindingModal } from "./EditDataBindingModal"
 import { isEmpty, isPlainObject, set } from "lodash/fp"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
-import { UserInterfaceProps } from "../../../globalTypes"
+import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "../../../globalTypes"
 
 /**
  *
@@ -19,6 +19,7 @@ import { UserInterfaceProps } from "../../../globalTypes"
  */
 export const EditDataBinding: React.FC<
   ComponentModifierProps & {
+    CodeEditor?: AbstractBaseInterfaceComponentType
     onChangeData: UserInterfaceProps["onChangeData"]
     onChangeSchema: RenderInterfaceComponentProps["onChangeSchema"]
     userInterfaceData: UserInterfaceProps["data"]
@@ -110,6 +111,7 @@ export const EditDataBinding: React.FC<
         </Tooltip>
       </div>
       <EditDataBindingModal
+        CodeEditor={props.CodeEditor}
         propertyLabel={props.componentDefinition.label}
         propertyName={props.componentDefinition.key}
         visible={showModal}

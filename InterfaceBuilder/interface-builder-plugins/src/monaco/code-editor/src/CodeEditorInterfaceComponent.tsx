@@ -1,6 +1,6 @@
 import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition, UserInterfaceDataType } from "@opg/interface-builder"
-import { CodeEditor } from "./CodeEditor"
+import { CodeEditor } from "./components/CodeEditor"
 import { CodeEditorInterfaceComponentProps, CodeEditorInterfaceComponentState } from "./types.js"
 import { codeEditorManageForm } from "./code-editor-manage-form"
 import { CodeEditorProps } from "./types"

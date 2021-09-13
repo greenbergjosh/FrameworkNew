@@ -59,6 +59,7 @@ interface ModeProps {
 
 export interface DisplayModeProps extends ModeProps {
   Component: AbstractBaseInterfaceComponentType //React.ComponentType<BaseInterfaceComponentProps>
+  CodeEditor?: AbstractBaseInterfaceComponentType //React.ComponentType<BaseInterfaceComponentProps>
 }
 
 export interface PreviewModeProps extends ModeProps {
@@ -67,6 +68,7 @@ export interface PreviewModeProps extends ModeProps {
 
 export interface EditModeProps extends ModeProps {
   Component: AbstractBaseInterfaceComponentType //React.ComponentType<BaseInterfaceComponentProps>
+  CodeEditor?: AbstractBaseInterfaceComponentType //React.ComponentType<BaseInterfaceComponentProps>
   dragDropDisabled: boolean | undefined
   index: number
   path: string

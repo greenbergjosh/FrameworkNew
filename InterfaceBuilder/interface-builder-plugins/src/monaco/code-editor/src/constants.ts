@@ -1,16 +1,9 @@
 import { editor } from "monaco-editor"
-import { CustomEditorWillMount } from "./types"
 import * as iots from "io-ts"
 
 /*******************************
  * Constants
  */
-
-export const willMountRegistry: CustomEditorWillMount[] = []
-
-export const registerMonacoEditorMount = (customEditorWillMount: CustomEditorWillMount): void => {
-  willMountRegistry.push(customEditorWillMount)
-}
 
 export const activeEditorSettings: NonNullable<editor.IEditorConstructionOptions> = {
   cursorBlinking: "blink",

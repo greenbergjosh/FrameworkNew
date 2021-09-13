@@ -27,7 +27,6 @@
     "wysiwyg"
   ],
   "dependencies": {
-    "@monaco-editor/react": "3.8.3",
     "@nivo/core": "0.62.0",
     "@nivo/line": "0.62.0",
     "@nivo/pie": "0.62.0",
@@ -42,7 +41,6 @@
     "json5": "2.2.0",
     "lodash": "4.17.21",
     "moment": "2.29.1",
-    "monaco-editor": "0.26.1",
     "monocle-ts": "1.7.2",
     "newtype-ts": "0.3.4",
     "prop-types": "15.7.2",

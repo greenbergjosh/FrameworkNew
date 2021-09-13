@@ -1,14 +1,15 @@
 import jsonLogic from "json-logic-js"
 import React from "react"
 import { Alert, Button, Modal, Popconfirm, Typography } from "antd"
-import { CodeEditorInterfaceComponent } from "../../../components/code-editor/CodeEditorInterfaceComponent"
 import { isEmpty, isString } from "lodash/fp"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { tryCatch } from "fp-ts/lib/Option"
+import { AbstractBaseInterfaceComponentType } from "components/BaseInterfaceComponent/types"
 
 type RuleContainer = { rulesString: string }
 
 export function EditDataBindingModal(props: {
+  CodeEditor?: AbstractBaseInterfaceComponentType
   rules: JSONRecord
   isBinding: boolean
   onCancel: () => void
@@ -107,22 +108,24 @@ export function EditDataBindingModal(props: {
         . You may use &ldquo;$root&rdquo; and &ldquo;$&rdquo; in the beginning of &ldquo;var&rdquo; value paths.
       </Typography>
       {isInvalidRules && <Alert showIcon={true} message="Cannot save! Invalid JsonLogic rules." type="error" />}
-      <CodeEditorInterfaceComponent
-        key="jsonlogic-editor"
-        component={"code-editor"}
-        defaultLanguage={"json"}
-        defaultTheme={"vs-dark"}
-        getRootUserInterfaceData={() => ({})}
-        onChangeRootData={() => void 0}
-        onChangeData={handleChangeData}
-        userInterfaceData={data}
-        valueKey={"rulesString"}
-        autoSync={true}
-        height={"400px"}
-        width={"100%"}
-        incomingEventHandlers={[]}
-        outgoingEventMap={{}}
-      />
+      {props.CodeEditor && (
+        <props.CodeEditor
+          key="jsonlogic-editor"
+          component={"code-editor"}
+          defaultLanguage={"json"}
+          defaultTheme={"vs-dark"}
+          getRootUserInterfaceData={() => ({})}
+          onChangeRootData={() => void 0}
+          onChangeData={handleChangeData}
+          userInterfaceData={data}
+          valueKey={"rulesString"}
+          autoSync={true}
+          height={"400px"}
+          width={"100%"}
+          incomingEventHandlers={[]}
+          outgoingEventMap={{}}
+        />
+      )}
     </Modal>
   )
 }

@@ -36,6 +36,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
               <FormField componentDefinition={tokenReplacedComponentDefinition} layoutDefinition={layoutDefinition}>
                 {props.componentDefinition.bindable ? (
                   <EditDataBinding
+                    CodeEditor={props.CodeEditor}
                     componentDefinition={tokenReplacedComponentDefinition}
                     mode={props.mode}
                     onChangeData={props.onChangeData}

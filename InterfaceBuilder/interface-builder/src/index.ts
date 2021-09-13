@@ -60,7 +60,6 @@ export { EditPanelWrapper } from "./components/ComponentModifiers/EditPanelWrapp
  */
 export const registry = getRegistry()
 export { UserInterface } from "./components/UserInterface/UserInterface"
-export { registerMonacoEditorMount } from "./components/code-editor/constants"
 
 /**
  * Lib
