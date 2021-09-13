@@ -76,7 +76,10 @@ export function withEvents<T extends BaseInterfaceComponentProps, Y>(WrappedComp
             Record<string, any>
           >(eventInfo.handlerFunctionSrc)
           if (eventHandler) {
-            console.log(`EventManager: Subscribing to event "${eventInfo.eventName}"`)
+            console.log(`EventManager: Subscribing to event "${eventInfo.eventName}"`, {
+              listener: this.displayName,
+              eventInfo,
+            })
             this.subscriptionIds.push({
               eventName: eventInfo.eventName,
               subscriptionId: EventBus.addSubscription(
@@ -104,7 +107,7 @@ export function withEvents<T extends BaseInterfaceComponentProps, Y>(WrappedComp
       if (!this.props.outgoingEventMap) {
         return
       }
-      console.log(`EventManager: Component raised event "${eventName}"`, eventPayload)
+      console.log(`EventManager: Component raised event "${eventName}"`, { eventName, eventPayload, source })
       const eventMapItem: EventMapItem = this.props.outgoingEventMap[eventName]
       let mappedEventName: string, mappedEventPayload: EventPayloadType
       if (!eventMapItem || eventMapItem.type === "none") {
@@ -112,12 +115,13 @@ export function withEvents<T extends BaseInterfaceComponentProps, Y>(WrappedComp
       } else if (eventMapItem.type === "simple") {
         mappedEventName = eventMapItem.simpleMapValue
         mappedEventPayload = eventPayload
-        console.log(
-          `EventManager: Component raised event "${eventName}" has been simple mapped to "${mappedEventName}"`,
-          eventPayload
-        )
+        console.log(`EventManager: Simple mapping event "${eventName}" to "${mappedEventName}"`, {
+          eventName,
+          eventPayload,
+          source,
+        })
       } else {
-        console.log(`EventManager: Invoking eventMapper for event "${eventName}"`, eventPayload)
+        console.log(`EventManager: Invoking eventMapper for event "${eventName}"`, { eventName, eventPayload, source })
 
         const mapper = eventMapItem.lbmSrc
           ? utils.parseLBM<

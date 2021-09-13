@@ -39,9 +39,9 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
    * @public
    */
   public load(): void {
-    console.log("CodeEditorInterfaceComponent", "load")
     const prevDocument = this.state.document
     const nextDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
+    console.log("CodeEditorInterfaceComponent > load", { document: nextDocument })
 
     /*
      * If the external model is ahead of local state,
@@ -58,9 +58,9 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
    * @public
    */
   public save(): void {
-    console.log("CodeEditorInterfaceComponent", "save")
     const prevDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
     const nextDocument = this.state.document
+    console.log("CodeEditorInterfaceComponent > save", { document: nextDocument })
 
     /*
      * If the local state is ahead of the external model,
@@ -77,6 +77,7 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
      * been listening to InterfaceBuilder events until now.
      */
     const document: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
+    console.log("CodeEditorInterfaceComponent > mount", { document })
     this.setState({ document })
   }
 
@@ -95,6 +96,7 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
       this.getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData) ||
       prevProps.defaultValue
     const nextExternalDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
+    console.log("CodeEditorInterfaceComponent > update", { document: nextExternalDocument })
 
     /*
      * This update does not involve the document
@@ -127,6 +129,7 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
    * @param errors
    */
   private handleChange: CodeEditorProps["onChange"] = ({ value, errors }): void => {
+    console.log("CodeEditorInterfaceComponent > change", { document: value })
     if (errors.isSome()) {
       console.error("CodeEditorInterfaceComponent.handleChange", errors)
     }
@@ -140,14 +143,11 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
      */
     if (!isEqual(prevDocument, nextDocument)) {
       this.setState({ document: value })
-      // if (this.props.autoSync) {
-      //   // Auto Sync editor document with the external model
-      //   this.setValue([this.props.valueKey, nextDocument])
-      // }
     }
   }
 
   render(): JSX.Element {
+    console.log("CodeEditorInterfaceComponent > render", { document: this.state.document })
     return (
       <CodeEditor
         document={this.state.document}

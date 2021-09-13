@@ -70,7 +70,7 @@ export const registry: ComponentRegistry = {
           const validBaseInterfaceComponent = component as unknown as AbstractBaseInterfaceComponentType
           const componentWithEvents = registry._withEvents(validBaseInterfaceComponent)
           registry._cache[key] = { ...cachedComponentPkg, component: Promise.resolve(componentWithEvents) }
-          return validBaseInterfaceComponent
+          return componentWithEvents
         }
         console.error(`${key} is not a valid component`, { loaded, loadedWithEvents, component })
         return Promise.reject(`${key} is not a valid component`)

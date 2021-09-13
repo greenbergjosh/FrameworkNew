@@ -13,15 +13,22 @@ export class EventBus {
   }
 
   static removeSubscription = (eventName: string, subscriptionId: number): boolean => {
-    console.log(`EventBus: Removing subscription for event "${eventName}" with subscriptionId ${subscriptionId}`)
+    console.log(`EventBus: Removing subscription for event "${eventName}" with subscriptionId ${subscriptionId}`, {
+      eventName,
+      subscriptionId,
+    })
     const handlers = EventBus.subscriptions[eventName]
     if (handlers) {
       if (handlers.delete(subscriptionId)) {
         return true
       }
-      console.log(`EventBus: No subscription found for "${eventName}" with subscriptionId ${subscriptionId}`)
+      console.log(`EventBus: No subscription found for "${eventName}" with subscriptionId ${subscriptionId}`, {
+        eventName,
+        subscriptionId,
+        handlers,
+      })
     } else {
-      console.log(`EventBus: No subscriptions found for "${eventName}"`)
+      console.log(`EventBus: No subscriptions found for "${eventName}"`, { eventName, subscriptionId, handlers })
     }
     return false
   }
@@ -30,9 +37,19 @@ export class EventBus {
     console.log(`EventBus: raising event "${eventName}"`, eventPayload)
     const handlers = EventBus.subscriptions[eventName]
     if (handlers) {
-      console.log(`EventBus "${eventName}" has ${handlers.size} subscriptions`)
+      console.log(`EventBus "${eventName}" has ${handlers.size} subscriptions`, {
+        eventName,
+        eventPayload,
+        source,
+        handlers,
+      })
       for (const [subscriptionId, handler] of handlers) {
-        console.log(`EventBus "${eventName}" invoking subscriptionId ${subscriptionId}`)
+        console.log(`EventBus "${eventName}" invoking subscriptionId ${subscriptionId}`, {
+          eventName,
+          eventPayload,
+          source,
+          handlers,
+        })
         handler(eventName, eventPayload, source)
       }
     }
