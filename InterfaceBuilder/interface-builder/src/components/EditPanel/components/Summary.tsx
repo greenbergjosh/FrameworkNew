@@ -17,7 +17,7 @@ export const Summary: React.FC<SummaryProps> = (props): JSX.Element | null => {
   const eventMapItems = toPairs((props.componentDefinition && props.componentDefinition.outgoingEventMap) || []).reduce<
     EventMapItemKVP[]
   >((acc, [key, val]) => {
-    if (val.simpleMapValue !== key && val.simpleMapValue.length > 0) {
+    if (val.simpleMapValue && val.simpleMapValue !== key && val.simpleMapValue.length > 0) {
       acc.push([key, val])
     }
     return acc
