@@ -132,5 +132,46 @@ namespace Utility
         public Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log) => Alert(LogMethodPrefix + method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }));
 
         public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, LogMethodPrefix + method, ErrorDescriptor.EmailAlert, JsonConvert.SerializeObject(payload));
+
+        public async Task<T> EvaluateEntity<T>(Guid entityId, IGenericEntity parameters = null)
+        {
+            var evaluatableId = entityId;
+
+            var entity = await Entities.GetEntity(entityId);
+            var evaluatableEntity = entity;
+
+            var stackedParameters = new GenericEntityStack();
+
+            var implementation = entity.GetS("Config/Implementation/EntityId");
+            if (!string.IsNullOrWhiteSpace(implementation))
+            {
+                evaluatableId = Guid.Parse(implementation);
+                evaluatableEntity = await Entities.GetEntity(evaluatableId);
+                stackedParameters.Push(entity);
+            }
+
+            if (evaluatableEntity.GetS("Type") != "LBM.CS")
+            {
+                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, {entityId} has type {evaluatableEntity.GetS("Type")}");
+            }
+
+            if (parameters != null)
+            {
+                stackedParameters.Push(parameters);
+            }
+
+            var evaluationParameters = new
+            {
+                fw = this,
+                parameters = stackedParameters
+            };
+
+            var (debug, debugDir) = RoslynWrapper.GetDefaultDebugValues();
+            var result = await RoslynWrapper.Evaluate(evaluatableId.ToString(), evaluatableEntity.GetS("Config"), evaluationParameters, new StateWrapper(), debug, debugDir);
+
+            return (T)result;
+        }
+
+        public Task EvaluateEntity(Guid entityId, IGenericEntity parameters = null) => EvaluateEntity<object>(entityId, parameters);
     }
 }
