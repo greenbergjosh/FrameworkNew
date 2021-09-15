@@ -730,7 +730,7 @@ from datasets.{mergedTableName};";
 
             if (!string.IsNullOrWhiteSpace(command.Error))
             {
-                throw new Exception(command.Error);
+                throw new Exception($"{command.Error}\r\nCommand:\r\n{commandText}");
             }
 
             return result;
