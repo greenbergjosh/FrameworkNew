@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -52,20 +51,20 @@ namespace EdwRollupLib
             _rsId = Guid.NewGuid();
             _rsTs = DateTime.UtcNow;
 
-            var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = ThreadGroup.GetS("Name"), period = Period }, RsConfigId);
-            await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
-
-            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} Start");
-#if DEBUG
-            Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} Start");
-#endif
-
             var threadGroupId = Guid.Parse(ThreadGroup.GetS("Id"));
 
             var parameters = new Parameters(EdwConfigId, threadGroupId, ThreadGroup.GetS("Name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
 
-            await DropStartEvent(parameters, "ThreadGroupProcess", null);
+            try
+            {
+                await DropReportingSequence();
+                await DropStartEvent(parameters, "ThreadGroupProcess", null);
+            }
+            catch (Exception ex)
+            {
+                await SendSlackAlert("Execute", parameters, ex);
+                return;
+            }
 
             var start = DateTime.Now;
 
@@ -268,6 +267,19 @@ namespace EdwRollupLib
             return FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
         }
 
+        private async Task DropReportingSequence()
+        {
+            var edwBulkEvent = new EdwBulkEvent();
+            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = ThreadGroup.GetS("Name"), period = Period }, RsConfigId);
+
+            await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
+
+            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} Start");
+#if DEBUG
+            Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} Start");
+#endif
+        }
+
         private async Task DropStartEvent(Parameters input, string step, string stepContext)
         {
             var payload = new
@@ -325,26 +337,7 @@ namespace EdwRollupLib
 
             if (alert)
             {
-                var text = $"{input?.ThreadGroupName} {input?.Period} - ";
-
-                void AddField(string fieldName, object field)
-                {
-                    if (field != default)
-                    {
-                        text += $"{fieldName}: {field} ";
-                    }
-                }
-
-                AddField("Step", step);
-                AddField("SessionId", input?.SessionId);
-                AddField("RsConfigId", input?.RsConfigId);
-                AddField("RollupName", input?.RollupName);
-                AddField("Error", ex.Message);
-
-                await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
-                {
-                    text
-                }), "application/json");
+                await SendSlackAlert(step, input, ex);
             }
 
             _complete.SetException(ex);
@@ -373,6 +366,30 @@ namespace EdwRollupLib
             waitForAllRollups.LinkTo(cleanup);
 
             return prepareThreadGroup;
+        }
+
+        private static async Task SendSlackAlert(string step, Parameters input, Exception ex)
+        {
+            var text = $"{input?.ThreadGroupName} {input?.Period} - ";
+
+            void AddField(string fieldName, object field)
+            {
+                if (field != default)
+                {
+                    text += $"{fieldName}: {field} ";
+                }
+            }
+
+            AddField("Step", step);
+            AddField("SessionId", input?.SessionId);
+            AddField("RsConfigId", input?.RsConfigId);
+            AddField("RollupName", input?.RollupName);
+            AddField("Error", ex.Message);
+
+            await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+            {
+                text
+            }), "application/json");
         }
         #endregion
     }
