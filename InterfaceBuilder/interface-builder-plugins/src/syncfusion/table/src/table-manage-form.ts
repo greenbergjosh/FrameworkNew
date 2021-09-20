@@ -34,8 +34,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Abstract Component",
                 component: "toggle",
                 defaultValue: false,
-                help:
-                  'Marking this component as "Abstract" will force it to be configured in a descendant configuration',
+                help: 'Marking this component as "Abstract" will force it to be configured in a descendant configuration',
                 bindable: true,
               },
               {
@@ -75,8 +74,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Auto Fit Columns",
                 component: "toggle",
                 defaultValue: false,
-                help:
-                  "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
+                help: "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
                 bindable: true,
               },
               {

@@ -26,59 +26,57 @@ export function getUsableColumns(
   columns: EnrichedColumnDefinition[],
   useSmallFont?: boolean
 ): EnrichedColumnDefinition[] {
-  return columns.map(
-    (column): EnrichedColumnDefinition => {
-      /*
-       * Common options
-       */
-      const disableHtmlEncodeOptions = getDisableHtmlEncodeOptions(column.disableHtmlEncode, column.allowHTMLText)
-      const styleOptions = getStyleOptions(
-        column.removeCellPadding,
-        column.maxWidth,
-        column.customFormat,
-        column.customAttributes,
-        useSmallFont
-      )
-      const customCellFormatterOptions = getCustomCellFormatterOptions(column.formatter)
+  return columns.map((column): EnrichedColumnDefinition => {
+    /*
+     * Common options
+     */
+    const disableHtmlEncodeOptions = getDisableHtmlEncodeOptions(column.disableHtmlEncode, column.allowHTMLText)
+    const styleOptions = getStyleOptions(
+      column.removeCellPadding,
+      column.maxWidth,
+      column.customFormat,
+      column.customAttributes,
+      useSmallFont
+    )
+    const customCellFormatterOptions = getCustomCellFormatterOptions(column.formatter)
 
-      /*
-       * Type Specific Options
-       */
-      let typeOptions
-      switch (column.type) {
-        case "date":
-          typeOptions = getDateOptions("date", column.skeletonFormat, column.customFormat)
-          break
-        case "dateTime":
-          typeOptions = getDateOptions("dateTime", column.skeletonFormat, column.customFormat)
-          break
-        case "duration":
-          typeOptions = getDurationOptions(column.units, column.precision)
-          break
-        case "boolean":
-          typeOptions = getBooleanOptions()
-          break
-        case "number":
-          typeOptions = getNumberOptions(column.format, column.precision)
-          break
-        default:
-          typeOptions = { options: {}, keysToDelete: [] }
-      }
-
-      /*
-       * Merge and return ColumnDefinition
-       */
-      const fixedColumn = omit(
-        [...typeOptions.keysToDelete, ...customCellFormatterOptions.keysToDelete],
-        cloneDeep(column)
-      ) as EnrichedColumnDefinition
-      return {
-        ...fixedColumn,
-        ...disableHtmlEncodeOptions,
-        ...styleOptions,
-        ...typeOptions.options,
-        ...customCellFormatterOptions.options,
-      }
+    /*
+     * Type Specific Options
+     */
+    let typeOptions
+    switch (column.type) {
+      case "date":
+        typeOptions = getDateOptions("date", column.skeletonFormat, column.customFormat)
+        break
+      case "dateTime":
+        typeOptions = getDateOptions("dateTime", column.skeletonFormat, column.customFormat)
+        break
+      case "duration":
+        typeOptions = getDurationOptions(column.units, column.precision)
+        break
+      case "boolean":
+        typeOptions = getBooleanOptions()
+        break
+      case "number":
+        typeOptions = getNumberOptions(column.format, column.precision)
+        break
+      default:
+        typeOptions = { options: {}, keysToDelete: [] }
     }
-  )
+
+    /*
+     * Merge and return ColumnDefinition
+     */
+    const fixedColumn = omit(
+      [...typeOptions.keysToDelete, ...customCellFormatterOptions.keysToDelete],
+      cloneDeep(column)
+    ) as EnrichedColumnDefinition
+    return {
+      ...fixedColumn,
+      ...disableHtmlEncodeOptions,
+      ...styleOptions,
+      ...typeOptions.options,
+      ...customCellFormatterOptions.options,
+    }
+  })
 }
