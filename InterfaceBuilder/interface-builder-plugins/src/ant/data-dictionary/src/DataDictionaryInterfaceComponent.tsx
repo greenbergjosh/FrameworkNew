@@ -16,6 +16,7 @@ export interface DataDictionaryInterfaceComponentProps extends ComponentDefiniti
   component: "data-dictionary"
   defaultValue: UserInterfaceProps["data"]
   keyLabel?: string
+  valueLabel?: string
   valueComponent: [ComponentDefinition]
   valueKey: string
 }
@@ -28,6 +29,7 @@ export default class DataDictionaryInterfaceComponent extends BaseInterfaceCompo
 > {
   static defaultProps = {
     keyLabel: "Key",
+    valueLabel: "Value",
     valueComponent: [
       {
         hideLabel: false,
@@ -46,13 +48,14 @@ export default class DataDictionaryInterfaceComponent extends BaseInterfaceCompo
   static manageForm = dataDictionaryManageForm
 
   render(): JSX.Element {
-    const { defaultValue, keyLabel, getRootUserInterfaceData, onChangeRootData, valueComponent, valueKey } = this.props
+    const { defaultValue, keyLabel, valueLabel, getRootUserInterfaceData, onChangeRootData, valueComponent, valueKey } = this.props
     const dictionary = this.getValue(valueKey) || defaultValue
     const values = dictionary && Object.entries(dictionary).map(([key, value]) => ({ key, value }))
     return (
       <DataMap
         data={values}
         keyLabel={keyLabel}
+        valueLabel={valueLabel}
         multiple
         onDataChanged={(newData) => {
           const newValue = newData.reduce((acc, item: any) => {
@@ -124,7 +127,6 @@ export default class DataDictionaryInterfaceComponent extends BaseInterfaceCompo
             </DataPathContext>
           )
         }}
-        valueLabel={Array.isArray(valueComponent) && valueComponent.length ? valueComponent[0].label : ""}
       />
     )
   }

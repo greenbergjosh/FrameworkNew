@@ -353,19 +353,20 @@
     hoist-non-react-statics "^3.3.1"
     react-is "^16.12.0"
 
-"@monaco-editor/loader@^0.1.2":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@monaco-editor/loader/-/loader-0.1.3.tgz#f8830ef2a5b826bc3452afa8ddb8b83b00ff54e9"
-  integrity sha512-AO5ERu/RV4B0Va3ymI4TYp/KeIUSPHQueE51jRjVcCsW72btEPUxCgnHTdBxpAvsfNEF1sLILtt1QOZqce3SWw==
+"@monaco-editor/loader@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@monaco-editor/loader/-/loader-1.1.1.tgz#37db648c81a86946d0febd391de00df9c28a0a3d"
+  integrity sha512-mkT4r4xDjIyOG9o9M6rJDSzEIeonwF80sYErxEvAAL4LncFVdcbNli8Qv6NDqF6nyv6sunuKkDzo4iFjxPL+uQ==
   dependencies:
     state-local "^1.0.6"
 
-"@monaco-editor/react@3.8.3":
-  version "3.8.3"
-  resolved "https://registry.yarnpkg.com/@monaco-editor/react/-/react-3.8.3.tgz#36d19278fdee2a7f97fd193c0596df531b183a5e"
-  integrity sha512-wd+XzqATnUoODHSm2JMZi5OV9qeC8hdoSgoZHsTceXyH3Z/oktUtFbjaYeK0XL/lnXAScSYue81GA2UsiAx0sQ==
+"@monaco-editor/react@4.2.2":
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@monaco-editor/react/-/react-4.2.2.tgz#636e5b8eb9519ef62f475f9a4a50f62ee0c493a8"
+  integrity sha512-yDDct+f/mZ946tJEXudvmMC8zXDygkELNujpJGjqJ0gS3WePZmS/IwBBsuJ8JyKQQC3Dy/+Ivg1sSpW+UvCv9g==
   dependencies:
-    "@monaco-editor/loader" "^0.1.2"
+    "@monaco-editor/loader" "^1.1.1"
+    prop-types "^15.7.2"
 
 "@nivo/annotations@0.62.0":
   version "0.62.0"
@@ -511,10 +512,6 @@
     fastq "^1.6.0"
 
 "@opg/interface-builder-plugins@link:.":
-  version "0.0.0"
-  uid ""
-
-"@opg/interface-builder@link:..":
   version "0.0.0"
   uid ""
 
@@ -4368,11 +4365,6 @@ monaco-editor@0.27.0:
   resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.27.0.tgz#4b69108bb1dc1f60174c5dcdf51bc5306ab5ba26"
   integrity sha512-UhwP78Wb8w0ZSYoKXQNTV/0CHObp6NS3nCt51QfKE6sKyBo5PBsvuDOHoI2ooBakc6uIwByRLHVeT7+yXQe2fQ==
 
-monaco-editor@^0.26.1:
-  version "0.26.1"
-  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.26.1.tgz#62bb5f658bc95379f8abb64b147632bd1c019d73"
-  integrity sha512-mm45nUrBDk0DgZKgbD7+bhDOtcAFNGPJJRAdS6Su1kTGl6XEgC7U3xOmDUW/0RrLf+jlvCGaqLvD4p2VjwuwwQ==
-
 monocle-ts@1.7.2:
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/monocle-ts/-/monocle-ts-1.7.2.tgz#d9825ae18846ab63f915cb6f2194a78a40025610"
@@ -6230,14 +6222,6 @@ react-measure@^2.2.4:
     get-node-dimensions "^1.2.1"
     prop-types "^15.6.2"
     resize-observer-polyfill "^1.5.0"
-
-react-monaco-editor@0.44.0:
-  version "0.44.0"
-  resolved "https://registry.yarnpkg.com/react-monaco-editor/-/react-monaco-editor-0.44.0.tgz#9f966fd00b6c30e8be8873a3fbc86f14a0da2ba4"
-  integrity sha512-GPheXTIpBXpwv857H7/jA8HX5yae4TJ7vFwDJ5iTvy05LxIQTsD3oofXznXGi66lVA93ST/G7wRptEf4CJ9dOg==
-  dependencies:
-    monaco-editor "^0.26.1"
-    prop-types "^15.7.2"
 
 react-motion@^0.5.2:
   version "0.5.2"

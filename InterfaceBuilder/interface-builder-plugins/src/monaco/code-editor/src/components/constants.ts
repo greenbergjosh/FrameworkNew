@@ -8,7 +8,7 @@ import * as iots from "io-ts"
 export const activeEditorSettings: NonNullable<editor.IEditorConstructionOptions> = {
   cursorBlinking: "blink",
   cursorSmoothCaretAnimation: false,
-  cursorStyle: "block",
+  cursorStyle: "line",
   extraEditorClassName: "",
   fixedOverflowWidgets: false,
   glyphMargin: false,
@@ -16,7 +16,7 @@ export const activeEditorSettings: NonNullable<editor.IEditorConstructionOptions
   lineNumbers: "on",
   lineNumbersMinChars: 4,
   minimap: {
-    enabled: false,
+    enabled: true,
   },
   mouseWheelZoom: false,
   overviewRulerBorder: false,
@@ -57,9 +57,10 @@ export const inactiveEditorSettings: NonNullable<editor.IEditorConstructionOptio
   readOnly: true,
 }
 
-export const diffEditorSettings = {
+export const diffEditorSettings: editor.IDiffEditorConstructionOptions = {
   ...activeEditorSettings,
   renderSideBySide: true,
+  readOnly: true,
 }
 
 export const EditorLangCodec = iots.keyof(editorLanguages)

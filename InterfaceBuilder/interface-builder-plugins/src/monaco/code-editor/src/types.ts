@@ -1,7 +1,12 @@
 import * as iots from "io-ts"
 import { CancellationToken, default as monacoEditor, editor, IDisposable, IPosition, languages } from "monaco-editor"
-import { ComponentDefinitionNamedProps, UserInterfaceDataType, UserInterfaceProps } from "@opg/interface-builder"
-import { EditorLangCodec } from "./constants"
+import {
+  ComponentDefinitionNamedProps,
+  UserInterfaceDataType,
+  UserInterfaceProps,
+  AbstractBaseInterfaceComponentType,
+} from "@opg/interface-builder"
+import { EditorLangCodec } from "./components/constants"
 import { EditorProps } from "@monaco-editor/react"
 import { Option } from "fp-ts/lib/Option"
 
@@ -18,6 +23,7 @@ export interface CodeEditorInterfaceComponentProps extends ComponentDefinitionNa
   autoSync: boolean
   height: string
   width: string
+  showMinimap?: boolean
 }
 
 export interface CodeEditorInterfaceComponentState {
@@ -29,16 +35,17 @@ export type EditorTheme = "vs" | "vs-dark" | "hc-black"
 export type EditorLang = iots.TypeOf<typeof EditorLangCodec>
 
 export interface CodeEditorProps extends Required<Pick<EditorProps, "height" | "width">> {
-  /** the read-only code to display */
+  original?: UserInterfaceDataType
   document: UserInterfaceDataType
-  /** the text being edited */
-  documentDraft: Option<UserInterfaceProps["data"]>
+  documentDraft?: Option<UserInterfaceProps["data"]> // deprecated
   theme?: EditorTheme
   language: EditorLang
   onChange?: (args: { value: UserInterfaceDataType; errors: Option<string[]> }) => void
   onMonacoInit?: (monacoInstance: typeof monacoEditor) => void
   editorDidMount?: (getEditorValue: () => string, editor: monacoEditor.editor.IStandaloneCodeEditor) => void
   outputType?: string
+  raiseEvent?: AbstractBaseInterfaceComponentType["prototype"]["raiseEvent"]
+  showMinimap?: boolean
 }
 
 export type CustomEditorWillMount = (monaco: editor.IStandaloneCodeEditor) => IDisposable[]
@@ -47,7 +54,6 @@ export type MonacoEditorProps = {
   defaultValue: EditorProps["value"]
   options: editor.IEditorConstructionOptions
   originalValue: EditorProps["value"]
-  value: EditorProps["value"]
 }
 
 export type GetCustomEditorWillMount = (

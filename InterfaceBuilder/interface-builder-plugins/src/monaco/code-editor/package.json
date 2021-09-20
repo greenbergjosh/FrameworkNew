@@ -21,7 +21,9 @@
     "layout",
     "wysiwyg"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@opg/interface-builder-plugins": "link:../../../"
+  },
   "peerDependencies": {
     "antd": "3.26.20",
     "react": "17.0.2",

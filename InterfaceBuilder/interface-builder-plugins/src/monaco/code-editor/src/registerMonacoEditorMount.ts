@@ -1,7 +1,7 @@
 import { GetCustomEditorWillMount } from "./types"
 
-export let _registerMonacoEditorMount: GetCustomEditorWillMount
+export let _getCustomEditorWillMount: GetCustomEditorWillMount
 
 export const registerMonacoEditorMount = (getCustomEditorWillMount: GetCustomEditorWillMount): void => {
-  _registerMonacoEditorMount = getCustomEditorWillMount
+  _getCustomEditorWillMount = getCustomEditorWillMount
 }

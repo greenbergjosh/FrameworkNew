@@ -4,5 +4,5 @@ import CodeEditorInterfaceComponent from "./CodeEditorInterfaceComponent"
 
 export default { component: CodeEditorInterfaceComponent, layoutDefinition } as RegisterableComponent
 export { CodeEditor } from "./components/CodeEditor"
-export { editorLanguages, EditorLangCodec } from "./constants"
+export { editorLanguages, EditorLangCodec } from "./components/constants"
 export { registerMonacoEditorMount } from "./registerMonacoEditorMount"

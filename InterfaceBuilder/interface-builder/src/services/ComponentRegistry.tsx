@@ -58,7 +58,7 @@ export const registry: ComponentRegistry = {
   lookup(key) {
     const cachedComponentPkg = registry._cache[key]
 
-    if (isLoadableComponent(cachedComponentPkg.component)) {
+    if (cachedComponentPkg && isLoadableComponent(cachedComponentPkg.component)) {
       const loaded = (cachedComponentPkg.component as LoadableComponent<BaseInterfaceComponentProps>).load()
       const loadedWithEvents: LoadedComponent = loaded.then((c: DefaultComponent<BaseInterfaceComponentProps>) => {
         const component: React.ComponentType<BaseInterfaceComponentProps> = (c as any).default
@@ -78,7 +78,7 @@ export const registry: ComponentRegistry = {
       return loadedWithEvents
     }
 
-    return cachedComponentPkg.component as LoadedComponent
+    return cachedComponentPkg ? (cachedComponentPkg.component as LoadedComponent) : Promise.reject("Config not found")
   },
 
   /**

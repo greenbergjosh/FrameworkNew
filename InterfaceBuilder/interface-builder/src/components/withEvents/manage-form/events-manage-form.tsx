@@ -59,8 +59,9 @@ export const eventsManageFormDefinition: Partial<ComponentDefinition>[] = [
                     hidden: false,
                     hideLabel: false,
                     component: "code-editor",
-                    height: 400,
+                    height: 200,
                     width: "90%",
+                    showMinimap: false,
                     bindable: true,
                   },
                   {

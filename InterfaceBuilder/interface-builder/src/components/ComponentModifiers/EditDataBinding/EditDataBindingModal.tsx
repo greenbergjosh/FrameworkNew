@@ -1,12 +1,20 @@
 import jsonLogic from "json-logic-js"
 import React from "react"
 import { Alert, Button, Modal, Popconfirm, Typography } from "antd"
-import { isEmpty, isString } from "lodash/fp"
+import { isPlainObject } from "lodash/fp"
 import { JSONRecord } from "../../../globalTypes/JSONTypes"
 import { tryCatch } from "fp-ts/lib/Option"
 import { AbstractBaseInterfaceComponentType } from "components/BaseInterfaceComponent/types"
+import { EventPayloadType } from "components/withEvents/types"
+import { EventBus } from "components/withEvents/EventBus"
+import { CodeEditorProps } from "../../../../../interface-builder-plugins/src/monaco/code-editor/src/types"
 
-type RuleContainer = { rulesString: string }
+type RuleDoc = { rulesString: string }
+// type CodeEditorDoc = { rulesString: JSONRecord | undefined | null }
+
+function formatDocument(doc: CodeEditorProps["document"]) {
+  return JSON.stringify(doc, null, 2) || "{}"
+}
 
 export function EditDataBindingModal(props: {
   CodeEditor?: AbstractBaseInterfaceComponentType
@@ -23,57 +31,71 @@ export function EditDataBindingModal(props: {
    * We must place the rules in a "rules" property of a container object
    * because CodeEditorInterfaceComponent expects to use a valueKey.
    */
-  const [data, setData] = React.useState<RuleContainer>({
-    rulesString: JSON.stringify(props.rules, null, "\t"),
-  })
-  const [isInvalidRules, setIsInvalidRules] = React.useState(false)
+  const [isValidRules, setIsValidRules] = React.useState(true)
+  const [rulesDraft, setRulesDraft] = React.useState<JSONRecord>(getRulesDoc(props.rules))
+  const [originalRulesDoc, setOriginalRulesDoc] = React.useState<RuleDoc>(getRulesDoc(props.rules))
 
-  const hasRule = React.useMemo<boolean>(() => {
-    return !isEmpty(data.rulesString) && data.rulesString !== "{}"
-  }, [data.rulesString])
-
-  const handleSave = () => {
-    if (isString(data.rulesString)) {
-      const newRule: JSONRecord = tryCatch(() => data.rulesString && JSON.parse(data.rulesString)).toUndefined()
-
-      if (isEmpty(newRule)) {
-        setIsInvalidRules(true)
-      } else {
-        const isLogic = jsonLogic.is_logic(newRule)
-
-        if (isLogic) {
-          /* Reformat the json */
-          setData({ rulesString: JSON.stringify(newRule, null, "\t") })
-          props.onSave(newRule)
-        } else {
-          setIsInvalidRules(true)
-        }
-      }
+  function getRulesDoc(rules: JSONRecord) {
+    return {
+      rulesString: formatDocument(rules),
     }
   }
 
-  const handleChangeData = (newData: { rulesString: JSONRecord | undefined | null }) => {
-    if (isInvalidRules) {
-      setIsInvalidRules(false)
+  function validateRules(rules: JSONRecord) {
+    return isPlainObject(rules) && jsonLogic.is_logic(rules)
+  }
+
+  /* ***************************************
+   *
+   * EVENT HANDLERS
+   */
+
+  React.useEffect(() => {
+    if (!props.visible) {
+      return
     }
-    setData({
-      rulesString: JSON.stringify(newData.rulesString, null, "\t"),
-    })
+    const subscriptionId = EventBus.addSubscription(
+      "event.editDataBinding.valueChanged",
+      (eventName: string, eventPayload: EventPayloadType /*, source: any*/) => {
+        /* With every keystroke, evaluate the rule and update the rulesDraft copy */
+        const value: string = eventPayload.value as string
+        const nextRules = tryCatch(() => value && JSON.parse(value)).toUndefined()
+        const isValid = validateRules(nextRules)
+        setIsValidRules(isValid)
+        setRulesDraft(nextRules)
+      }
+    )
+    return () => {
+      /* On unmount, Clean up the event subscription */
+      EventBus.removeSubscription("event.editDataBinding.valueChanged", subscriptionId)
+    }
+  }, [props.visible])
+
+  const handleSave = () => {
+    if (isValidRules) {
+      /* Reformat the json */
+      const formattedDoc = formatDocument(rulesDraft)
+      const newRules: JSONRecord = tryCatch(() => formattedDoc && JSON.parse(formattedDoc)).toUndefined()
+      props.onSave(newRules)
+    }
   }
 
   const handleDelete = () => {
-    setData({ rulesString: "{}" })
+    setOriginalRulesDoc(getRulesDoc({}))
+    setRulesDraft(getRulesDoc({}))
     props.onDelete()
   }
 
   const handleCancel = () => {
-    if (isEmpty(data.rulesString)) {
-      setData({ rulesString: "{}" })
-    } else {
-      setData({ rulesString: JSON.stringify(props.rules, null, "\t") })
-    }
+    setOriginalRulesDoc(getRulesDoc(props.rules))
+    setRulesDraft(getRulesDoc(props.rules))
     props.onCancel()
   }
+
+  /* ***************************************
+   *
+   * RENDER
+   */
 
   return (
     <Modal
@@ -96,7 +118,7 @@ export function EditDataBindingModal(props: {
             Remove
           </Button>
         </Popconfirm>,
-        <Button key="save" type="primary" disabled={!hasRule} loading={false} onClick={handleSave}>
+        <Button key="save" type="primary" disabled={!isValidRules} loading={false} onClick={handleSave}>
           Save
         </Button>,
       ]}>
@@ -107,23 +129,30 @@ export function EditDataBindingModal(props: {
         </a>
         . You may use &ldquo;$root&rdquo; and &ldquo;$&rdquo; in the beginning of &ldquo;var&rdquo; value paths.
       </Typography>
-      {isInvalidRules && <Alert showIcon={true} message="Cannot save! Invalid JsonLogic rules." type="error" />}
+      {!isValidRules && <Alert showIcon={true} message="Invalid JsonLogic rules." type="error" />}
       {props.CodeEditor && (
         <props.CodeEditor
           key="jsonlogic-editor"
           component={"code-editor"}
           defaultLanguage={"json"}
           defaultTheme={"vs-dark"}
-          getRootUserInterfaceData={() => ({})}
+          getRootUserInterfaceData={() => originalRulesDoc}
           onChangeRootData={() => void 0}
-          onChangeData={handleChangeData}
-          userInterfaceData={data}
+          userInterfaceData={originalRulesDoc}
           valueKey={"rulesString"}
           autoSync={true}
           height={"400px"}
+          showMinimap={false}
           width={"100%"}
           incomingEventHandlers={[]}
-          outgoingEventMap={{}}
+          outgoingEventMap={{
+            valueChanged: {
+              //@ts-ignore
+              lbmParameters: [],
+              simpleMapValue: "event.editDataBinding.valueChanged",
+              type: "simple",
+            },
+          }}
         />
       )}
     </Modal>

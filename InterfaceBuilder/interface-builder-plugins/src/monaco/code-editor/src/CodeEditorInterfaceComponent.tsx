@@ -4,8 +4,7 @@ import { CodeEditor } from "./components/CodeEditor"
 import { CodeEditorInterfaceComponentProps, CodeEditorInterfaceComponentState } from "./types.js"
 import { codeEditorManageForm } from "./code-editor-manage-form"
 import { CodeEditorProps } from "./types"
-import { isEqual } from "lodash/fp"
-import { some } from "fp-ts/lib/Option"
+import { isEqual, cloneDeep } from "lodash/fp"
 import layoutDefinition from "./layoutDefinition"
 
 export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent<
@@ -17,6 +16,7 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
     defaultValue: "",
     autoSync: true,
     defaultLanguage: "json",
+    showMinimap: true,
   }
 
   static getLayoutDefinition(): LayoutDefinition {
@@ -129,10 +129,10 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
    * @param errors
    */
   private handleChange: CodeEditorProps["onChange"] = ({ value, errors }): void => {
-    console.log("CodeEditorInterfaceComponent > change", { document: value })
     if (errors.isSome()) {
-      console.error("CodeEditorInterfaceComponent.handleChange", errors)
+      console.error("CodeEditorInterfaceComponent.handleChange", { errors })
     }
+    console.log("CodeEditorInterfaceComponent.handleChange", { value })
     const prevDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue || ""
     const nextDocument = value || ""
 
@@ -147,16 +147,17 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
   }
 
   render(): JSX.Element {
-    console.log("CodeEditorInterfaceComponent > render", { document: this.state.document })
     return (
       <CodeEditor
+        original={cloneDeep(this.getValue(this.props.valueKey) || this.props.defaultValue)}
         document={this.state.document}
-        documentDraft={some(this.state.document)}
         height={this.props.height || "400px"}
         language={this.props.defaultLanguage}
         theme={this.props.defaultTheme}
         width={this.props.width || "100%"}
         onChange={this.handleChange}
+        raiseEvent={this.raiseEvent.bind(this)}
+        showMinimap={this.props.showMinimap}
       />
     )
   }
