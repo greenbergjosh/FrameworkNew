@@ -1,6 +1,7 @@
 import React from "react"
 import { ColumnConfig, TableInterfaceComponentProps } from "../types"
-import { SortableGroupableColumnModel, Table } from "@opg/interface-builder"
+import { SortableGroupableColumnModel } from "@opg/interface-builder-plugins/lib/syncfusion/table"
+import TableInterfaceComponent from "@opg/interface-builder-plugins/lib/syncfusion/table/TableInterfaceComponent"
 import { cloneDeep } from "lodash/fp"
 import { getDetailTemplate } from "../../../report/detailTemplate/getDetailTemplate"
 import { getCustomCellFormatter } from "../customFormatters/customCellFormatter"
@@ -9,7 +10,15 @@ import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 
 export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
-  const { columns, getRootUserInterfaceData, onChangeRootData, onChangeData, parameterValues, parentData } = props
+  const {
+    columns,
+    getRootUserInterfaceData,
+    onChangeRootData,
+    onChangeData,
+    parameterValues,
+    parentData,
+    getDefinitionDefaultValue,
+  } = props
 
   /* **********************************************************************
    *
@@ -38,6 +47,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
         onChangeData,
         parameterValues: parameterValues && parameterValues.toUndefined(),
         parentData,
+        getDefinitionDefaultValue,
       })
       const formatter = getCustomCellFormatter({
         cellFormatter: column.cellFormatter,
@@ -66,5 +76,5 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
     onChangeRootData,
   ])
 
-  return <Table.TableInterfaceComponent {...props} columns={enrichedColumns} />
+  return <TableInterfaceComponent {...props} columns={enrichedColumns} />
 }

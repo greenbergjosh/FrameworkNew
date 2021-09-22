@@ -1,0 +1,29 @@
+@import "~@opg/interface-builder/dist/styles/colors.scss";
+
+/*
+* :global {...} is used by rollup-plugin-postcss-modules
+* Disables module BEM class name transformations
+* For more info, see:
+* https://github.com/css-modules/css-modules
+*/
+:global {
+  :local(.button) {
+    &.ant-btn,
+    &.ant-btn:focus {
+      color: $ib-grey;
+    }
+  }
+
+  :local(.button.active) {
+    &.ant-btn {
+      color: $ib-grey-dark;
+      background-color: $ib-grey-light;
+      border-radius: 5px 5px 0 0;
+    }
+  }
+}
+
+.visualizer {
+  background-color: $ib-grey-light;
+  border-radius: 0 5px 5px 5px;
+}

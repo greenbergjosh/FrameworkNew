@@ -12,8 +12,9 @@ import {
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { QueryInterfaceComponentProps, QueryInterfaceComponentState } from "./types"
+import layoutDefinition from "./layoutDefinition"
 
-export class QueryInterfaceComponent extends BaseInterfaceComponent<
+export default class QueryInterfaceComponent extends BaseInterfaceComponent<
   QueryInterfaceComponentProps,
   QueryInterfaceComponentState
 > {
@@ -23,17 +24,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static getLayoutDefinition() {
-    return {
-      category: "Special",
-      name: "query",
-      title: "Query",
-      icon: "database",
-      componentDefinition: {
-        component: "query",
-        hideLabel: true,
-        components: [],
-      },
-    }
+    return layoutDefinition
   }
 
   static manageForm = queryManageForm
@@ -96,7 +87,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}
-            remoteQuery={this.props.remoteQuery}>
+            remoteQuery={this.props.remoteQuery}
+            getDefinitionDefaultValue={QueryInterfaceComponent.getDefinitionDefaultValue}>
             {children}
           </Query>
         )
@@ -109,7 +101,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
             inputData={userInterfaceData}
             paused={mode === "edit"}
             queryType={this.props.queryType}
-            remoteUrl={this.props.remoteUrl}>
+            remoteUrl={this.props.remoteUrl}
+            getDefinitionDefaultValue={QueryInterfaceComponent.getDefinitionDefaultValue}>
             {children}
           </Query>
         )
@@ -123,7 +116,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
             paused={mode === "edit"}
             queryType={this.props.queryType}
             remoteConfigType={this.props.remoteConfigType}
-            remoteDataFilter={remoteDataFilter}>
+            remoteDataFilter={remoteDataFilter}
+            getDefinitionDefaultValue={QueryInterfaceComponent.getDefinitionDefaultValue}>
             {children}
           </Query>
         )

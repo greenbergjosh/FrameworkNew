@@ -1,16 +1,12 @@
 import React from "react"
-import {
-  BaseInterfaceComponent,
-  StringTemplate,
-  UserInterfaceContext,
-  UserInterfaceContextManager,
-} from "@opg/interface-builder"
+import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
+import StringTemplate from "@opg/interface-builder-plugins/lib/ant/string-template/StringTemplateInterfaceComponent"
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../../../lib/loadRemoteLBM"
 import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
-export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
+export default class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   StringTemplateInterfaceComponentProps,
   StringTemplateInterfaceComponentState
 > {
@@ -24,8 +20,8 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   }
   context!: React.ContextType<typeof UserInterfaceContext>
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
-  static defaultProps = StringTemplate.StringTemplateInterfaceComponent.defaultProps
-  static getLayoutDefinition = StringTemplate.StringTemplateInterfaceComponent.getLayoutDefinition
+  static defaultProps = StringTemplate.defaultProps
+  static getLayoutDefinition = StringTemplate.getLayoutDefinition
   static manageForm = stringTemplateManageForm
 
   componentDidMount(): void {
@@ -46,7 +42,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
 
   render() {
     return (
-      <StringTemplate.StringTemplateInterfaceComponent
+      <StringTemplate
         {...this.props}
         serializeSrc={this.state.serializeSrc}
         deserializeSrc={this.state.deserializeSrc}

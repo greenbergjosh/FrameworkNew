@@ -9,7 +9,7 @@ import { JSONRecord } from "../../data/JSON"
 import { getDefaultFormValues, QueryForm } from "../query/QueryForm"
 import { store } from "../../state/store"
 import { useRematch } from "../../hooks"
-import { StandardGridTypes, Table } from "@opg/interface-builder"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { getDetailTemplate } from "./detailTemplate/getDetailTemplate"
 import { ColumnConfig } from "../custom-ib-components/table/types"
 import { getCustomAggregateFunction } from "../custom-ib-components/table/customFormatters/customAggregateFunction"
@@ -33,6 +33,7 @@ const ReportBody = ({
   title,
   unsatisfiedByParentParams,
   withoutHeader,
+  getDefinitionDefaultValue,
 }: ReportBodyProps) => {
   /* **********************************************************************
    *
@@ -145,7 +146,12 @@ const ReportBody = ({
     ) {
       // ExecuteImmediately is performed by default (not set) or when toggled on.
       if (queryConfig.executeImmediately === undefined || queryConfig.executeImmediately) {
-        const defaultFormValues = getDefaultFormValues(queryConfig.layout, queryConfig.parameters, {})
+        const defaultFormValues = getDefaultFormValues(
+          queryConfig.layout,
+          queryConfig.parameters,
+          {},
+          getDefinitionDefaultValue
+        )
         const params = { ...satisfiedByParentParams }
 
         // Add query form field default values to the params
@@ -202,6 +208,7 @@ const ReportBody = ({
       parentData,
       handleChangeData: onChangeData,
       columnType: "layout",
+      getDefinitionDefaultValue,
     })
   }, [
     dispatch,
@@ -213,17 +220,17 @@ const ReportBody = ({
     onChangeRootData,
   ])
 
-  const sortSettings: StandardGridTypes.SortSettingsModel = {
+  const sortSettings: Table.StandardGridTypes.SortSettingsModel = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columns: sortBy("sortOrder", reportConfig.columns as any[]).reduce((acc, column) => {
       if (column.sortDirection && column.field) {
         acc.push({ field: column.field, direction: column.sortDirection })
       }
       return acc
-    }, [] as StandardGridTypes.SortDescriptorModel[]),
+    }, [] as Table.StandardGridTypes.SortDescriptorModel[]),
   }
 
-  const pageSettings: StandardGridTypes.PageSettingsModel | undefined =
+  const pageSettings: Table.StandardGridTypes.PageSettingsModel | undefined =
     reportConfig.defaultPageSize === "All"
       ? {
           pageSize: 999999,
@@ -234,7 +241,7 @@ const ReportBody = ({
         }
       : undefined
 
-  const groupSettings: StandardGridTypes.GroupSettingsModel = {
+  const groupSettings: Table.StandardGridTypes.GroupSettingsModel = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columns: sortBy("groupOrder", reportConfig.columns as any[]).reduce((acc, column) => {
       if (column.field && typeof column.groupOrder !== "undefined") {
@@ -264,6 +271,7 @@ const ReportBody = ({
         parentData,
         handleChangeData: onChangeData,
         columnType: column.type,
+        getDefinitionDefaultValue,
       })
 
       /*
@@ -333,6 +341,7 @@ const ReportBody = ({
               parameterValues={parameterValues.getOrElse(record.empty)}
               onSubmit={handleQueryFormSubmit}
               onMount={handleQueryFormMount}
+              getDefinitionDefaultValue={getDefinitionDefaultValue}
             />
           </PageHeader>
         )}

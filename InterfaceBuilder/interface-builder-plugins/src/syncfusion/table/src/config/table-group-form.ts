@@ -1,0 +1,33 @@
+import { SectionDefinition } from "@opg/interface-builder-plugins/src/ant/collapse/src/CollapseInterfaceComponent"
+
+export const tableGroupForm = {
+  title: "Group",
+  components: [
+    {
+      key: "allowGrouping",
+      valueKey: "allowGrouping",
+      label: "Allow Grouping",
+      help:
+        "If turned off, users will not be able to add, remove, or change the grouping, but it can still be pre-configured below.",
+      component: "toggle",
+      defaultValue: true,
+      size: "small",
+      getRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
+    },
+    {
+      key: "groupOrder",
+      valueKey: "groupOrder",
+      label: "Order",
+      help: "The lowest Order is the first column grouped, followed by the next lowest, and so on",
+      component: "number-input",
+      size: "small",
+      getRootUserInterfaceData: () => void 0,
+      onChangeRootData: () => void 0,
+      incomingEventHandlers: [],
+      outgoingEventMap: {},
+    },
+  ],
+} as SectionDefinition

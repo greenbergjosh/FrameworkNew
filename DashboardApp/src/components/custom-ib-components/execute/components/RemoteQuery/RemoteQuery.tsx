@@ -31,6 +31,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     loadById,
     executeQuery,
     executeQueryUpdate,
+    getDefinitionDefaultValue,
   } = props
 
   /* *************************************
@@ -142,6 +143,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
           submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
+          getDefinitionDefaultValue={getDefinitionDefaultValue}
         />
       )}
     </QueryParams>

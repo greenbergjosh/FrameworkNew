@@ -252,7 +252,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                   }
                   dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload as JSONRecord[] })
                   dispatch.queries.updateQueryGlobalParams(params)
-                  return isArray(payload) ? payload[0] : payload
+                  return payload
                 },
                 Unauthorized() {
                   const notifyConfig: NotifyConfig = {

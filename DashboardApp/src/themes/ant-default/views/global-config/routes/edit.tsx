@@ -19,13 +19,8 @@ import { useMemoPlus } from "../../../../../hooks/use-memo-plus"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { isWhitespace } from "../../../../../lib/string"
 import { store } from "../../../../../state/store"
-import {
-  CodeEditor,
-  ComponentDefinition,
-  EditorLangCodec,
-  UserInterface,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
+import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
+import { CodeEditor, EditorLangCodec } from "@opg/interface-builder-plugins/lib/monaco/code-editor"
 import { InProgressRemoteUpdateDraft, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"

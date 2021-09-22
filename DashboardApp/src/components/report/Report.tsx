@@ -98,6 +98,7 @@ export const Report = (props: ReportProps): JSX.Element => {
                 title={reportGlobalConfig && reportGlobalConfig.name}
                 unsatisfiedByParentParams={unsatisfiedByParentParams}
                 withoutHeader={props.withoutHeader}
+                getDefinitionDefaultValue={props.getDefinitionDefaultValue}
               />
             )}
           </QueryParams>

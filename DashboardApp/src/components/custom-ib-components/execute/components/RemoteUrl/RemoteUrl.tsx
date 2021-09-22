@@ -30,6 +30,7 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     setParentSubmitting,
     loadById,
     executeHTTPRequestQuery,
+    getDefinitionDefaultValue,
   } = props
 
   /* *************************************
@@ -124,6 +125,7 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
           submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
+          getDefinitionDefaultValue={getDefinitionDefaultValue}
         />
       )}
     </QueryParams>

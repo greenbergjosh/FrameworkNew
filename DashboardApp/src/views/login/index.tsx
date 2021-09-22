@@ -20,7 +20,7 @@ export interface LandingProps {
   }
 }
 
-export function Landing(props: WithRouteProps<LandingProps>) {
+export function Landing(props: WithRouteProps<LandingProps>): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
     iam: appState.iam,
     routes: appState.navigation.routes,

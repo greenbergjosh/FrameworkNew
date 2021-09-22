@@ -2,6 +2,7 @@ import React from "react"
 import { Helmet } from "react-helmet"
 import { Report } from "../../../../../../components/report/Report"
 import { WithRouteProps } from "../../../../../../state/navigation"
+import { BaseInterfaceComponent } from "@opg/interface-builder"
 
 type ReportQueryId = string
 
@@ -22,6 +23,7 @@ export function ReportView(props: WithRouteProps<ViewProps>): JSX.Element {
           type: "GlobalConfigReference",
           id: props.reportId,
         }}
+        getDefinitionDefaultValue={BaseInterfaceComponent.getDefinitionDefaultValue}
       />
     </>
   )

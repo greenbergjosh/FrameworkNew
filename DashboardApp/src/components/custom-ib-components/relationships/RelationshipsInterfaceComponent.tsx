@@ -10,8 +10,9 @@ import { RelationshipsInterfaceComponentProps, RelationshipsInterfaceComponentSt
 import { ExecuteInterfaceComponentProps, LoadStatusCode } from "../execute/types"
 import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
 import { RelationshipTree } from "./RelationshipTree"
+import layoutDefinition from "./layoutDefinition"
 
-export class RelationshipsInterfaceComponent extends BaseInterfaceComponent<
+export default class RelationshipsInterfaceComponent extends BaseInterfaceComponent<
   RelationshipsInterfaceComponentProps,
   RelationshipsInterfaceComponentState
 > {
@@ -28,17 +29,7 @@ export class RelationshipsInterfaceComponent extends BaseInterfaceComponent<
     valueKey: "data",
   }
   static getLayoutDefinition(): LayoutDefinition {
-    return {
-      category: "Special",
-      name: "relationships",
-      title: "Relationships",
-      icon: "deployment-unit",
-      componentDefinition: {
-        component: "relationships",
-        hideLabel: true,
-        components: [],
-      },
-    }
+    return layoutDefinition
   }
   static manageForm = relationshipsManageForm
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
