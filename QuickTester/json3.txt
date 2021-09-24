@@ -1,0 +1,156 @@
+{
+  "and": [
+    {
+      "==": [
+        {
+          "var": "email"
+        },
+        "hotmail.com"
+      ]
+    },
+    {
+      "==": [
+        {
+          "var": "first_name"
+        },
+        "M"
+      ]
+    },
+    {
+      "==": [
+        {
+          "var": "gender"
+        },
+        "F"
+      ]
+    },
+    {
+      "filter": [
+        {
+          "or": [
+            {
+              "==": [
+                {
+                  "var": "postal.dpv_zip_plus_four"
+                },
+                "33434"
+              ]
+            },
+            {
+              "==": [
+                {
+                  "var": "postal.dpv_zip_plus_four"
+                },
+                "33433"
+              ]
+            },
+            {
+              "==": [
+                {
+                  "var": "postal.dpv_zip_plus_four"
+                },
+                "12345"
+              ]
+            },
+            {
+              "==": [
+                {
+                  "var": "postal.dpv_zip_plus_four"
+                },
+                "33101"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "filter": [
+        {
+          "or": [
+            {
+              "and": [
+                {
+                  "==": [
+                    {
+                      "var": "events.domain"
+                    },
+                    "foodstamps.org"
+                  ]
+                },
+                {
+                  "==": [
+                    {
+                      "var": "events.publisher_id"
+                    },
+                    57
+                  ]
+                }
+              ]
+            },
+            {
+              "and": [
+                {
+                  "==": [
+                    {
+                      "var": "events.domain"
+                    },
+                    "sec8.org"
+                  ]
+                },
+                {
+                  "==": [
+                    {
+                      "var": "events.publisher_id"
+                    },
+                    62
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "filter": [
+        {
+          "==": [
+            {
+              "var": "lists.listid"
+            },
+            "clicker"
+          ]
+        }
+      ]
+    },
+    {
+      "filter": [
+        {
+          "!=": [
+            {
+              "var": "lists.listid"
+            },
+            "seed"
+          ]
+        },
+        {
+          "!=": [
+            {
+              "var": "lists.listid"
+            },
+            "complainer"
+          ]
+        },
+        {
+          "!=": [
+            {
+              "var": "lists.listid"
+            },
+            "bounce"
+          ]
+        }
+      ]
+    }
+  ]
+}

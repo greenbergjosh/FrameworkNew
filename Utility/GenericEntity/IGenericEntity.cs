@@ -38,7 +38,7 @@ namespace Utility.GenericEntity
         T Get<T>(string path, string fname);
 
         void Set(string path, object value);
-        string GetS(string path, bool quoteStrings = false);
+        string GetS(string path, char? quoteChar = null);
         string RunS(string fname);
         string GetS(string path, string fname);
 

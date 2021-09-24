@@ -1,0 +1,18 @@
+{
+  "all": [
+    {
+      "var": "Domains.Names"
+    },
+    {
+      "in": [
+        {
+          "var": ""
+        },
+        [
+          "gmail.com",
+          "aol.com"
+        ]
+      ]
+    }
+  ]
+}

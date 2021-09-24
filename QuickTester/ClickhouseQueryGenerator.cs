@@ -2,13 +2,15 @@
 using Utility;
 using Utility.GenericEntity;
 
+// email_events_merged
+
 namespace QuickTester
 {
     class ClickhouseQueryGenerator
     {
         public static string generateClickhouseQuery(IGenericEntity ge)
         {
-            string q = "SELECT <top_level_field_list> FROM datasets.email WHERE "
+            string q = "SELECT email FROM datasets.email_events_merged WHERE "
                 + generateClickhouseWhere(ge);
             return q;
         }
@@ -21,7 +23,7 @@ namespace QuickTester
             else if (op == "filter" || op == "!") r = generateClickhouseUnary(op, ge.GetE(op));
             else if (op == "all")
                 r = generateClickhouseIn(ge.GetS($"{op}[0]/var"), $"[{ge.GetLS($"{op}[1]/in[1]", true).Join(",")}]");
-            else r = generateClickhouseBinary(op, ge.GetS($"{op}[0]/var"), ge.GetS($"{op}[1]", true));
+            else r = generateClickhouseBinary(op, ge.GetS($"{op}[0]/var"), ge.GetS($"{op}[1]", '\''));   // used to pass true to second getS
             return "(" + r + ")";
         }
 

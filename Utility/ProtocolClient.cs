@@ -854,7 +854,7 @@ namespace Utility
         }
 
         public static void SendMail(string smtpRelay, int smtpPort, MailMessage msg, bool useSsl = false)
-        {
+        { 
             using (var smtp = new SmtpClient(smtpRelay, smtpPort))
             {
                 smtp.EnableSsl = useSsl;

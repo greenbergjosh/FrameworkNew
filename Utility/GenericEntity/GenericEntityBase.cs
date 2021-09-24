@@ -141,11 +141,11 @@ namespace Utility.GenericEntity
             throw new NotImplementedException();
         }
 
-        public virtual string GetS(string path, bool quoteStrings = false)
+        public virtual string GetS(string path, char? quoteChar = null)
         {
             object s = Get(path);
             if (s == null) return null;
-            else return s.ToString();
+            else return $"{quoteChar}{s}{quoteChar}";
         }
 
         public virtual string RunS(string fname)

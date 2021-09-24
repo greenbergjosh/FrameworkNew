@@ -72,10 +72,10 @@ namespace Utility.GenericEntity
 
         public override bool HasPath(string path) => _root.SelectToken(ConvertPath(path)) != null;
 
-        public override string GetS(string path, bool quoteStrings = false)
+        public override string GetS(string path, char? quoteChar = null)
         {
             var s = _root.SelectToken(ConvertPath(path));
-            if (s?.Type == JTokenType.String && quoteStrings) return "\"" + s + "\"";
+            if (s?.Type == JTokenType.String && quoteChar.HasValue) return $"{quoteChar}{s}{quoteChar}";
             else return s?.ToString();
         }
 

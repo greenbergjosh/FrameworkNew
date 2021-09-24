@@ -121,7 +121,7 @@ namespace EACServiceLib
 
             var html = $"<html><head><style type='text/css'>table, th, td {{ border: 1px solid black; }}</style></head><body>{sb.ToString()}</body></html>";
 
-            context.Response.ContentType = MediaTypeNames.Application.Json;
+            //context.Response.ContentType = MediaTypeNames.Application.Json;
             await context.Response.WriteAsync(html);
         }
     }
