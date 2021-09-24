@@ -3,6 +3,7 @@ import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
 import { getErrorStatePromise } from "../../utils"
 import { configToJson, getParsedConfig, getRemoteConfigId } from "./utils"
 import { JSONRecord } from "../../../../../../data/JSON"
+import { isEmpty } from "lodash/fp"
 
 /**
  * FETCH
@@ -32,9 +33,11 @@ export function fetch({
 
   switch (resultsType) {
     case "all":
-      if (!entityTypeId) {
-        console.error("Entity type not found. Please check the Execute component settings.")
-        return Promise.reject()
+      if (!entityTypeId || isEmpty(entityTypeId)) {
+        return Promise.resolve({
+          data: fromStore.configs.getOrElse([]) as unknown as JSONRecord,
+          loadStatus: LOADSTATUSCODES.loaded,
+        })
       }
 
       allConfigsOfType = getAllConfigsOfType(entityTypeId, fromStore)

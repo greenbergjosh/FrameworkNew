@@ -32,7 +32,7 @@ const appModels: Omit<Store.AppModelConfigs, "loading"> = {
 }
 
 const _store = Rematch.init({
-  models: (appModels as unknown) as Rematch.Models, // Rematch types are difficult to work with :(
+  models: appModels as unknown as Rematch.Models, // Rematch types are difficult to work with :(
   plugins: [
     createLoadingPlugin({}),
     createPersistPlugin({
@@ -48,6 +48,6 @@ const _store = Rematch.init({
 export const store = {
   ..._store,
   getState: _store.getState as () => Store.AppState,
-  dispatch: (_store.dispatch as unknown) as Store.AppDispatch,
-  select: (_store.select as unknown) as Store.AppSelectors,
+  dispatch: _store.dispatch as unknown as Store.AppDispatch,
+  select: _store.select as unknown as Store.AppSelectors,
 }

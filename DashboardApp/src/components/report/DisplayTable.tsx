@@ -1,6 +1,5 @@
 import React from "react"
-import { GridComponent } from "@syncfusion/ej2-react-grids"
-import { StandardGrid } from "@opg/interface-builder"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { isEqual } from "lodash/fp"
 import { DisplayTableProps } from "./types"
 
@@ -20,10 +19,10 @@ export function DisplayTable(
     sortSettings,
     useSmallFont,
   }: DisplayTableProps,
-  ref?: React.Ref<GridComponent>
+  ref?: React.Ref<Table.GridComponent>
 ): JSX.Element {
   return (
-    <StandardGrid
+    <Table.StandardGrid
       ref={ref}
       columns={columns}
       contextData={contextData}

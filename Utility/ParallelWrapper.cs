@@ -23,7 +23,7 @@ namespace Utility
                 }));
         }
 
-        public static Task ForEachAsync<T>(this IEnumerable<T> source, int dop, CancellationToken token, Func<T, Task> body)
+        public static Task ForEachAsync<T>(this IEnumerable<T> source, int dop, Func<T, Task> body, CancellationToken token)
         {
             return Task.WhenAll(
                 from partition in Partitioner.Create(source).GetPartitions(dop)

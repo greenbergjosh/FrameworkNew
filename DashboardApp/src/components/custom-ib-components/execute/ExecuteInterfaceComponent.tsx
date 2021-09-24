@@ -1,6 +1,13 @@
-import React, { CSSProperties } from "react"
+import React from "react"
 import { Alert, Empty, Icon } from "antd"
-import { BaseInterfaceComponent, getMergedData, UserInterfaceContext, UserInterfaceProps } from "@opg/interface-builder"
+import {
+  BaseInterfaceComponent,
+  ComponentDefinitionNamedProps,
+  getMergedData,
+  UserInterfaceContext,
+  UserInterfaceContextManager,
+  UserInterfaceProps,
+} from "@opg/interface-builder"
 import { executeManageForm } from "./execute-manage-form"
 import {
   ExecuteInterfaceComponentProps,
@@ -18,8 +25,9 @@ import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../../data/JSON"
 import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
+import layoutDefinition from "./layoutDefinition"
 
-export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
+export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
   ExecuteInterfaceComponentState
 > {
@@ -28,20 +36,10 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     valueKey: "data",
   }
   static getLayoutDefinition() {
-    return {
-      category: "Special",
-      name: "execute",
-      title: "Execute",
-      icon: "thunderbolt",
-      componentDefinition: {
-        component: "execute",
-        hideLabel: true,
-        components: [],
-      },
-    }
+    return layoutDefinition
   }
   static manageForm = executeManageForm
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static availableEvents: LoadStatusCode[] = [
     LOADSTATUSCODES.loading,
     LOADSTATUSCODES.loaded,
@@ -64,6 +62,27 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       submitting: false,
       transientParams: {},
     }
+  }
+
+  /**
+   *
+   */
+  static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
+    return (
+      <>
+        <div>
+          <strong>Type:</strong> {props.queryType}
+        </div>
+        <div>
+          <strong>Outbound Value Key:</strong> {props.outboundValueKey}
+        </div>
+        {props.executeImmediately && (
+          <div>
+            <Icon type="check-square" /> <strong>Execute Immediately</strong>
+          </div>
+        )}
+      </>
+    )
   }
 
   /**
@@ -258,6 +277,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             useRedirect={castProps.RemoteConfig_useRedirect}
             userInterfaceData={userInterfaceData}
             getValue={this.getValue.bind(this)}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       case "remote-query":
@@ -273,6 +293,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             getRootUserInterfaceData={getRootUserInterfaceData}
             onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteQuery_isCRUD}
+            notifyOkShow={castProps.RemoteQuery_notifyOkShow}
+            notifyUnauthorizedShow={castProps.RemoteQuery_notifyUnauthorizedShow}
+            notifyServerExceptionShow={castProps.RemoteQuery_notifyServerExceptionShow}
             loadById={loadById}
             mode={mode}
             onChangeData={onChangeData}
@@ -285,6 +308,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       case "remote-url":
@@ -298,6 +322,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             getRootUserInterfaceData={getRootUserInterfaceData}
             onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteUrl_isCRUD}
+            notifyOkShow={castProps.RemoteUrl_notifyOkShow}
+            notifyUnauthorizedShow={castProps.RemoteUrl_notifyUnauthorizedShow}
+            notifyServerExceptionShow={castProps.RemoteUrl_notifyServerExceptionShow}
             loadById={loadById}
             mode={mode}
             onChangeData={onChangeData}
@@ -310,6 +337,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       default:
@@ -323,53 +351,18 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const fieldsetStyle: CSSProperties = !this.props.invisible
-      ? {
-          padding: "5px 10px 10px 10px",
-          backgroundColor: "rgba(180, 0, 255, 0.05)",
-          color: "rgb(172 177 180)",
-          fontSize: 10,
-          display: "inline-block",
-          width: "100%",
-          overflow: "scroll",
-        }
-      : {
-          fontSize: 10,
-        }
-    const legendStyle: CSSProperties = !this.props.invisible
-      ? { all: "unset", color: "#ca78ef", padding: 5, fontSize: 14 }
-      : {
-          all: "unset",
-          color: "rgb(172 177 180)",
-          fontWeight: "bold",
-        }
-
     if (this.props.mode === "edit") {
       return (
-        <fieldset style={fieldsetStyle}>
-          <div>
-            <strong>Type:</strong> {this.props.queryType}
-          </div>
-          <div>
-            <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
-          </div>
-          {this.props.executeImmediately && (
-            <div>
-              <Icon type="check-square" /> <strong>Execute Immediately</strong>
-            </div>
-          )}
-          <div
-            style={{
-              padding: 5,
-              marginTop: 10,
-              borderRadius: 3,
-              pointerEvents: "none",
-              backgroundColor: "white",
-              overflow: "hidden",
-            }}>
-            {this.getQueryStrategy()}
-          </div>
-        </fieldset>
+        <div
+          style={{
+            padding: 5,
+            borderRadius: 3,
+            pointerEvents: "none",
+            backgroundColor: "white",
+            overflow: "hidden",
+          }}>
+          {this.getQueryStrategy()}
+        </div>
       )
     }
     return this.getQueryStrategy()

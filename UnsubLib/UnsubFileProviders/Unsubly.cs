@@ -21,7 +21,7 @@ namespace UnsubLib.UnsubFileProviders
 
         public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("unsubly.com");
 
-        public Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             var web = new HtmlWeb();
             var doc = web.Load(uri);
@@ -32,14 +32,15 @@ namespace UnsubLib.UnsubFileProviders
             var queryDictionary = HttpUtility.ParseQueryString(queryString);
 
             const string downloadUrl = "https://app.unsubly.com/optimiser/download/save/";
-            var headers = new Dictionary<string, string>()
+            IDictionary<string, string> formData = new Dictionary<string, string>()
             {
                 ["nid"] = queryDictionary["nid"],
                 ["aid"] = queryDictionary["aid"],
-                ["fid"] = queryDictionary["fid"]
+                ["fid"] = queryDictionary["fid"],
+                ["md5but"] = "Download Suppression List in MD5 format"
             };
-            var newUri = $"{downloadUrl}|{JsonWrapper.Serialize(headers)}";
-            return Task.FromResult(newUri);
+            var newUri = $"{downloadUrl}";
+            return Task.FromResult((newUri, formData));
         }
     }
 }

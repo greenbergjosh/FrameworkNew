@@ -2,8 +2,8 @@ import { JSONRecord } from "../../data/JSON"
 import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../data/Report"
 import { Option } from "fp-ts/lib/Option"
 import { PropsFromQueryParams } from "../query/QueryParams"
-import { ComponentRenderMetaProps, EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
-import { GroupSettingsModel, PageSettingsModel, SortSettingsModel } from "@syncfusion/ej2-react-grids"
+import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"
+import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
 
 export interface ReportProps {
   data?: JSONRecord
@@ -12,6 +12,7 @@ export interface ReportProps {
   isChildReport?: boolean
   report: GlobalConfigReference | LocalReportConfig
   withoutHeader?: boolean
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
 }
 
 export interface ReportBodyProps extends PropsFromQueryParams {
@@ -24,20 +25,21 @@ export interface ReportBodyProps extends PropsFromQueryParams {
   reportId: Option<string>
   title?: string
   withoutHeader?: boolean
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
 }
 
 export interface DisplayTableProps {
   autoFitColumns?: boolean
-  columns: EnrichedColumnDefinition[]
+  columns: StandardGridTypes.EnrichedColumnDefinition[]
   contextData: JSONRecord
   data: JSONRecord[]
   defaultCollapseAll?: boolean
-  detailTemplate: EnrichedColumnDefinition["template"]
+  detailTemplate: StandardGridTypes.EnrichedColumnDefinition["template"]
   enableAltRow?: boolean
   enableVirtualization?: boolean
-  groupSettings: GroupSettingsModel
+  groupSettings: StandardGridTypes.GroupSettingsModel
   height?: number
-  pageSettings: PageSettingsModel | undefined
-  sortSettings: SortSettingsModel
+  pageSettings: StandardGridTypes.PageSettingsModel | undefined
+  sortSettings: StandardGridTypes.SortSettingsModel
   useSmallFont?: boolean
 }

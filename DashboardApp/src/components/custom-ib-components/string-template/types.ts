@@ -1,8 +1,12 @@
-import { StringTemplate } from "@opg/interface-builder"
+import { StringTemplateInterfaceComponentProps as ParentStringTemplateInterfaceComponentProps } from "@opg/interface-builder-plugins/lib/ant/string-template"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 
-export interface StringTemplateInterfaceComponentProps extends StringTemplate.StringTemplateInterfaceComponentProps {
+export interface StringTemplateInterfaceComponentProps extends ParentStringTemplateInterfaceComponentProps {
   serializeConfigId: PersistedConfig["id"]
   deserializeConfigId: PersistedConfig["id"]
 }
-export interface StringTemplateInterfaceComponentState extends StringTemplate.StringTemplateInterfaceComponentState {}
+
+export interface StringTemplateInterfaceComponentState {
+  serializeSrc?: string
+  deserializeSrc?: string
+}

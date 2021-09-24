@@ -6,6 +6,7 @@ import { AppDispatch } from "../../state/store.types"
 import { ButtonProps } from "../custom-ib-components/execute/types"
 import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
 import { UserInterfaceContextManager, UserInterfaceProps } from "@opg/interface-builder"
+import { AbstractBaseInterfaceComponentType } from "@opg/interface-builder/src/components/BaseInterfaceComponent/types"
 
 /* ****************************************************
  *
@@ -13,6 +14,7 @@ import { UserInterfaceContextManager, UserInterfaceProps } from "@opg/interface-
  */
 
 export interface QueryFormProps {
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   layout: QueryConfig["layout"]
@@ -78,6 +80,7 @@ export interface LoadDataParams {
 export interface IQueryProps<T> {
   children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
   dataKey?: string
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   inputData?: JSONObject

@@ -21,4 +21,5 @@ export type Values = {
   name?: string //Branded<string, NonEmptyStringBrand>
   id?: string
   type?: string
+  type_id?: string
 }

@@ -8,6 +8,7 @@ import { groupBy, sortBy } from "lodash/fp"
 import { None, Some } from "../../data/Option"
 import * as Store from "../store.types"
 import {
+  AppRoutesMap,
   Effects,
   NavigationGroup,
   NavigationGroupAutomaticChildType,
@@ -21,9 +22,10 @@ import {
   State,
 } from "./types"
 import { routes } from "./routes"
+import { appRoutes } from "./appRoutes"
 
-export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Selectors> = {
-  state: { routes },
+export const navigation: Store.AppModel<State<RoutesMap, AppRoutesMap>, Reducers, Effects, Selectors> = {
+  state: { routes, appRoutes },
 
   reducers: {},
 

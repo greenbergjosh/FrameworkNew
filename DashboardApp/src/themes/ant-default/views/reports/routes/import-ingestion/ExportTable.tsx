@@ -1,15 +1,6 @@
 import React from "react"
 import { Typography } from "antd"
-import {
-  ColumnDirective,
-  ColumnsDirective,
-  GridComponent,
-  Inject,
-  PagerComponent as Page,
-  PageSettingsModel,
-  RowDataBoundEventArgs,
-} from "@syncfusion/ej2-react-grids"
-import { EmitType } from "@syncfusion/ej2-base"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { DEFAULT_PAGE_SIZE } from "./constants"
 import "./import-ingestion.scss"
 import { ExportStatus } from "./index"
@@ -21,7 +12,7 @@ import { ExportStatus } from "./index"
 interface ExportTableProps<T> {
   data: T[]
   title?: string
-  onRowDataBind?: EmitType<RowDataBoundEventArgs> | undefined
+  onRowDataBind?: Table.StandardGridTypes.EmitType<Table.StandardGridTypes.RowDataBoundEventArgs> | undefined
 }
 
 interface RowCountColProps {
@@ -37,7 +28,7 @@ function RowCountCol(props: RowCountColProps): JSX.Element {
 }
 
 export function ExportTable({ data, title, onRowDataBind }: ExportTableProps<ExportStatus>): JSX.Element {
-  const pageSettings: PageSettingsModel = {
+  const pageSettings: Table.StandardGridTypes.PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
     pageSizes: false,
   }
@@ -47,21 +38,27 @@ export function ExportTable({ data, title, onRowDataBind }: ExportTableProps<Exp
       <Typography.Text strong={true} className={"table-title"}>
         {title}
       </Typography.Text>
-      <GridComponent
+      <Table.GridComponent
         dataSource={data}
         rowDataBound={onRowDataBind}
         allowPaging={data.length > DEFAULT_PAGE_SIZE}
         allowSelection={false}
         pageSettings={pageSettings}
         className="import-ingestion-table">
-        <ColumnsDirective>
-          <ColumnDirective field="partner" headerText="Partner" />
-          <ColumnDirective field="export_name" headerText="Export Name" />
-          <ColumnDirective field="export_date" headerText="Date" />
-          <ColumnDirective field="rowcount" headerText="Rows" template={RowCountCol} textAlign={"Right"} width={70} />
-        </ColumnsDirective>
-        <Inject services={[Page]} />
-      </GridComponent>
+        <Table.ColumnsDirective>
+          <Table.ColumnDirective field="partner" headerText="Partner" />
+          <Table.ColumnDirective field="export_name" headerText="Export Name" />
+          <Table.ColumnDirective field="export_date" headerText="Date" />
+          <Table.ColumnDirective
+            field="rowcount"
+            headerText="Rows"
+            template={RowCountCol}
+            textAlign={"Right"}
+            width={70}
+          />
+        </Table.ColumnsDirective>
+        <Table.Inject services={[Table.PagerComponent]} />
+      </Table.GridComponent>
     </>
   )
 }

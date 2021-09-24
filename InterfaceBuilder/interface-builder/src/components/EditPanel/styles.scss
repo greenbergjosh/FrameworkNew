@@ -1,0 +1,203 @@
+@import "../../styles/colors";
+
+$editPanelBar-height: 26px; // 24px + 2px top & bottom padding
+
+.editPanel {
+  border: none;
+  position: relative;
+  margin-bottom: 5px;
+}
+
+.editBar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+  align-items: flex-start;
+
+  height: $editPanelBar-height;
+  border-radius: 5px 5px 0 0;
+  background-color: white;
+  line-height: $editPanelBar-height;
+  padding: 1px;
+
+  .gripperIcon {
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+    white-space: nowrap;
+
+    font-size: 12px;
+    display: inline-block;
+    margin-right: 3px;
+
+    i {
+      width: 0.3em;
+      min-width: 0.3em;
+      margin-right: 0;
+    }
+  }
+
+  .title {
+    order: 0;
+    flex: 1 1 auto;
+    align-self: auto;
+
+    font-size: 14px;
+    display: inline-block;
+    padding-left: 5px;
+  }
+
+  .tools {
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+
+    opacity: 0;
+  }
+
+  &:hover {
+    .tools {
+      opacity: 1;
+    }
+  }
+}
+
+.editPanelContent {
+  border-left: dashed 1px $ib-default;
+  border-right: dashed 1px $ib-default;
+  border-bottom: dashed 1px $ib-default;
+  //border-top: solid 1px mix($ib-default, #fff, 40%); // higher percent is darker
+  padding: 5px;
+}
+
+.default {
+  > .editBar {
+    background-color: mix($ib-default, #fff, 40%); // higher percent is darker
+  }
+  > .editPanelContent {
+    border-left-color: $ib-default;
+    border-right-color: $ib-default;
+    border-bottom-color: $ib-default;
+    border-top-color: mix($ib-default, #fff, 40%); // higher percent is darker
+  }
+}
+
+.invisible {
+  > .editBar {
+    background-color: $ib-invisible;
+  }
+  > .editPanelContent {
+    border-left-color: $ib-invisible;
+    border-right-color: $ib-invisible;
+    border-bottom-color: $ib-invisible;
+    border-top-color: $ib-invisible;
+    background-color: $ib-invisible-light;
+  }
+}
+
+.disabled {
+  > .editBar {
+    background-color: $ib-disabled;
+  }
+  .editPanelContent {
+    border-left-color: $ib-disabled;
+    border-right-color: $ib-disabled;
+    border-bottom-color: $ib-disabled;
+    border-top-color: $ib-disabled;
+    background-color: $ib-disabled-light;
+    filter: sepia(50%) hue-rotate(194deg);
+  }
+  .disabledMask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.05);
+    background-size: 150px;
+    opacity: 0.03;
+    background-image: url("data:image/png;base64,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");
+  }
+}
+
+.blocked {
+  > .editBar {
+    background-color: $ib-blocked;
+  }
+  > .editPanelContent {
+    border-left-color: $ib-blocked;
+    border-right-color: $ib-blocked;
+    border-bottom-color: $ib-blocked;
+    border-top-color: $ib-blocked;
+    background-color: $ib-blocked-light;
+  }
+}
+
+.userInterface {
+  > .editBar {
+    background-color: $ib-invisible;
+  }
+  > .editPanelContent {
+    border-left-color: $ib-invisible;
+    border-right-color: $ib-invisible;
+    border-bottom-color: $ib-invisible;
+    border-top-color: $ib-invisible;
+  }
+}
+
+.summary {
+  background-color: $ib-invisible-light;
+  border-left: solid 1px $ib-invisible;
+  border-right: solid 1px $ib-invisible;
+  //border-top: solid 1px mix($ib-default, #fff, 70%); // higher percent is darker
+  color: $ib-grey;
+  font-size: 10px;
+  padding: 5px;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+  align-items: flex-start;
+
+  .toggle {
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+
+    padding-right: 5px;
+    line-height: 1.7em;
+  }
+
+  .content-panel {
+    order: 0;
+    flex: 1 1 auto;
+    align-self: auto;
+
+    .header {
+      font-weight: bold;
+    }
+
+    .block {
+      padding-top: 5px;
+    }
+
+    .collapsible-panel {
+      max-height: 1000px;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+
+      &.collapsed {
+        max-height: 0;
+      }
+
+      > ul {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

@@ -18,6 +18,9 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     getRootUserInterfaceData,
     onChangeRootData,
     isCRUD,
+    notifyOkShow,
+    notifyUnauthorizedShow,
+    notifyServerExceptionShow,
     mode,
     onResults,
     onRaiseEvent,
@@ -28,6 +31,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     loadById,
     executeQuery,
     executeQueryUpdate,
+    getDefinitionDefaultValue,
   } = props
 
   /* *************************************
@@ -70,13 +74,16 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
       queryFormValues,
       executeQuery,
       executeQueryUpdate,
-      isCRUD
+      isCRUD,
+      notifyOkShow,
+      notifyUnauthorizedShow,
+      notifyServerExceptionShow
     ).then((newLoadingState) => {
       // Put response data into userInterfaceData (via onResults)
 
       // TODO: Move this error checking to the DAL and expect server to respond
       //  like previously defined api responses in the DAL codecs.
-      const dataStatus = (newLoadingState.data as unknown) as ErrorResponse
+      const dataStatus = newLoadingState.data as unknown as ErrorResponse
       if (dataStatus && dataStatus.status && dataStatus.status === "error") {
         notification.error({
           type: "error",
@@ -136,6 +143,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
           submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
+          getDefinitionDefaultValue={getDefinitionDefaultValue}
         />
       )}
     </QueryParams>

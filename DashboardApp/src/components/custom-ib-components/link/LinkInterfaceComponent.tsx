@@ -1,12 +1,11 @@
 import React from "react"
-import { BaseInterfaceComponent, Link, UserInterfaceContext } from "@opg/interface-builder"
+import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
+import Link from "@opg/interface-builder-plugins/lib/ant/link/LinkInterfaceComponent"
 import { linkManageForm } from "./link-manage-form"
 import { LinkInterfaceComponentProps, LinkInterfaceComponentState } from "./types"
 import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
 
-export class LinkInterfaceComponent extends BaseInterfaceComponent<
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+export default class LinkInterfaceComponent extends BaseInterfaceComponent<
   LinkInterfaceComponentProps,
   LinkInterfaceComponentState
 > {
@@ -19,12 +18,12 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
     }
   }
   context!: React.ContextType<typeof AdminUserInterfaceContext>
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static defaultProps = {
-    ...Link.LinkInterfaceComponent.defaultProps,
+    ...Link.defaultProps,
     useRouter: true,
   }
-  static getLayoutDefinition = Link.LinkInterfaceComponent.getLayoutDefinition
+  static getLayoutDefinition = Link.getLayoutDefinition
   static manageForm = linkManageForm
 
   componentDidMount(): void {
@@ -45,6 +44,6 @@ export class LinkInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render() {
-    return <Link.LinkInterfaceComponent {...this.props} onClick={this.handleClick} />
+    return <Link {...this.props} onClick={this.handleClick} />
   }
 }

@@ -10,9 +10,11 @@ import {
   ComponentDefinitionNamedProps,
   ComponentRenderer,
   UserInterfaceContext,
+  UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { isPlainObject } from "lodash/fp"
+import layoutDefinition from "./layoutDefinition"
 
 export interface RemoteComponentInterfaceComponentProps extends ComponentDefinitionNamedProps {
   collapsible?: boolean
@@ -27,29 +29,21 @@ export interface RemoteComponentInterfaceComponentProps extends ComponentDefinit
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   valueKey?: string
   mode: UserInterfaceProps["mode"]
+  modeOverride: UserInterfaceProps["mode"]
 }
 
-export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<RemoteComponentInterfaceComponentProps> {
+export default class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<RemoteComponentInterfaceComponentProps> {
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "values",
   }
 
   static getLayoutDefinition() {
-    return {
-      category: "Special",
-      name: "remote-component",
-      title: "Remote Component",
-      icon: "select",
-      componentDefinition: {
-        component: "remote-component",
-        label: "Remote Component",
-      },
-    }
+    return layoutDefinition
   }
 
   static manageForm = remoteComponentManageForm
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof AdminUserInterfaceContext>
 
   handleChange = (newData: UserInterfaceProps["data"]): void => {
@@ -92,9 +86,6 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
     if (!remoteConfig) {
       return <Alert type="warning" message={`Remote Component does not have a configuration`} />
     }
-    if (remoteConfig.type === "App.Page") {
-      return <Alert type="warning" message='Remote component must not be an "App.Page"' />
-    }
 
     const layout = tryCatch(() => JSON5.parse(remoteConfig.config.getOrElse("")).layout).toNullable()
 
@@ -109,7 +100,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
       <div style={this.props.mode === "edit" ? { pointerEvents: "none", margin: "3px 1px 3px 1px" } : undefined}>
         <ComponentRenderer
           components={layout}
-          mode="display"
+          mode={this.props.modeOverride || "display"}
           data={data}
           getRootUserInterfaceData={getRootUserInterfaceData}
           onChangeRootData={onChangeRootData}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace UnsubLib.UnsubFileProviders
 
         public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("ezepo.net");
 
-        public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             await _fw.Trace(_logMethod, $"Getting Unsub location: {uri}");
 
@@ -30,12 +31,12 @@ namespace UnsubLib.UnsubFileProviders
 
             if (!string.IsNullOrWhiteSpace(ezepoUnsubUrl))
             {
-                return ezepoUnsubUrl;
+                return (ezepoUnsubUrl, null);
             }
 
             await _fw.Error(_logMethod, $"Empty Ezepo url: {uri}");
 
-            return null;
+            return default;
         }
 
         public async Task<string> GetEzepoUnsubFileUri(string url)

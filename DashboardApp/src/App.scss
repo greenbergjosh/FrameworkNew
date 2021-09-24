@@ -39,5 +39,5 @@ which causes antd components used in interface-builder only to have broken style
  * and content overflowed the container covering the footer.
  */
 main.ant-layout-content {
-  min-height: initial !important;
+  min-height: auto;
 }

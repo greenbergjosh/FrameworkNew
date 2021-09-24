@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using EdwRollupLib;
+using Newtonsoft.Json;
 using Utility;
+using Utility.DataLayer;
 
 namespace QuickTester
 {
@@ -10,12 +12,53 @@ namespace QuickTester
         public static async Task ImportTest()
         {
             var fw = new FrameworkWrapper();
+
             var config = await fw.Entities.GetEntity(Guid.Parse("f4de787b-2bd6-443d-9e57-e3930bb86a8c"));
 
-            var startDate = DateTime.Parse("04/29/2021");// DateTime.Now.AddDays(-1).Date;
-            var endDate = startDate.AddDays(1);
+            var cacheResult = await Data.CallFn("appCache", "appCacheGet", JsonConvert.SerializeObject(new
+            {
+                cacheScopeId = "d046030e-ea51-4647-a18d-447ef14a682a",
+                x1 = "NextStartDate"
+            }));
 
-            await new ClickhouseImport(config, fw).RunAsync(startDate, endDate);
+            DateTime nextStartDate = default;
+            foreach (var entry in cacheResult.GetL("result"))
+            {
+                nextStartDate = DateTime.Parse(entry.GetS("payload")).Date;
+                break;
+            }
+
+            if (nextStartDate == default)
+            {
+                throw new Exception("Unable to read next start date");
+            }
+
+            var startDate = nextStartDate;
+
+            var maxDaysPerExecution = 10;
+            var daysProcessed = 0;
+            var lastDate = DateTime.Parse("05/24/2021");//DateTime.Now.Date;
+
+            await fw.Log("Nightly Clickhouse Import - LBM", $"StartDate: {startDate}");
+
+            while (startDate < lastDate && daysProcessed < maxDaysPerExecution)
+            {
+                var endDate = startDate.AddDays(1);
+
+                await new ClickhouseImport(config, fw).RunAsync(startDate, endDate);
+
+                await Data.CallFn("appCache", "appCacheSet", JsonConvert.SerializeObject(new
+                {
+                    cacheScopeId = "d046030e-ea51-4647-a18d-447ef14a682a",
+                    x1 = "NextStartDate",
+                    payload = endDate,
+                    expires = DateTime.Now.AddDays(30)
+                }));
+
+                startDate = endDate;
+
+                daysProcessed++;
+            }
         }
     }
 }

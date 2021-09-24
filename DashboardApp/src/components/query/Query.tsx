@@ -1,4 +1,4 @@
-import { UserInterfaceContext } from "@opg/interface-builder"
+import { UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
 import { Alert, Icon, Spin } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
@@ -25,7 +25,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     dataKey: "data",
   }
 
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
   constructor(props: QueryProps<T>) {
@@ -101,6 +101,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       setTimeout(() => this.loadRemoteData(), 0)
     } else {
       // Memoize rendered children
+      // eslint-disable-next-line no-lonely-if
       if (
         (this.state.loadStatus === "loaded" && prevState.loadStatus !== "loaded") ||
         !(
@@ -150,6 +151,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
           !!promptParameters.length &&
           promptParameters.some(({ required }) => required === true) && (
             <QueryForm
+              getDefinitionDefaultValue={this.props.getDefinitionDefaultValue}
               getRootUserInterfaceData={getRootUserInterfaceData}
               onChangeRootData={onChangeRootData}
               layout={promptLayout}
@@ -223,7 +225,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       const predicate = this.getRemoteConfigPredicate(remoteDataFilter, remoteConfigType, remoteConfigTypeParentName)
 
       this.setState({
-        data: (loadByFilter(predicate) as unknown) as T[],
+        data: loadByFilter(predicate) as unknown as T[],
         loadStatus: "loaded",
         loadError: null,
       })
@@ -342,7 +344,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
           // )
           this.setState((state) => ({
             ...state,
-            data: (resultValues as unknown) as T[],
+            data: resultValues as unknown as T[],
             loadStatus: "loaded",
           }))
           if (this.props.refresh && this.props.refresh.interval && this.state.refreshTimeout === null) {
@@ -447,7 +449,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     }))
     return new Promise((resolve, reject) => {
       return this.state.runCount >= 50
-        ? resolve()
+        ? resolve(void 0)
         : dispatchExecuteQuery({
             resultURI: queryResultURI,
             query: queryConfig,
@@ -459,7 +461,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
                 loadStatus: "none",
                 runCount: state.runCount + 1,
               }))
-              resolve()
+              resolve(void 0)
             })
             .catch((e: Error) => {
               console.error("Query.remoteQuery_executeQuery", queryConfig.query, e)

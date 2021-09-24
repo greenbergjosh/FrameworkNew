@@ -20,7 +20,7 @@ namespace UnsubJob
 
             await Fw.Log(nameof(Main), "Starting...");
 
-            var nw = new UnsubLib.UnsubLib(Fw);
+            var unsub = new UnsubLib.UnsubLib(Fw);
 
             IEnumerable<IGenericEntity> networks = null;
 
@@ -33,7 +33,7 @@ namespace UnsubJob
                 else
                 {
                     await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
-                    await nw.CleanUnusedFiles();
+                    await unsub.CleanUnusedFiles();
                     await Fw.Log(nameof(Main), "Completed CleanUnusedFiles");
                 }
             }
@@ -44,25 +44,25 @@ namespace UnsubJob
 
             if (args.Any(a => String.Equals(a, "useLocal", StringComparison.CurrentCultureIgnoreCase)))
             {
-                nw.UseLocalNetworkFile = true;
+                unsub.UseLocalNetworkFile = true;
             }
 
             if (args.Any(a => String.Equals(a, "singleThread", StringComparison.CurrentCultureIgnoreCase)))
             {
-                nw.MaxParallelism = 1;
+                unsub.MaxParallelism = 1;
             }
 
             var manualOnly = args.Any(a => string.Equals(a, "mo", StringComparison.CurrentCultureIgnoreCase));
-            var singleNetworkName = args.Where(a => a.StartsWith("n:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).FirstOrDefault();
+            var singleNetworkName = args.Where(a => a.StartsWith("n:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a[2..]).FirstOrDefault();
             string networkCampaignId = null;
 
             var skipQueuedCheck = args.Any(a => string.Equals(a, "skipQueuedCheck", StringComparison.CurrentCultureIgnoreCase));
 
-            if (singleNetworkName != null) networkCampaignId = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).FirstOrDefault();
+            if (singleNetworkName != null) networkCampaignId = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a[2..]).FirstOrDefault();
 
             try
             {
-                var res = await nw.GetNetworks(singleNetworkName);
+                var res = await unsub.GetNetworks(singleNetworkName);
 
                 networks = res?.GetL("");
 
@@ -86,7 +86,7 @@ namespace UnsubJob
 
             if (args.Any(a => string.Equals(a, "gsl", StringComparison.CurrentCultureIgnoreCase)))
             {
-                var campaigns = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).ToList();
+                var campaigns = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a[2..]).ToList();
 
                 try
                 {
@@ -99,7 +99,7 @@ namespace UnsubJob
                             try
                             {
                                 await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.GetS("Name")}, {c})...");
-                                await nw.ScheduledUnsubJob(n, c, skipQueuedCheck);
+                                await unsub.ScheduledUnsubJob(n, c, skipQueuedCheck);
                                 await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.GetS("Name")}, {c})...");
                             }
                             catch (Exception e)
@@ -122,7 +122,7 @@ namespace UnsubJob
 
             var refreshCampaigns = args.Any(a => string.Equals(a, "refreshCampaigns", StringComparison.CurrentCultureIgnoreCase));
 
-            var manualDownloadUrl = args.Where(a => a.StartsWith("md:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(3)).FirstOrDefault();
+            var manualDownloadUrl = args.Where(a => a.StartsWith("md:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a[3..]).FirstOrDefault();
 
             foreach (var network in networks)
             {
@@ -133,7 +133,7 @@ namespace UnsubJob
                 if (!string.IsNullOrWhiteSpace(manualDownloadUrl))
                 {
                     await Fw.Log(nameof(Main), $"Starting ManualDownload({name}, {networkCampaignId}, {manualDownloadUrl})...");
-                    await nw.ManualDownload(network, networkCampaignId, manualDownloadUrl);
+                    await unsub.ManualDownload(network, networkCampaignId, manualDownloadUrl);
                     await Fw.Log(nameof(Main), $"Completed ManualDownload({name}, {networkCampaignId}, {manualDownloadUrl})...");
                     continue;
                 }
@@ -144,7 +144,7 @@ namespace UnsubJob
                     {
                         await Fw.Log(nameof(Main), $"Starting GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
                         var networkProvider = Factory.GetInstance(Fw, network);
-                        await nw.GetCampaignsScheduledJobs(network, networkProvider, skipQueuedCheck);
+                        await unsub.GetCampaignsScheduledJobs(network, networkProvider, skipQueuedCheck);
                         await Fw.Log(nameof(Main), $"Completed GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
                     }
                     catch (HaltingException e)
@@ -169,7 +169,7 @@ namespace UnsubJob
                         try
                         {
                             await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name}, {networkCampaignId})...");
-                            await nw.ScheduledUnsubJob(network, networkCampaignId, skipQueuedCheck);
+                            await unsub.ScheduledUnsubJob(network, networkCampaignId, skipQueuedCheck);
                             await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name}, {networkCampaignId})...");
                         }
                         catch (HaltingException e)
@@ -189,7 +189,7 @@ namespace UnsubJob
                         try
                         {
                             await Fw.Log(nameof(Main), $"Starting AlsoDoManualDirectory({name})...");
-                            await nw.ManualDirectory(network, networkCampaignId);
+                            await unsub.ManualDirectory(network, networkCampaignId);
                             await Fw.Log(nameof(Main), $"Completed AlsoDoManualDirectory({name})...");
                         }
                         catch (Exception exScheduledUnsub)
@@ -203,7 +203,7 @@ namespace UnsubJob
                     try
                     {
                         await Fw.Log(nameof(Main), $"Starting ManualDirectory({name})...");
-                        await nw.ManualDirectory(network, networkCampaignId);
+                        await unsub.ManualDirectory(network, networkCampaignId);
                         await Fw.Log(nameof(Main), $"Completed ManualDirectory({name})...");
                     }
                     catch (Exception exScheduledUnsub)

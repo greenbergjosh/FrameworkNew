@@ -1,15 +1,6 @@
 import React from "react"
 import { Icon, Typography } from "antd"
-import {
-  ColumnDirective,
-  ColumnsDirective,
-  GridComponent,
-  Inject,
-  PagerComponent as Page,
-  PageSettingsModel,
-  RowDataBoundEventArgs,
-} from "@syncfusion/ej2-react-grids"
-import { EmitType } from "@syncfusion/ej2-base"
+import * as Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import { DEFAULT_PAGE_SIZE } from "./constants"
 import "./import-ingestion.scss"
 import { IngestionStatus } from "./index"
@@ -21,7 +12,7 @@ import { IngestionStatus } from "./index"
 interface ExportTableProps<T> {
   data: T[]
   title?: string
-  onRowDataBind?: EmitType<RowDataBoundEventArgs> | undefined
+  onRowDataBind?: Table.StandardGridTypes.EmitType<Table.StandardGridTypes.RowDataBoundEventArgs> | undefined
 }
 
 interface SucceededColProps {
@@ -59,7 +50,7 @@ function RowsProcessedCol(props: RowsProcessedColProps): JSX.Element {
 }
 
 export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTableProps<IngestionStatus>): JSX.Element {
-  const pageSettings: PageSettingsModel = {
+  const pageSettings: Table.StandardGridTypes.PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
     pageSizes: false,
   }
@@ -69,27 +60,33 @@ export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTable
       <Typography.Text strong={true} className={"table-title"}>
         {title}
       </Typography.Text>
-      <GridComponent
+      <Table.GridComponent
         dataSource={data}
         rowDataBound={onRowDataBind}
         allowPaging={data.length > DEFAULT_PAGE_SIZE}
         allowSelection={false}
         pageSettings={pageSettings}
         className="import-ingestion-table">
-        <ColumnsDirective>
-          <ColumnDirective field="succeeded" headerText="" template={SucceededCol} width={30} />
-          <ColumnDirective field="table_name" headerText="Table" />
-          <ColumnDirective field="runtime" headerText="Time" template={RuntimeCol} textAlign={"Right"} width={70} />
-          <ColumnDirective
+        <Table.ColumnsDirective>
+          <Table.ColumnDirective field="succeeded" headerText="" template={SucceededCol} width={30} />
+          <Table.ColumnDirective field="table_name" headerText="Table" />
+          <Table.ColumnDirective
+            field="runtime"
+            headerText="Time"
+            template={RuntimeCol}
+            textAlign={"Right"}
+            width={70}
+          />
+          <Table.ColumnDirective
             field="rows_processed"
             headerText="Rows"
             template={RowsProcessedCol}
             textAlign={"Right"}
             width={70}
           />
-        </ColumnsDirective>
-        <Inject services={[Page]} />
-      </GridComponent>
+        </Table.ColumnsDirective>
+        <Table.Inject services={[Table.PagerComponent]} />
+      </Table.GridComponent>
     </>
   )
 }

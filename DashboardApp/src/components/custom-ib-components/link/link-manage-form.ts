@@ -32,8 +32,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "useRouter",
                 valueKey: "useRouter",
                 label: "Use Router",
-                help:
-                  "If the link is to a location within this application, turn this feature on for better performance",
+                help: "If the link is to a location within this application, turn this feature on for better performance",
                 component: "toggle",
                 defaultValue: true,
                 bindable: true,

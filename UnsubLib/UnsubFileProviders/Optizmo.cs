@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -48,10 +49,10 @@ namespace UnsubLib.UnsubFileProviders
 
         public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || uri.ToString().Contains("mailer.optizmo.net") || uri.ToString().Contains("affiliateaccesskey.com");
 
-        public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             if (uri.ToString().Contains("mailer-api.optizmo.net/accesskey/getfile/"))
-                return uri.ToString();
+                return (uri.ToString(), null);
 
             var useApi = network.GetS("Credentials/UseOptizmoApi").ParseBool() ?? false;
             var authToken = network.GetS($"Credentials/OptizmoToken");
@@ -65,7 +66,7 @@ namespace UnsubLib.UnsubFileProviders
 
                 var path = $"accesskey/download/{mak}";
 
-                return await GetOptizmoUnsubFileUri(path, authToken);
+                return (await GetOptizmoUnsubFileUri(path, authToken), null);
             }
             else if (useApi)
             {
@@ -87,7 +88,7 @@ namespace UnsubLib.UnsubFileProviders
                     var baseUrl = fileTempl.Replace("{authToken}", authToken).Replace("{fileToken}", fileId);
 
                     var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-                    return await Walkaway.ExecuteWalkaway(async () =>
+                    return (await Walkaway.ExecuteWalkaway(async () =>
                     {
                         var res = await ProtocolClient.HttpGetAsync(baseUrl.Replace("{format}", "md5"), timeoutSeconds: 300);
 
@@ -116,7 +117,7 @@ namespace UnsubLib.UnsubFileProviders
                             await _fw.Error(_logMethod, $"Optizmo API get file call failed against: {baseUrl} derived from: {uri}, with response body: {res.body}");
                             throw new InvalidOperationException($"Optizmo API get file call failed against: {baseUrl} derived from: {uri}, with response body: {res.body}");
                         }
-                    }, retryWalkaway);
+                    }, retryWalkaway), null);
                 }
             }
 
@@ -127,12 +128,12 @@ namespace UnsubLib.UnsubFileProviders
 
             if (!string.IsNullOrWhiteSpace(optizmoUnsubUrl))
             {
-                return optizmoUnsubUrl;
+                return (optizmoUnsubUrl, null);
             }
 
             await _fw.Error(_logMethod, $"Empty Optizmo url returned from: {uri}");
 
-            return null;
+            return default;
         }
 
         private async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)

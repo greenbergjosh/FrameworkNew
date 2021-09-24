@@ -44,6 +44,7 @@ export function create({
     config: JSON.stringify(uiDataSlice.config, null, 2),
     name,
     type: parent.name,
+    type_id: parent.id,
   }
   // const parent: CreateConfigEventPayload["parent"] = record.lookup(prevState.type, fromStore.entityTypes).toUndefined()
   const payload: CreateConfigEventPayload = {
@@ -53,6 +54,11 @@ export function create({
 
   return dispatch.globalConfig
     .createRemoteConfig(payload)
-    .then(() => ({ data: uiDataSlice, loadStatus: LOADSTATUSCODES.created } as LoadStatus))
+    .then((result) => {
+      if (result && result.type === "error") {
+        return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+      }
+      return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.created } as LoadStatus
+    })
     .catch((e: Error) => getErrorState(e))
 }

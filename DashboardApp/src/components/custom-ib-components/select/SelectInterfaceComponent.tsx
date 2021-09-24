@@ -7,8 +7,9 @@ import { selectManageForm } from "./select-manage-form"
 import { SelectProps, SelectState } from "./types"
 import { isUndefined, isString } from "lodash/fp"
 import { AbstractSelectProps } from "antd/lib/select"
+import layoutDefinition from "./layoutDefinition"
 
-export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
+export default class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
   static defaultProps = {
     allowClear: true,
     createNewLabel: "Create New...",
@@ -23,17 +24,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
   static manageForm = selectManageForm
 
   static getLayoutDefinition(): LayoutDefinition {
-    return {
-      category: "Form",
-      name: "select",
-      title: "Select",
-      icon: "bars",
-      formControl: true,
-      componentDefinition: {
-        component: "select",
-        label: "Select",
-      },
-    }
+    return layoutDefinition
   }
 
   protected get mode(): ModeType {
@@ -84,7 +75,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
 
   private handleIconClick = () => {
     const value = this.getValue(this.props.valueKey)
-    value && window.open(`${window.location.origin}/dashboard/global-config/${value}`)
+    value && window.open(`${window.location.origin}/app/admin/global-config/${value}`)
   }
 
   /****************************************************************

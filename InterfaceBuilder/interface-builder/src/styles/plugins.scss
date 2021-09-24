@@ -1,0 +1,26 @@
+@import "./colors";
+
+.editModeLabel {
+  padding: 5px 10px 10px 10px;
+  background-color: $ib-violet-light;
+  color: $ib-grey;
+  font-size: 10px;
+  display: inline-block;
+  width: 100%;
+
+  &.scrolling {
+    overflow: scroll;
+  }
+
+  .componentWrapper {
+    padding: 5px;
+    margin-top: 10px;
+    border-radius: 3px;
+    background-color: white;
+  }
+
+  &.disabled .componentWrapper {
+    pointer-events: none;
+    overflow: hidden;
+  }
+}

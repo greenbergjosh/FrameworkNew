@@ -97,6 +97,17 @@ export const globalConfigResponsePayloadCodec = {
     requestInfo: requestInfoCodec,
   }),
 
+  getApps: iots.type({
+    "config:getApps": iots.union([
+      iots.type({
+        r: iots.literal(0),
+        result: iots.array(PersistedConfigCodec),
+      }),
+      ErrorPayload,
+    ]),
+    requestInfo: requestInfoCodec,
+  }),
+
   insert: iots.union([
     iots.type({
       "config:insert": ErrorPayload,
@@ -137,12 +148,19 @@ export const reportResponsePayloadCodecs = {
     }),
   update: (query: string) =>
     iots.type({
-      [query]: iots.type({
-        r: iots.literal(0),
-        result: iots.type({
-          result: iots.literal("success"),
+      [query]: iots.union([
+        iots.type({
+          r: iots.literal(0),
+          result: iots.array(JSONRecordCodec),
         }),
-      }),
+        iots.type({
+          r: iots.literal(0),
+          result: iots.type({
+            result: iots.literal("success"),
+          }),
+        }),
+        ErrorPayload,
+      ]),
     }),
 }
 

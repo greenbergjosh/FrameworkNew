@@ -1,0 +1,38 @@
+{
+  "name": "@opg/interface-builder-plugins_ant_string-template",
+  "version": "1.0.0",
+  "description": "React Library for creating WYSIWYG interfaces",
+  "author": "OnPoint UI Team",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onpointglobal/interface-builder.git"
+  },
+  "homepage": "https://github.com/onpointglobal/interface-builder#readme",
+  "scripts": {
+    "start": "rollup -cw --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/ant/string-template",
+    "build": "rollup --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/ant/string-template",
+    "lint": "eslint './src/**/*.{ts,tsx}' --fix"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "forms",
+    "layout",
+    "wysiwyg"
+  ],
+  "dependencies": {
+    "@opg/interface-builder-plugins": "link:../../../"
+  },
+  "peerDependencies": {
+    "antd": "3.26.20",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "??? lint"
+    }
+  },
+  "devDependencies": {}
+}

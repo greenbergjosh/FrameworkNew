@@ -19,18 +19,14 @@ import { useMemoPlus } from "../../../../../hooks/use-memo-plus"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { isWhitespace } from "../../../../../lib/string"
 import { store } from "../../../../../state/store"
-import {
-  CodeEditor,
-  ComponentDefinition,
-  EditorLangCodec,
-  UserInterface,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
+import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
+import { CodeEditor, EditorLangCodec } from "@opg/interface-builder-plugins/lib/monaco/code-editor"
 import { InProgressRemoteUpdateDraft, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import * as iots from "io-ts"
 import { WithRouteProps } from "../../../../../state/navigation"
 import styles from "./edit.module.scss"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {
   configId: string
@@ -107,10 +103,10 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
 
   const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
 
-  const entityTypeConfig = React.useMemo(() => record.lookup(props.config.type, fromStore.entityTypes), [
-    fromStore.entityTypes,
-    props.config.type,
-  ])
+  const entityTypeConfig = React.useMemo(
+    () => record.lookup(props.config.type, fromStore.entityTypes),
+    [fromStore.entityTypes, props.config.type]
+  )
 
   const isRootConfig = entityTypeConfig.map(({ id }) => id === props.config.id).getOrElse(false)
   const configComponents = isRootConfig
@@ -224,6 +220,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
         id: setoidString,
         name: setoidString,
         type: setoidString,
+        type_id: setoidString,
       }).equals(a, b)
     }
   }, [dispatch, fromStore.configs, updatedConfig])
@@ -406,11 +403,12 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                     </Tabs.TabPane>
                     <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
                       <CodeEditor
-                        content={props.config.config.getOrElse("")}
-                        contentDraft={some(form.values.config)}
+                        document={props.config.config.getOrElse("")}
+                        documentDraft={some(form.values.config)}
                         height={500}
                         language={configLang}
                         width="100%"
+                        outputType="string"
                         onChange={({ value, errors }) => {
                           errors.map((errors) => {
                             setConfigErrors(errors)
@@ -427,6 +425,14 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
           </>
         )}
       </Formik.Formik>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: "Global Configs - Edit Config",
+        }}
+        pageReady={true}
+      />
     </>
   )
 }

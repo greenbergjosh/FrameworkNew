@@ -87,7 +87,7 @@ namespace Utility.DataLayer
 
         private static async Task<JObject> GetConfigRecordValue(string id, Connection configConn, string configFunc)
         {
-            var confStr = await configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = id }), "{}", configFunc, configConn.ConnStr);
+            var confStr = await configConn.Client.CallStoredFunction(Jw.Serialize(new { InstanceId = id }), "{}", configFunc, configConn.ConnStr);
             var c = JObject.Parse(confStr);
 
             if (c.ContainsKey("Config") && c.ContainsKey("Id") && c.ContainsKey("Name") && c.ContainsKey("Type"))
@@ -298,7 +298,7 @@ namespace Utility.DataLayer
             }
         }
 
-        public static async Task<IGenericEntity> CallFn(string conName, string method, object args, string payload = null, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        public static async Task<IGenericEntity> CallFn(string conName, string method, object args, string payload = null, int timeout = 120)
         {
             var argsString = JsonConvert.SerializeObject(args ?? new object());
             payload = payload.IfNullOrWhitespace(Jw.Empty);
@@ -307,7 +307,7 @@ namespace Utility.DataLayer
             return res.IsNullOrWhitespace() ? null : Jw.JsonToGenericEntity(res);
         }
 
-        public static async Task<IGenericEntity> CallFn(string conName, string method, string args = null, string payload = null, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        public static async Task<IGenericEntity> CallFn(string conName, string method, string args = null, string payload = null, int timeout = 120)
         {
             args = args.IfNullOrWhitespace(Jw.Empty);
             payload = payload.IfNullOrWhitespace(Jw.Empty);

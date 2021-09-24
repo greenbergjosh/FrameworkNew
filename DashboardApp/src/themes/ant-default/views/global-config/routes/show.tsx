@@ -12,8 +12,10 @@ import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { store } from "../../../../../state/store"
-import { CodeEditor, ComponentDefinition, EditorLangCodec, UserInterface } from "@opg/interface-builder"
+import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
+import { CodeEditor, EditorLangCodec } from "@opg/interface-builder-plugins/lib/monaco/code-editor"
 import { WithRouteProps } from "../../../../../state/navigation"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {
   configId: string
@@ -129,179 +131,191 @@ export function ShowGlobalConfig({
       })()
 
   const config = focusedConfig.toNullable()
-  const jsonData = (editorLanguage === "json" && config
-    ? tryCatch(() => JSON5.parse(config.config.getOrElse("")))
-    : none
+  const jsonData = (
+    editorLanguage === "json" && config ? tryCatch(() => JSON5.parse(config.config.getOrElse(""))) : none
   ).toNullable()
   const jsonHasErrors = !jsonData
 
   const association = focusedConfig.chain(({ id }) => record.lookup(id, fromStore.associations))
   return (
-    <Skeleton active loading={fromStore.configs.isPending()}>
-      <Helmet>
-        <title>No Configuration Found | Channel Admin | OPG</title>
-      </Helmet>
+    <>
+      <Skeleton active loading={fromStore.configs.isPending()}>
+        <Helmet>
+          <title>No Configuration Found | Channel Admin | OPG</title>
+        </Helmet>
 
-      {focusedConfig.foldL(
-        None(() => <Empty description={`No config found with id ${configId}`} />),
-        Some((config) => (
-          <>
-            {entityTypeConfig.isNone() && (
-              <Alert
-                banner
-                closable
-                description={`No config of type "EntityType" could be found for configs of type "${config.type}." For the best experience, please create an EntityType config for ${config.type}`}
-                message={`No EntityType exists for ${config.type}`}
-                type="warning"
-              />
-            )}
-            <Helmet>
-              <title>{config.name} | Configuration | Channel Admin | OPG</title>
-            </Helmet>
+        {focusedConfig.foldL(
+          None(() => <Empty description={`No config found with id ${configId}`} />),
+          Some((config) => (
+            <>
+              {entityTypeConfig.isNone() && (
+                <Alert
+                  banner
+                  closable
+                  description={`No config of type "EntityType" could be found for configs of type "${config.type}." For the best experience, please create an EntityType config for ${config.type}`}
+                  message={`No EntityType exists for ${config.type}`}
+                  type="warning"
+                />
+              )}
+              <Helmet>
+                <title>{config.name} | Configuration | Channel Admin | OPG</title>
+              </Helmet>
 
-            <Card
-              bordered={false}
-              extra={
-                <Button.Group>
-                  {record.lookup(config.name, fromStore.entityTypes).fold(null, () => (
+              <Card
+                bordered={false}
+                extra={
+                  <Button.Group>
+                    {record.lookup(config.name, fromStore.entityTypes).fold(null, () => (
+                      <Button size="small">
+                        <Reach.Link to={`../create?type=${config.name}`}>
+                          <Icon type="plus" /> New {config.name}
+                        </Reach.Link>
+                      </Button>
+                    ))}
                     <Button size="small">
-                      <Reach.Link to={`../create?type=${config.name}`}>
-                        <Icon type="plus" /> New {config.name}
+                      <Reach.Link
+                        to={`../create?type=${encodeURIComponent(config.type)}&name=${encodeURIComponent(
+                          fromStore.configNames
+                            ? generateUniqueCopyName(config.name, fromStore.configNames)
+                            : config.name
+                        )}&config=${tryCatch(() => encodeURIComponent(config.config.getOrElse("{}"))).getOrElse("")}`}>
+                        <Icon type="copy" /> Copy to New
                       </Reach.Link>
                     </Button>
-                  ))}
-                  <Button size="small">
-                    <Reach.Link
-                      to={`../create?type=${encodeURIComponent(config.type)}&name=${encodeURIComponent(
-                        fromStore.configNames ? generateUniqueCopyName(config.name, fromStore.configNames) : config.name
-                      )}&config=${tryCatch(() => encodeURIComponent(config.config.getOrElse("{}"))).getOrElse("")}`}>
-                      <Icon type="copy" /> Copy to New
-                    </Reach.Link>
-                  </Button>
 
-                  <Button type="primary" size="small">
-                    <Reach.Link to="./edit">
-                      <Icon type="edit" /> Edit
-                    </Reach.Link>
-                  </Button>
-                </Button.Group>
-              }
-              title={`Config Details`}>
-              <Form labelAlign="left" layout="horizontal" {...formItemLayout} style={{ width: "100%" }}>
-                {/* ---------- Config.Type Input ---------------- */}
-                <Form.Item label="Type" style={{ width: "100%" }}>
-                  <Typography.Text>
-                    {entityTypeConfig.foldL(
-                      None(() => <>{config.type}</>),
-                      Some((etc) => <Reach.Link to={`../${etc.id}`}>{config.type}</Reach.Link>)
-                    )}
-                  </Typography.Text>
-                </Form.Item>
-
-                {/* ---------- Config.Name Input ---------------- */}
-                <Form.Item label="Name">
-                  <Typography.Text>{config.name}</Typography.Text>
-                </Form.Item>
-
-                {/* ---------- Config.Config Input ---------------- */}
-                <Form.Item label="Config">
-                  <Tabs
-                    defaultActiveKey={
-                      configComponents && configComponents.length && !jsonHasErrors ? "form" : "editor"
-                    }>
-                    <Tabs.TabPane
-                      key={"form"}
-                      tab={"Properties"}
-                      disabled={!configComponents || !configComponents.length || jsonHasErrors}>
-                      {jsonHasErrors ? (
-                        <Alert
-                          type="error"
-                          description="Please correct errors in the JSON before attempting to edit the layout."
-                          message="JSON Errors"
-                        />
-                      ) : (
-                        <UserInterface
-                          contextManager={userInterfaceContextManager}
-                          data={jsonData}
-                          getRootUserInterfaceData={() => jsonData}
-                          onChangeRootData={() => void 0}
-                          mode="display"
-                          components={configComponents}
-                        />
+                    <Button type="primary" size="small">
+                      <Reach.Link to="./edit">
+                        <Icon type="edit" /> Edit
+                      </Reach.Link>
+                    </Button>
+                  </Button.Group>
+                }
+                title={`Config Details`}>
+                <Form labelAlign="left" layout="horizontal" {...formItemLayout} style={{ width: "100%" }}>
+                  {/* ---------- Config.Type Input ---------------- */}
+                  <Form.Item label="Type" style={{ width: "100%" }}>
+                    <Typography.Text>
+                      {entityTypeConfig.foldL(
+                        None(() => <>{config.type}</>),
+                        Some((etc) => <Reach.Link to={`../${etc.id}`}>{config.type}</Reach.Link>)
                       )}
-                      {/* <Alert type="info" message={form.values.config} /> */}
-                    </Tabs.TabPane>
-                    <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
-                      <CodeEditor
-                        content={config.config.getOrElse("")}
-                        contentDraft={none}
-                        height={500}
-                        language={editorLanguage}
-                        width="100%"
-                      />
-                    </Tabs.TabPane>
-                  </Tabs>
-                </Form.Item>
-              </Form>
-            </Card>
-            <br />
-            <Card bordered={false} title="Relationships">
-              <div>
-                {/* <Typography.Title>Relationships</Typography.Title> */}
-                {association.foldL(
-                  () => (
-                    <Empty description={`No configs found related to ${configId}`} />
-                  ),
-                  (assoc) => (
-                    <>
-                      {config.name}
-                      <Tree.DirectoryTree>
-                        {record.toArray(assoc).map(([key, guidArray]) => (
-                          <Tree.TreeNode selectable={false} title={`${key} (${guidArray.length})`} key={key}>
-                            {guidArray.map((guid) => {
-                              const associatedRecord = record.lookup(guid, fromStore.configsById)
-                              return associatedRecord.foldL(
-                                () => (
-                                  <Tree.TreeNode
-                                    isLeaf
-                                    selectable={false}
-                                    title={
-                                      <>
-                                        <Tag>Unknown GUID</Tag>
-                                        <Reach.Link to={`../${guid}`}>{guid}</Reach.Link> is not a known Global Config
-                                        ID
-                                      </>
-                                    }
-                                    key={guid}
-                                  />
-                                ),
-                                (r) => (
-                                  <Tree.TreeNode
-                                    isLeaf
-                                    selectable={false}
-                                    title={
-                                      <>
-                                        <Tag>{r.type}</Tag>
-                                        <Reach.Link to={`../${guid}`}>{r.name}</Reach.Link>
-                                      </>
-                                    }
-                                    key={guid}
-                                  />
+                    </Typography.Text>
+                  </Form.Item>
+
+                  {/* ---------- Config.Name Input ---------------- */}
+                  <Form.Item label="Name">
+                    <Typography.Text>{config.name}</Typography.Text>
+                  </Form.Item>
+
+                  {/* ---------- Config.Config Input ---------------- */}
+                  <Form.Item label="Config">
+                    <Tabs
+                      defaultActiveKey={
+                        configComponents && configComponents.length && !jsonHasErrors ? "form" : "editor"
+                      }>
+                      <Tabs.TabPane
+                        key={"form"}
+                        tab={"Properties"}
+                        disabled={!configComponents || !configComponents.length || jsonHasErrors}>
+                        {jsonHasErrors ? (
+                          <Alert
+                            type="error"
+                            description="Please correct errors in the JSON before attempting to edit the layout."
+                            message="JSON Errors"
+                          />
+                        ) : (
+                          <UserInterface
+                            contextManager={userInterfaceContextManager}
+                            data={jsonData}
+                            getRootUserInterfaceData={() => jsonData}
+                            onChangeRootData={() => void 0}
+                            mode="display"
+                            components={configComponents}
+                          />
+                        )}
+                        {/* <Alert type="info" message={form.values.config} /> */}
+                      </Tabs.TabPane>
+                      <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
+                        <CodeEditor
+                          document={config.config.getOrElse("")}
+                          documentDraft={none}
+                          height={500}
+                          language={editorLanguage}
+                          outputType="string"
+                          width="100%"
+                        />
+                      </Tabs.TabPane>
+                    </Tabs>
+                  </Form.Item>
+                </Form>
+              </Card>
+              <br />
+              <Card bordered={false} title="Relationships">
+                <div>
+                  {/* <Typography.Title>Relationships</Typography.Title> */}
+                  {association.foldL(
+                    () => (
+                      <Empty description={`No configs found related to ${configId}`} />
+                    ),
+                    (assoc) => (
+                      <>
+                        {config.name}
+                        <Tree.DirectoryTree>
+                          {record.toArray(assoc).map(([key, guidArray]) => (
+                            <Tree.TreeNode selectable={false} title={`${key} (${guidArray.length})`} key={key}>
+                              {guidArray.map((guid) => {
+                                const associatedRecord = record.lookup(guid, fromStore.configsById)
+                                return associatedRecord.foldL(
+                                  () => (
+                                    <Tree.TreeNode
+                                      isLeaf
+                                      selectable={false}
+                                      title={
+                                        <>
+                                          <Tag>Unknown GUID</Tag>
+                                          <Reach.Link to={`../${guid}`}>{guid}</Reach.Link> is not a known Global Config
+                                          ID
+                                        </>
+                                      }
+                                      key={guid}
+                                    />
+                                  ),
+                                  (r) => (
+                                    <Tree.TreeNode
+                                      isLeaf
+                                      selectable={false}
+                                      title={
+                                        <>
+                                          <Tag>{r.type}</Tag>
+                                          <Reach.Link to={`../${guid}`}>{r.name}</Reach.Link>
+                                        </>
+                                      }
+                                      key={guid}
+                                    />
+                                  )
                                 )
-                              )
-                            })}
-                          </Tree.TreeNode>
-                        ))}
-                      </Tree.DirectoryTree>
-                    </>
-                  )
-                )}
-              </div>
-            </Card>
-          </>
-        ))
-      )}
-    </Skeleton>
+                              })}
+                            </Tree.TreeNode>
+                          ))}
+                        </Tree.DirectoryTree>
+                      </>
+                    )
+                  )}
+                </div>
+              </Card>
+            </>
+          ))
+        )}
+      </Skeleton>
+      <PageBeacon
+        data={{
+          reportId: null,
+          appName: "Legacy Site",
+          pageTitle: "Global Configs - Show Config",
+        }}
+        pageReady={true}
+      />
+    </>
   )
 }
 

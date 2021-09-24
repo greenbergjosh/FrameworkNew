@@ -1,0 +1,291 @@
+7b9876bf-0ed0-4e1d-b47b-8ac6bb6f82ac,ClickagyImportRules,ImportIngestionRules,"{
+    ""raw_table"": ""clickagy_signal"",
+    ""import_type"": ""emailmd5"",
+    ""batch_size"": 100000,
+    ""mappings"": {
+        ""email_md5"": ""md5"",
+        ""date_acquired"": ""ts"",
+        ""attribution_id"": 15,
+        ""record_type_id"": 1
+    },
+    ""destinations"": {
+        
+        ""dimensions_by_email_id.signal"": {},
+        ""dimensions_by_email_id.signal_daily"": {}
+    }
+}",2019-06-13 19:46:26.610330
+852f9a85-58fa-46c6-86c1-7f7c9c19f0df,Clickagy : SqlServer,ConnectionString,"{
+  ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=dataMail;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1"",
+  ""DataLayer"": {
+    ""SaveSignalData"": ""[Clickagy].[spSaveClickagySignal]""
+  },
+  ""DataLayerType"" : ""SqlServer""
+}",2019-04-09 19:45:13.186937
+79b0f661-157c-41d9-82b0-045ed3573b71,Clickagy,Partner,"{
+    ""FTP"": null,
+    ""RawTables"": {
+        ""clickagy_signal"": {}
+    },
+    ""Ingestions"": [
+        ""7b9876bf-0ed0-4e1d-b47b-8ac6bb6f82ac""
+    ],
+    ""attribution_id"": 15
+}",2019-07-16 13:53:53.935852
+fdc42365-23a7-432e-a380-1dcf471c9bda,Clickagy.Lev,StartupConfig,"{
+  ""RoslynScriptsPath"": ""..\\..\\GenericDataServiceDynamicDlls\\AwsKinesisConsumerDataLib\\RoslynScripts"",
+  ""DataServiceAssemblyFilePath"": ""C:\\Users\\lev\\source\\RoslynArticle\\AwsKinesisConsumerDataLib\\bin\\Debug\\netcoreapp2.2\\AwsKinesisConsumerDataLib.dll"",
+  ""ErrorFilePath"": ""..\\..\\GenericDataServiceDynamicDlls\\AwsKinesisConsumerDataLib\\errorfilepath\\error.txt"",
+  ""EdwDataFilePath"": ""..\\..\\GenericDataServiceDynamicDlls\\AwsKinesisConsumerDataLib\\edwdatafilepath\\data.txt"",
+  ""EdwErrorFilePath"": ""..\\..\\GenericDataServiceDynamicDlls\\AwsKinesisConsumerDataLib\\edwerrorfilepath\\error.txt"",
+  ""PostingQueueDataFilePath"": ""..\\..\\GenericDataServiceDynamicDlls\\AwsKinesisConsumerDataLib\\pqueue\\data.txt"",
+  ""PostingQueueErrorFilePath"": ""..\\..\\GenericDataServiceDynamicDlls\\AwsKinesisConsumerDataLib\\pqueue\\error.txt"",
+  ""HttpListenerUrl"": ""http://*:81"",
+  ""AssemblyDirs"": [ ""C:\\Users\\lev\\.nuget\\packages"", ""C:\\Users\\lev\\.nuget\\packages\\commandlineparser\\2.4.3\\lib\\netstandard2.0"" ],
+  ""DataServiceRootDirectory"": ""C:\\Users\\lev\\source\\RoslynArticle\\AwsKinesisConsumerDataLib\\bin\\Debug\\netcoreapp2.2\\""
+}",2019-04-09 19:45:13.186937
+c8df7d46-f9a3-4eea-a423-1cc3357ecbd8,Clickagy Kinesis Consumer,LBM.CS,"using System.Threading.Tasks;
+using System;
+using Utility;
+using Jw = Utility.JsonWrapper;
+
+public static async Task<bool> SaveClickagySignal(string connName, string sproc, string signalData, int timeout)
+{
+    var res = await SqlWrapper.SqlToGenericEntity(connName, sproc, """", signalData, timeout: timeout);
+
+    return res?.GetS(""Result"") == ""Success"";
+}
+
+public static async Task<bool> SaveClickagySignalToPostingQueue(string connName, string sproc, string signalData, int timeout)
+{
+    var res = await SqlWrapper.SqlToGenericEntity(connName, sproc, Jw.Json(new { PostType = ""Clickagy"", PostDate = DateTime.UtcNow }), signalData, timeout: timeout);
+
+    return res?.GetS(""Result"") == ""Success"";
+}
+
+bool successForAllRecords = true;
+foreach (var record in System.Text.Encoding.UTF8.GetString(p.record.Data).Split('\n'))
+{
+    if (string.IsNullOrWhiteSpace(record))
+    {
+        p.fw.Error(nameof(SaveClickagySignal), $""Skipping Null or whitespace in record processing loop"");
+        continue;
+    }
+
+    if (! await SaveClickagySignal( ""Clickagy"", ""SaveSignalData"", record, 5) )
+    {
+        successForAllRecords = false;
+        p.fw.Error(nameof(SaveClickagySignal), $""Possibly bad JSON: {record} on payload: {System.Text.Encoding.UTF8.GetString(p.record.Data)}"");
+    }
+
+    if (! await SaveClickagySignalToPostingQueue( ""Clickagy"", ""SavePostingQueuData"", record, 5) )
+    {
+        successForAllRecords = false;
+        p.fw.Error(nameof(SaveClickagySignalToPostingQueue), $""Possibly bad JSON: {record} on payload: {System.Text.Encoding.UTF8.GetString(p.record.Data)}"");
+    }
+
+}
+return successForAllRecords;",2019-04-09 19:45:13.186937
+dea87a53-ee26-485a-9f4f-e82b8ce21b3c,Clickagy.Ed,StartupConfig,"{
+	""using"": [
+		""78D3FC84-258D-40B6-9956-34FD9F885649""
+	],
+	""config"": {
+		""RoslynScriptsPath"": ""C:/Code/Workspaces/GenericDataServiceDynamicDlls/AwsKinesisConsumerDataLib/RoslynScripts"",
+		""DataServiceAssemblyFilePath"": ""C:/Code/RoslynArticle/AwsKinesisConsumerDataLib/bin/Release/netcoreapp2.2/publish/AwsKinesisConsumerDataLib.dll"",
+		""ErrorFilePath"": ""C:/Code/Workspaces/GenericDataServiceDynamicDlls/AwsKinesisConsumerDataLib/error/error.txt"",
+		""EdwDataFilePath"": ""C:/Code/Workspaces/GenericDataServiceDynamicDlls/AwsKinesisConsumerDataLib/edw/data.txt"",
+		""EdwErrorFilePath"": ""C:/Code/Workspaces/GenericDataServiceDynamicDlls/AwsKinesisConsumerDataLib/edw/error.txt"",
+		""HttpListenerUrl"": ""http://*:80"",
+		""AssemblyDirs"": [""""]
+	}
+}",2019-04-09 19:45:13.186937
+59e35106-8959-48ab-89da-ae082490ec5d,Clickagy.Prod - New DL,StartupConfig,"{
+  ""RoslynScriptsPath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/RoslynScripts"",
+  ""ConnectionStrings"": {
+    ""Clickagy-PostgreSQL"" : ""47089879-0ae1-4a7b-b225-e7e44060856c""    
+  },
+  ""DataServiceAssemblyFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyKinesis/AwsKinesisConsumerDataLib.dll"",
+  ""DataServiceTypeName"": ""AwsKinesisConsumerDataLib.DataService"",
+  ""DataServiceLogFileName"": ""ClickagyDataService.log"",
+  ""ErrorFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/error/error.txt"",
+  ""EdwDataFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/edw/data.txt"",
+  ""EdwErrorFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/edw/error.txt"",
+  ""ErrorLogTimeout"": ""1"",
+  ""ErrorLogAppName"": ""ClickagyDataService"",
+  ""HttpListenerUrl"": ""http://*:8000"",
+  ""DataServiceRootDirectory"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyKinesis/"",
+  ""EnableTraceLogging"":""true"",
+  ""EnvironmentVariables"": {
+    ""AWS_ACCESS_KEY_ID"": ""AKIAY2J2DMNOZNDAJFO3"",
+    ""AWS_SECRET_ACCESS_KEY"": ""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"",
+    ""AWS_REGION"": ""us-east-2""
+  },
+  ""ConsumerLbmId"": ""1CC23EFC-E4DA-4B35-84C0-430CAB8A9CF9""
+}",2019-04-09 19:45:13.186937
+78d3fc84-258d-40b6-9956-34fd9f885649,Clickagy.Prod,StartupConfig,"{
+    ""EdwSilos"": [
+        {
+            ""DataLayerType"": ""SqlServer"",
+            ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=Silo1;Persist Security Info=True;User ID=eventDropper;Password=CE59E810-50B1-4446-8F0B-40ABA307E6D5""
+        }
+    ],
+    ""ErrSilos"": [
+        {
+            ""DataLayerType"": ""SqlServer"",
+            ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=Silo1;Persist Security Info=True;User ID=eventDropper;Password=CE59E810-50B1-4446-8F0B-40ABA307E6D5""
+        }
+    ],
+    ""ConsumerLbmId"": ""C8DF7D46-F9A3-4EEA-A423-1CC3357ECBD8"",
+    ""ErrorFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/error/error.txt"",
+    ""EdwDataFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/edw/data.txt"",
+    ""ErrorLogAppName"": ""ClickagyDataService"",
+    ""ErrorLogTimeout"": ""1"",
+    ""HttpListenerUrl"": ""http://*:8000"",
+    ""EdwErrorFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/edw/error.txt"",
+    ""ConnectionStrings"": {
+        ""Clickagy"": ""852F9A85-58FA-46C6-86C1-7F7C9C19F0DF""
+    },
+    ""RoslynScriptsPath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyDataService/RoslynScripts"",
+    ""DataServiceTypeName"": ""AwsKinesisConsumerDataLib.DataService"",
+    ""EnvironmentVariables"": {
+        ""AWS_REGION"": ""us-east-1"",
+        ""AWS_ACCESS_KEY_ID"": ""AKIAJPIQQJIHXIY7Q34Q"",
+        ""AWS_SECRET_ACCESS_KEY"": ""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""
+    },
+    ""DataServiceLogFileName"": ""ClickagyDataService.log"",
+    ""DataServiceRootDirectory"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyKinesis/"",
+    ""DataServiceAssemblyFilePath"": ""C:/Workspace/GenericDataServiceDynamicDlls/ClickagyKinesis/AwsKinesisConsumerDataLib.dll""
+}",2019-04-09 19:45:13.186937
+1cc23efc-e4da-4b35-84c0-430cab8a9cf9,Clickage Kinesis Consumer - New DL,LBM.CS,"using System.Threading.Tasks;
+using System;
+using Utility;
+using Utility.DataLayer;
+using Jw = Utility.JsonWrapper;
+using Utility.EDW.Logging;
+using Utility.EDW.Queueing;
+using Utility.EDW.Reporting;
+
+public static async Task<bool> SaveClickagySignal(string connName, string sproc, string signalData, int timeout)
+{
+    var res = await Data.CallFn(connName, sproc, """", signalData, timeout: timeout);
+
+    return res?.GetS(""Result"") == ""Success"";
+}
+
+bool successForAllRecords = true;
+foreach (var record in System.Text.Encoding.UTF8.GetString(p.record.Data).Split('\n'))
+{
+    if (string.IsNullOrWhiteSpace(record))
+    {
+        p.fw.Trace(nameof(SaveClickagySignal), $""Skipping Null or whitespace in record processing loop"");
+        continue;
+    }
+
+    try
+    {
+        // if (!await SaveClickagySignal(""Clickagy-SqlServer"", ""SaveSignalData"", record, 5))
+        // {
+        //     successForAllRecords = false;
+        //     p.fw.Error(nameof(SaveClickagySignal), $""Possibly bad JSON when calling 'SaveSignalData' on SqlServer: {record} on payload: {System.Text.Encoding.UTF8.GetString(p.record.Data)}"");
+        // }
+        if (!await SaveClickagySignal(""Clickagy-PostgreSQL"", ""SaveSignalData"", record, 5))
+        {
+            successForAllRecords = false;
+            p.fw.Error(nameof(SaveClickagySignal), $""Possibly bad JSON when calling 'SaveSignalData' on PostgreSQL: {record} on payload: {System.Text.Encoding.UTF8.GetString(p.record.Data)}"");
+        }
+
+    }
+    catch (Exception e)
+    {
+        successForAllRecords = false;
+        p.fw.Error(nameof(SaveClickagySignal), $""Caught exception in calling 'SaveSignalData' for {record}: {e.UnwrapForLog()}"");
+    }
+
+    await p.fw.PostingQueueWriter.Write(new PostingQueueEntry(""Clickagy"", DateTime.UtcNow, record));
+}
+return successForAllRecords;",2019-04-09 19:45:13.186937
+4cd28f8e-cbb2-40dc-8d38-505a421c6829,ClickagySource,RawSource,"{
+    ""raw_table"": ""v_clickagy_signal"",
+    ""mappings"": {
+        ""email_id"": ""email_id"",
+        ""clickagy_vertical"": ""vertical"",
+        ""date_acquired"": ""ts""
+    }
+}",2019-11-05 21:32:47.987021
+7a3d0749-4f75-4295-90d8-932b273dfb9a,OnpointClickagyExport,PartnerExportRules,"{
+    ""ExportType"": ""Email"",
+    ""ExportName"": ""Clickagy"",
+    ""Source"": {
+        ""Type"": ""InLine"",
+        ""Expression"": {
+            ""Minus"": {
+                ""Positive"": {
+                    ""Source"": {
+                        ""Type"": ""RawTable"",
+                        ""RawSource"": ""ClickagySource"",
+                        ""DataAge"": ""BETWEEN 2d AND 1d""
+                    }
+                },
+                ""Negative"": {
+                    ""Union"": [
+                        {
+                            ""Source"": {
+                                ""Type"": ""Signal"",
+                                ""Attributors"": [
+                                    ""OnPointGlobal""
+                                ],
+                                ""RecordTypes"": [
+                                    ""MailSoftComplainer"",
+                                    ""MailHardComplainer"",
+                                    ""MailBounce""
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    ""OptInRequired"": true,
+    ""PartnerConfigId"": ""a8fe6540-a527-4b20-ac33-3b13e50ad4df"",
+    ""Fields"": {
+        ""Email"": {},
+        ""FirstName"": {},
+        ""LastName"": {
+            ""Optional"": true
+        },
+        ""PostalCode"": {
+            ""Optional"": true
+        },
+        ""OptInIp"": {},
+        ""DateOfBirth"": {
+            ""Optional"": true
+        },
+        ""ClickagyVertical"": {
+            ""Optional"": true
+        },
+        ""Class"": {
+            ""Default"": ""Clickagy"",
+            ""Optional"": true
+        }
+    },
+    ""ExportFileNamePattern"": ""[=PARTNER=]_clickagy_daily_[=TODAY=].csv"",
+    ""Schedule"": [
+        {
+            ""DaysOfWeek"": ""mtwrfsu"",
+            ""ExecutionTime"": ""10am""
+        }
+    ],
+    ""SaveExportLog"":true,
+    ""ValidationRules"": {
+        ""MinimumRows"": 1000,
+        ""FailedAction"": ""STOP""
+    }
+}",2019-11-06 14:37:27.587187
+47089879-0ae1-4a7b-b225-e7e44060856c,Clickagy : PostgreSQL,ConnectionString,"{
+  ""ConnectionString"": ""Server=signal1.data.techopg.local;Port=5432;Database=signal;User Id=clickagy_user;Password=08069e8e-aaba-4463-aa5a-1335ca5e45d3;Application Name='Clickagy Signal';Maximum Pool Size=50;"",
+  ""DataLayer"": {
+    ""SaveSignalData"": ""raw.save_clickagy_signal""
+  },
+  ""DataLayerType"" : ""PostgreSQL""
+}",2019-05-09 09:06:02.451410

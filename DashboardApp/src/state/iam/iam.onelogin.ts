@@ -3,9 +3,10 @@ import { none, some } from "fp-ts/lib/Option"
 import * as Store from "../store.types"
 import { SigninResponse, UserManager, UserManagerSettings } from "oidc-client"
 import { globalHistory } from "@reach/router"
+import { NotifyConfig } from "../feedback"
 
 const ONELOGIN_CONFIG: UserManagerSettings = {
-  authority: "https://onpoint.onelogin.com/oidc",
+  authority: "https://onpoint.onelogin.com/oidc/2",
   client_id: "2d4a9f30-dd76-0137-cba6-0265d75027d4148697",
   redirect_uri: window.location.origin,
   response_type: "id_token token",
@@ -17,8 +18,10 @@ const ONELOGIN_CONFIG: UserManagerSettings = {
 
 const genericErrorMessage = "An error occurred while trying to authenticate your OneLogin account."
 const notifyAndLog = (dispatch: Store.AppDispatch, message: string) => {
+  const notifyConfig: NotifyConfig = { type: "error", message }
   dispatch.logger.logError(message)
-  dispatch.feedback.notify({ type: "error", message })
+  dispatch.feedback.notify(notifyConfig)
+  return notifyConfig
 }
 
 const dispatchError = {

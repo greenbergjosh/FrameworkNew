@@ -1,6 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -9,6 +7,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Net.Http.Headers;
 
 namespace Utility
@@ -56,7 +56,7 @@ namespace Utility
                     sd.Code = Regex.Replace(sd.Code, "(#r.+\r\n)", "//$1");
                     var scriptOptions = ScriptOptions.Default
                         .AddReferences(
-                            Assembly.GetAssembly(typeof(System.Linq.Enumerable)),  // System.Linq
+                            Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
                             Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
                             Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
                             Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic

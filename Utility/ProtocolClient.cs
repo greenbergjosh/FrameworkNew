@@ -26,7 +26,7 @@ namespace Utility
 {
     public static class ProtocolClient
     {
-        private static readonly ConcurrentDictionary<(int maxConnectionsPerServer, DecompressionMethods decompressionMethods, string proxyHostAndPort, double timeoutSeconds), HttpClient> _httpClients = new ConcurrentDictionary<(int maxConnectionsPerServer, DecompressionMethods decompressionMethods, string proxyHostAndPort, double timeoutSeconds), HttpClient>();
+        private static readonly ConcurrentDictionary<(int maxConnectionsPerServer, DecompressionMethods decompressionMethods, string proxyHostAndPort, double timeoutSeconds), HttpClient> _httpClients = new();
 
         public static async Task DownloadFile(string downloadLink, string destinationDirectoryName, string destinationFileName)
         {
@@ -51,11 +51,9 @@ namespace Utility
                 if (basicAuthString != null)
                 {
                     var byteArray = Encoding.ASCII.GetBytes(basicAuthString);
-                    using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
-                    {
-                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Convert.ToBase64String(byteArray));
-                        return client.SendAsync(requestMessage);
-                    }
+                    using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Convert.ToBase64String(byteArray));
+                    return client.SendAsync(requestMessage);
                 }
                 else
                 {
@@ -75,13 +73,11 @@ namespace Utility
                         {
                             foreach (var entry in zip.Entries)
                             {
-                                using (var sr = new StreamReader(entry.Open()))
-                                {
-                                    string responseBody = await sr.ReadToEndAsync();
-                                    var tr = await zipEntryTester(responseBody);
-                                    var pr = await zipEntryProcessors[tr](responseBody);
-                                    rs[tr] = pr;
-                                }
+                                using var sr = new StreamReader(entry.Open());
+                                string responseBody = await sr.ReadToEndAsync();
+                                var tr = await zipEntryTester(responseBody);
+                                var pr = await zipEntryProcessors[tr](responseBody);
+                                rs[tr] = pr;
                             }
                         }
 
@@ -101,30 +97,35 @@ namespace Utility
             return resp;
         }
 
-        public static async Task<Dictionary<string, object>> DownloadUnzipUnbuffered(string url, string basicAuthString, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds, int maxConnectionsPerServer, FrameworkWrapper fw)
+        public static async Task<Dictionary<string, IEnumerable<T>>> DownloadUnzipUnbuffered<T>(string url, string basicAuthString, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<T>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds, int maxConnectionsPerServer, FrameworkWrapper fw, IDictionary<string, string> postData = null)
         {
             var responseBody = string.Empty;
 
             var ufn = Guid.NewGuid().ToString();
             var fileName = ufn + ".tmp";
-            var rs = new Dictionary<string, object>();
+            var rs = new Dictionary<string, IEnumerable<T>>();
 
             var client = GetHttpClient(maxConnectionsPerServer, timeoutSeconds: timeoutSeconds);
 
-            Task<HttpResponseMessage> GetResponse()
+            async Task<HttpResponseMessage> GetResponse()
             {
                 if (basicAuthString != null)
                 {
                     var byteArray = Encoding.ASCII.GetBytes(basicAuthString);
-                    using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
-                    {
-                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-                        return client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
-                    }
+                    using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                    return await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+                }
+                else if (postData?.Count > 0)
+                {
+                    var postContent = new FormUrlEncodedContent(postData);
+                    using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
+                    requestMessage.Content = postContent;
+                    return await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
                 }
                 else
                 {
-                    return client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                    return await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 }
             }
 
@@ -146,7 +147,7 @@ namespace Utility
                 {
                     await fw.Log(nameof(DownloadUnzipUnbuffered), $"File is not a zip, calling {nameof(ProcessFile)} for {url} -> {fileName}");
                     var (tr, pr) = await ProcessFile(new FileInfo(Path.Combine(workingDirectory, fileName)), zipEntryTester, zipEntryProcessors);
-                    rs[tr] = pr;
+                    rs[tr] = new[] { pr };
                 }
             }
             finally
@@ -165,10 +166,10 @@ namespace Utility
             return rs;
         }
 
-        public static async Task<Dictionary<string, object>> UnzipUnbuffered(string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory, int? timeout = null)
+        public static async Task<Dictionary<string, IEnumerable<T>>> UnzipUnbuffered<T>(string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<T>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory, int? timeout = null)
         {
             var ufn = Guid.NewGuid().ToString();
-            var results = new Dictionary<string, object>();
+            var results = new Dictionary<string, IList<T>>();
             try
             {
                 if (timeout.HasValue)
@@ -184,7 +185,12 @@ namespace Utility
                 foreach (var f in dir.GetFiles("*", SearchOption.AllDirectories))
                 {
                     var (tr, pr) = await ProcessFile(f, zipEntryTester, zipEntryProcessors);
-                    results[tr] = pr;
+                    if (!results.TryGetValue(tr, out var prs))
+                    {
+                        prs = new List<T>();
+                        results[tr] = prs;
+                    }
+                    prs.Add(pr);
                 }
             }
             finally
@@ -196,10 +202,10 @@ namespace Utility
                 }
             }
 
-            return results;
+            return results.ToDictionary(kvp => kvp.Key, kvp => (IEnumerable<T>)kvp.Value);
         }
 
-        public static async Task<(string, object)> ProcessFile(FileInfo file, Func<FileInfo, Task<string>> fileTester, Dictionary<string, Func<FileInfo, Task<object>>> fileProcessors)
+        public static async Task<(string, T)> ProcessFile<T>(FileInfo file, Func<FileInfo, Task<string>> fileTester, Dictionary<string, Func<FileInfo, Task<T>>> fileProcessors)
         {
             var tr = await fileTester(file);
             var pr = await fileProcessors[tr](file);
@@ -224,7 +230,7 @@ namespace Utility
 
                     if (numRead > 0)
                     {
-                        await s.WriteAsync(buf, 0, numRead);
+                        await s.WriteAsync(buf.AsMemory(0, numRead));
                     }
                     else
                     {
@@ -238,10 +244,8 @@ namespace Utility
 
         public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password, bool enableSsl = false)
         {
-            using (var f = File.OpenRead(sourceFile))
-            {
-                await UploadStream(targetFile, f, host, userName, password, enableSsl);
-            }
+            using var f = File.OpenRead(sourceFile);
+            await UploadStream(targetFile, f, host, userName, password, enableSsl);
         }
 
         public static async Task DeleteFileFromFtpServer(string remoteFile, string host, int port, string userName, string password, bool enableSsl = false)
@@ -275,25 +279,23 @@ namespace Utility
 
             if (!sourceFile.StartsWith("/")) sourceFile = $"/{sourceFile}";
 
-            using (var client = keyFilePath.IsNullOrWhitespace() ?
+            using var client = keyFilePath.IsNullOrWhitespace() ?
                  new SftpClient(host, port ?? 22, userName, password) :
-                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath));
+            try
             {
-                try
-                {
-                    client.Connect();
-                    var ms = new MemoryStream();
+                client.Connect();
+                var ms = new MemoryStream();
 
-                    await Task.Factory.FromAsync(client.BeginDownloadFile(sourceFile, ms), client.EndDownloadFile);
+                await Task.Factory.FromAsync(client.BeginDownloadFile(sourceFile, ms), client.EndDownloadFile);
 
-                    ms.Position = 0;
+                ms.Position = 0;
 
-                    return ms;
-                }
-                finally
-                {
-                    client.Disconnect();
-                }
+                return ms;
+            }
+            finally
+            {
+                client.Disconnect();
             }
         }
 
@@ -306,20 +308,18 @@ namespace Utility
 
             if (!destinationPath.StartsWith("/")) destinationPath = $"/{destinationPath}";
 
-            using (var client = keyFilePath.IsNullOrWhitespace() ?
+            using var client = keyFilePath.IsNullOrWhitespace() ?
                  new SftpClient(host, port ?? 22, userName, password) :
-                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath));
+            try
             {
-                try
-                {
-                    client.Connect();
+                client.Connect();
 
-                    await Task.Factory.FromAsync(client.BeginUploadFile(stream, destinationPath), client.EndUploadFile);
-                }
-                finally
-                {
-                    client.Disconnect();
-                }
+                await Task.Factory.FromAsync(client.BeginUploadFile(stream, destinationPath), client.EndUploadFile);
+            }
+            finally
+            {
+                client.Disconnect();
             }
         }
 
@@ -405,11 +405,9 @@ namespace Utility
 
         private static async Task DownloadFileSFtp(SftpClient client, string source, string destination)
         {
-            using (var saveFile = File.OpenWrite(destination))
-            {
-                var task = Task.Factory.FromAsync(client.BeginDownloadFile(source, saveFile), client.EndDownloadFile);
-                await task;
-            }
+            using var saveFile = File.OpenWrite(destination);
+            var task = Task.Factory.FromAsync(client.BeginDownloadFile(source, saveFile), client.EndDownloadFile);
+            await task;
         }
 
         public static async Task<long> FtpGetFileSize(string fileName, string host, string userName, string password, bool enableSsl = false)
@@ -543,30 +541,21 @@ namespace Utility
 
         public static async Task DownloadFileFtp(string baseDir, string sourceFile, string destinationFile, string host, string userName, string password, bool enableSsl = false)
         {
-            using (var f = File.OpenWrite(baseDir + @"\" + destinationFile))
-            {
-                await DownloadFileFtp(f, sourceFile, host, userName, password, enableSsl);
-            }
+            using var f = File.OpenWrite(baseDir + @"\" + destinationFile);
+            await DownloadFileFtp(f, sourceFile, host, userName, password, enableSsl);
         }
 
         public static async Task DownloadFilesFtp(string destRoot, string sourceRoot, string userName, string password, IEnumerable<string> fileNames)
         {
-            using (var c = new WebClient())
+            using var c = new WebClient();
+            c.Credentials = new NetworkCredential(userName, password);
+            foreach (var f in fileNames)
             {
-                c.Credentials = new NetworkCredential(userName, password);
-
-                foreach (var f in fileNames)
+                try
                 {
-                    try
-                    {
-                        await c.DownloadFileTaskAsync(@"ftp://" + sourceRoot + @"/" + f, destRoot + @"\" + f);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
+                    await c.DownloadFileTaskAsync(@"ftp://" + sourceRoot + @"/" + f, destRoot + @"\" + f);
                 }
+                catch (Exception e) { Console.WriteLine(e); throw; }
             }
         }
 
@@ -587,10 +576,8 @@ namespace Utility
 
         public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName, string password, bool enableSsl = false)
         {
-            using (var stream = await GetFtpFileStream(sourceFile, host, userName, password, enableSsl))
-            {
-                await stream.CopyToAsync(writeStream);
-            }
+            using var stream = await GetFtpFileStream(sourceFile, host, userName, password, enableSsl);
+            await stream.CopyToAsync(writeStream);
         }
 
         public static async Task DeleteDirectoriesFromFtpServer(string host, int port, string username, string password, List<string> dirs, bool enableSsl = false)
@@ -632,7 +619,6 @@ namespace Utility
 
         public static async Task<Dictionary<string, List<string>>> GetListFiles(string host, string userName, string password, bool enableSsl = false)
         {
-            //Dictionary<DirName, List<FileName>>
             var listFiles = new Dictionary<string, List<string>>();
             var dirs = new List<string>();
 
@@ -642,56 +628,44 @@ namespace Utility
                 request.Method = WebRequestMethods.Ftp.ListDirectory;
                 request.Credentials = new NetworkCredential(userName, password);
                 request.EnableSsl = enableSsl;
-                using (var response =
+                using var response =
                     (FtpWebResponse)(await request.GetResponseAsync()
-                        .ConfigureAwait(continueOnCapturedContext: false)))
+                        .ConfigureAwait(continueOnCapturedContext: false));
+                using var responseStream = response.GetResponseStream();
+                using var reader = new StreamReader(responseStream);
+                var line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
+                while (!string.IsNullOrEmpty(line))
                 {
-                    using (var responseStream = response.GetResponseStream())
+                    if (line != "." && line != "..")
                     {
-                        using (var reader = new StreamReader(responseStream))
+                        dirs.Add(line);
+                    }
+
+                    line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
+                }
+
+                foreach (var dir in dirs)
+                {
+                    listFiles[dir] = new List<string>();
+                    var fileRequest = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/{dir}/"));
+                    fileRequest.Method = WebRequestMethods.Ftp.ListDirectory;
+                    fileRequest.Credentials = new NetworkCredential(userName, password);
+                    fileRequest.EnableSsl = enableSsl;
+                    using var fileResponse = (FtpWebResponse)await fileRequest.GetResponseAsync()
+                        .ConfigureAwait(continueOnCapturedContext: false);
+                    using var fileResponseStream = fileResponse.GetResponseStream();
+                    using var fileReader = new StreamReader(fileResponseStream);
+                    var fileLine = await fileReader.ReadLineAsync()
+                        .ConfigureAwait(continueOnCapturedContext: false);
+                    while (!string.IsNullOrEmpty(fileLine))
+                    {
+                        if (fileLine != "." && fileLine != "..")
                         {
-                            var line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
-                            while (!string.IsNullOrEmpty(line))
-                            {
-                                if (line != "." && line != "..")
-                                {
-                                    dirs.Add(line);
-                                }
-
-                                line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
-                            }
-
-                            foreach (var dir in dirs)
-                            {
-                                listFiles[dir] = new List<string>();
-                                var fileRequest = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/{dir}/"));
-                                fileRequest.Method = WebRequestMethods.Ftp.ListDirectory;
-                                fileRequest.Credentials = new NetworkCredential(userName, password);
-                                fileRequest.EnableSsl = enableSsl;
-                                using (var fileResponse = (FtpWebResponse)(await fileRequest.GetResponseAsync()
-                                    .ConfigureAwait(continueOnCapturedContext: false)))
-                                {
-                                    using (var fileResponseStream = fileResponse.GetResponseStream())
-                                    {
-                                        using (var fileReader = new StreamReader(fileResponseStream))
-                                        {
-                                            var fileLine = await fileReader.ReadLineAsync()
-                                                .ConfigureAwait(continueOnCapturedContext: false);
-                                            while (!string.IsNullOrEmpty(fileLine))
-                                            {
-                                                if (fileLine != "." && fileLine != "..")
-                                                {
-                                                    listFiles[dir].Add(fileLine);
-                                                }
-
-                                                fileLine = await fileReader.ReadLineAsync()
-                                                    .ConfigureAwait(continueOnCapturedContext: false);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            listFiles[dir].Add(fileLine);
                         }
+
+                        fileLine = await fileReader.ReadLineAsync()
+                            .ConfigureAwait(continueOnCapturedContext: false);
                     }
                 }
             }
@@ -723,23 +697,19 @@ namespace Utility
                 (FtpWebResponse)(await fileRequest.GetResponseAsync()
                     .ConfigureAwait(continueOnCapturedContext: false)))
             {
-                using (var fileResponseStream = fileResponse.GetResponseStream())
+                using var fileResponseStream = fileResponse.GetResponseStream();
+                using var fileReader = new StreamReader(fileResponseStream);
+                var fileLine = await fileReader.ReadLineAsync()
+                    .ConfigureAwait(continueOnCapturedContext: false);
+                while (!string.IsNullOrEmpty(fileLine))
                 {
-                    using (var fileReader = new StreamReader(fileResponseStream))
+                    if (fileLine != "." && fileLine != "..")
                     {
-                        var fileLine = await fileReader.ReadLineAsync()
-                            .ConfigureAwait(continueOnCapturedContext: false);
-                        while (!string.IsNullOrEmpty(fileLine))
-                        {
-                            if (fileLine != "." && fileLine != "..")
-                            {
-                                files.Add(fileLine);
-                            }
-
-                            fileLine = await fileReader.ReadLineAsync()
-                                .ConfigureAwait(continueOnCapturedContext: false);
-                        }
+                        files.Add(fileLine);
                     }
+
+                    fileLine = await fileReader.ReadLineAsync()
+                        .ConfigureAwait(continueOnCapturedContext: false);
                 }
             }
 
@@ -785,25 +755,23 @@ namespace Utility
             {
                 headers?.ForEach(h => requestMessage.Headers.Add(h.key, h.value));
                 requestMessage.Content = httpContent;
-                using (var response = await client.SendAsync(requestMessage))
+                using var response = await client.SendAsync(requestMessage);
+                if (response.IsSuccessStatusCode)
                 {
-                    if (response.IsSuccessStatusCode)
+                    responseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+                    responseBody = await response.Content.ReadAsStringAsync();
+                }
+                else if (doThrow)
+                {
+                    try
                     {
-                        responseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value);
                         responseBody = await response.Content.ReadAsStringAsync();
                     }
-                    else if (doThrow)
+                    catch
                     {
-                        try
-                        {
-                            responseBody = await response.Content.ReadAsStringAsync();
-                        }
-                        catch
-                        {
-                        }
-
-                        throw new InvalidOperationException($"HttpPostGetHeadersAsync Failed. code: {response.StatusCode} reason: {response.ReasonPhrase} body: {responseBody}");
                     }
+
+                    throw new InvalidOperationException($"HttpPostGetHeadersAsync Failed. code: {response.StatusCode} reason: {response.ReasonPhrase} body: {responseBody}");
                 }
             }
 
@@ -841,49 +809,36 @@ namespace Utility
         {
             var client = GetHttpClient(timeoutSeconds: timeoutSeconds);
 
-            using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, path))
-            {
-                headers?.ForEach(h => requestMessage.Headers.Add(h.key, h.value));
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, path);
+            headers?.ForEach(h => requestMessage.Headers.Add(h.key, h.value));
 
-                using (var response = await client.SendAsync(requestMessage))
-                {
-                    var responseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value);
-                    return (success: response.IsSuccessStatusCode, body: await response.Content.ReadAsStringAsync(), headers: responseHeaders);
-                }
-            }
+            using var response = await client.SendAsync(requestMessage);
+            var responseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+            return (success: response.IsSuccessStatusCode, body: await response.Content.ReadAsStringAsync(), headers: responseHeaders);
         }
 
         public static void SendMail(string smtpRelay, int smtpPort, MailMessage msg, bool useSsl = false)
-        { 
-            using (var smtp = new SmtpClient(smtpRelay, smtpPort))
-            {
-                smtp.EnableSsl = useSsl;
-                smtp.Send(msg);
-            }
+        {
+            using var smtp = new SmtpClient(smtpRelay, smtpPort);
+            smtp.EnableSsl = useSsl;
+            smtp.Send(msg);
         }
 
         public static IEnumerable<(T reference, Exception ex)> SendMail<T>(string smtpRelay, int smtpPort, IEnumerable<(T reference, MailMessage msg)> messages, bool useSsl = false)
         {
-            using (var smtp = new SmtpClient(smtpRelay, smtpPort))
+            using var smtp = new SmtpClient(smtpRelay, smtpPort);
+            var results = new List<(T reference, Exception ex)>();
+            smtp.EnableSsl = useSsl;
+            foreach (var msg in messages)
             {
-                var results = new List<(T reference, Exception ex)>();
-
-                smtp.EnableSsl = useSsl;
-                foreach (var msg in messages)
+                try
                 {
-                    try
-                    {
-                        smtp.Send(msg.msg);
-                        results.Add((msg.reference, null));
-                    }
-                    catch (Exception e)
-                    {
-                        results.Add((msg.reference, e));
-                    }
+                    smtp.Send(msg.msg);
+                    results.Add((msg.reference, null));
                 }
-
-                return results;
+                catch (Exception e) { results.Add((msg.reference, e)); }
             }
+            return results;
         }
 
         public static void SendMail(string smtpRelay, int smtpPort, string from, string to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false)
@@ -910,40 +865,32 @@ namespace Utility
 
         public static async Task DownloadFilesFromS3Bucket(string accessKeyId, string secretAccessKey, string bucketName, IEnumerable<string> files, int parallelism, Func<string, string, Task> action)
         {
-            using (var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1))
+            using var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1);
+            using var t = new TransferUtility(client);
+            await files.ForEachAsync(parallelism, async s =>
             {
-                using (var t = new TransferUtility(client))
-                {
-                    await files.ForEachAsync(parallelism, async s =>
-                    {
-                        using (var stream = await t.OpenStreamAsync(bucketName, s))
-                        using (var reader = new StreamReader(stream))
-                        {
-                            var content = reader.ReadToEnd();
-                            await action(s, content);
-                        }
-                    });
-                }
-            }
+                using var stream = await t.OpenStreamAsync(bucketName, s);
+                using var reader = new StreamReader(stream);
+                var content = reader.ReadToEnd();
+                await action(s, content);
+            });
         }
 
         public static async Task<List<string>> ListFilesFromS3Bucket(string accessKeyId, string secretAccessKey, string bucketName, string path, string pattern)
         {
             var regex = new Regex(pattern);
-            using (var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1))
+            using var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1);
+            var request = new ListObjectsRequest
             {
-                var request = new ListObjectsRequest
-                {
-                    BucketName = bucketName,
-                    Prefix = path
-                };
-                var response = await client.ListObjectsAsync(request);
-                var files = response.S3Objects
-                    .Where(o => regex.IsMatch(o.Key.Replace(path, string.Empty)))
-                    .Select(o => o.Key)
-                    .ToList();
-                return files;
-            }
+                BucketName = bucketName,
+                Prefix = path
+            };
+            var response = await client.ListObjectsAsync(request);
+            var files = response.S3Objects
+                .Where(o => regex.IsMatch(o.Key.Replace(path, string.Empty)))
+                .Select(o => o.Key)
+                .ToList();
+            return files;
         }
 
         public static async Task<bool> CompareHttpContent(string remoteContentLocation, string contentToCompare)

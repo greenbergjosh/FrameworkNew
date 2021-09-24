@@ -1,0 +1,45 @@
+{
+  "invisible": false,
+  "hidden": false,
+  "valueKey": "",
+  "hideLabel": true,
+  "classNames": [
+    "container"
+  ],
+  "component": "container",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "threshold": 200,
+      "showLegend": false,
+      "enableRadialLabels": true,
+      "enableSliceLabels": true,
+      "donut": true,
+      "colorScheme": "set1",
+      "invisible": false,
+      "hidden": false,
+      "preSorted": false,
+      "sliceGap": 2,
+      "tooltipFunctionSrc": "return function ({ props, args: { slice } }) {\n    return \"foo \";\n}",
+      "sliceLabelValueKey": "value",
+      "sliceLabelValueType": "function",
+      "sliceValueKey": "value",
+      "sliceLabelKey": "label",
+      "valueKey": "value",
+      "label": "Pie Chart",
+      "hideLabel": true,
+      "component": "pie",
+      "useTooltipFunction": true,
+      "otherAggregatorFunctionSrc": "return function ({ props, args: { slices } }) {\n    return {\n      \"id\": \"stylus\",\n      \"label\": \"stylus\",\n      \"value\": 999,\n      \"color\": \"red\"\n    }\n}",
+      "sliceLabelValueFunctionSrc": "return function ({ props, args: { slice } }) {\n    return `${Math.floor(Number.parseFloat(slice[props.sliceValueKey]) * 100)}%`\n}"
+    }
+  ]
+}

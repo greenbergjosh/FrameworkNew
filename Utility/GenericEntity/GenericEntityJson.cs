@@ -40,7 +40,7 @@ namespace Utility.GenericEntity
             }
         }
 
-        private string ConvertPath(string path)
+        private static string ConvertPath(string path)
         {
             if (path == "")
             {
@@ -54,7 +54,7 @@ namespace Utility.GenericEntity
             return path;
         }
 
-        private (string path, string propName)? SplitPropertyPath(string fullPath)
+        private static (string path, string propName)? SplitPropertyPath(string fullPath)
         {
             if (fullPath.IsNullOrWhitespace())
             {

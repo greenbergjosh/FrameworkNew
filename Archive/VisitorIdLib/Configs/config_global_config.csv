@@ -1,0 +1,3223 @@
+881eb6a3-3d6c-47df-9c63-2b7578911d49,Visitor ID Md5 Provider Report,Report,"{
+  ""type"": ""ReportConfig"",
+  ""query"": ""40287c48-60ca-41c8-80de-efb2cec9d179"",
+  ""columns"": [
+    {
+      ""headerText"": ""MD5 Provider"",
+      ""field"": ""Md5Provider"",
+      ""type"": ""string""
+    },
+    {
+      ""headerText"": ""Unique Visitors"",
+      ""field"": ""UniqueVisitorCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""First Time Visitors"",
+      ""field"": ""FirstTimeVisitorCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Domain Visits"",
+      ""field"": ""DomainSessionInitiateCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Page Visits"",
+      ""field"": ""PageSessionInitiateCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Selected"",
+      ""field"": ""Md5ProviderSelectedCount"",
+      ""type"": ""number"",
+      ""sortDirection"": ""Descending"",
+      ""sortOrder"": 1
+    },
+    {
+      ""headerText"": ""Responses"",
+      ""field"": ""Md5ProviderResponseCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Found MD5"",
+      ""field"": ""Md5ProviderResponseSuccessCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Expense Generating"",
+      ""field"": ""Md5ProviderResponseExpenseGeneratingCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Cookie Email Selected"",
+      ""field"": ""CookieEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Cookie Email Success"",
+      ""field"": ""CookieEmailProviderResponseSuccessCount"",
+      ""width"": ""200"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Legacy Email Selected"",
+      ""field"": ""LegacyEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Legacy Email Success"",
+      ""field"": ""LegacyEmailProviderResponseSuccessCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""OnPoint Email Selected"",
+      ""field"": ""OnPointEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""OnPoint Email Success"",
+      ""field"": ""OnPointEmailProviderResponseSuccessCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Tower Email Selected"",
+      ""field"": ""TowerEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Tower Email Success"",
+      ""field"": ""TowerEmailProviderResponseSuccessCount"",
+      ""type"": ""number""
+    }
+  ],
+  ""details"": {
+    ""type"": ""report"",
+    ""reportType"": ""config"",
+    ""report"": ""878200b0-4f4f-4029-ad0e-f31aa0b9f991""
+  }
+}",2019-05-01 02:11:29.496230
+878200b0-4f4f-4029-ad0e-f31aa0b9f991,Visitor ID Md5 Provider Report Details,Report,"{
+  ""type"": ""ReportConfig"",
+  ""query"": ""2d908ee0-0ef4-4251-b74f-d4f5c3a1ebf7"",
+  ""columns"": [
+    {
+      ""headerText"": ""Domain"",
+      ""field"": ""Domain"",
+      ""type"": ""text""
+    },
+    {
+      ""headerText"": ""Unique Visitors"",
+      ""field"": ""UniqueVisitorCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""First Time Visitors"",
+      ""field"": ""FirstTimeVisitorCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Domain Visits"",
+      ""field"": ""DomainSessionInitiateCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Page Visits"",
+      ""field"": ""PageSessionInitiateCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Selected"",
+      ""field"": ""Md5ProviderSelectedCount"",
+      ""type"": ""number"",
+      ""sortDirection"": ""Descending"",
+      ""sortOrder"": 1
+    },
+    {
+      ""headerText"": ""Responses"",
+      ""field"": ""Md5ProviderResponseCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Found MD5"",
+      ""field"": ""Md5ProviderResponseSuccessCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Expense Generating"",
+      ""field"": ""Md5ProviderResponseExpenseGeneratingCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Cookie Email Selected"",
+      ""field"": ""CookieEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Cookie Email Success"",
+      ""field"": ""CookieEmailProviderResponseSuccessCount"",
+      ""width"": ""200"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Legacy Email Selected"",
+      ""field"": ""LegacyEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Legacy Email Success"",
+      ""field"": ""LegacyEmailProviderResponseSuccessCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""OnPoint Email Selected"",
+      ""field"": ""OnPointEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""OnPoint Email Success"",
+      ""field"": ""OnPointEmailProviderResponseSuccessCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Tower Email Selected"",
+      ""field"": ""TowerEmailProviderSelectedCount"",
+      ""type"": ""number""
+    },
+    {
+      ""headerText"": ""Tower Email Success"",
+      ""field"": ""TowerEmailProviderResponseSuccessCount"",
+      ""type"": ""number""
+    }
+  ]
+}",2019-07-01 08:06:59.050050
+53b67df1-8c6d-4b1a-9e8a-14919d5f063b,VisitorId.TestCases,StartupConfig,"
+{
+    ""using"": [""E1AD0D09-12D6-42A9-B1A5-7181B6AF39F6""],
+    ""config"":
+    {
+        ""VisitorIdMd5ProviderSequences"": [
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000000"",
+                ""async"": ""false"",
+                ""comment"": ""original"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie"", ""continue"", ""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps1"", ""continue"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000001"",
+                ""async"": ""false"",
+                ""comment"": ""verify that you can read either md5 only, or both md5 and email"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000002"",
+                ""async"": ""false"",
+                ""comment"": ""[cookie, *keyword] - expected behavior == [cookie]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie"", ""Continue""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000003"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps1"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps1""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000004"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps2s"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps2s""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000005"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps2f"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps2f""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000006"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps3s"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps3s""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000007"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps3f"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps3f""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000008"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps4s"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps4s""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000009"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps4f"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps4f""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000010"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps5s"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps5s""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000011"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps5f"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps5f""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000012"",
+                ""async"": ""false"",
+                ""comment"": ""cookie + eps6"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""cookie|eps6""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000013"",
+                ""async"": ""false"",
+                ""comment"": ""1 [m1s |eps2s, ContinueOnSuccessMd5, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps2s"", ""ContinueOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000014"",
+                ""async"": ""false"",
+                ""comment"": ""2 [m1s |eps2s, ContinueOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps2s"", ""ContinueOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000015"",
+                ""async"": ""false"",
+                ""comment"": ""3 [m1s |eps5f, ContinueOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps5f"", ""ContinueOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000016"",
+                ""async"": ""false"",
+                ""comment"": ""4 [m1s |eps5f, ContinueOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps5f"", ""ContinueOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000017"",
+                ""async"": ""false"",
+                ""comment"": ""5 [m1s |eps2s, BreakOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps2s"", ""BreakOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000018"",
+                ""async"": ""false"",
+                ""comment"": ""6 [m1s |eps2s, BreakOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps2s"", ""BreakOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000019"",
+                ""async"": ""false"",
+                ""comment"": ""7 [m1s |eps5f, BreakOnSuccessMd5, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps5f"", ""BreakOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000020"",
+                ""async"": ""false"",
+                ""comment"": ""8 [m1s |eps5f, BreakOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps5f"", ""BreakOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000021"",
+                ""async"": ""false"",
+                ""comment"": ""9 [m1s |eps6, ContinueOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps6"", ""ContinueOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000022"",
+                ""async"": ""false"",
+                ""comment"": ""10 [m1s |eps6, ContinueOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps6"", ""ContinueOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000023"",
+                ""async"": ""false"",
+                ""comment"": ""11 [m1s |eps6, BreakOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps6"", ""BreakOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000024"",
+                ""async"": ""false"",
+                ""comment"": ""12 [m1s |eps6, BreakOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@10822E18-E9CD-4736-B5AF-974A4BA1B01B|eps6"", ""BreakOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000025"",
+                ""async"": ""false"",
+                ""comment"": ""13 [m1f |eps2s, ContinueOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps2s"", ""ContinueOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000026"",
+                ""async"": ""false"",
+                ""comment"": ""14 [m1f |eps2s, ContinueOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps2s"", ""ContinueOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000027"",
+                ""async"": ""false"",
+                ""comment"": ""15 [m1f |eps5f, ContinueOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps5f"", ""ContinueOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000028"",
+                ""async"": ""false"",
+                ""comment"": ""16 [m1f |eps5f, ContinueOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps5f"", ""ContinueOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000029"",
+                ""async"": ""false"",
+                ""comment"": ""17 [m1f |eps2s, BreakOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps2s"", ""BreakOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000030"",
+                ""async"": ""false"",
+                ""comment"": ""18 [m1f |eps2s, BreakOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps2s"", ""BreakOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000031"",
+                ""async"": ""false"",
+                ""comment"": ""19 [m1f |eps5f, BreakOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps5f"", ""BreakOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000032"",
+                ""async"": ""false"",
+                ""comment"": ""20 [m1f |eps5f, BreakOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps5f"", ""BreakOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000033"",
+                ""async"": ""false"",
+                ""comment"": ""21 [m1f |eps6, ContinueOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps6"", ""ContinueOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000034"",
+                ""async"": ""false"",
+                ""comment"": ""22 [m1f |eps6, ContinueOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps6"", ""ContinueOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000035"",
+                ""async"": ""false"",
+                ""comment"": ""23 [m1f |eps6, BreakOnSuccess, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps6"", ""BreakOnSuccessMd5"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000036"",
+                ""async"": ""false"",
+                ""comment"": ""24 [m1f |eps6, BreakOnSuccessEmail, m2s]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4|eps6"", ""BreakOnSuccessEmail"", ""@A61C77C9-503F-4981-95B6-C3DE91C82C53""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000037"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP3|ecrOP]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@6CBF3990-A74B-40BE-847F-193147B89B05|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000038"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP4|ecrOP]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@7EF2B427-8298-477B-8CE3-83575BFD1E62|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000039"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP5|ecrOP]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@E9257F53-7E8D-4B89-9501-8623226DB417|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000040"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP6|ecrOP]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@E45460FD-033F-41D8-AF4A-0F28235FAE1A|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000041"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP7|ecrOP]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@716EEA58-CD28-4A5E-AB71-7E1BB8D3BA2C|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000042"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP8|ecrOP]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@5E4499E2-5F66-47C7-813F-EDD6C673234A|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000043"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP9 Old Md5|ecrOP will fail]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@F6CBFED9-231F-4A77-811D-5A01650039CB|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000044"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrOP10 Old Md5|ecrOP will fail]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@043BA5E4-EEFA-4B55-8E39-54D56EB285D9|ecrOP""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000045"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg11|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@7C4B401D-EA18-4313-BABA-A109D1DF6AA0|ecrLeg""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000046"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg12|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@C3B4C498-A303-491D-9AED-82DC83F38401|ecrLeg""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000047"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg13|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@9DAD08F0-7D4E-481E-A1C8-130F6D89F8E7|ecrLeg""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000048"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg14|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@BA49CD4F-29D3-4BA3-A74A-F3986C18BE63|ecrLeg""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000049"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg15|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@A04D0D68-5E4E-474D-9612-E311AC48532B|ecrLeg""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000050"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg16|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@E8C664C9-FE98-486C-93C6-D4A6DABDAF3E|ecrLeg""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000051"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg17|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@425DD8BD-AC68-41FD-B9A2-709840FC9806|ecrLeg""]
+                    }
+                ]
+            },
+            {
+                ""afid"": ""00000000-0000-0000-0000-000000000052"",
+                ""async"": ""false"",
+                ""comment"": ""[mcrLeg18|ecrLeg]"",
+                ""seqs"": [
+                    {
+                        ""dom"": ""visitor-identification.com"",
+                        ""async"": ""false"",
+                        ""seq"": [""@A28DB24B-70D3-40FC-BB18-FAC5B0881178|ecrLeg""]
+                    }
+                ]
+            }
+        ],
+        ""VisitorIdEmailProviderSequences"": [
+            {
+                ""name"": ""eps1"",
+                ""comment"": ""1 eps1  = [e1]"",
+                ""seq"": [""@E7CA9F29-A762-44A9-BDC8-7022F7F66011""]
+            },
+            {
+                ""name"": ""eps2s"",
+                ""comment"": ""2 eps2s = [e1s, ContinueOnSuccess, e2s, BreakOnSuccess, e3]"",
+                ""seq"": [""@E7CA9F29-A762-44A9-BDC8-7022F7F66011"", ""ContinueOnSuccess"", ""@35317C56-995C-473A-BC12-AB110757717C"", ""BreakOnSuccess"", ""@2F99D81D-5F17-47E5-9095-F2E455225CB4""]
+            },
+            {
+                ""name"": ""eps2f"",
+                ""comment"": ""3 eps2f = [e1f, ContinueOnSuccess, e2s, ContinueOnSuccess, e3]"",
+                ""seq"": [""@7DF7244B-A2C8-4BBF-A954-893754D6C589"", ""ContinueOnSuccess"", ""@35317C56-995C-473A-BC12-AB110757717C"", ""ContinueOnSuccess"", ""@2F99D81D-5F17-47E5-9095-F2E455225CB4""]
+            },
+            {
+                ""name"": ""eps3s"",
+                ""comment"": ""4 eps3s = [e1s, BreakOnSuccess, e2]"",
+                ""seq"": [""@E7CA9F29-A762-44A9-BDC8-7022F7F66011"", ""BreakOnSuccess"", ""@35317C56-995C-473A-BC12-AB110757717C""]
+            },
+            {
+                ""name"": ""eps3f"",
+                ""comment"": ""5 eps3f = [e1f, BreakOnSuccess, e2f, BreakOnSuccess, e3]"",
+                ""seq"": [""@7DF7244B-A2C8-4BBF-A954-893754D6C589"", ""BreakOnSuccess"", ""@7DF7244B-A2C8-4BBF-A954-893754D6C589"", ""BreakOnSuccess"", ""@2F99D81D-5F17-47E5-9095-F2E455225CB4""]
+            },
+            {
+                ""name"": ""eps4s"",
+                ""comment"": ""6 eps4s = [e1s, Continue, e2f, Continue, e3]"",
+                ""seq"": [""@E7CA9F29-A762-44A9-BDC8-7022F7F66011"", ""Continue"", ""@7DF7244B-A2C8-4BBF-A954-893754D6C589"", ""Continue"", ""@2F99D81D-5F17-47E5-9095-F2E455225CB4""]
+            },
+            {
+                ""name"": ""eps4f"",
+                ""comment"": ""7 eps4f = [e1f, Continue, e2s, Continue, e3]"",
+                ""seq"": [""@7DF7244B-A2C8-4BBF-A954-893754D6C589"", ""Continue"", ""@35317C56-995C-473A-BC12-AB110757717C"", ""Continue"", ""@2F99D81D-5F17-47E5-9095-F2E455225CB4""]
+            },
+            {
+                ""name"": ""eps5s"",
+                ""comment"": ""8 eps5s = [e1s, Break, e2s]"",
+                ""seq"": [""@E7CA9F29-A762-44A9-BDC8-7022F7F66011"", ""Break"", ""@35317C56-995C-473A-BC12-AB110757717C""]
+            },
+            {
+                ""name"": ""eps5f"",
+                ""comment"": ""9 eps5f = [e1f, Break, e2s]"",
+                ""seq"": [""@7DF7244B-A2C8-4BBF-A954-893754D6C589"", ""Break"", ""@35317C56-995C-473A-BC12-AB110757717C""]
+            },
+            {
+                ""name"": ""eps6"",
+                ""comment"": ""10 eps6 = [e1f]"",
+                ""seq"": [""@7DF7244B-A2C8-4BBF-A954-893754D6C589""]
+            },
+            {
+                ""name"": ""ecrOP"",
+                ""comment"": ""OnPointEmailProvider"",
+                ""seq"": [""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6""]
+            },
+            {
+                ""name"": ""ecrLeg"",
+                ""comment"": ""LegacyEmailProvider"",
+                ""seq"": [""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487""]
+            },
+            {
+                ""name"": ""default"",
+                ""seq"": [""@E7CA9F29-A762-44A9-BDC8-7022F7F66011""]
+            }
+        ]
+    }
+}",2019-03-29 18:53:04.451118
+8b8abfb1-8ec7-48d5-88ac-ab458971f4b2,Visitor ID - test,Group,"{
+    ""test"": ""test""
+}",2019-05-07 17:46:09.056918
+ba49cd4f-29d3-4ba3-a74a-f3986c18be63,TestService14LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=14"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+b18a6688-e137-4695-95de-98f0ba744a0f,VisitorId.Lev-Partial,StartupConfig,"{
+  ""EnableTraceLogging"": ""true"",
+  ""PhysicalFileProviderPath"": ""C:\\Users\\lev\\source\\RoslynArticle\\VisitorIdLib\\wwwroot"",
+  ""DataServiceAssemblyFilePath"": ""C:\\Users\\lev\\source\\RoslynArticle\\VisitorIdLib\\bin\\Debug\\netcoreapp2.2\\VisitorIdLib.dll"",
+  ""RoslynScriptsPath"": ""..\\..\\GenericDataServiceDynamicDlls\\VisitorIdLib\\RoslynScripts"",
+  ""DataServiceTypeName"": ""VisitorIdLib.VisitorIdDataService"",
+  ""DataServiceLogFileName"": ""VisitorIdDataService.log"",
+  ""ErrorFilePath"": ""..\\..\\workspace\\errorfilepath\\error.txt"",
+  ""EdwDataFilePath"": ""..\\..\\workspace\\edwdatafilepath\\data.txt"",
+  ""EdwErrorFilePath"": ""..\\..\\workspace\\edwerrorfilepath\\error.txt"",
+  ""PostingQueueDataFilePath"": ""..\\..\\workspaceGenericDataServiceDynamicDlls\\VisitorIdLib\\pqueue\\data.txt"",
+  ""PostingQueueErrorFilePath"": ""..\\..\\workspaceGenericDataServiceDynamicDlls\\VisitorIdLib\\pqueue\\error.txt""
+}",2019-03-29 18:53:04.451118
+4c2441ca-25db-4671-8a44-c465b05dce7b,VisitorId.SqlServer Connection Strings,StartupConfig,"{
+  ""EdwSilos"": [
+    {
+      ""DataLayerType"": ""SqlServer"",
+      ""DataLayer"": {},
+      ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=Silo1;Persist Security Info=True;User ID=eventDropper;Password=CE59E810-50B1-4446-8F0B-40ABA307E6D5""
+    }
+  ],
+  ""ErrSilos"": [
+    {
+      ""DataLayerType"": ""SqlServer"",
+      ""DataLayer"": {},
+      ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=Silo1;Persist Security Info=True;User ID=eventDropper;Password=CE59E810-50B1-4446-8F0B-40ABA307E6D5""
+    }
+  ],
+  ""PostingQueueSilos"": [
+    {
+      ""DataLayerType"": ""SqlServer"",
+      ""DataLayer"": {},
+      ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=Silo1;Persist Security Info=True;User ID=eventDropper;Password=CE59E810-50B1-4446-8F0B-40ABA307E6D5""
+    }
+  ]
+}",2019-05-02 16:46:56.587010
+f8fee6bc-abba-4ee3-b42f-f266c1b98aa3,VisitorId.AlbertoPartial,StartupConfig,"{
+  ""using"": [
+    ""E1AD0D09-12D6-42A9-B1A5-7181B6AF39F6""
+  ],
+  ""config"": {
+    ""RoslynScriptsPath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\GenericDataserviceWorkspaces\\VisitorIdLib\\RoslynScripts"",
+    ""DataServiceAssemblyFilePath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\onpoint\\RoslynArticle\\VisitorIdLib\\bin\\Debug\\netcoreapp2.1\\VisitorIdLib.dll"",
+    ""ErrorFilePath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\GenericDataserviceWorkspaces\\VisitorIdLib\\error.txt"",
+    ""EdwDataFilePath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\GenericDataserviceWorkspaces\\VisitorIdLib\\edwData.txt"",
+    ""EdwErrorFilePath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\GenericDataserviceWorkspaces\\VisitorIdLib\\edwError.txt"",
+    ""PostingQueueDataFilePath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\GenericDataserviceWorkspaces\\VisitorIdLib\\pqueueData.txt"",
+    ""PostingQueueErrorFilePath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\GenericDataserviceWorkspaces\\VisitorIdLib\\pqueueError.txt"",
+    ""PhysicalFileProviderPath"": ""C:\\Users\\OnPoint Global\\Documents\\dev\\onpoint\\RoslynArticle\\VisitorIdLib\\wwwroot""
+  }
+}",2019-03-29 18:53:04.451118
+8117bae1-09db-4bc8-80e3-800a8317ad23,VisitorId : v-track.net/traverse/pr,StartupConfig,"{
+    ""using"": [
+        ""aab63bf0-0e66-4413-b5a9-c841d4df7534"", // postgres
+        ""552b02ba-e37d-421f-a526-8d530013a1cc"", // PR Paths
+        ""297ac40b-08d8-42f5-83f5-5899d60af67b"", // common
+        ""42ac3dd9-b9e4-4f20-85e3-2f9e95761a06"", // billing models
+        ""cf09d90d-5c60-4dda-9461-deaf3f811a95"" // VID PR sequences
+    ]
+}",2019-07-01 18:51:06.743659
+a28db24b-70d3-40fc-bb18-fac5b0881178,TestService18LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{
+    ""Url"": ""//visitor-identification.net?m=TestService&i=18"",
+    ""FetchParms"":
+    {
+        ""method"": ""GET"",
+        ""mode"": ""cors"",
+        ""cache"": ""no-cache"",
+        ""credentials"": ""include"",
+        ""headers"":
+        {
+            ""Content-Type"": ""application/json"",
+            ""Accept"": ""application/json""
+        },
+        ""redirect"": ""follow"",
+        ""referrer"": ""no-referrer""
+    },
+    ""FetchType"": ""json"",
+    ""SaveSession"": ""true""
+}",2019-03-29 18:53:04.451118
+82eabafb-2b1e-49c7-aea0-95c9290fd1a3,VisitorId : SQL Server,ConnectionString,"{
+  ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=dataMail;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1"",
+  ""DataLayerType"": ""SqlServer"",
+  ""DataLayer"": {
+    ""SaveSessionIdEmailMd5"": ""[VisitorId].[spSaveSessionIdEmailMd5]"",    
+    ""LookupBySessionId"": ""[VisitorId].[spLookupBySessionId]"",
+    ""ProviderSessionMd5Check"": ""[VisitorId].[CheckAndLogMd5Response]"",    
+    ""LookupLeadByMd5"": ""[VisitorId].[p_get_console_lead_from_md5]"",
+    ""ContactEmailMerge"": ""[Contact].[Contact].[p_merge_email]""
+  }
+}",2019-03-29 18:53:04.451118
+16f71698-4fd9-43a3-9007-2681699edd0d,Visitor Id,BusinessApplication,"{
+  ""description"": ""Identify visitors to a website via 3rd party cookie."",
+  ""owner"": [
+    ""5d49825d-d3c5-4466-88b3-216ca90e6e4c""
+  ],
+  ""application_config"": [
+    ""4fb7d484-58b5-4d48-bc37-ddb5df51c4f8""
+  ],
+  ""ingest_config"": [
+    ""142733a1-c44d-4a6c-8fb7-53c8c5402d09""
+  ],
+  ""report"": [
+    ""881eb6a3-3d6c-47df-9c63-2b7578911d49""
+  ]
+}",2019-06-24 13:41:23.323487
+10822e18-e9cd-4736-b5af-974a4ba1b01b,TestService0Md5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=0"",
+ ""FetchParms"": {
+    ""method"": ""GET"",
+    ""mode"": ""cors"",
+    ""cache"": ""no-cache"",
+    ""credentials"": ""include"",
+    ""headers"": {
+        ""Content-Type"": ""application/json"",
+        ""Accept"": ""application/json""
+    },
+    ""redirect"": ""follow"",
+    ""referrer"": ""no-referrer""
+  },
+  ""Transform"": {""email"": ""t0email"", ""md5"": ""t0md5""},
+  ""FetchType"": ""json"", ""ImgFlag"": """", ""SaveSession"":""true""}",2019-03-29 18:53:04.451118
+5aae8b5d-a485-4cf1-8263-b163e8b953c5,VisitorIdReports,SimpleImportExportJob,"{
+    ""Destination"":
+    {
+        ""Type"": ""Local"",
+        ""Path"": ""C:/DataDropbox/Dropbox/VisId Reports""
+    },
+    ""Source"":
+    {
+        ""Type"": ""Local"",
+        ""Path"": ""\\\\ftpback-bhs6-85.ip-66-70-176.net\\ns557038.ip-66-70-182.net\\Export\\VisitorId"",
+        ""PostProcess"": ""Move:processed""
+    }
+}",2019-04-09 19:45:13.186937
+6d2a4d45-e3ef-4a3d-a9f7-5aeea841ced1,VisitorIdAffiliate,EntityType,"{""lang"" : ""json""}",2019-04-10 19:19:59.039242
+51afa727-49b5-454a-a2b0-de14b94c5ba3,VisitorIdEmailProvider,EntityType,"{""lang"" : ""json""}",2019-04-10 19:19:59.039242
+39f3d673-c7f1-40ac-a043-cc956f80417c,VisitorIdMd5Provider,EntityType,"{""lang"" : ""json""}",2019-04-10 19:19:59.039242
+2ff6cac7-78cb-407c-b98c-4dbc9c979e66,VisitorIdPublisher,EntityType,"{""lang"" : ""json""}",2019-04-10 19:19:59.039242
+c9be810f-00aa-4697-965b-fcd535c5c1e6,VisitorId.Ed-Partial,StartupConfig,"{
+    ""PhysicalFileProviderPath"": ""C:\\Code\\RoslynArticle\\VisitorIdLib\\wwwroot"",
+    ""DataServiceAssemblyFilePath"": ""C:\\Code\\RoslynArticle\\VisitorIdLib\\bin\\Debug\\netcoreapp2.2\\VisitorIdLib.dll"",
+    ""RoslynScriptsPath"": ""C:\\Code\\Workspaces\\GenericDataServiceDynamicDlls\\VisitorIdLib\\RoslynScripts"",
+    ""DataServiceTypeName"": ""VisitorIdLib.VisitorIdDataService"",
+    ""DataServiceLogFileName"": ""VisitorIdDataService.log"",
+    ""ErrorFilePath"": ""C:\\Code\\Workspaces\\GenericDataServiceDynamicDlls\\VisitorIdLib\\error.txt"",
+    ""EdwDataFilePath"": ""C:\\Code\\Workspaces\\GenericDataServiceDynamicDlls\\VisitorIdLib\\edw\\data.txt"",
+    ""EdwErrorFilePath"": ""C:\\Code\\Workspaces\\GenericDataServiceDynamicDlls\\VisitorIdLib\\edw\\error.txt"",
+    ""PostingQueueDataFilePath"": ""C:\\Code\\Workspaces\\GenericDataServiceDynamicDlls\\VisitorIdLib\\pqueue\\data.txt"",
+    ""PostingQueueErrorFilePath"": ""C:\\Code\\Workspaces\\GenericDataServiceDynamicDlls\\VisitorIdLib\\VisitorIdLib\\pqueue\\error.txt""
+}",2019-05-02 17:30:36.104903
+9c72cf6d-eaed-4e33-976b-63ce253630bd,VisitorID Admin,InterfaceLayout,"{
+  ""lang"": ""json"",
+  ""layout"": [
+    {
+      ""hideLabel"": false,
+      ""label"": """",
+      ""components"": [],
+      ""component"": ""sectioned-navigation"",
+      ""sections"": [
+        {
+          ""components"": [
+            {
+              ""hideLabel"": false,
+              ""label"": ""Partners"",
+              ""valueKey"": ""columns"",
+              ""abstract"": false,
+              ""allowAdding"": true,
+              ""allowEditing"": true,
+              ""allowDeleting"": true,
+              ""hidden"": false,
+              ""component"": ""table"",
+              ""columns"": [
+                {
+                  ""allowSorting"": true,
+                  ""allowResizing"": true,
+                  ""allowFiltering"": true,
+                  ""allowGrouping"": true,
+                  ""allowReordering"": true,
+                  ""showColumnMenu"": true,
+                  ""enableGroupByFormat"": false,
+                  ""allowEditing"": true,
+                  ""filter"": {},
+                  ""showInColumnChooser"": true,
+                  ""allowSearching"": true,
+                  ""sortDirection"": ""Descending"",
+                  ""type"": ""string"",
+                  ""field"": ""id"",
+                  ""uid"": ""grid-column389"",
+                  ""foreignKeyField"": ""id"",
+                  ""width"": 200,
+                  ""visible"": true,
+                  ""headerText"": ""Id""
+                },
+                {
+                  ""allowSorting"": true,
+                  ""allowResizing"": true,
+                  ""allowFiltering"": true,
+                  ""allowGrouping"": true,
+                  ""allowReordering"": true,
+                  ""showColumnMenu"": true,
+                  ""enableGroupByFormat"": false,
+                  ""allowEditing"": true,
+                  ""filter"": {},
+                  ""showInColumnChooser"": true,
+                  ""allowSearching"": true,
+                  ""sortDirection"": ""Descending"",
+                  ""type"": ""string"",
+                  ""field"": ""name"",
+                  ""uid"": ""grid-column390"",
+                  ""foreignKeyField"": ""name"",
+                  ""width"": 200,
+                  ""visible"": true,
+                  ""headerText"": ""Name""
+                }
+              ],
+              ""rowDetails"": [
+                {
+                  ""hideLabel"": false,
+                  ""label"": ""Async"",
+                  ""valueKey"": ""async"",
+                  ""component"": ""toggle"",
+                  ""hidden"": false
+                },
+                {
+                  ""hideLabel"": false,
+                  ""label"": ""Comment"",
+                  ""valueKey"": ""comment"",
+                  ""hidden"": false,
+                  ""component"": ""input""
+                },
+                {
+                  ""hideLabel"": false,
+                  ""label"": ""Domains"",
+                  ""valueKey"": ""seqs"",
+                  ""abstract"": false,
+                  ""allowAdding"": true,
+                  ""allowEditing"": true,
+                  ""allowDeleting"": true,
+                  ""hidden"": false,
+                  ""component"": ""table"",
+                  ""columns"": [
+                    {
+                      ""allowSorting"": true,
+                      ""allowResizing"": true,
+                      ""allowFiltering"": true,
+                      ""allowGrouping"": true,
+                      ""allowReordering"": true,
+                      ""showColumnMenu"": true,
+                      ""enableGroupByFormat"": false,
+                      ""allowEditing"": true,
+                      ""filter"": {},
+                      ""showInColumnChooser"": true,
+                      ""allowSearching"": true,
+                      ""sortDirection"": ""Descending"",
+                      ""type"": ""string"",
+                      ""format"": ""standard"",
+                      ""negative"": ""black"",
+                      ""field"": ""domain"",
+                      ""uid"": ""grid-column393"",
+                      ""foreignKeyField"": ""domain"",
+                      ""width"": 200,
+                      ""visible"": true,
+                      ""headerText"": ""Domain""
+                    }
+                  ],
+                  ""rowDetails"": [
+                    {
+                      ""hideLabel"": false,
+                      ""label"": ""MD5 Provider Sequence"",
+                      ""valueKey"": ""seq"",
+                      ""dataHandlerType"": ""remote-config"",
+                      ""data.values"": [],
+                      ""remoteQueryMapping"": [
+                        {
+                          ""label"": ""label"",
+                          ""value"": """"
+                        },
+                        {
+                          ""label"": ""value"",
+                          ""value"": """"
+                        }
+                      ],
+                      ""hidden"": false,
+                      ""component"": ""select"",
+                      ""remoteConfigType"": ""2c0cd14e-0fdf-410e-a5a2-aa30fcd064f2""
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          ""title"": ""Partners (Affiliates)""
+        },
+        {
+          ""components"": [
+            {
+              ""hideLabel"": true,
+              ""label"": ""Table Config"",
+              ""valueKey"": ""md5providers"",
+              ""abstract"": false,
+              ""allowAdding"": true,
+              ""allowEditing"": true,
+              ""allowDeleting"": true,
+              ""hidden"": false,
+              ""component"": ""table"",
+              ""columns"": [
+                {
+                  ""allowSorting"": true,
+                  ""allowResizing"": true,
+                  ""allowFiltering"": true,
+                  ""allowGrouping"": true,
+                  ""allowReordering"": true,
+                  ""showColumnMenu"": true,
+                  ""enableGroupByFormat"": false,
+                  ""allowEditing"": true,
+                  ""filter"": {},
+                  ""showInColumnChooser"": true,
+                  ""allowSearching"": true,
+                  ""sortDirection"": ""Descending"",
+                  ""type"": ""string"",
+                  ""format"": ""standard"",
+                  ""negative"": ""black"",
+                  ""field"": ""provider"",
+                  ""uid"": ""grid-column876"",
+                  ""foreignKeyField"": ""provider"",
+                  ""width"": 200,
+                  ""visible"": true,
+                  ""headerText"": ""Provider""
+                }
+              ],
+              ""rowDetails"": []
+            }
+          ],
+          ""title"": ""MD5 Providers""
+        },
+        {
+          ""components"": [
+            {
+              ""hideLabel"": true,
+              ""label"": ""Components"",
+              ""valueKey"": ""providerSequences"",
+              ""addItemLabel"": ""Add MD5 Provider Sequence"",
+              ""emptyText"": ""No Configured Sequences"",
+              ""hidden"": false,
+              ""component"": ""list"",
+              ""components"": [
+                {
+                  ""hideLabel"": true,
+                  ""label"": ""Slot Config"",
+                  ""valueKey"": ""sequence"",
+                  ""hidden"": false,
+                  ""component"": ""slot-config"",
+                  ""providerType"": ""39f3d673-c7f1-40ac-a043-cc956f80417c"",
+                  ""actionType"": ""d80cfe67-165d-41a9-9563-e1184d963e1f""
+                }
+              ],
+              ""interleave"": ""none""
+            }
+          ],
+          ""title"": ""MD5 Provider Sequences""
+        },
+        {
+          ""components"": [
+            {
+              ""hideLabel"": true,
+              ""label"": ""Table Config"",
+              ""valueKey"": ""providers"",
+              ""abstract"": false,
+              ""allowAdding"": true,
+              ""allowEditing"": true,
+              ""allowDeleting"": true,
+              ""hidden"": false,
+              ""component"": ""table"",
+              ""columns"": [
+                {
+                  ""allowSorting"": true,
+                  ""allowResizing"": true,
+                  ""allowFiltering"": true,
+                  ""allowGrouping"": true,
+                  ""allowReordering"": true,
+                  ""showColumnMenu"": true,
+                  ""enableGroupByFormat"": false,
+                  ""allowEditing"": true,
+                  ""filter"": {},
+                  ""showInColumnChooser"": true,
+                  ""allowSearching"": true,
+                  ""sortDirection"": ""Descending"",
+                  ""type"": ""string"",
+                  ""format"": ""standard"",
+                  ""negative"": ""black"",
+                  ""field"": ""provider"",
+                  ""uid"": ""grid-column1077"",
+                  ""foreignKeyField"": ""provider"",
+                  ""width"": 200,
+                  ""visible"": true,
+                  ""headerText"": ""Provider""
+                }
+              ],
+              ""rowDetails"": []
+            }
+          ],
+          ""title"": ""Email Providers""
+        },
+        {
+          ""components"": [
+            {
+              ""hideLabel"": true,
+              ""label"": ""Components"",
+              ""valueKey"": ""emailProviderSequences"",
+              ""addItemLabel"": ""Add Email Provider Sequence"",
+              ""emptyText"": ""No Configured Sequences"",
+              ""hidden"": false,
+              ""component"": ""list"",
+              ""components"": [
+                {
+                  ""hideLabel"": false,
+                  ""label"": ""Slot Config"",
+                  ""valueKey"": ""seqs"",
+                  ""hidden"": false,
+                  ""component"": ""slot-config"",
+                  ""providerType"": ""51afa727-49b5-454a-a2b0-de14b94c5ba3"",
+                  ""actionType"": ""78198abe-8758-4e79-b6ec-1b9675dad401""
+                }
+              ],
+              ""interleave"": ""none""
+            }
+          ],
+          ""title"": ""Email Provider Sequences""
+        },
+        {
+          ""components"": [
+            {
+              ""hideLabel"": false,
+              ""label"": ""Data Map"",
+              ""valueKey"": ""billingSequence"",
+              ""hidden"": false,
+              ""component"": ""data-map"",
+              ""multiple"": true
+            }
+          ],
+          ""title"": ""Provider Billing Information""
+        },
+        {
+          ""components"": [],
+          ""title"": ""Framework Configuration""
+        }
+      ],
+      ""title"": ""Visitor ID Admin""
+    }
+  ]
+}",2019-07-02 17:30:47.339537
+5baa3ac3-5de9-4231-ae35-9ab83ce3a237,VisitorId.Prod paths,StartupConfig,"{
+  ""RoslynScriptsPath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib\\RoslynScripts"",
+  ""DataServiceAssemblyFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib\\VisitorIdLib.dll"",
+  ""DataServiceTypeName"": ""VisitorIdLib.VisitorIdDataService"",
+  ""DataServiceLogFileName"": ""VisitorIdDataService.log"",
+  ""ErrorFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib\\error\\error.txt"",
+  ""EdwDataFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib\\edw\\data.txt"",
+  ""EdwErrorFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib\\edw\\error.txt"",
+  ""PostingQueueDataFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib\\pqueue\\data.txt"",
+  ""PostingQueueErrorFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib\\pqueue\\error.txt"" 
+}",2019-03-29 18:53:04.451118
+677159cc-ccb2-4abd-8e5d-91fc1b8ec0df,VisitorId : v-track.net/pr,StartupConfig,"{
+    ""using"": [
+        ""aab63bf0-0e66-4413-b5a9-c841d4df7534"", // postgres
+        ""f5d64f2e-b8bd-4f53-9d56-7af1e210fae6"", // common
+        ""3fb8fd58-c3d4-491c-a964-e1e202cec9ec"", // paths
+        ""42ac3dd9-b9e4-4f20-85e3-2f9e95761a06"", // billing models
+        ""cf09d90d-5c60-4dda-9461-deaf3f811a95"" // sequences
+    ]
+}
+    
+
+",2019-07-01 18:42:18.977513
+4fb7d484-58b5-4d48-bc37-ddb5df51c4f8,VisitorId : v-track.net,StartupConfig,"{
+    ""using"": [
+        ""aab63bf0-0e66-4413-b5a9-c841d4df7534"", // postgres
+        ""928dfce4-0795-4884-a797-891cf91d06e1"", // common
+        ""5BAA3AC3-5DE9-4231-AE35-9AB83CE3A237"", // paths
+        ""42ac3dd9-b9e4-4f20-85e3-2f9e95761a06"", // billing models
+        ""A9CC463B-A756-43F5-B2C8-ED6E11ECADEB"" // sequences 
+    ]
+}",2019-07-01 18:35:53.299668
+425dd8bd-ac68-41fd-b9a2-709840fc9806,TestService17LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{
+    ""Url"": ""//visitor-identification.net?m=TestService&i=17"",
+    ""FetchParms"":
+    {
+        ""method"": ""GET"",
+        ""mode"": ""cors"",
+        ""cache"": ""no-cache"",
+        ""credentials"": ""include"",
+        ""headers"":
+        {
+            ""Content-Type"": ""application/json"",
+            ""Accept"": ""application/json""
+        },
+        ""redirect"": ""follow"",
+        ""referrer"": ""no-referrer""
+    },
+    ""FetchType"": ""json"",
+    ""SaveSession"": ""true""
+}",2019-03-29 18:53:04.451118
+40287c48-60ca-41c8-80de-efb2cec9d179,VisitorId Md5 Provider Summary,Report.Query,"{
+    ""format"": ""StoredProc"",
+    ""query"": ""rollup:visitorIdMd5ProviderReport"",
+    ""parameters"": [
+        {
+            ""name"": ""DateStart"",
+            ""type"": ""date""
+        },
+        {
+            ""name"": ""DateEnd"",
+            ""type"": ""date""
+        }
+    ],
+    ""layout"": [
+        {
+            ""label"": ""Date Range"",
+            ""component"": ""date-range"",
+            ""key"": ""dateRange"",
+            ""valueKey"": ""dateRange"",
+            ""startDateKey"": ""DateStart"",
+            ""endDateKey"": ""DateEnd"",
+            ""defaultRangeValue"": ""This Week""
+        }
+    ]
+}",2019-05-01 02:03:13.618675
+405ac872-c0c0-426a-ba40-476973a28476,VisitorId : v-track.net/traverse,StartupConfig,"{
+    ""using"": [
+        ""aab63bf0-0e66-4413-b5a9-c841d4df7534"", // postgres
+        ""2af36f73-8731-46f9-acb8-7e043106f596"", // prod paths
+        ""297ac40b-08d8-42f5-83f5-5899d60af67b"", // common
+        ""42ac3dd9-b9e4-4f20-85e3-2f9e95761a06"", // billing models
+        ""A9CC463B-A756-43F5-B2C8-ED6E11ECADEB"" // VID production sequences
+    ]
+}
+",2019-07-01 18:45:23.720957
+cf09d90d-5c60-4dda-9461-deaf3f811a95,VisitorId.v-track.net/pr Sequences,StartupConfig,"{
+  ""VisitorIdMd5ProviderSequences"": [
+    {
+      ""afid"": ""13b01e81-0a35-444e-a2db-11ea1f86085e"",
+      ""async"": ""false"",
+      ""comment"": ""standard js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""womeninfantschildrenoffice.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|CookieOPGInternalEPS"",
+            ""continue"",
+            ""@6763BED0-CB1A-4728-8B13-93CFDF772902|OPGInternalTowerEPS"",
+            ""continue"",
+            ""@FCB426BD-C248-4783-ABDD-6AEC75557EA2""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""12ede84f-76e5-4b61-ac99-367edf470841"",
+      ""async"": ""false"",
+      ""comment"": ""transcompiled js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""womeninfantschildrenoffice.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|CookieOPGInternalEPS"",
+            ""continue"",
+            ""@6763BED0-CB1A-4728-8B13-93CFDF772902|OPGInternalTowerEPS"",
+            ""continue"",
+            ""@FCB426BD-C248-4783-ABDD-6AEC75557EA2""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""6ae2d45c-f873-4f53-9df8-1340d077a3bc"",
+      ""async"": ""false"",
+      ""comment"": ""standard js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS| Internal EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""section-8-housing.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|CookieOPGInternalEPS"",
+            ""continue"",
+            ""@6763BED0-CB1A-4728-8B13-93CFDF772902|OPGInternalTowerEPS"",
+            ""continue"",
+            ""@FCB426BD-C248-4783-ABDD-6AEC75557EA2""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""4f1cdbaf-d84a-4da5-8a9c-429957e0d98b"",
+      ""async"": ""false"",
+      ""comment"": ""transcompiled js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS| Internal EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""section-8-housing.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|CookieOPGInternalEPS"",
+            ""continue"",
+            ""@6763BED0-CB1A-4728-8B13-93CFDF772902|OPGInternalTowerEPS"",
+            ""continue"",
+            ""@FCB426BD-C248-4783-ABDD-6AEC75557EA2""
+          ]
+        }
+      ]
+    }
+  ],
+  ""VisitorIdEmailProviderSequences"": [
+    {
+      ""name"": ""OPGInternalEPS"",
+      ""comment"": ""LegacyEmailProvider > OnPointEmailProvider"",
+      ""seq"": [
+        ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"",
+        ""BreakOnSuccess"",
+        ""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6""
+      ]
+    },
+    {
+      ""name"": ""CookieOPGInternalEPS"",
+      ""comment"": ""Cookie > LegacyEmailProvider > OnPointEmailProvider"",
+      ""seq"": [
+        ""@E4208B3A-0B21-4D06-B348-1CCC5715F66E"",
+        ""BreakOnSuccess"",
+        ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"",
+        ""BreakOnSuccess"",
+        ""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6""
+      ]
+    },
+    {
+      ""name"": ""OPGInternalTowerEPS"",
+      ""comment"": ""LegacyEmailProvider > OnPointEmailProvider > TowerEmailProvider"",
+      ""seq"": [
+        ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"",
+        ""BreakOnSuccess"",
+        ""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6"",
+        ""BreakOnSuccess"",
+        ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+      ]
+    }
+  ]
+}",2019-04-09 19:45:13.186937
+6cbf3990-a74b-40be-847f-193147b89b05,TestService3OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{
+        ""Url"": ""//visitor-identification.net?m=TestService&i=3"",
+        ""FetchParms"":
+        {
+            ""method"": ""GET"",
+            ""mode"": ""cors"",
+            ""cache"": ""no-cache"",
+            ""credentials"": ""include"",
+            ""headers"":
+            {
+                ""Content-Type"": ""application/json"",
+                ""Accept"": ""application/json""
+            },
+            ""redirect"": ""follow"",
+            ""referrer"": ""no-referrer""
+        },
+        ""FetchType"": ""json"",
+        ""SaveSession"": ""true""
+    }",2019-03-29 18:53:04.451118
+7ef2b427-8298-477b-8ce3-83575bfd1e62,TestService4OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=4"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+e4208b3a-0b21-4d06-b348-1ccc5715f66e,VisitorIdCookieEmailProvider,VisitorIdEmailProvider,,2019-03-29 18:53:04.451118
+b484c2d3-bd77-491f-b63b-be3b010d73be,VisitorIdCookieMd5Provider,VisitorIdMd5Provider,"{
+    ""ReportLabel"": ""Cookie"",
+    ""SaveSession"": ""false""
+}",2019-03-29 18:53:04.451118
+a61c77c9-503f-4981-95b6-c3de91c82c53,TestService1Md5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=1"",
+ ""FetchParms"": {
+    ""method"": ""GET"",
+    ""mode"": ""cors"",
+    ""cache"": ""no-cache"",
+    ""credentials"": ""include"",
+    ""headers"": {
+        ""Content-Type"": ""application/json"",
+        ""Accept"": ""application/json""
+    },
+    ""redirect"": ""follow"",
+    ""referrer"": ""no-referrer""
+  },
+  ""Transform"": {""email"": ""t1email"", ""md5"": ""t1md5""},
+  ""FetchType"": ""json"", ""ImgFlag"": """", ""SaveSession"":""true""}
+",2019-03-29 18:53:04.451118
+2d908ee0-0ef4-4251-b74f-d4f5c3a1ebf7,VisitorId Md5 Provider Domain Drilldown,Report.Query,"{
+  ""format"": ""StoredProc"",
+  ""query"": ""rollup:visitorIdMd5ProviderDomainDrilldownReport"",
+  ""parameters"": [
+    {
+      ""name"": ""DateStart"",
+      ""type"": ""date""
+    },
+    {
+      ""name"": ""DateEnd"",
+      ""type"": ""date""
+    },
+    {
+      ""name"": ""Md5Provider"",
+      ""type"": ""string""
+    }
+  ],
+  ""layout"": []
+}",2019-05-03 20:36:00.168960
+e9257f53-7e8d-4b89-9501-8623226db417,TestService5OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=5"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+e45460fd-033f-41d8-af4a-0f28235fae1a,TestService6OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=6"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+716eea58-cd28-4a5e-ab71-7e1bb8d3ba2c,TestService7OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=7"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+5e4499e2-5f66-47c7-813f-edd6c673234a,TestService8OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=8"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+f6cbfed9-231f-4a77-811d-5a01650039cb,TestService9OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=9"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+043ba5e4-eefa-4b55-8e39-54d56eb285d9,TestService10OnPointMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=10"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+7c4b401d-ea18-4313-baba-a109d1df6aa0,TestService11LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=11"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+c3b4c498-a303-491d-9aed-82dc83f38401,TestService12LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=12"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+9dad08f0-7d4e-481e-a1c8-130f6d89f8e7,TestService13LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=13"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+a04d0d68-5e4e-474d-9612-e311ac48532b,TestService15LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=15"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+e8c664c9-fe98-486c-93c6-d4a6dabdaf3e,TestService16LegacyMd5Provider.visitor-identification.net,VisitorIdMd5Provider,"{""Url"": ""//visitor-identification.net?m=TestService&i=16"",   ""FetchParms"": {      ""method"": ""GET"",      ""mode"": ""cors"",      ""cache"": ""no-cache"",      ""credentials"": ""include"",      ""headers"": {          ""Content-Type"": ""application/json"",          ""Accept"": ""application/json""      },      ""redirect"": ""follow"",      ""referrer"": ""no-referrer""    }, ""FetchType"": ""json"", ""SaveSession"":""true"" }",2019-03-29 18:53:04.451118
+3095ce37-aa42-4bb5-925f-7d780ec282eb,VisitorId.TestCases.Tower,StartupConfig,"{
+  ""using"": [
+    ""E1AD0D09-12D6-42A9-B1A5-7181B6AF39F6""
+  ],
+  ""config"": {
+    ""VisitorIdMd5ProviderSequences"": [
+      {
+        ""afid"": ""9e2b3d31-fce0-4dae-bfe1-a0a2839b437a"",
+        ""async"": ""false"",
+        ""comment"": ""Cookie > Tower (Production) > Test Provider"",
+        ""seqs"": [
+          {
+            ""dom"": ""section-8-housing.org"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""continue"",
+              ""@9720B057-4BAF-4DFF-8840-93C1FBCC98FC"",
+              ""continue"",
+              ""@6EF87C8B-92D9-4FE0-A5B3-00E9207D9B94""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000002"",
+        ""async"": ""false"",
+        ""comment"": ""Cookie > Tower (Production) > Test Provider"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""continue"",
+              ""@9720B057-4BAF-4DFF-8840-93C1FBCC98FC"",
+              ""continue"",
+              ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000003"",
+        ""async"": ""false"",
+        ""comment"": ""Tower (Test Account) Only"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+              ""break""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000004"",
+        ""async"": ""false"",
+        ""comment"": ""Traverse Only"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""continue"",
+              ""@B264936D-380A-43F4-946F-5C8533D825B1|OPGToTower""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000005"",
+        ""async"": ""false"",
+        ""comment"": ""Cookie > Traverse > Test Provider"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""continue"",
+              ""@B264936D-380A-43F4-946F-5C8533D825B1"",
+              ""continue"",
+              ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000006"",
+        ""async"": ""false"",
+        ""comment"": ""Cookie Only"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000007"",
+        ""async"": ""false"",
+        ""comment"": ""Tower (Test Account) Only"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""breakonsuccessmd5"",
+              ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+              ""break""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000008"",
+        ""async"": ""false"",
+        ""comment"": ""Tower (Test Account) Only"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""breakonsuccessemail"",
+              ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+              ""break""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000009"",
+        ""async"": ""false"",
+        ""comment"": ""Tower (Test Account) Only"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""breakonsuccessemail"",
+              ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213|OPGToTower"",
+              ""break""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0000-000000000010"",
+        ""async"": ""false"",
+        ""comment"": ""Tower (Test Account) Only"",
+        ""seqs"": [
+          {
+            ""dom"": ""visitor-identification.com"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""breakonsuccessemail"",
+              ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213|TowerOnly"",
+              ""break""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0001-000000000000"",
+        ""async"": ""false"",
+        ""comment"": ""Production Site: Cookie > Tower (Production) > Test Provider"",
+        ""seqs"": [
+          {
+            ""dom"": ""section-8-housing.org"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""continue"",
+              ""@9720B057-4BAF-4DFF-8840-93C1FBCC98FC"",
+              ""continue"",
+              ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+            ]
+          }
+        ]
+      },
+      {
+        ""afid"": ""00000000-0000-0000-0002-000000000000"",
+        ""async"": ""false"",
+        ""comment"": ""Production Site: Cookie > Tower (Test) > Test Provider"",
+        ""seqs"": [
+          {
+            ""dom"": ""section-8-housing.org"",
+            ""async"": ""false"",
+            ""seq"": [
+              ""cookie"",
+              ""continue"",
+              ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+              ""continue"",
+              ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+            ]
+          }
+        ]
+      }
+    ],
+    ""VisitorIdEmailProviderSequences"": [
+      {
+        ""name"": ""eps1"",
+        ""comment"": ""1 eps1  = [e1]"",
+        ""seq"": [
+          ""@E7CA9F29-A762-44A9-BDC8-7022F7F66011""
+        ]
+      },
+      {
+        ""name"": ""OPGToTower"",
+		""comment"" : ""LegacyEmailProviderr > OnPointEmailProvider > TowerEmailProvider"", 
+        ""seq"": [
+		  ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"",
+		  ""BreakOnSuccess"",
+		  ""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6"",
+		  ""BreakOnSuccess"",
+		  ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+        ]
+      },
+	        {
+        ""name"": ""TowerOnly"",
+		""comment"" : ""LegacyEmailProviderr > OnPointEmailProvider > TowerEmailProvider"", 
+        ""seq"": [
+		  ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+        ]
+      }
+    ]
+  }
+}",2019-03-29 18:53:04.451118
+42ac3dd9-b9e4-4f20-85e3-2f9e95761a06,VisitorId Provider Billing Model,StartupConfig,"{
+  ""ProviderBillingModel"": {
+  ""6763BED0-CB1A-4728-8B13-93CFDF772902"": ""1d"",
+	""9720b057-4baf-4dff-8840-93c1fbcc98fc"": ""1d"",
+	""b264936d-380a-43f4-946f-5c8533d825b1"": ""WithinMonth"",
+  ""D6359C31-5D6E-425D-AE72-6556B881500D"": ""WithinMonth"",
+	""FCB426BD-C248-4783-ABDD-6AEC75557EA2"": ""NoExpense"",
+	""B484C2D3-BD77-491F-B63B-BE3B010D73BE"": ""NoExpense"",
+	""E4208B3A-0B21-4D06-B348-1CCC5715F66E"": ""NoExpense"",
+	""1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"": ""NoExpense"",
+	""7C9EEDED-069D-478D-A6D6-5BEFA92158B6"": ""NoExpense"",
+	""775F1ECE-366E-4611-B5F8-9151EDB050C2"": ""AlwaysExpense"",
+	""cacdd832-b99e-45f5-aa6b-fe59341afb5f"": ""NoExpense""	
+  }
+}",2019-05-16 22:25:12.812935
+6d130973-ab6c-472f-ab85-2f9f25f8f9b1,VisitorId : SQL Server exclusive,ConnectionString,"{
+  ""ConnectionString"": ""Data Source=66.70.182.182;Initial Catalog=dataMail;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1"",
+  ""DataLayerType"": ""SqlServer"",
+  ""DataLayer"": {   
+    ""LookupLeadByMd5"": ""[VisitorId].[p_get_console_lead_from_md5]"",
+    ""ContactEmailMerge"": ""[Contact].[Contact].[p_merge_email]""
+  }
+}",2019-05-21 19:51:02.529616
+3fb8fd58-c3d4-491c-a964-e1e202cec9ec,VisitorId.PreRelease Paths,StartupConfig,"{
+  ""RoslynScriptsPath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib-PreRelease\\RoslynScripts"",
+  ""DataServiceAssemblyFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib-PreRelease\\VisitorIdLib.dll"",
+  ""ErrorFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib-PreRelease\\error\\error.txt"",
+  ""EdwDataFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib-PreRelease\\edw\\data.txt"",
+  ""EdwErrorFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib-PreRelease\\edw\\error.txt"",
+  ""PostingQueueDataFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib-PreRelease\\pqueue\\data.txt"",
+  ""PostingQueueErrorFilePath"": ""C:\\Workspace\\GenericDataServiceDynamicDlls\\VisitorIdLib-PreRelease\\pqueue\\error.txt""
+}",2019-04-09 19:45:13.186937
+458c8c44-eff1-40ed-9fc0-548e445d9e26,VisitorIdReports2,SimpleImportExportJob,"{
+    ""Destination"":
+    {
+        ""Type"": ""Local"",
+        ""Path"": ""C:/DataDropbox/Dropbox/VisId Reports"",
+        ""PostProcess"": { ""cmd"": ""Rename"", ""pattern"": ""\\d{8}\\.csv$"", ""replace"": "".csv"", ""overwrite"": true }
+    },
+    ""Source"":
+    {
+        ""Type"": ""Local"",
+        ""Path"": ""\\\\ftpback-bhs6-85.ip-66-70-176.net\\ns557038.ip-66-70-182.net\\Export\\VisitorId"",
+        ""PostProcess"": ""Move:processed""
+    }
+}",2019-04-09 19:45:13.186937
+66b4497b-a549-426e-866b-210156693b2a,VisitorIdPoisonIncident,EntityType,"{
+  ""lang"": ""json"",
+  ""layout"": [
+    {
+      ""hideLabel"": false,
+      ""hidden"": false,
+      ""component"": ""input"",
+      ""label"": ""Md5 Provider Id"",
+      ""valueKey"": ""md5pid""
+    },
+    {
+      ""hideLabel"": false,
+      ""defaultRangeValue"": ""Today"",
+      ""useWrapperObject"": false,
+      ""wrapperObjectKey"": ""dateRange"",
+      ""hidden"": false,
+      ""component"": ""date-range"",
+      ""label"": ""Discard Date Range"",
+      ""startDateKey"": ""start_date"",
+      ""endDateKey"": ""end_date""
+    }
+  ]
+}",2019-07-18 16:25:09.264238
+d80cfe67-165d-41a9-9563-e1184d963e1f,Visitor MD5 Provider Actions,KeyValuePairs,"{
+  ""lang"": ""json"",
+  ""items"": [
+    {
+      ""key"": ""continue"",
+      ""value"": ""Continue""
+    },
+    {
+      ""key"": ""continueonsuccessmd5"",
+      ""value"": ""Continue On Successful Md5 Response""
+    },
+    {
+      ""key"": ""continueonsuccessemail"",
+      ""value"": ""Continue On Successful Email Response""
+    },
+    {
+      ""key"": ""breakonsuccessmd5"",
+      ""value"": ""Stop On Successful Md5 Response""
+    },
+    {
+      ""key"": ""breakonsuccessemail"",
+      ""value"": ""Stop On Successful Email Response""
+    },
+    {
+      ""key"": ""break"",
+      ""value"": ""Stop""
+    }
+  ]
+}",2019-07-01 14:03:57.252726
+6c4e98af-7ce9-4185-b210-23aeebb3739f,Visitor ID Billing Model,InterfaceLayout,"{
+  ""layout"": [
+    {
+      ""hideLabel"": false,
+      ""label"": ""BillingModel"",
+      ""valueKey"": ""ProviderBillingModel"",
+      ""component"": ""data-map"",
+      ""labelComponent"": {
+        ""key"": ""label"",
+        ""valueKey"": ""label"",
+        ""component"": ""select"",
+        ""dataHandlerType"": ""remote-config"",
+        ""label"": ""Provider""
+      },
+      ""valueComponent"": {
+
+      }
+    }
+  ]
+}",2019-06-28 16:32:28.909875
+0015b073-85e1-4e37-adc2-95364379a457,Visitor Id Billing Mapping,LayoutMapping,"{
+  ""layout"": ""6c4e98af-7ce9-4185-b210-23aeebb3739f"",
+  ""entityTypes"": """",
+  ""configs"": ""42ac3dd9-b9e4-4f20-85e3-2f9e95761a06""
+}",2019-06-28 16:33:22.444225
+78198abe-8758-4e79-b6ec-1b9675dad401,Visitor ID Email Provider Actions,KeyValuePairs,"{
+  ""lang"": ""json"",
+  ""items"": [
+    {
+      ""value"": ""Stop On Successful Email Response"",
+      ""key"": ""stopifemail""
+    },
+    {
+      ""key"": ""continue"",
+      ""value"": ""Continue Processing""
+    },
+    {
+      ""key"": ""continueonsuccess"",
+      ""value"": ""Continue Processing On Successful Email Response""
+    },
+    {
+      ""key"": ""breakonsuccess"",
+      ""value"": ""Stop Processing On Successful Email Response""
+    },
+    {
+      ""key"": ""break"",
+      ""value"": ""Stop Processing""
+    }
+  ]
+}",2019-07-01 14:12:26.502089
+6e7bd37d-4845-47ef-a16e-31879b983d97,Visitor ID Startup Layout Mapping,LayoutMapping,"{
+  ""lang"": ""json"",
+  ""layout"": ""7e6ce4dd-db30-40c2-a8ad-9ffb4a8b40ac"",
+  ""entityTypes"": [],
+  ""configs"": [
+    ""a9cc463b-a756-43f5-b2c8-ed6e11ecadeb""
+  ]
+}",2019-06-26 13:47:47.263659
+7e6ce4dd-db30-40c2-a8ad-9ffb4a8b40ac,Visitor ID Startup Config,InterfaceLayout,"{
+  ""layout"": [
+    {
+      ""hideLabel"": false,
+      ""label"": ""MD5 Provider Sequences"",
+      ""valueKey"": ""VisitorIdMd5ProviderSequences"",
+      ""addItemLabel"": ""Add MD5 Provider Sequence"",
+      ""component"": ""list"",
+      ""components"": [
+        {
+          ""hideLabel"": true,
+          ""label"": ""Formitude"",
+          ""component"": ""form"",
+          ""components"": [
+            {
+              ""hideLabel"": false,
+              ""label"": ""Visitor ID Publisher"",
+              ""valueKey"": ""afid"",
+              ""dataHandlerType"": ""remote-config"",
+              ""component"": ""select"",
+              ""remoteConfigType"": ""39f3d673-c7f1-40ac-a043-cc956f80417c""
+            },
+            {
+              ""hideLabel"": false,
+              ""label"": ""Asynchronous"",
+              ""valueKey"": ""async"",
+              ""component"": ""toggle""
+            },
+            {
+              ""hideLabel"": false,
+              ""label"": ""Comment"",
+              ""valueKey"": ""comment"",
+              ""component"": ""input""
+            },
+            {
+              ""hideLabel"": false,
+              ""label"": ""Activation Sequences"",
+              ""valueKey"": ""seqs"",
+              ""addItemLabel"": ""Add Activation Sequence"",
+              ""component"": ""list"",
+              ""components"": [
+                {
+                  ""hideLabel"": true,
+                  ""label"": ""Form"",
+                  ""component"": ""form"",
+                  ""components"": [
+                    {
+                      ""hideLabel"": false,
+                      ""label"": ""Domain"",
+                      ""valueKey"": ""dom"",
+                      ""dataHandlerType"": ""remote-query"",
+                      ""component"": ""input"",
+                      ""remoteQuery"": ""c3f021ef-284a-4b9b-9d7d-c0f814391811"",
+                      ""remoteQueryMapping"": [
+                        {
+                          ""label"": ""label"",
+                          ""value"": ""domain""
+                        },
+                        {
+                          ""label"": ""value"",
+                          ""value"": ""id""
+                        }
+                      ]
+                    },
+                    {
+                      ""hideLabel"": false,
+                      ""label"": ""Asynchronous"",
+                      ""valueKey"": ""async"",
+                      ""component"": ""toggle""
+                    },
+                    {
+                      ""hideLabel"": false,
+                      ""label"": ""Slot Config"",
+                      ""valueKey"": ""seqs"",
+                      ""component"": ""slot-config"",
+                      ""providerType"": ""39f3d673-c7f1-40ac-a043-cc956f80417c"",
+                      ""actionType"": ""d80cfe67-165d-41a9-9563-e1184d963e1f""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      ""hideLabel"": false,
+      ""label"": ""Email Provider Sequences"",
+      ""valueKey"": ""VisitorIdEmailProviderSequences"",
+      ""addItemLabel"": ""Add Email Provider Sequence"",
+      ""component"": ""list"",
+      ""components"": [
+        {
+          ""hideLabel"": true,
+          ""label"": ""Form"",
+          ""component"": ""form"",
+          ""components"": [
+            {
+              ""hideLabel"": false,
+              ""label"": ""Name"",
+              ""valueKey"": ""name"",
+              ""component"": ""input""
+            },
+            {
+              ""hideLabel"": false,
+              ""label"": ""Comment"",
+              ""valueKey"": ""comment"",
+              ""component"": ""input""
+            },
+            {
+              ""hideLabel"": false,
+              ""label"": ""Slot Config"",
+              ""valueKey"": ""seq"",
+              ""component"": ""slot-config"",
+              ""providerType"": ""51afa727-49b5-454a-a2b0-de14b94c5ba3"",
+              ""actionType"": ""78198abe-8758-4e79-b6ec-1b9675dad401""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}",2019-06-26 13:18:49.615484
+4e2d224f-9c13-4696-8c2d-1080d1886b1a,VisitorID,Partner,"{
+    ""FTP"": null,
+    ""RawTables"": {
+        ""visitorid_signal"": {}
+    },
+    ""Ingestions"": [
+        ""142733a1-c44d-4a6c-8fb7-53c8c5402d09""
+    ],
+    ""attribution_id"":14
+}",2019-07-16 14:04:11.118184
+928dfce4-0795-4884-a797-891cf91d06e1,VisitorId v-track.net/* common,StartupConfig,"{
+  ""TowerEncryptionKey"": ""F244A263F70DB8B4AB894DA906ECCF3E"",
+  ""ConnectionStrings"": {
+    ""VisitorId"" : ""962b0c3e-a608-439d-8053-46239f6879cc"",
+    ""Contact"": ""ba6a0c9d-df73-48fd-a75b-a33885c80b35"",
+    ""Config"" : ""8f593686-ced2-40cd-8fe6-a9e0d8452a69""
+  },
+  ""OnPointConsoleDomainId"": ""739f8422-2081-40b0-8be2-ce04ceb1c7c4"",
+  ""OnPointConsoleUrl"": ""http://dpost.direct-market.com/api?pe=VisitorId"",
+  ""VidRsid"": ""52f27c09-e3a7-483d-984a-166c412d91a5"",
+  ""DomainRsid"": ""995048f7-6910-4fdf-904f-d70d51329865"",
+  ""PageRsid"": ""2cbe0f59-1df0-414a-8d6b-a97428c8f312"",
+  ""CodePathRsid"": ""57558203-cd1a-427d-9781-e04ddbf1ed13"",
+  ""CodePathEventsEnabled"": ""false"",
+  ""CookieName"": ""vidck"",
+  ""CookieVersion"": ""2"",
+  ""SessionDurationDays"": ""1"",
+  ""Md5ExcludeList"": [""11111111111111111111111111111111""],
+  ""EnableTraceLogging"": ""false"",
+  ""DataServiceTypeName"": ""VisitorIdLib.VisitorIdDataService"",
+  ""DataServiceLogFileName"": ""VisitorIdDataService.log"",
+  ""ErrorLogAppName"": ""VisitorId"",
+  ""ErrorLogTimeout"": ""5"",
+  ""EdwWriteTimeout"": ""5""
+}",2019-05-15 18:09:25.532990
+f5d64f2e-b8bd-4f53-9d56-7af1e210fae6,VisitorId v-track.net/pr common,StartupConfig,"{
+  ""TowerEncryptionKey"": ""F244A263F70DB8B4AB894DA906ECCF3E"",
+  ""ConnectionStrings"": {
+    ""VisitorId"" : ""962b0c3e-a608-439d-8053-46239f6879cc"",
+    ""Contact"": ""ba6a0c9d-df73-48fd-a75b-a33885c80b35"",
+    ""Config"" : ""8f593686-ced2-40cd-8fe6-a9e0d8452a69""
+  },
+  ""OnPointConsoleDomainId"": ""739f8422-2081-40b0-8be2-ce04ceb1c7c4"",
+  ""OnPointConsoleUrl"": ""http://dpost.direct-market.com/api?pe=VisitorId"",
+  ""VidRsid"": ""52f27c09-e3a7-483d-984a-166c412d91a5"",
+  ""DomainRsid"": ""995048f7-6910-4fdf-904f-d70d51329865"",
+  ""PageRsid"": ""2cbe0f59-1df0-414a-8d6b-a97428c8f312"",
+  ""CodePathRsid"": ""57558203-cd1a-427d-9781-e04ddbf1ed13"",
+  ""CodePathEventsEnabled"": ""false"",
+  ""CookieName"": ""vidck"",
+  ""CookieVersion"": ""2"",
+  ""SessionDurationDays"": ""1"",
+  ""Md5ExcludeList"": [""11111111111111111111111111111111""],
+  ""EnableTraceLogging"": ""false"",
+  ""DataServiceTypeName"": ""VisitorIdLib.VisitorIdDataService"",
+  ""DataServiceLogFileName"": ""VisitorIdDataService.log"",
+  ""ErrorLogAppName"": ""VisitorId-PreRelease"",
+  ""ErrorLogTimeout"": ""5"",
+  ""EdwWriteTimeout"": ""5""
+}",2019-11-15 18:18:04.983523
+c6313d0d-5ea7-4401-a4bc-af220e7cecda,VisitorIdSource,RawSource,"{
+    ""raw_table"": ""visitorid_signal"",
+    ""mappings"": {
+        ""email_id"": ""payload->>'md5'"",
+        ""visited_domain"": ""REPLACE(payload->>'domain', 'www.', '')"",
+        ""date_acquired"": ""payload->>'ts'""
+    }
+}",2019-08-14 14:10:06.705545
+a9cc463b-a756-43f5-b2c8-ed6e11ecadeb,VisitorId.v-track.net Sequences,StartupConfig,"{
+  ""VisitorIdMd5ProviderSequences"": [
+    {
+      ""afid"": ""1E7074FA-8AE6-4AED-9802-0BA3E1C6F67C"",
+      ""async"": ""false"",
+      ""comment"": """",
+      ""seqs"": [
+        {
+          ""dom"": ""bookings.hotelpower.com"",
+          ""async"": ""false"",
+          ""seq"":[
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""3ef16b77-daab-40ad-bd10-981ebe205def"",
+      ""async"": ""false"",
+      ""comment"": """",
+      ""seqs"": [
+        {
+          ""dom"": ""names.org"",
+          ""async"": ""false"",
+          ""seq"":[
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""13b01e81-0a35-444e-a2db-11ea1f86085e"",
+      ""async"": ""false"",
+      ""comment"": ""standard js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""womeninfantschildrenoffice.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""12ede84f-76e5-4b61-ac99-367edf470841"",
+      ""async"": ""false"",
+      ""comment"": ""transcompiled js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""womeninfantschildrenoffice.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""6ae2d45c-f873-4f53-9df8-1340d077a3bc"",
+      ""async"": ""false"",
+      ""comment"": ""standard js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS| Internal EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""section-8-housing.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""4f1cdbaf-d84a-4da5-8a9c-429957e0d98b"",
+      ""async"": ""false"",
+      ""comment"": ""transcompiled js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS| Internal EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""section-8-housing.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""ccdcf21b-a9f6-44ae-ab74-d9944a82fac7"",
+      ""async"": ""false"",
+      ""comment"": ""Car dealership 1: transcompiled js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS| Internal EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""default"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""b4ac9a67-99c8-4d90-a0e3-2f92abf29375"",
+      ""async"": ""false"",
+      ""comment"": ""Car dealership 2: transcompiled js afid -> Cookie| Cookie + Internal EPS; Tower| Internal EPS + Tower EPS| Internal EPS"",
+      ""seqs"": [
+        {
+          ""dom"" : ""default"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""50aa0d09-77ca-442e-ac4f-3cad3003acaa"",
+      ""async"": ""false"",
+      ""comment"": ""VID Accuracy Test: transcompiled js afid -> Cookie| Cookie + Internal EPS"",
+      ""seqs"": [
+        {
+          ""dom"" : ""section8assistance.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyEPS""
+          ]
+        }
+      ]
+    }
+  ],
+  ""VisitorIdEmailProviderSequences"": [
+    {
+      ""name"": ""TowerEPS"",
+      ""comment"": ""LegacyEmailProvider > OnPointEmailProvider > TowerEmailProvider"",
+      ""seq"": [
+        ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"",
+        ""BreakOnSuccess"",
+        ""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6"",
+        ""BreakOnSuccess"",
+        ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+      ]
+    },
+    {
+      ""name"": ""LegacyEPS"",
+      ""comment"": ""LegacyEmailProvider"",
+      ""seq"": [
+        ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487""
+      ]
+    },
+    {
+      ""name"": ""LegacyAndOPGEPS"",
+      ""comment"": ""LegacyEmailProvider > OnPointEmailProvider"",
+      ""seq"": [
+        ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"",
+        ""BreakOnSuccess"",
+        ""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6""
+      ]
+    },
+    {
+      ""name"": ""TowerOnlyEPS"",
+      ""comment"": ""Only Tower"",
+      ""seq"": [
+        ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+      ]
+    }
+  ]
+}",2019-03-29 18:53:04.451118
+3cd963db-b1d1-4a24-a537-5dc9beda5c39,Onpoint_VisitorId,PartnerExportRules,"{
+    ""ExportType"": ""Email"",
+    ""ExportName"": ""VisitorId"",
+    ""Source"": {
+        ""Type"": ""InLine"",
+        ""Expression"": {
+            ""Minus"": {
+                ""Positive"": {
+                    ""Source"": {
+                        ""Type"": ""Signal"",
+                        ""Attributors"": [
+                            ""VisId""
+                        ],
+                        ""RecordTypes"": [
+                            ""EmailProvider"",
+                            ""Md5Provider""
+                        ],
+                        ""DataAge"": ""= 1d""
+                    }
+                },
+                ""Negative"": {
+                    ""Union"": [
+                        {
+                            ""Source"": {
+                                ""Type"": ""Signal"",
+                                ""RecordTypes"": [
+                                    ""MailSoftComplainer"",
+                                    ""MailHardComplainer"",
+                                    ""MailBounce"",
+                                    ""MailBlacklist"",
+                                    ""MailBotClicks"",
+                                    ""MailLashback"",
+                                    ""MailSeed"",
+                                    ""MailSpamComplainer"",
+                                    ""MailSpamtrap""
+                                ]
+                            }
+                        },
+                        {
+                            ""Source"": {
+                                ""Type"": ""Signal"",
+                                ""Attributors"": [
+                                    ""OnPointGlobal""
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    ""Seeds"": [
+        {
+            ""DaysOfWeek"": ""mtwrfsu"",
+            ""SeedsPerDay"": 2
+        }
+    ],
+    ""OptInRequired"": true,
+    ""PartnerConfigId"": ""a8fe6540-a527-4b20-ac33-3b13e50ad4df"",
+    ""Fields"": {
+        ""Email"": {},
+        ""FirstName"": {},
+        ""LastName"": {
+            ""Optional"": true
+        },
+        ""PostalCode"": {
+            ""Optional"": true
+        },
+        ""DateOfBirth"": {
+            ""Optional"": true
+        },
+        ""VisitedDomain"": {
+            ""attribution_id"": ""14""
+        }
+    },
+    ""ExportFileNamePattern"": ""[=PARTNER=]_visid_daily_[=TODAY=].csv"",
+    ""Schedule"": [
+        {
+            ""DaysOfWeek"": ""mtwrfsu"",
+            ""ExecutionTime"": ""10am""
+        }
+    ],
+    ""SaveExportLog"": true,
+    ""ValidationRules"": {
+        ""MinimumRows"": 1000,
+        ""FailedAction"": ""STOP""
+    }
+}",2019-08-14 12:26:41.554320
+f3faeda1-1c2f-4622-a1fb-d26dc22287f4,TestService2Md5Provider.visitor-identification.net,VisitorIdMd5Provider,"{
+  ""Url"": ""//localhost:21339?m=TestService&i=2"",
+  ""FetchParms"": {
+    ""method"": ""GET"",
+    ""mode"": ""cors"",
+    ""cache"": ""no-cache"",
+    ""credentials"": ""include"",
+    ""headers"": {
+      ""Content-Type"": ""application/json"",
+      ""Accept"": ""application/json""
+    },
+    ""redirect"": ""follow"",
+    ""referrer"": ""no-referrer""
+  },
+  ""Transform"": {
+      ""email"": ""t1email"",
+      ""md5"": ""t1md5""
+  },
+  ""FetchType"": ""json"",
+  ""ImgFlag"": """",
+  ""SaveSession"": ""true""
+}",2019-03-29 18:53:04.451118
+fc887f0d-1792-4313-afe2-18087b57e097,VisitorId.TestCases-new-datalayer,StartupConfig,"{
+  ""VisitorIdMd5ProviderSequences"": [
+    {
+      ""afid"": ""9e2b3d31-fce0-4dae-bfe1-a0a2839b437a"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > Tower (Production) > Test Provider"",
+      ""seqs"": [
+        {
+          ""dom"": ""section-8-housing.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""continue"",
+            ""@9720B057-4BAF-4DFF-8840-93C1FBCC98FC"",
+            ""continue"",
+            ""@6EF87C8B-92D9-4FE0-A5B3-00E9207D9B94""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000002"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > Tower (Production) > Test Provider"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""continue"",
+            ""@9720B057-4BAF-4DFF-8840-93C1FBCC98FC"",
+            ""continue"",
+            ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000003"",
+      ""async"": ""false"",
+      ""comment"": ""Tower (Test Account) Only"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+            ""break""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000004"",
+      ""async"": ""false"",
+      ""comment"": ""Traverse Only"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""continue"",
+            ""@B264936D-380A-43F4-946F-5C8533D825B1""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000005"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > Traverse > Test Provider"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""continue"",
+            ""@B264936D-380A-43F4-946F-5C8533D825B1"",
+            ""continue"",
+            ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000006"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie Only"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|OPGInternalEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000007"",
+      ""async"": ""false"",
+      ""comment"": ""Tower (Test Account) Only"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|CookieOPGInternalEPS"",
+            ""continue"",
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+            ""break""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000008"",
+      ""async"": ""false"",
+      ""comment"": ""Tower (Test Account) Only"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""breakonsuccessemail"",
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+            ""break""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000009"",
+      ""async"": ""false"",
+      ""comment"": ""Tower (Test Account) Only"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""breakonsuccessemail"",
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213|OPGToTower"",
+            ""break""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000010"",
+      ""async"": ""false"",
+      ""comment"": ""Tower (Test Account) Only"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""breakonsuccessemail"",
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213|TowerOnly"",
+            ""break""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000011"",
+      ""async"": ""false"",
+      ""comment"": ""Tower (Test Account) Only > new DL EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""breakonsuccessemail"",
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213|LegacyNewDL"",
+            ""break""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000012"",
+      ""async"": ""false"",
+      ""comment"": ""Tower (Test Account) Only > new DL EPS"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""breakonsuccessemail"",
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213|OPGNewDL"",
+            ""break""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000013"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > OPGInternal, Test Service"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|OPGInternalEPS"",
+            ""continue"",
+            ""@FCB426BD-C248-4783-ABDD-6AEC75557EA2""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000014"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > OPGInternal, Test Service"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|LegacyAndOPGEPS"",
+            ""continue"",
+            ""@f3faeda1-1c2f-4622-a1fb-d26dc22287f4"",
+            ""continue"",
+            ""@f3faeda1-1c2f-4622-a1fb-d26dc22287f4"",
+            ""continue"",
+            ""@f3faeda1-1c2f-4622-a1fb-d26dc22287f4"",
+            ""continue"",
+            ""@f3faeda1-1c2f-4622-a1fb-d26dc22287f4""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000015"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > OPGInternal, Test Service (local)"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|OPGInternalEPS"",
+            ""continue"",
+            ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000016"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > OPGInternal, Test Service (local)"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""@B484C2D3-BD77-491F-B63B-BE3B010D73BE|CookieOPGInternalEPS"",
+            ""continue"",
+            ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000017"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > OPGInternal, Test Service (local)"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|CookieOPGInternalEPS"",
+            ""continue"",
+            ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0000-000000000018"",
+      ""async"": ""false"",
+      ""comment"": ""Cookie > Tower EPS (using for debuggin Tower LBM)"",
+      ""seqs"": [
+        {
+          ""dom"": ""visitor-identification.com"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie|TowerOnlyEPS""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0001-000000000000"",
+      ""async"": ""false"",
+      ""comment"": ""Production Site: Cookie > Tower (Production) > Test Provider"",
+      ""seqs"": [
+        {
+          ""dom"": ""section-8-housing.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""continue"",
+            ""@9720B057-4BAF-4DFF-8840-93C1FBCC98FC"",
+            ""continue"",
+            ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+          ]
+        }
+      ]
+    },
+    {
+      ""afid"": ""00000000-0000-0000-0002-000000000000"",
+      ""async"": ""false"",
+      ""comment"": ""Production Site: Cookie > Tower (Test) > Test Provider"",
+      ""seqs"": [
+        {
+          ""dom"": ""section-8-housing.org"",
+          ""async"": ""false"",
+          ""seq"": [
+            ""cookie"",
+            ""continue"",
+            ""@ACA9CED2-AC6B-45F1-A9AE-36A46E809213"",
+            ""continue"",
+            ""@F3FAEDA1-1C2F-4622-A1FB-D26DC22287F4""
+          ]
+        }
+      ]
+    }
+  ],
+  ""VisitorIdEmailProviderSequences"": [
+    {
+      ""name"": ""eps1"",
+      ""comment"": ""1 eps1  = [e1]"",
+      ""seq"": [
+        ""@E7CA9F29-A762-44A9-BDC8-7022F7F66011""
+      ]
+    },
+    {
+      ""name"": ""OPGToTower"",
+      ""comment"": ""LegacyEmailProviderr > OnPointEmailProvider > TowerEmailProvider"",
+      ""seq"": [
+        ""@1397BFC5-4ACC-4AC0-BABA-BB4EA7FB9487"",
+        ""BreakOnSuccess"",
+        ""@7C9EEDED-069D-478D-A6D6-5BEFA92158B6"",
+        ""BreakOnSuccess"",
+        ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+      ]
+    },
+    {
+      ""name"": ""TowerOnly"",
+      ""comment"": ""LegacyEmailProviderr > OnPointEmailProvider > TowerEmailProvider"",
+      ""seq"": [
+        ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+      ]
+    },
+    {
+      ""name"": ""OPGToTowerNewDL"",
+      ""comment"": ""LegacyEmailProvider - new DL > OnPointEmailProvider - new DL > TowerEmailProvider"",
+      ""seq"": [
+        ""@FFD210CC-3413-4C3D-8181-C67EB9823E9F"",
+        ""BreakOnSuccess"",
+        ""@430C1020-F55E-4ECD-B450-D02BFD84C3E4"",
+        ""BreakOnSuccess"",
+        ""@775F1ECE-366E-4611-B5F8-9151EDB050C2""
+      ]
+    },
+    {
+      ""name"": ""LegacyNewDL"",
+      ""comment"": ""LegacyEmailProvider - new DL > OnPointEmailProvider - new DL"",
+      ""seq"": [
+        ""@FFD210CC-3413-4C3D-8181-C67EB9823E9F""
+      ]
+    },
+    {
+      ""name"": ""OPGNewDL"",
+      ""comment"": ""LegacyEmailProvider - new DL > OnPointEmailProvider - new DL"",
+      ""seq"": [
+        ""@430C1020-F55E-4ECD-B450-D02BFD84C3E4""
+      ]
+    }
+  ]
+}",2019-03-29 18:53:04.451118
+60bf8b42-484c-4cb9-8f09-1d1b0266e990,VisitorIdExample,PartnerExportRules,"{
+    ""ExportType"": ""Email"",
+    ""ExportName"": ""Tower"",
+    ""Source"": {
+        ""Type"": ""InLine"",
+        ""Expression"": {
+            ""Minus"": {
+                ""Positive"": {
+                    ""Source"": {
+                        ""Type"": ""raw"",
+                        ""Table"": ""visitorid_signal"",
+                        ""Query"": ""SELECT (payload->>'md5')::uuid email_id, payload->>'email' email, payload->>'domain' \""domain\"", payload->>'md5ProviderId' \""md5ProviderId\"", payload->>'emailProviderId' \""emailProviderId\"", util.timestamp_or_null(payload->>'ts') ts FROM raw.visitorid_signal"",
+                        ""Parameters"": [{""md5ProviderId"":""[=md5ProviderId=]""},{""emailProviderId"":""[=emailProviderId=]""}],
+                        ""DataAge"": ""= 1d""
+                    }
+                },
+                ""Negative"": {
+                    ""Union"": [
+                        {
+                            ""Source"": {
+                                ""Type"": ""Signal"",
+                                ""Attributors"": [
+                                    ""OnPointGlobal""
+                                ],
+                                ""RecordTypes"": [
+                                    ""MailSoftComplainer"",
+                                    ""MailHardComplainer"",
+                                    ""MailBounce""
+                                ]
+                            }
+                        },
+                        {
+                            ""Source"": {
+                                ""Type"": ""History"",
+                                ""Partners"": [
+                                    ""BoxLabs""
+                                ],
+                                ""DataAge"": ""= 0""
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    ""Seeds"": [
+        {
+            ""DaysOfWeek"": ""mtwrfsu"",
+            ""SeedsPerDay"": 2
+        }
+    ],
+    ""MailboxProviderGroups"": [
+        ""AOL"",
+        ""Yahoo"",
+        ""Microsoft""
+    ],
+    ""OptInRequired"": true,
+    ""PartnerConfigId"": ""e758048a-f5b0-4371-b662-a2dfce13cf05"",
+    ""Fields"": {
+        ""Email"": {},
+        ""FirstName"": {},
+        ""LastName"": {
+            ""Optional"": true
+        },
+        ""PostalCode"": {
+            ""Optional"": true
+        },
+        ""OptInIp"": {},
+        ""DateOfBirth"": {
+            ""Optional"": true
+        },
+        ""Vertical"": {
+            ""Default"": ""Visid"",
+            ""Optional"": true
+        },
+        ""Class"": {
+            ""Default"": ""Visid"",
+            ""Optional"": true
+        }
+    },
+    ""ExportFileNamePattern"": ""[=PARTNER=]_signal_daily_[=TODAY=].csv"",
+    ""Schedule"": [
+        {
+            ""DaysOfWeek"": ""mtwrfsu"",
+            ""ExecutionTime"": ""10am""
+        }
+    ],
+    ""SaveExportLog"":true,
+    ""ValidationRules"": {
+        ""MinimumRows"": 1000,
+        ""FailedAction"": ""STOP""
+    }
+}",2019-07-02 17:43:59.782118
+962b0c3e-a608-439d-8053-46239f6879cc,VisitorId : Postgres,ConnectionString,"{
+  ""ConnectionString"": ""Server=signal1.data.techopg.local;Port=5432;Database=signal;User Id=master_app;Password=91cd8896-fb5f-48c1-8799-c6e4dccb027c;Application Name='VisitorId Signal';Maximum Pool Size=50;"",
+  ""DataLayerType"": ""PostgreSQL"",
+  ""DataLayer"": {
+    ""SaveProviderSessionIdEmailMd5"": ""raw.save_visitorid_provider_sessionid_email_md5"",
+    ""SaveSessionIdEmailMd5"": ""raw.save_visitorid_sessionid_email_md5"",
+    ""LookupProviderMd5EmailBySessionId"": ""raw.get_visitorid_provider_md5_email_by_sessionid"",
+    ""LookupBySessionId"": ""raw.get_visitorid_md5_email_by_sessionid"",
+    ""ProviderSessionMd5Check"": ""raw.save_visitorid_provider_response""
+  }
+}",2019-05-17 20:39:29.025068
+ba6a0c9d-df73-48fd-a75b-a33885c80b35,VisitorId.Contact,ConnectionString,"{
+  ""ConnectionString"": ""Server=signal1.data.techopg.local;Port=5432;Database=contact;User Id=master_app;Password=91cd8896-fb5f-48c1-8799-c6e4dccb027c;Application Name='VisitorId Contact';Maximum Pool Size=50;"",
+  ""DataLayerType"": ""PostgreSQL"",
+  ""DataLayer"": {
+    ""ContactEmailMerge"": ""contact.p_merge_email""
+  }
+}",2019-06-04 20:15:59.989750
+2cbe0f59-1df0-414a-8d6b-a97428c8f312,EDW.VisitorIdMd5Provider,ReportSequenceConfig_old,"{
+	""name"": ""VisitorIdMd5Provider"",
+	""description"": ""Provides aggregates for Visitor ID report"",
+	""has_config"": true,
+	""rs_elements"": {
+		""affiliate_id"": {
+			""json_key"": ""afid"",
+			""data_type"": ""UUID""
+		},
+		""domain"": {
+			""json_key"": ""Domain"",
+			""data_type"": ""TEXT""
+		},
+		""very_first_visit"": {
+			""json_key"": ""VeryFirstVisit"",
+			""data_type"": ""BOOLEAN""
+		},
+		""third_party_id"": {
+			""json_key"": ""tpid"",
+			""data_type"": ""TEXT""
+		},
+		""page"": {
+			""json_key"": ""Page"",
+			""data_type"": ""TEXT""
+		}
+	},
+	""event_elements"": {
+		""md5_slot"": {
+			""json_path"": ""->>'md5slot'"",
+			""data_type"": ""INT""
+		},
+		""event_type"": {
+			""json_path"": ""->>'et'"",
+			""data_type"": ""TEXT""
+		},
+		""email_slot"": {
+			""json_path"": ""->>'emailslot'"",
+			""data_type"": ""INT""
+		},
+		""success"": {
+			""json_path"": ""->>'succ'"",
+			""data_type"": ""BOOLEAN""
+		},
+		""md5_provider_id"": {
+			""json_path"": ""->>'md5pid'"",
+			""data_type"": ""UUID""
+		},
+		""email_provider_id"": {
+			""json_path"": ""->>'emailpid'"",
+			""data_type"": ""UUID""
+		},
+		""expense_generating"": {
+			""json_path"": ""->>'eg'"",
+			""data_type"": ""BOOLEAN""
+		},
+		""email_page"": {
+			""json_path"": ""->>'emailpage'"",
+			""data_type"": ""INT""
+		},
+		""md5_page"": {
+			""json_path"": ""->>'md5page'"",
+			""data_type"": ""INT""
+		}
+	},
+	""aggregates"": {
+		""rollup_configs"": [
+			{
+				""rollup_table_1"": {
+					""sequence_hour"": {
+						""ordinal"": 1,
+						""data_type"": ""TIMESTAMPTZ"",
+						""expression"": ""date_trunc('hour', dt.report_sequence_ts)"",
+						""SUM"": null
+					},
+					""md5_provider_id"": {
+						""ordinal"": 2,
+						""data_type"": ""UUID"",
+						""expression"": ""COALESCE(md5_provider_id, '00000000-0000-0000-0000-000000000000'::uuid)"",
+						""SUM"": null
+					},
+					""domain"": {
+						""ordinal"": 3,
+						""data_type"": ""TEXT"",
+						""expression"": ""COALESCE(domain, '')"",
+						""SUM"": null
+					},
+					""affiliate_id"": {
+						""ordinal"": 4,
+						""data_type"": ""UUID"",
+						""expression"": ""COALESCE(affiliate_id, '00000000-0000-0000-0000-000000000000'::uuid)"",
+						""SUM"": null
+					},
+					""third_party_id"": {
+						""ordinal"": 5,
+						""data_type"": ""TEXT"",
+						""expression"": ""COALESCE(third_party_id, '')"",
+						""SUM"": null
+					},
+					""email_provider_id"": {
+						""ordinal"": 6,
+						""data_type"": ""UUID"",
+						""expression"": ""COALESCE(email_provider_id, '00000000-0000-0000-0000-000000000000'::uuid)"",
+						""SUM"": null
+					},
+					""md5_slot"": {
+						""ordinal"": 7,
+						""data_type"": ""INT"",
+						""expression"": ""COALESCE(md5_slot, -1)"",
+						""SUM"": null
+					},
+					""md5_page"": {
+						""ordinal"": 8,
+						""data_type"": ""INT"",
+						""expression"": ""COALESCE(md5_page, -1)"",
+						""SUM"": null
+					},
+					""email_slot"": {
+						""ordinal"": 9,
+						""data_type"": ""INT"",
+						""expression"": ""COALESCE(email_slot, -1)"",
+						""SUM"": null
+					},
+					""email_page"": {
+						""ordinal"": 10,
+						""data_type"": ""INT"",
+						""expression"": ""COALESCE(email_page, -1)"",
+						""SUM"": null
+					},
+					""page_session_initiate_count"": {
+						""ordinal"": 11,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'PageSessionInitiate'"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""domain_session_initiate_count"": {
+						""ordinal"": 12,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'DomainSessionInitiate'"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""md5_provider_selected_count"": {
+						""ordinal"": 13,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'Md5ProviderSelected'"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""md5_provider_response_count"": {
+						""ordinal"": 14,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'Md5ProviderResponse'"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""md5_provider_response_success_count"": {
+						""ordinal"": 15,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'Md5ProviderResponse' AND success"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""md5_provider_response_expense_generating_count"": {
+						""ordinal"": 16,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'Md5ProviderResponse' AND expense_generating"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""email_provider_selected_count"": {
+						""ordinal"": 17,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'EmailProviderSelected'"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""email_provider_response_count"": {
+						""ordinal"": 18,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'EmailProviderResponse'"": 1
+							},
+							""ELSE"": 0
+						}
+					},
+					""email_provider_response_success_count"": {
+						""ordinal"": 19,
+						""data_type"": ""INT"",
+						""expression"": null,
+						""SUM"": {
+							""WHEN"": {
+								""event_type = 'EmailProviderResponse' AND success"": 1
+							},
+							""ELSE"": 0
+						}
+					}
+				}
+			}
+		]
+	}
+}",2019-10-15 15:50:04.409880

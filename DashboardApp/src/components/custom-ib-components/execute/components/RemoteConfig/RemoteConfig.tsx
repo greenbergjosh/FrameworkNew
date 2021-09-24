@@ -12,8 +12,9 @@ import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
 import { AppDispatch } from "../../../../../state/store.types"
-import { get, isEmpty } from "lodash/fp"
+import { isEmpty } from "lodash/fp"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { NotifyConfig } from "../../../../../state/feedback"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
@@ -38,6 +39,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     useRedirect,
     userInterfaceData,
     getValue,
+    getDefinitionDefaultValue,
   } = props
 
   /* *************************************
@@ -117,11 +119,12 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       userInterfaceData,
     }).then((newLoadingState) => {
       if (newLoadingState.loadError) {
-        dispatch.feedback.notify({
+        const notifyConfig: NotifyConfig = {
           type: "error",
           message: newLoadingState.loadError,
-        })
-        return
+        }
+        dispatch.feedback.notify(notifyConfig)
+        return notifyConfig
       }
       setLoadStatus(newLoadingState.loadStatus)
 
@@ -181,6 +184,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
           submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
+          getDefinitionDefaultValue={getDefinitionDefaultValue}
         />
       )}
     </QueryParams>

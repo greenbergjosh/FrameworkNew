@@ -51,7 +51,7 @@ export const FilteredMenu = <T extends {} = any>({
     const resultsPromise = filterInput
       ? Promise.resolve(searchDB.search(filterInput, resultLimit)).then((ids) =>
           ids
-            ? (((ids as unknown) as string[]).map((id) => id && valueToDataItemMap.get(id)).filter((i) => i) as T[])
+            ? ((ids as unknown as string[]).map((id) => id && valueToDataItemMap.get(id)).filter((i) => i) as T[])
             : ([] as T[])
         )
       : Promise.resolve(data.slice(0, resultLimit))

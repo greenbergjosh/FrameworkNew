@@ -1,6 +1,7 @@
 import React from "react"
 import { ColumnConfig, TableInterfaceComponentProps } from "../types"
-import { SortableGroupableColumnModel, Table } from "@opg/interface-builder"
+import { SortableGroupableColumnModel } from "@opg/interface-builder-plugins/lib/syncfusion/table"
+import TableInterfaceComponent from "@opg/interface-builder-plugins/lib/syncfusion/table/TableInterfaceComponent"
 import { cloneDeep } from "lodash/fp"
 import { getDetailTemplate } from "../../../report/detailTemplate/getDetailTemplate"
 import { getCustomCellFormatter } from "../customFormatters/customCellFormatter"
@@ -16,6 +17,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
     onChangeData,
     parameterValues,
     parentData,
+    getDefinitionDefaultValue,
   } = props
 
   /* **********************************************************************
@@ -25,7 +27,7 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
 
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
-    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
     isExecutingQuery: appState.loading.effects.reports.executeQuery,
     reportDataByQuery: appState.reports.reportDataByQuery,
   }))
@@ -35,35 +37,34 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
    * Provide layout components and formatters to columns
    */
   const enrichedColumns = React.useMemo((): SortableGroupableColumnModel[] => {
-    return columns.map(
-      (column): SortableGroupableColumnModel => {
-        const template = getDetailTemplate({
-          columnDetails: (column as ColumnConfig).details,
-          columnType: column.type,
-          dispatch,
-          getRootUserInterfaceData,
-          onChangeRootData,
-          onChangeData,
-          parameterValues: parameterValues && parameterValues.toUndefined(),
-          parentData,
-        })
-        const formatter = getCustomCellFormatter({
-          cellFormatter: column.cellFormatter,
-          cellFormatterOptions: column.cellFormatterOptions,
-          columnType: column.type,
-          configsById: fromStore.configsById,
-          formatter: column.formatter,
-          queryParams: parameterValues && parameterValues.toUndefined(),
-        })
-        const customAggregateFunction = getCustomAggregateFunction(
-          column.customAggregateId,
-          fromStore.configsById,
-          column.aggregationFunction
-        )
+    return columns.map((column): SortableGroupableColumnModel => {
+      const template = getDetailTemplate({
+        columnDetails: (column as ColumnConfig).details,
+        columnType: column.type,
+        dispatch,
+        getRootUserInterfaceData,
+        onChangeRootData,
+        onChangeData,
+        parameterValues: parameterValues && parameterValues.toUndefined(),
+        parentData,
+        getDefinitionDefaultValue,
+      })
+      const formatter = getCustomCellFormatter({
+        cellFormatter: column.cellFormatter,
+        cellFormatterOptions: column.cellFormatterOptions,
+        columnType: column.type,
+        configsById: fromStore.configsById,
+        formatter: column.formatter,
+        queryParams: parameterValues && parameterValues.toUndefined(),
+      })
+      const customAggregateFunction = getCustomAggregateFunction(
+        column.customAggregateId,
+        fromStore.configsById,
+        column.aggregationFunction
+      )
 
-        return { ...cloneDeep(column), template, formatter, customAggregateFunction }
-      }
-    )
+      return { ...cloneDeep(column), template, formatter, customAggregateFunction }
+    })
   }, [
     onChangeData,
     dispatch,
@@ -75,5 +76,5 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
     onChangeRootData,
   ])
 
-  return <Table.TableInterfaceComponent {...props} columns={enrichedColumns} />
+  return <TableInterfaceComponent {...props} columns={enrichedColumns} />
 }

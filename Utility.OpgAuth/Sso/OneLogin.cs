@@ -6,9 +6,11 @@ namespace Utility.OpgAuth.Sso
 {
     public class OneLogin : Platform
     {
+        private IGenericEntity _config;
+
         public override void Init(FrameworkWrapper fw, IGenericEntity init)
         {
-
+            _config = init;
         }
 
         public override string PlatformType { get; } = "OneLogin";
@@ -19,7 +21,12 @@ namespace Utility.OpgAuth.Sso
             {
                 var token = authData.GetS("accessToken");
 
-                var (success, body) = await ProtocolClient.HttpGetAsync("https://openid-connect.onelogin.com/oidc/me",
+                var baseUrl = new Uri(_config.GetS("baseUrl"));
+                var userDetailsPath = _config.GetS("userDetailsPath");
+
+                var url = new Uri(baseUrl, userDetailsPath).ToString();
+
+                var (success, body) = await ProtocolClient.HttpGetAsync(url,
                     new (string key, string value)[]
                     {
                         ("Authorization", "Bearer " + token)

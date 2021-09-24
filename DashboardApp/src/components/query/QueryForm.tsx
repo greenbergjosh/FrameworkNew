@@ -11,9 +11,11 @@ import { PrivilegedUserInterfaceContextManager, QueryFormProps } from "./types"
 import { AppState } from "../../state/store.types"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import * as record from "fp-ts/lib/Record"
+import { AbstractBaseInterfaceComponentType } from "@opg/interface-builder/src/components/BaseInterfaceComponent/types"
 
 export const QueryForm = React.memo(
   ({
+    getDefinitionDefaultValue,
     getRootUserInterfaceData,
     onChangeRootData,
     layout,
@@ -64,7 +66,7 @@ export const QueryForm = React.memo(
      */
     React.useEffect(() => {
       if (!onMount) return
-      const newState = getDefaultFormValues(layout, parameters, parameterValues)
+      const newState = getDefaultFormValues(layout, parameters, parameterValues, getDefinitionDefaultValue)
       const promise = onMount(newState)
 
       updateFormState(newState)
@@ -81,7 +83,7 @@ export const QueryForm = React.memo(
      * Update form state when layout or parameters change
      */
     React.useEffect(() => {
-      const newState = getDefaultFormValues(layout, parameters, parameterValues)
+      const newState = getDefaultFormValues(layout, parameters, parameterValues, getDefinitionDefaultValue)
 
       updateFormState(newState)
     }, [layout, parameters, parameterValues])
@@ -145,7 +147,7 @@ export const QueryForm = React.memo(
       return (
         <>
           <UserInterface
-            components={(layout as unknown) as ComponentDefinition[]}
+            components={layout as unknown as ComponentDefinition[]}
             contextManager={fromStore.privilegedUserInterfaceContextManager}
             data={formState}
             getRootUserInterfaceData={getRootUserInterfaceData}
@@ -178,9 +180,10 @@ export const QueryForm = React.memo(
 export function getDefaultFormValues(
   layout: QueryFormProps["layout"],
   parameters: QueryFormProps["parameters"],
-  parameterValues: JSONRecord
+  parameterValues: JSONRecord,
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
 ) {
-  const defaultComponentValues = getDefaultComponentValues(layout)
+  const defaultComponentValues = getDefaultComponentValues(layout, getDefinitionDefaultValue)
   const defaultParameters = getDefaultParameters(parameters)
 
   return merge(merge(defaultParameters, defaultComponentValues), parameterValues)
@@ -208,12 +211,15 @@ export function getDefaultParameters(parameters: QueryConfig["parameters"]): JSO
  *
  * @param layout
  */
-export function getDefaultComponentValues(layout: QueryConfig["layout"]): JSONRecord {
+export function getDefaultComponentValues(
+  layout: QueryConfig["layout"],
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+): JSONRecord {
   const emptyComponentValues: JSONRecord = {}
   const layoutOrEmptySet = (layout || []) as ComponentDefinition[]
 
   return layoutOrEmptySet.reduce((acc, layoutItem: ComponentDefinition) => {
-    return merge(acc, getDefaultsFromComponentDefinitions([layoutItem]))
+    return merge(acc, getDefaultsFromComponentDefinitions([layoutItem], getDefinitionDefaultValue))
   }, emptyComponentValues)
 }
 

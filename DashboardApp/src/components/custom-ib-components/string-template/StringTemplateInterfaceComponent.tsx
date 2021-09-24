@@ -1,13 +1,12 @@
 import React from "react"
-import { BaseInterfaceComponent, StringTemplate, UserInterfaceContext, utils } from "@opg/interface-builder"
+import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
+import StringTemplate from "@opg/interface-builder-plugins/lib/ant/string-template/StringTemplateInterfaceComponent"
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
-import { loadRemoteLBM } from "../_shared/LBM/loadRemoteLBM"
+import { loadRemoteLBM } from "../../../lib/loadRemoteLBM"
 import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
-export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+export default class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   StringTemplateInterfaceComponentProps,
   StringTemplateInterfaceComponentState
 > {
@@ -15,14 +14,14 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     super(props)
 
     this.state = {
-      serialize: () => undefined,
-      deserialize: () => undefined,
+      serializeSrc: undefined,
+      deserializeSrc: undefined,
     }
   }
   context!: React.ContextType<typeof UserInterfaceContext>
-  static contextType = UserInterfaceContext
-  static defaultProps = StringTemplate.StringTemplateInterfaceComponent.defaultProps
-  static getLayoutDefinition = StringTemplate.StringTemplateInterfaceComponent.getLayoutDefinition
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
+  static defaultProps = StringTemplate.defaultProps
+  static getLayoutDefinition = StringTemplate.getLayoutDefinition
   static manageForm = stringTemplateManageForm
 
   componentDidMount(): void {
@@ -36,19 +35,17 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     const { loadById } = this.context as AdminUserInterfaceContextManager
     const serializeSrc = loadRemoteLBM(loadById, this.props.serializeConfigId)
     const deserializeSrc = loadRemoteLBM(loadById, this.props.deserializeConfigId)
-    const serialize = utils.parseLBM<StringTemplate.SerializeType>(serializeSrc)
-    const deserialize = utils.parseLBM<StringTemplate.DeserializeType>(deserializeSrc)
 
-    serialize && this.setState({ serialize })
-    deserialize && this.setState({ deserialize })
+    serializeSrc && this.setState({ serializeSrc })
+    deserializeSrc && this.setState({ deserializeSrc })
   }
 
   render() {
     return (
-      <StringTemplate.StringTemplateInterfaceComponent
+      <StringTemplate
         {...this.props}
-        serialize={this.state.serialize}
-        deserialize={this.state.deserialize}
+        serializeSrc={this.state.serializeSrc}
+        deserializeSrc={this.state.deserializeSrc}
       />
     )
   }

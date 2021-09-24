@@ -29,6 +29,8 @@ export const ROOT_CONFIG_COMPONENTS = [
     dataHandlerType: "local",
     getRootUserInterfaceData: () => void 0,
     onChangeRootData: () => void 0,
+    incomingEventHandlers: [],
+    outgoingEventMap: {},
     data: {
       values: [
         { label: "JSON", value: "json" },

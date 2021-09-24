@@ -41,21 +41,22 @@ export default React.memo(Menu)
 /**
  * Recursively build menu tree
  * @param navigationTree
- * @param path
+ * @param appRootPath
  */
-function getMenuItems(navigationTree: NavigationNode[], path: string): JSX.Element[] | null {
+function getMenuItems(navigationTree: NavigationNode[], appRootPath: string): JSX.Element[] | null {
   if (isEmpty(navigationTree)) return null
 
   return navigationTree.map((node) => {
-    const currentPath = `${path}/${node.uri}`
+    const currentPath = `${appRootPath}/${node.link}`
+    const currentKey = `${appRootPath}/${node.uri}`
     const title = !isEmpty(node.shortTitle) ? node.shortTitle : node.title
 
     if (isEmpty(node.navigation)) {
       return (
-        <AntMenu.Item key={currentPath}>
-          {node.uri &&
-            (node.uri.match(/https?:\/\//) ? (
-              <a href={node.uri} target={node.uri.match(/.*techopg\.com.*/) ? "" : "new"}>
+        <AntMenu.Item key={currentKey}>
+          {node.link &&
+            (node.link.match(/https?:\/\//) ? (
+              <a href={node.link} target={node.link.match(/.*techopg\.com.*/) ? "" : "new"}>
                 {node.icon && <Icon type={node.icon} />}
                 <>{title}</>
               </a>
@@ -70,7 +71,7 @@ function getMenuItems(navigationTree: NavigationNode[], path: string): JSX.Eleme
     }
     return (
       <AntMenu.SubMenu
-        key={currentPath}
+        key={currentKey}
         title={
           <>
             {node.icon && <Icon type={node.icon} />}
@@ -82,7 +83,7 @@ function getMenuItems(navigationTree: NavigationNode[], path: string): JSX.Eleme
             )}
           </>
         }>
-        {getMenuItems(node.navigation, currentPath)}
+        {getMenuItems(node.navigation, appRootPath)}
       </AntMenu.SubMenu>
     )
   })

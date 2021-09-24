@@ -11,6 +11,7 @@ import { QueryConfig } from "../data/Report"
 import { HttpError, Method, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
+import { NotifyConfig } from "./feedback"
 
 declare module "./store.types" {
   interface AppModels {
@@ -35,7 +36,7 @@ export interface Reducers {
 }
 
 export interface Effects {
-  defaultHttpErrorHandler(r: HttpError): void
+  defaultHttpErrorHandler(r: HttpError): NotifyConfig
 
   authGetUserDetails(): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
@@ -66,6 +67,10 @@ export interface Effects {
     query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
   ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
 
+  globalConfigsGetAppConfigs(
+    query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
+  ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
+
   globalConfigsGetMetaOnly(p: {
     id?: string
     name?: string | RegExp
@@ -79,12 +84,12 @@ export interface Effects {
   reportQueryGet(payload: {
     query: QueryConfig["query"]
     params: JSONRecord | JSONArray
-  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord> | NotifyConfig>>>
 
   reportQueryUpdate(payload: {
     query: QueryConfig["query"]
     params: JSONRecord | JSONArray
-  }): Promise<Either<HttpError, AdminApi.ApiResponse<JSONRecord>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord> | NotifyConfig | JSONRecord>>>
 
   httpRequest(payload: {
     uri: string
@@ -92,7 +97,7 @@ export interface Effects {
     headers: { [header: string]: string }
     params: JSONRecord | JSONArray
     body: string | JSONRecord | JSONArray | URLSearchParams
-  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord> | NotifyConfig>>>
 }
 
 export interface Selectors {}
@@ -152,13 +157,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
@@ -174,13 +177,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
@@ -198,13 +199,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
@@ -222,52 +221,60 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
-            return payload["auth:login"].r === 0
-              ? AdminApi.OK(payload["auth:login"].result)
-              : AdminApi.mkAdminApiError(payload["auth:login"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+          return payload["auth:login"].r === 0
+            ? AdminApi.OK(payload["auth:login"].result)
+            : AdminApi.mkAdminApiError(payload["auth:login"].r)
+        })
       )
     },
 
     defaultHttpErrorHandler: (HttpError) => {
-      HttpError({
+      return HttpError({
         BadStatus(res) {
-          dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(res)}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (001): Invalid data from server. Code: ${res.status}`,
-          })
+          }
+          dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(res)}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         BadPayload(message) {
-          dispatch.logger.logError(`Bad payload in remoteDataClient: ${message}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (002): Invalid data from server.`,
-          })
+          }
+          dispatch.logger.logError(`Bad payload in remoteDataClient: ${message}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         BadUrl(message) {
-          dispatch.logger.logError(`Bad url in remoteDataClient: ${message}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (003): Failed to connect to ${message}`,
-          })
+          }
+          dispatch.logger.logError(`Bad url in remoteDataClient: ${message}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         NetworkError(message) {
-          dispatch.logger.logError(`NetworkError in remoteDataClient: ${message}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (004): Failed to connect to server.`,
-          })
+          }
+          dispatch.logger.logError(`NetworkError in remoteDataClient: ${message}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
         Timeout(req) {
-          dispatch.logger.logError(`Request timed out. ${prettyPrint(req)}`)
-          dispatch.feedback.notify({
+          const notifyConfig: NotifyConfig = {
             type: "error",
             message: `Network Error (005): Request timed out. ${req.url}`,
-          })
+          }
+          dispatch.logger.logError(`Request timed out. ${prettyPrint(req)}`)
+          dispatch.feedback.notify(notifyConfig)
+          return notifyConfig
         },
       })
     },
@@ -306,13 +313,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
-            return payload["config:insert"].r === 0
-              ? AdminApi.OK(payload["config:insert"].result)
-              : AdminApi.mkAdminApiError(payload["config:insert"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
+          return payload["config:insert"].r === 0
+            ? AdminApi.OK(payload["config:insert"].result)
+            : AdminApi.mkAdminApiError(payload["config:insert"].r)
+        })
       )
     },
 
@@ -329,13 +334,32 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
-            return payload["config:get"].r === 0
-              ? AdminApi.OK(payload["config:get"].result)
-              : AdminApi.mkAdminApiError(payload["config:get"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
+          return payload["config:get"].r === 0
+            ? AdminApi.OK(payload["config:get"].result)
+            : AdminApi.mkAdminApiError(payload["config:get"].r)
+        })
+      )
+    },
+
+    async globalConfigsGetAppConfigs(params, { remoteDataClient }) {
+      return request({
+        body: {
+          i: remoteDataClient.token,
+          "config:getApps": params,
+        },
+        expect: AdminApi.globalConfigResponsePayloadCodec.getApps,
+        headers: {},
+        method: "POST",
+        timeout: none,
+        url: apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map((payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
+          return payload["config:getApps"].r === 0
+            ? AdminApi.OK(payload["config:getApps"].result)
+            : AdminApi.mkAdminApiError(payload["config:getApps"].r)
+        })
       )
     },
 
@@ -355,13 +379,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
-            return payload["config:get"].r === 0
-              ? AdminApi.OK(payload["config:get"].result)
-              : AdminApi.mkAdminApiError(payload["config:get"].r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
+          return payload["config:get"].r === 0
+            ? AdminApi.OK(payload["config:get"].result)
+            : AdminApi.mkAdminApiError(payload["config:get"].r)
+        })
       )
     },
 
@@ -399,12 +421,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
-            const p = payload[query]
-            return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
+          const p = payload[query]
+          return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
+        })
       )
     },
 
@@ -421,12 +441,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<JSONRecord> => {
-            const p = payload[query]
-            return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<JSONRecord> | JSONRecord> => {
+          const p = payload[query]
+          return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
+        })
       )
     },
 
@@ -459,12 +477,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url,
         withCredentials: false,
       }).then((result) =>
-        result.map(
-          (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
-            const payloadArray = isArray(payload) ? payload : [payload]
-            return payload ? AdminApi.OK(payloadArray) : AdminApi.mkAdminApiError(1)
-          }
-        )
+        result.map((payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
+          const payloadArray = isArray(payload) ? payload : [payload]
+          return payload ? AdminApi.OK(payloadArray) : AdminApi.mkAdminApiError(1)
+        })
       )
     },
   }),

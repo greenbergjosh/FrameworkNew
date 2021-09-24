@@ -1,62 +1,127 @@
 import * as Reach from "@reach/router"
 import { getPersistor } from "@rematch/persist"
-import { flatten } from "fp-ts/lib/Array"
-import { toArray } from "fp-ts/lib/Record"
 import React from "react"
 import * as ReactRedux from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
 import styles from "./App.module.scss"
 import "./App.scss"
-import "@opg/interface-builder/dist/main.css"
-import { None, Some } from "./data/Option"
+import "@opg/interface-builder/dist/index.css"
 import { useRematch } from "./hooks"
-import { NotFound } from "./views/not-found"
 import { store } from "./state/store"
-import {
-  antComponents,
-  ComponentRegistryCache,
-  DragDropContext,
-  htmlComponents,
-  monacoComponents,
-  nivoComponents,
-  syncfusionComponents,
-  registerMonacoEditorMount,
-  registry,
-} from "@opg/interface-builder"
-import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
-import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
-import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
-import { RemoteComponentInterfaceComponent } from "./components/custom-ib-components/remote-component/RemoteComponentInterfaceComponent"
-import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/slot-config/SlotConfigInterfaceComponent"
-import { getCustomEditorConstructionOptions } from "./components/custom-ib-components/code-editor-mount"
-import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
-import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
-import { TableInterfaceComponent } from "./components/custom-ib-components/table/TableInterfaceComponent"
-import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
-import { PieInterfaceComponent } from "./components/custom-ib-components/chart/pie/PieInterfaceComponent"
-import { LinkInterfaceComponent } from "./components/custom-ib-components/link/LinkInterfaceComponent"
-import { withEventManager } from "./components/event-manager/event-manager"
-import { RouteMeta } from "./state/navigation"
+import { DragDropContext, registry, ImportFactory } from "@opg/interface-builder"
+import { registerMonacoEditorMount } from "@opg/interface-builder-plugins/lib/monaco/code-editor/registerMonacoEditorMount"
+import getMonacoEditorConstructionOptions from "./data/getMonacoEditorConstructionOptions"
 import { SplashScreen } from "./components/SplashScreen/SplashScreen"
+import { ThemeLoader } from "./themes/ThemeLoader"
+import { LegacyThemeLoader } from "./themes/ant-default/LegacyThemeLoader"
+
+/*
+ * Import InterfaceBuilder Styles
+ * TODO: Can't each plugin be responsible for loading its own css? Rollup is outputting css separately with no import.
+ */
+import "@opg/interface-builder-plugins/lib/ant/color-picker/index.css"
+import "@opg/interface-builder-plugins/lib/ant/column/index.css"
+import "@opg/interface-builder-plugins/lib/ant/dev-tools/index.css"
+import "@opg/interface-builder-plugins/lib/ant/input/index.css"
+import "@opg/interface-builder-plugins/lib/ant/menu/index.css"
+import "@opg/interface-builder-plugins/lib/ant/repeater/index.css"
+import "@opg/interface-builder-plugins/lib/ant/text/index.css"
+import "@opg/interface-builder-plugins/lib/ant/tree/index.css"
+import "@opg/interface-builder-plugins/lib/ant/upload/index.css"
+import "@opg/interface-builder-plugins/lib/html/tab-set/index.css"
+import "@opg/interface-builder-plugins/lib/html/tab/index.css"
+import "@opg/interface-builder-plugins/lib/syncfusion/table/index.css"
+
+/*
+ * Import InterfaceBuilder Plugins
+ */
+import BulkTextInput from "@opg/interface-builder-plugins/lib/ant/bulk-text-input"
+import Button from "@opg/interface-builder-plugins/lib/ant/button"
+import Card from "@opg/interface-builder-plugins/lib/ant/card"
+import Checkbox from "@opg/interface-builder-plugins/lib/ant/checkbox"
+import Collapse from "@opg/interface-builder-plugins/lib/ant/collapse"
+// import ColorPicker from  "@opg/interface-builder-plugins/lib/ant/color-picker"
+import colorPickerLayoutDefinition from "@opg/interface-builder-plugins/lib/ant/color-picker/layoutDefinition"
+import Column from "@opg/interface-builder-plugins/lib/ant/column"
+import DataDictionary from "@opg/interface-builder-plugins/lib/ant/data-dictionary"
+import DataMap from "@opg/interface-builder-plugins/lib/ant/data-map"
+import Date from "@opg/interface-builder-plugins/lib/ant/date"
+import DateRange from "@opg/interface-builder-plugins/lib/ant/date-range"
+import DateStepper from "@opg/interface-builder-plugins/lib/ant/date-stepper"
+import DevTools from "@opg/interface-builder-plugins/lib/ant/dev-tools"
+import Divider from "@opg/interface-builder-plugins/lib/ant/divider"
+import Download from "@opg/interface-builder-plugins/lib/ant/download"
+import Empty from "@opg/interface-builder-plugins/lib/ant/empty"
+import Form from "@opg/interface-builder-plugins/lib/ant/form"
+import Input from "@opg/interface-builder-plugins/lib/ant/input"
+// import Link from  "@opg/interface-builder-plugins/lib/ant/link"
+import List from "@opg/interface-builder-plugins/lib/ant/list"
+import Menu from "@opg/interface-builder-plugins/lib/ant/menu"
+import Modal from "@opg/interface-builder-plugins/lib/ant/modal"
+import NumberInput from "@opg/interface-builder-plugins/lib/ant/number-input"
+import NumberRange from "@opg/interface-builder-plugins/lib/ant/number-range"
+import Password from "@opg/interface-builder-plugins/lib/ant/password"
+import Progress from "@opg/interface-builder-plugins/lib/ant/progress"
+// import QueryBuilder from  "@opg/interface-builder-plugins/lib/ant/query-builder"
+import queryBuilderLayoutDefinition from "@opg/interface-builder-plugins/lib/ant/query-builder/layoutDefinition"
+import Radio from "@opg/interface-builder-plugins/lib/ant/radio"
+import Repeater from "@opg/interface-builder-plugins/lib/ant/repeater"
+import SectionedNavigation from "@opg/interface-builder-plugins/lib/ant/sectioned-navigation"
+// import Select from  "@opg/interface-builder-plugins/lib/ant/select"
+// import StringTemplate from  "@opg/interface-builder-plugins/lib/ant/string-template"
+import Tabs from "@opg/interface-builder-plugins/lib/ant/tabs"
+// import Tags from  "@opg/interface-builder-plugins/lib/ant/tags"
+import Text from "@opg/interface-builder-plugins/lib/ant/text"
+import TextArea from "@opg/interface-builder-plugins/lib/ant/textarea"
+import TimeRange from "@opg/interface-builder-plugins/lib/ant/time-range"
+import Toggle from "@opg/interface-builder-plugins/lib/ant/toggle"
+import Tree from "@opg/interface-builder-plugins/lib/ant/tree"
+import Upload from "@opg/interface-builder-plugins/lib/ant/upload"
+import UserInterface from "@opg/interface-builder-plugins/lib/ant/user-interface"
+import Wizard from "@opg/interface-builder-plugins/lib/ant/wizard"
+import Container from "@opg/interface-builder-plugins/lib/html/container"
+import DataInjector from "@opg/interface-builder-plugins/lib/html/data-injector"
+import IFrame from "@opg/interface-builder-plugins/lib/html/iframe"
+import Tab from "@opg/interface-builder-plugins/lib/html/tab"
+import TabSet from "@opg/interface-builder-plugins/lib/html/tab-set"
+// import CodeEditor from  "@opg/interface-builder-plugins/lib/monaco/code-editor"
+import codeEditorLayoutDefinition from "@opg/interface-builder-plugins/lib/monaco/code-editor/layoutDefinition"
+// import LineChart from "@opg/interface-builder-plugins/lib/nivo/line-chart"
+import lineChartLayoutDefinition from "@opg/interface-builder-plugins/lib/nivo/line-chart/layoutDefinition"
+// import Map from "@opg/interface-builder-plugins/lib/nivo/map"
+import mapLayoutDefinition from "@opg/interface-builder-plugins/lib/nivo/map/layoutDefinition"
+// import Pie from  "@opg/interface-builder-plugins/lib/nivo/pie"
+import pieLayoutDefinition from "@opg/interface-builder-plugins/lib/nivo/pie/layoutDefinition"
+// import Thermometer from "@opg/interface-builder-plugins/lib/nivo/thermometer"
+import thermometerLayoutDefinition from "@opg/interface-builder-plugins/lib/nivo/thermometer/layoutDefinition"
+import Route from "@opg/interface-builder-plugins/lib/reach-router/route"
+import Router from "@opg/interface-builder-plugins/lib/reach-router/router"
+// import Table from  "@opg/interface-builder-plugins/lib/syncfusion/table"
+import tableLayoutDefinition from "@opg/interface-builder-plugins/lib/syncfusion/table/layoutDefinition"
+
+/*
+ * Import DashboardApp Plugins
+ */
+import Query from "./components/custom-ib-components/query"
+import Execute from "./components/custom-ib-components/execute"
+import Relationships from "./components/custom-ib-components/relationships"
+import RemoteComponent from "./components/custom-ib-components/remote-component"
+import SlotConfig from "./components/custom-ib-components/slot-config"
+import Select from "./components/custom-ib-components/select"
+import Tags from "./components/custom-ib-components/tags"
+import StringTemplate from "./components/custom-ib-components/string-template"
+// import Pie from "./components/custom-ib-components/pie"
+import Link from "./components/custom-ib-components/link"
 
 const persistor = getPersistor()
-
-/**
- * Wrap InterfaceBuilder components with the EventManager
- * @param ibComponentLib - An assoc array of InterfaceBuilder components
- */
-function wrapLibWithEventManager(ibComponentLib: any) {
-  const wrappedComponents: ComponentRegistryCache = {}
-  Object.keys(ibComponentLib).forEach((key) => {
-    wrappedComponents[key] = withEventManager((ibComponentLib as ComponentRegistryCache)[key])
-  })
-  return wrappedComponents
-}
 
 export function App(): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
     profile: appState.iam.profile,
     isCheckingSession: appState.loading.effects.iam.attemptResumeSession,
+    routes: store.select.navigation.routes(appState),
+    appConfig: store.select.apps.appConfig(appState),
+    appPaths: appState.apps.appPaths,
   }))
 
   React.useEffect(() => {
@@ -64,23 +129,130 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   React.useEffect(() => {
-    registry.register(wrapLibWithEventManager(antComponents))
-    registry.register(wrapLibWithEventManager(htmlComponents))
-    registry.register(wrapLibWithEventManager(monacoComponents))
-    registry.register(wrapLibWithEventManager(nivoComponents))
-    registry.register(wrapLibWithEventManager(syncfusionComponents))
-    registry.register({ query: withEventManager(QueryInterfaceComponent) })
-    registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
-    registry.register({ "path-editor": PathEditorInterfaceComponent })
-    registry.register({ "remote-component": RemoteComponentInterfaceComponent })
-    registry.register({ "slot-config": withEventManager(SlotConfigInterfaceComponent) })
-    registry.register({ "string-template": withEventManager(StringTemplateInterfaceComponent) })
-    registry.register({ select: withEventManager(SelectInterfaceComponent) })
-    registry.register({ table: withEventManager(TableInterfaceComponent) })
-    registry.register({ tags: withEventManager(TagsInterfaceComponent) })
-    registry.register({ pie: withEventManager(PieInterfaceComponent) })
-    registry.register({ link: withEventManager(LinkInterfaceComponent) })
-    registerMonacoEditorMount(getCustomEditorConstructionOptions)
+    /*
+     * Register InterfaceBuilder Components
+     */
+    registry.register({
+      "bulk-text-input": BulkTextInput,
+      button: Button,
+      card: Card,
+      checkbox: Checkbox,
+      collapse: Collapse,
+      "color-picker": {
+        component: (() =>
+          import(
+            "@opg/interface-builder-plugins/lib/ant/color-picker/ColorPickerInterfaceComponent"
+          )) as unknown as ImportFactory,
+        layoutDefinition: colorPickerLayoutDefinition,
+      },
+      column: Column,
+      "data-dictionary": DataDictionary,
+      "data-map": DataMap,
+      date: Date,
+      "date-range": DateRange,
+      "date-stepper": DateStepper,
+      "dev-tools": DevTools,
+      divider: Divider,
+      download: Download,
+      empty: Empty,
+      form: Form,
+      input: Input,
+      link: Link,
+      list: List,
+      menu: Menu,
+      modal: Modal,
+      "number-input": NumberInput,
+      "number-range": NumberRange,
+      password: Password,
+      progress: Progress,
+      "query-builder": {
+        component: (() =>
+          import(
+            "@opg/interface-builder-plugins/lib/ant/query-builder/QueryBuilderInterfaceComponent"
+          )) as unknown as ImportFactory,
+        layoutDefinition: queryBuilderLayoutDefinition,
+      },
+      radio: Radio,
+      repeater: Repeater,
+      "sectioned-navigation": SectionedNavigation,
+      select: Select,
+      "string-template": StringTemplate,
+      tabs: Tabs,
+      tags: Tags,
+      text: Text,
+      textarea: TextArea,
+      "time-range": TimeRange,
+      toggle: Toggle,
+      tree: Tree,
+      upload: Upload,
+      "user-interface": UserInterface,
+      wizard: Wizard,
+      container: Container,
+      "data-injector": DataInjector,
+      iframe: IFrame,
+      tab: Tab,
+      "tab-set": TabSet,
+      "code-editor": {
+        component: (() =>
+          import(
+            "@opg/interface-builder-plugins/lib/monaco/code-editor/CodeEditorInterfaceComponent"
+          )) as unknown as ImportFactory,
+        layoutDefinition: codeEditorLayoutDefinition,
+      },
+      "line-chart": {
+        component: (() =>
+          import(
+            "@opg/interface-builder-plugins/lib/nivo/line-chart/LineChartInterfaceComponent"
+          )) as unknown as ImportFactory,
+        layoutDefinition: lineChartLayoutDefinition,
+      },
+      map: {
+        component: (() =>
+          import("@opg/interface-builder-plugins/lib/nivo/map/MapInterfaceComponent")) as unknown as ImportFactory,
+        layoutDefinition: mapLayoutDefinition,
+      },
+      // pie: Pie,
+      thermometer: {
+        component: (() =>
+          import(
+            "@opg/interface-builder-plugins/lib/nivo/thermometer/ThermometerInterfaceComponent"
+          )) as unknown as ImportFactory,
+        layoutDefinition: thermometerLayoutDefinition,
+      },
+      route: Route,
+      router: Router,
+      // table: (() =>
+      //   import(
+      //     "@opg/interface-builder-plugins/lib/syncfusion/table/TableInterfaceComponent"
+      //   )) as unknown as ImportFactory,
+    })
+
+    /*
+     * Register DashboardApp components
+     */
+    registry.register({
+      query: Query,
+      execute: Execute,
+      relationships: Relationships,
+      "remote-component": RemoteComponent,
+      "slot-config": SlotConfig,
+      "string-template": StringTemplate,
+      select: Select,
+      table: {
+        component: (() =>
+          import("./components/custom-ib-components/table/TableInterfaceComponent")) as unknown as ImportFactory,
+        layoutDefinition: tableLayoutDefinition,
+      },
+      tags: Tags,
+      pie: {
+        component: (() =>
+          import("./components/custom-ib-components/pie/PieInterfaceComponent")) as unknown as ImportFactory,
+        layoutDefinition: pieLayoutDefinition,
+      },
+      link: Link,
+    })
+
+    registerMonacoEditorMount(getMonacoEditorConstructionOptions)
   }, [])
 
   return (
@@ -91,60 +263,14 @@ export function App(): JSX.Element {
             {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
               <SplashScreen title="Checking Session Authentication..." />
             ) : (
-              <Routes />
+              <Reach.Router>
+                <ThemeLoader path={`/app/*`} />
+                <LegacyThemeLoader path={`/*`} />
+              </Reach.Router>
             )}
           </DragDropContext.HTML5>
         </ReactRedux.Provider>
       </div>
     </PersistGate>
-  )
-}
-
-function Routes() {
-  const [fromStore /* , dispatch */] = useRematch((appState) => ({
-    profile: appState.iam.profile,
-    routes: store.select.navigation.routes(appState),
-  }))
-  return (
-    <Reach.Router>
-      {(function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-        return toArray(routes).map(([k, route]) =>
-          route.requiresAuthentication === true ? (
-            fromStore.profile.foldL(
-              None(() => (
-                <Reach.Redirect
-                  key={route.abs}
-                  from={`${route.abs}/*`}
-                  state={{ redirectedFrom: window.location.pathname }}
-                  noThrow
-                  to={fromStore.routes.login.abs}
-                />
-              )),
-              Some((prof) => (
-                <route.component key={route.abs} profile={prof} {...route}>
-                  {renderRoutes(route.subroutes)}
-                </route.component>
-              ))
-            )
-          ) : (
-            <route.component key={route.abs} {...route}>
-              {renderRoutes(route.subroutes)}
-            </route.component>
-          )
-        )
-      })(fromStore.routes)}
-
-      {(function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-        return flatten(
-          toArray(routes).map(([k, route]) => {
-            return route.redirectFrom
-              .map((url) => <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />)
-              .concat(renderRedirects(route.subroutes))
-          })
-        )
-      })(fromStore.routes)}
-
-      <NotFound default />
-    </Reach.Router>
   )
 }

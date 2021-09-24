@@ -9,7 +9,14 @@ import React from "react"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import { QueryConfigCodec } from "../../../../data/Report"
-import { BaseInterfaceComponent, cheapHash, JSONRecord, Right, UserInterfaceContext } from "@opg/interface-builder"
+import {
+  BaseInterfaceComponent,
+  cheapHash,
+  JSONRecord,
+  Right,
+  UserInterfaceContext,
+  UserInterfaceContextManager,
+} from "@opg/interface-builder"
 import {
   KeyValuePairConfig,
   RemoteDataHandlerType,
@@ -44,7 +51,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     }
   }*/
 
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
   // static manageForm = selectManageForm
@@ -425,16 +432,18 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 
     // console.log("Selectable.getCleanValue", { anyCaseResult, options })
     if (!Array.isArray(anyCaseResult)) {
-      return (
-        options &&
-        (
-          options.find(
-            ({ value }) =>
-              value === anyCaseResult ||
-              (typeof value === "string" && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
-          ) || { value: anyCaseResult }
-        ).value
-      )
+      if (options) {
+        const option = options.find(({ value }) => {
+          if (value === anyCaseResult) {
+            return true
+          }
+          const a = typeof value === "string" ? value.toLowerCase() : value
+          const b = typeof anyCaseResult === "string" ? anyCaseResult.toLowerCase() : anyCaseResult
+          return a === b
+        })
+        return (option && option.value) || anyCaseResult
+      }
+      return
     }
     return options
       ? anyCaseResult.map(

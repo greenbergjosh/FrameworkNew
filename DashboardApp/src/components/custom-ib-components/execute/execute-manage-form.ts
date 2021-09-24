@@ -1,4 +1,5 @@
-import { baseManageForm, ComponentDefinition, getIconSelectConfig } from "@opg/interface-builder"
+import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
+import { getIconSelectConfig } from "@opg/interface-builder-plugins/lib/ant/shared"
 import { remoteConfigSettings } from "./components/RemoteConfig/settings"
 import { remoteQuerySettings } from "./components/RemoteQuery/settings"
 import { remoteUrlSettings } from "./components/RemoteUrl/settings"
@@ -17,16 +18,6 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
           {
             key: "data",
             components: [
-              {
-                key: "hideLabel",
-                defaultValue: true,
-                hidden: true,
-              },
-              {
-                key: "label",
-                defaultValue: null,
-                hidden: true,
-              },
               {
                 key: "valueKey",
                 defaultValue: "data",

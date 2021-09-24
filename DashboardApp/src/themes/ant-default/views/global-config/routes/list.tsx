@@ -37,6 +37,7 @@ import {
 } from "antd"
 import { DeleteConfigEventPayload } from "../../../../../state/global-config/global-config"
 import { WithRouteProps } from "../../../../../state/navigation"
+import { PageBeacon } from "../../../../../components/PageBeacon"
 
 interface Props {}
 
@@ -59,6 +60,14 @@ export function ListGlobalConfig({ children, location, navigate, path, uri }: Wi
       return (
         <>
           <ConfigTable configs={configs} />
+          <PageBeacon
+            data={{
+              reportId: null,
+              appName: "Legacy Site",
+              pageTitle: "Global Configs - List Configs",
+            }}
+            pageReady={true}
+          />
         </>
       )
     }

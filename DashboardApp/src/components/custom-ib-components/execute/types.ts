@@ -1,4 +1,5 @@
 import {
+  AbstractBaseInterfaceComponentType,
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
@@ -15,6 +16,8 @@ import { JSONRecord } from "../../../data/JSON"
 import { PropsFromQueryParams } from "../../query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { NotifyConfig } from "../../../state/feedback"
+import { AbstractBaseInterfaceComponent } from "@opg/interface-builder/dist/components/BaseInterfaceComponent/types"
 
 export enum LOADSTATUSCODES {
   none = "none",
@@ -134,6 +137,9 @@ export interface ExecuteRemoteQueryInterfaceComponentProps extends IExecuteInter
   // RemoteQuery Settings
   remoteQuery?: PersistedConfig["id"]
   RemoteQuery_isCRUD?: boolean
+  RemoteQuery_notifyOkShow?: boolean
+  RemoteQuery_notifyUnauthorizedShow?: boolean
+  RemoteQuery_notifyServerExceptionShow?: boolean
 }
 
 export interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceComponentProps {
@@ -156,6 +162,9 @@ export interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfa
   // RemoteUrl Settings
   remoteUrl?: PersistedConfig["id"]
   RemoteUrl_isCRUD?: boolean
+  RemoteUrl_notifyOkShow?: boolean
+  RemoteUrl_notifyUnauthorizedShow?: boolean
+  RemoteUrl_notifyServerExceptionShow?: boolean
 }
 
 export type ExecuteInterfaceComponentProps = (
@@ -179,9 +188,11 @@ export type OnSubmitType = (
   parameterValues: JSONRecord,
   satisfiedByParentParams: PropsFromQueryParams["satisfiedByParentParams"],
   setParameterValues: PropsFromQueryParams["setParameterValues"]
-) => Promise<void> | undefined
+) => Promise<void | NotifyConfig> | undefined
 
-export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Promise<void> | undefined
+export type OnMountType = (
+  handleSubmit: () => Promise<void | NotifyConfig> | undefined
+) => Promise<void | NotifyConfig> | undefined
 
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
@@ -199,6 +210,7 @@ export interface RemoteComponentProps {
   getParams: () => JSONRecord
   onExecute?: () => void
   onComplete?: () => void
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
 }
 
 export interface FromStore {
@@ -218,6 +230,9 @@ export interface RemoteQueryFromStore extends FromStore {
 
 export interface RemoteQueryProps extends RemoteComponentProps, RemoteQueryFromStore {
   isCRUD?: boolean
+  notifyOkShow?: boolean
+  notifyUnauthorizedShow?: boolean
+  notifyServerExceptionShow?: boolean
   onResults: IExecuteInterfaceComponentProps["onChangeData"]
   queryConfigId: PersistedConfig["id"]
 }
@@ -233,6 +248,9 @@ export interface RemoteUrlFromStore extends FromStore {
 
 export interface RemoteUrlProps extends RemoteComponentProps, RemoteUrlFromStore {
   isCRUD?: boolean
+  notifyOkShow?: boolean
+  notifyUnauthorizedShow?: boolean
+  notifyServerExceptionShow?: boolean
   onResults: IExecuteInterfaceComponentProps["onChangeData"]
   queryConfigId: PersistedConfig["id"]
 }
@@ -285,5 +303,6 @@ export type ParsedConfig = {
   id: PersistedConfig["id"]
   name: PersistedConfig["name"]
   type: PersistedConfig["type"]
+  type_id: PersistedConfig["type_id"]
   config: JSONRecord | null
 }
