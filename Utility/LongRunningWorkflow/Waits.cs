@@ -1,16 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Utility.GenericEntity;
 
 namespace Utility.LongRunningWorkflow
 {
+    public enum WaitType
+    {
+        Signal,
+        Interrupt
+    }
+
     public class Wait
     {
         [JsonProperty("name")]
         public string Name;
 
-        [JsonProperty("payload")]
-        public object Payload;
+        [JsonProperty("discriminator_payload")]
+        public IGenericEntity Payload;
+
+        [JsonProperty("type")]
+        [JsonConverter(typeof(StringEnumConverter), true)]
+        public WaitType Type;
     }
 
     public class WaitOne : Wait

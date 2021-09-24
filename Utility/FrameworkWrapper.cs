@@ -64,7 +64,7 @@ namespace Utility
 
                 // Yes, GetB can be used to pull a boolean, but that defaults to false
                 TraceLogging = StartupConfiguration.GetS("Config/EnableTraceLogging").ParseBool() ?? true;
-                TraceToConsole = StartupConfiguration.GetB("Config/TraceToConsole");
+                TraceToConsole = StartupConfiguration.GetB("Config/TraceToConsole") || Debugger.IsAttached;
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
@@ -142,12 +142,12 @@ namespace Utility
 
             var stackedParameters = new GenericEntityStack();
 
-            var implementation = entity.GetS("Config/Implementation/EntityId");
+            var implementation = entity.GetS("Config/Evaluate/EntityId");
             if (!string.IsNullOrWhiteSpace(implementation))
             {
                 evaluatableId = Guid.Parse(implementation);
                 evaluatableEntity = await Entities.GetEntity(evaluatableId);
-                stackedParameters.Push(entity);
+                stackedParameters.Push(entity.GetE("Config/Evaluate/ActualParameters"));
             }
 
             if (evaluatableEntity.GetS("Type") != "LBM.CS")

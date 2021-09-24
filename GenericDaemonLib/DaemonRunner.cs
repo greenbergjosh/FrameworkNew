@@ -38,6 +38,13 @@ namespace GenericDaemonLib
                 {
                     var daemonName = daemonConfig.key;
                     var daemonEntityId = Guid.Parse(daemonConfig.entity.GetS("EntityId"));
+                    var paused = daemonConfig.entity.GetB("Paused");
+
+                    if (paused)
+                    {
+                        await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Skipping daemon: {daemonName} because it is paused");
+                        continue;
+                    }
 
                     var parameters = new GenericEntityDictionary(new Dictionary<string, object>
                     {
@@ -48,7 +55,10 @@ namespace GenericDaemonLib
                     await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Starting daemon: {daemonName}...");
                     try
                     {
-                        _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, parameters));
+                        _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, parameters).ContinueWith(async t =>
+                        {
+                            await _fw.Error($"{nameof(DaemonRunner)}.RunDaemon", $"Error running daemon ${daemonName}: {t.Exception}");
+                        }, TaskContinuationOptions.OnlyOnFaulted));
                         await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Started daemon: {daemonName}...");
                     }
                     catch (Exception ex)

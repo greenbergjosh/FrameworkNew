@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Utility.GenericEntity;
 
 namespace Utility.LongRunningWorkflow
 {
@@ -11,15 +12,17 @@ namespace Utility.LongRunningWorkflow
 
         public Guid Id { get; init; } = Guid.NewGuid();
         public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+        public Guid ProcessId { get; init; }
         public Guid ThreadId { get; init; }
         public Guid ApartmentId { get; set; }
         public bool Exclusive { get; set; }
-        public object Payload { get; set; }
+        public IGenericEntity Payload { get; set; }
         public Guid PayloadRunnerEntityId { get; set; }
         public bool HasWaits => _waits.Any();
 
-        public WaitWriter(Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, object payload = null)
+        public WaitWriter(Guid processId, Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, IGenericEntity payload = null)
         {
+            ProcessId = processId;
             ThreadId = threadId;
             ApartmentId = apartmentId;
             Exclusive = exclusive;
@@ -27,7 +30,7 @@ namespace Utility.LongRunningWorkflow
             PayloadRunnerEntityId = payloadRunnerEntityId;
         }
 
-        public WaitWriter(Guid id, DateTime timestamp, Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, object payload = null) : this(threadId, apartmentId, exclusive, payloadRunnerEntityId, payload)
+        public WaitWriter(Guid id, DateTime timestamp, Guid processId, Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, IGenericEntity payload = null) : this(processId, threadId, apartmentId, exclusive, payloadRunnerEntityId, payload)
         {
             Id = id;
             Timestamp = timestamp;
@@ -40,7 +43,8 @@ namespace Utility.LongRunningWorkflow
                 {
                     id = Id,
                     ts = Timestamp,
-                    payload = new { waits = _waits, payload = Payload, payloadRunnerEntityId = PayloadRunnerEntityId },
+                    payload = new { waits = _waits, payloadRunnerEntityId = PayloadRunnerEntityId },
+                    process_id = ProcessId,
                     thread_id = ThreadId,
                     apartment_id = ApartmentId,
                     exclusive = Exclusive
