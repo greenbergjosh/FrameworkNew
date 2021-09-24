@@ -1,0 +1,8 @@
+.ant-select-dropdown {
+  z-index: 10000 !important; }
+
+.component-preview .component-btn-group {
+  display: none; }
+
+.label-wrapper .ant-progress-line {
+  padding-right: 15px; }

@@ -1,0 +1,6 @@
+import React from "react";
+import { GridComponent } from "@syncfusion/ej2-react-grids";
+import { StandardGridComponentProps } from "./types";
+declare const _default: React.ForwardRefExoticComponent<Pick<StandardGridComponentProps, "autoFitColumns" | "useSmallFont" | "enableAltRow" | "enableVirtualization" | "height" | "columns" | "contextData" | "data" | "defaultCollapseAll" | "detailTemplate" | "groupSettings" | "pageSettings" | "sortSettings" | "showToolbar" | "useSmallPager"> & React.RefAttributes<GridComponent>>;
+export default _default;
+//# sourceMappingURL=StandardGrid.d.ts.map

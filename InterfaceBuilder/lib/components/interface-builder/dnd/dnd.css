@@ -1,0 +1,51 @@
+.dnd-droppable {
+  display: inherit;
+  position: relative;
+  border: 1px solid transparent;
+  padding: 5px 5px 15px 5px;
+  border-radius: 10px;
+  transition: 0.1s padding-bottom ease-out; }
+  .dnd-droppable.accept-drop {
+    border: 1px dashed lightgray;
+    padding-bottom: 15px; }
+  .dnd-droppable.has-placeholder {
+    padding-bottom: 105px; }
+    .dnd-droppable.has-placeholder > .dnd-draggable.placeholder-above > * {
+      transform: translateY(75px); }
+    .dnd-droppable.has-placeholder > .dnd-draggable.placeholder-beside-left > * {
+      transform: translateX(75px); }
+  .dnd-droppable .droppable-placeholder {
+    height: 65px;
+    background-color: #f2f4f5;
+    border: none;
+    border-radius: 10px;
+    transition: 0.1s top ease-out;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center; }
+    .dnd-droppable .droppable-placeholder:not(.empty-container) {
+      position: absolute; }
+    .dnd-droppable .droppable-placeholder.horizontal {
+      transform: rotate(270deg); }
+
+.dnd-draggable {
+  position: relative;
+  padding: 0;
+  cursor: move; }
+  .dnd-draggable > * {
+    transition: 0.1s transform ease-out; }
+  .dnd-draggable .dnd-draggable-edit-buttons {
+    opacity: 0;
+    transition: 0.1s opacity ease-out;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.5); }
+    .dnd-draggable .dnd-draggable-edit-buttons .dnd-draggable-edit-title {
+      margin-right: 15px; }
+  .dnd-draggable:hover > .dnd-draggable-edit-buttons {
+    opacity: 1; }

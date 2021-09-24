@@ -1,0 +1,3 @@
+import { ComponentDefinition } from "../../base/BaseInterfaceComponent";
+export declare const dataDictionaryManageForm: (...extend: (Partial<import("../../base/BaseInterfaceComponent").ComponentDefinitionNamedProps> | Partial<import("../../base/BaseInterfaceComponent").ComponentDefinitionNamedProps & import("../../base/BaseInterfaceComponent").ComponentDefinitionRecursiveProp>)[]) => ComponentDefinition[];
+//# sourceMappingURL=data-dictionary-manage-form.d.ts.map

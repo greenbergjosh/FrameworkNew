@@ -1,0 +1,32 @@
+.e-grid {
+  border: 0; }
+  .e-grid .e-content {
+    transition: margin-bottom ease-in-out 250ms, padding-bottom ease-in-out 250ms; }
+  .e-grid .e-content:not(:hover) {
+    margin-bottom: -50px;
+    /* to hide horizontal scrollbar */
+    padding-bottom: 50px;
+    /* to hide horizontal scrollbar */ }
+  .e-grid .e-toolbar {
+    border: 0; }
+  .e-grid .e-detailindentcell {
+    border: 0; }
+  .e-grid .e-detailcell {
+    border: 0; }
+  .e-grid .e-gridheader {
+    border: 0; }
+  .e-grid .e-headercell,
+  .e-grid .e-detailheadercell {
+    background: #fafafa;
+    border-bottom: 1px solid #ebeff2; }
+  .e-grid .e-rowcell,
+  .e-grid .e-detailrowcollapse {
+    border-color: #ebeff2; }
+  .e-grid.e-resize-lines .e-headercell .e-rhandler {
+    border-color: #ebeff2; }
+  .e-grid td.e-active {
+    background-color: #ffc880; }
+  .e-grid td.e-rowcell.-remove-cell-padding {
+    padding: 0; }
+  .e-grid .e-toolbar .e-toolbar-items .e-toolbar-left .e-toolbar-item:first-child {
+    margin-left: 0; }
