@@ -5,17 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mvp.Xml.NetStandard" Version="1.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Utility\Utility.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.BizTalk.XPathReader">
-      <HintPath>bin\Debug\net5.0\Microsoft.BizTalk.XPathReader.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

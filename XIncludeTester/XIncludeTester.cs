@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.XPath;
-using System.Xml.Xsl;
 using Microsoft.AspNetCore.Http;
-using Microsoft.BizTalk.XPath;
-using Mvp.Xml.XInclude;
 using Utility;
 
 namespace XIncludeTester
@@ -36,52 +31,13 @@ namespace XIncludeTester
                 {
                     await _fw.Log($"{nameof(XIncludeTester)}.OnStart", "Starting...");
 
-                    //var response1111 = await ProtocolClient.HttpGetAsync("http://localhost:8002/1111");
-
-                    var xmlReader = XmlReader.Create("http://localhost:8002/1111");
-                    var includingReader = new XIncludingReader(xmlReader);
-                    var xmlDocument = new XmlDocument();
-                    xmlDocument.Load(includingReader);
-                    XmlNode titleNode = xmlDocument.SelectSingleNode("a/b/c/d[text()='HELLO']");
-                    /*
-                    XIncludingReader xir = new XIncludingReader("http://localhost:8002/1111");
-
-                    XPathDocument doc = new XPathDocument(xir);
-                    var n = doc.CreateNavigator();
-                    var x = n.SelectSingleNode("/a/b/c/d[@type='BOB']").Value;
-                    //var x = n.Evaluate("/a/b/c/d/text()='HELLO'");
-                    */
-
-                    try
-                    {
-                        XPathCollection xc = new XPathCollection();
-                        //int onloanQuery = xc.Add("a/b/c/d[@type='BOB']/text()");
-                        //int onloanQuery = xc.Add("count(a/b/c/d[@type='BOB']/text()) > 0");
-                        int onloanQuery = xc.Add("a/b/c/d[text()='HELLO']/text()");
-
-                        XPathReader xpr = new XPathReader(includingReader, xc);
-
-                        while (xpr.ReadUntilMatch())
-                        {
-
-                            if (xpr.Match(onloanQuery))
-                            {
-                                Console.Write("{0} was loaned ", xpr.Value);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("XPath Error: ");
-                    }
-                    
 
 
                     await _fw.Log($"{nameof(XIncludeTester)}.OnStart", "Started...");
                 }
                 catch (Exception ex)
                 {
-                    int i = 0;
+                    throw;
                 }
                 
             });
