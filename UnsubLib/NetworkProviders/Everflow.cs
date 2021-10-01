@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
 using Utility.GenericEntity;
@@ -40,43 +42,63 @@ namespace UnsubLib.NetworkProviders
             var campaignNamePath = network.GetS("Credentials/CampaignNamePath");
             var apiKey = network.GetS("Credentials/NetworkApiKey");
 
-            var url = new Uri(new Uri(network.GetS("Credentials/BaseUrl")), network.GetS("Credentials/GetCampaignsPath")).ToString();
+            const int PAGESIZE = 100;
+            var currentPage = 1;
+
+            var url = new Uri(new Uri(network.GetS("Credentials/BaseUrl")), network.GetS("Credentials/GetCampaignsPath")).ToString() + $"?page_size={PAGESIZE}&page={currentPage}";
 
             string respBody = null;
 
             try
             {
 
-                await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
-                var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "X-Eflow-API-Key", value: apiKey) });
-
-                if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
-                var jbody = Jw.TryParseObject(resp.body);
-
-                if (jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
-
-                await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
-
-                respBody = resp.body;
-
-                var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
-                    Jw.Json(new
-                    {
-                        NetworkId = networkId,
-                        PayloadType = "json",
-                        DataPath = dataPath,
-                        CampaignIdPath = campaignIdPath,
-                        NamePath = campaignNamePath,
-                        RelationshipPath = relationshipPath
-                    }), respBody);
-
-                if (res == null || res.GetS("result") == "failed")
+                while (true)
                 {
-                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{respBody ?? "[null]"}");
-                    return null;
-                }
+                    await _fw.Trace(_logMethod, $"Getting campaigns from {networkName} page {currentPage}");
 
-                return res;
+                    var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "X-Eflow-API-Key", value: apiKey) });
+
+                    if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
+                    var jbody = Jw.TryParseObject(resp.body);
+
+                    if (jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
+
+                    await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName} page {currentPage}");
+
+                    respBody = resp.body;
+
+                    var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
+                        Jw.Json(new
+                        {
+                            NetworkId = networkId,
+                            PayloadType = "json",
+                            DataPath = dataPath,
+                            CampaignIdPath = campaignIdPath,
+                            NamePath = campaignNamePath,
+                            RelationshipPath = relationshipPath
+                        }), respBody);
+
+                    if (res == null || res.GetS("result") == "failed")
+                    {
+                        await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{respBody ?? "[null]"}");
+                        return null;
+                    }
+
+                    var paging = (JObject)jbody["paging"];
+                    var page = paging["page"].Value<int>();
+                    var pageSize = paging["page_size"].Value<int>();
+                    var totalCount = paging["total_count"].Value<int>();
+
+                    if (page * pageSize >= totalCount)
+                    {
+                        return res;
+                    }
+                    else
+                    {
+                        url = url.Replace($"page={currentPage}", $"page={currentPage + 1}");
+                        currentPage++;
+                    }
+                }
             }
             catch (HaltingException) { throw; }
             catch (HttpRequestException e)
