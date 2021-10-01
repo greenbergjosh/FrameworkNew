@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Utility.GenericEntity;
@@ -49,7 +50,7 @@ namespace Utility.LongRunningWorkflow
         public abstract string Logic { get; }
 
         [JsonProperty("waits")]
-        public List<Wait> Waits = new List<Wait>();
+        public List<Wait> Waits { get; } = new();
 
         protected WaitGroup(Wait[] children)
         {
@@ -60,6 +61,12 @@ namespace Utility.LongRunningWorkflow
 
             Waits.AddRange(children);
         }
+
+        public void AddWait(Wait wait) => Waits.Add(wait);
+
+        public bool RemoveWait(Wait wait) => Waits.Remove(wait);
+
+        public bool RemoveWait(string waitName) => Waits.Remove(Waits.FirstOrDefault(w => w.Name == waitName));
     }
 
     public class WaitAll : WaitGroup

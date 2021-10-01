@@ -8,7 +8,7 @@ namespace Utility.LongRunningWorkflow
 {
     public class WaitWriter
     {
-        private readonly List<Wait> _waits = new List<Wait>();
+        private readonly List<Wait> _waits = new();
 
         public Guid Id { get; init; } = Guid.NewGuid();
         public DateTime Timestamp { get; init; } = DateTime.UtcNow;
@@ -16,7 +16,7 @@ namespace Utility.LongRunningWorkflow
         public Guid ThreadId { get; init; }
         public Guid ApartmentId { get; set; }
         public bool Exclusive { get; set; }
-        public IGenericEntity Payload { get; set; }
+        public IGenericEntity Payload { get; init; }
         public Guid PayloadRunnerEntityId { get; set; }
         public bool HasWaits => _waits.Any();
 
@@ -38,36 +38,31 @@ namespace Utility.LongRunningWorkflow
 
         public override string ToString() => JsonConvert.SerializeObject(new
         {
-            waits = new[] {
-                new
+            LRW = new[] {new
+            {
+                payload = new
                 {
-                    id = Id,
-                    ts = Timestamp,
-                    payload = new { waits = _waits, payloadRunnerEntityId = PayloadRunnerEntityId },
-                    process_id = ProcessId,
-                    thread_id = ThreadId,
-                    apartment_id = ApartmentId,
-                    exclusive = Exclusive
+                    waits = new[] {
+                        new
+                        {
+                            id = Id,
+                            ts = Timestamp,
+                            payload = new { waits = _waits, payloadRunnerEntityId = PayloadRunnerEntityId },
+                            process_id = ProcessId,
+                            thread_id = ThreadId,
+                            apartment_id = ApartmentId,
+                            exclusive = Exclusive
+                        }
+                    }
                 }
+            }
             }
         });
 
-        public void AddWait(Wait wait)
-        {
-            _waits.Add(wait);
-        }
+        public void AddWait(Wait wait) => _waits.Add(wait);
 
-        public void RemoveWait(Wait wait) => _waits.Remove(wait);
+        public bool RemoveWait(Wait wait) => _waits.Remove(wait);
 
-        public bool RemoveWait(string waitName)
-        {
-            var wait = _waits.FirstOrDefault(wait => wait.Name == waitName);
-            if (wait is not null)
-            {
-                return _waits.Remove(wait);
-            }
-
-            return false;
-        }
+        public bool RemoveWait(string waitName) => _waits.Remove(_waits.FirstOrDefault(wait => wait.Name == waitName));
     }
 }

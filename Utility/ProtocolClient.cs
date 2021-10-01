@@ -902,7 +902,7 @@ namespace Utility
         public static async Task<List<Uri>> SitemapURIs(string domain, string sitemapFileName)
         {
             var siteMapQuery = new SitemapQuery();
-            IEnumerable<SitemapFile> siteMaps = await siteMapQuery.GetAllSitemapsForDomain(domain);
+            IEnumerable<SitemapFile> siteMaps = await siteMapQuery.GetAllSitemapsForDomainAsync(domain);
             var uris = new List<Uri>();
             foreach (var siteMapFile in siteMaps)
             {

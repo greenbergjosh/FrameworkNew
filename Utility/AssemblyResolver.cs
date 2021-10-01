@@ -12,9 +12,9 @@ namespace Utility
 {
     public class AssemblyResolver : IDisposable
     {
-        private static readonly object _dllCacheLock = new object();
-        private static readonly ConcurrentDictionary<string, Assembly> _dllCache = new ConcurrentDictionary<string, Assembly>();
-        private static readonly ConcurrentDictionary<Tuple<string, string, string>, MethodInfo> _cache = new ConcurrentDictionary<Tuple<string, string, string>, MethodInfo>();
+        private static readonly object _dllCacheLock = new();
+        private static readonly ConcurrentDictionary<string, Assembly> _dllCache = new();
+        private static readonly ConcurrentDictionary<Tuple<string, string, string>, MethodInfo> _cache = new();
 
         private readonly ICompilationAssemblyResolver assemblyResolver;
         private readonly DependencyContext dependencyContext;

@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RedLock.net" Version="2.2.0" />
-    <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
-    <PackageReference Include="System.Reactive.Linq" Version="4.1.6" />
+    <PackageReference Include="RedLock.net" Version="2.3.1" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.50" />
+    <PackageReference Include="System.Reactive.Linq" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -23,7 +23,6 @@ namespace Utility
         public RoslynWrapper RoslynWrapper;
         public IGenericEntity StartupConfiguration;
         public EdwSiloLoadBalancedWriter EdwWriter;
-        public LongRunningWorkflowSiloLoadBalancedWriter LrwWriter;
         public PostingQueueSiloLoadBalancedWriter PostingQueueWriter;
         public ErrorSiloLoadBalancedWriter ErrorWriter;
         public ErrorDelegate Err;
@@ -72,7 +71,6 @@ namespace Utility
                 }
 
                 EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(StartupConfiguration);
-                LrwWriter = LongRunningWorkflowSiloLoadBalancedWriter.InitializeLongRunningWorkflowSiloLoadBalancedWriter(StartupConfiguration);
                 PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(StartupConfiguration);
                 ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(StartupConfiguration);
                 var appName = StartupConfiguration.GetS("Config/ErrorLogAppName") ?? ConfigurationKeys.Join("::");

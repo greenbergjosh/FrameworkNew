@@ -22,7 +22,7 @@ namespace Utility
     public class RoslynWrapper : System.Dynamic.DynamicObject
     {
         public string DefaultDebugDir = null;
-        public ConcurrentDictionary<string, Lazy<ScriptDescriptor>> functions = new ConcurrentDictionary<string, Lazy<ScriptDescriptor>>();
+        public ConcurrentDictionary<string, Lazy<ScriptDescriptor>> functions = new();
 
         public RoslynWrapper(IEnumerable<ScriptDescriptor> initialScripts, string defaultDebugDir)
         {
