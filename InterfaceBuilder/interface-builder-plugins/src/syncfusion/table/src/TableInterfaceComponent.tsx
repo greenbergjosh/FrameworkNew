@@ -8,7 +8,6 @@ import {
 import DisplayTable from "./components/DisplayTable"
 import { AbstractTable } from "./components/AbstractTable"
 import { EditTable } from "./components/EditTable"
-import { Icon, Spin } from "antd"
 import { isBoolean } from "lodash/fp"
 import { TableInterfaceComponentProps, TableInterfaceComponentState } from "./types"
 import { tableManageForm } from "./table-manage-form"
@@ -71,21 +70,25 @@ export default class TableInterfaceComponent extends BaseInterfaceComponent<
   render(): JSX.Element {
     const {
       abstract,
-      columns,
-      showToolbar,
-      useSmallPager,
-      defaultCollapseAll,
       autoFitColumns,
-      useSmallFont,
+      columns,
+      defaultCollapseAll,
+      defaultPageSize,
       enableAltRow,
       enableVirtualization,
-      height,
-      defaultPageSize,
-      rowDetails,
-      userInterfaceData,
+      filterByKey,
       getRootUserInterfaceData,
+      groupByKey,
+      height,
       onChangeRootData,
+      orderByKey,
+      pagingKey,
       preview,
+      rowDetails,
+      showToolbar,
+      userInterfaceData,
+      useSmallFont,
+      useSmallPager,
       valueKey,
     } = this.props
 
@@ -135,30 +138,30 @@ export default class TableInterfaceComponent extends BaseInterfaceComponent<
                  * View the actual grid with data.
                  */
                 return (
-                  <Spin
-                    spinning={this.state.loading}
-                    indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
-                    <DisplayTable
-                      columns={columns}
-                      defaultCollapseAll={defaultCollapseAll}
-                      autoFitColumns={autoFitColumns}
-                      useSmallFont={useSmallFont}
-                      enableAltRow={enableAltRow}
-                      enableVirtualization={enableVirtualization}
-                      height={height}
-                      defaultPageSize={defaultPageSize}
-                      rowDetails={rowDetails}
-                      userInterfaceData={userInterfaceData}
-                      getRootUserInterfaceData={getRootUserInterfaceData}
-                      onChangeRootData={onChangeRootData}
-                      getValue={this.getValue.bind(this)}
-                      setValue={this.setValue.bind(this)}
-                      valueKey={valueKey}
-                      preview={preview}
-                      showToolbar={showToolbar}
-                      useSmallPager={useSmallPager}
-                    />
-                  </Spin>
+                  <DisplayTable
+                    autoFitColumns={autoFitColumns}
+                    columns={columns}
+                    defaultCollapseAll={defaultCollapseAll}
+                    defaultPageSize={defaultPageSize}
+                    enableAltRow={enableAltRow}
+                    enableVirtualization={enableVirtualization}
+                    filterByKey={filterByKey}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
+                    getValue={this.getValue.bind(this)}
+                    groupByKey={groupByKey}
+                    height={height}
+                    onChangeRootData={onChangeRootData}
+                    orderByKey={orderByKey}
+                    pagingKey={pagingKey}
+                    preview={preview}
+                    rowDetails={rowDetails}
+                    setValue={this.setValue.bind(this)}
+                    showToolbar={showToolbar}
+                    userInterfaceData={userInterfaceData}
+                    useSmallFont={useSmallFont}
+                    useSmallPager={useSmallPager}
+                    valueKey={valueKey}
+                  />
                 )
               }
             }

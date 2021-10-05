@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Data",
   name: "data-injector",
   title: "Data Injector",
   icon: "import",

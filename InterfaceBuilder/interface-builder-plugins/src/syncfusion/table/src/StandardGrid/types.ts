@@ -2,7 +2,9 @@ import {
   AggregateType,
   ColumnModel,
   CustomSummaryType,
+  FilterSettingsModel,
   GridComponent,
+  GridModel,
   GroupSettingsModel,
   PageSettingsModel,
   RowDataBoundEventArgs,
@@ -25,6 +27,8 @@ export type {
 export type { EmitType }
 
 export interface StandardGridComponentProps {
+  actionComplete?: GridModel["actionComplete"]
+  actionBegin?: GridModel["actionBegin"]
   autoFitColumns?: boolean
   useSmallFont?: boolean
   enableAltRow?: boolean
@@ -35,6 +39,7 @@ export interface StandardGridComponentProps {
   data: JSONRecord[]
   defaultCollapseAll?: boolean
   detailTemplate?: string | Function | any
+  filterSettings?: FilterSettingsModel
   groupSettings?: GroupSettingsModel
   pageSettings?: PageSettingsModel
   sortSettings?: SortSettingsModel

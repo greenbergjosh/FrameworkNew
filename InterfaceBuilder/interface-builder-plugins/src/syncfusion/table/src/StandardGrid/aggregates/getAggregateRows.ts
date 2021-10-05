@@ -7,6 +7,7 @@ import {
 } from "@syncfusion/ej2-react-grids"
 import { sanitizeText } from "@opg/interface-builder"
 import { CustomAggregateFunctions, EnrichedColumnDefinition } from "../types"
+import { isEmpty } from "lodash/fp"
 
 export function getCustomAggregateFunction(
   aggregationFunction: EnrichedColumnDefinition["aggregationFunction"],
@@ -96,5 +97,8 @@ export default function getAggregateRows(
     return acc
   }, [] as AggregateColumnModel[])
 
-  return [{ columns: aggregateColumns }]
+  if (!isEmpty(aggregateColumns)) {
+    return [{ columns: aggregateColumns }]
+  }
+  return []
 }

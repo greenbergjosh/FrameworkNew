@@ -1,18 +1,18 @@
 import { Dialog } from "@syncfusion/ej2-popups"
-import { Icon, Spin } from "antd"
 import React from "react"
 import {
   ColumnChooser,
+  ColumnModel,
   DetailRow,
   Edit,
   ExcelExport,
   Filter,
   Freeze,
   GridComponent,
+  GridModel,
   Group,
   Inject,
   Page,
-  PageSettingsModel,
   PdfExport,
   Resize,
   Sort,
@@ -29,7 +29,6 @@ import {
   getCustomNullCountAggregate,
   getCustomValueCountAggregate,
 } from "./aggregates"
-import { PureGridComponent } from "./PureGridComponent"
 import { CustomAggregateFunctions, StandardGridComponentProps } from "./types"
 import { average, count, getUsableColumns, getUsableData } from "./utils"
 import { getCustomAggregateFunctionKey } from "./aggregates/getAggregateRows"
@@ -41,6 +40,8 @@ let grid: GridComponent | null = null
 
 const StandardGrid = (
   {
+    actionBegin,
+    actionComplete,
     autoFitColumns,
     useSmallFont = false,
     enableAltRow = false,
@@ -51,6 +52,7 @@ const StandardGrid = (
     data,
     defaultCollapseAll,
     detailTemplate,
+    filterSettings,
     groupSettings,
     pageSettings,
     sortSettings,
@@ -220,7 +222,7 @@ const StandardGrid = (
           contentElement.scrollTop = 0
         }
       }
-      ref.current.pageSettings.currentPage = 1
+      ref.current.pageSettings.currentPage = pageSettings ? pageSettings.currentPage : 1
       ref.current.dataSource = usableData
       !isLoading ? setIsLoading(false) : null
     } else if (grid) {
@@ -280,19 +282,6 @@ const StandardGrid = (
       })
     }
   }, [ref, customAggregateFunctions, columnAverages, usableColumns])
-
-  /**
-   * Configures the pager in the Grid.
-   */
-  const defaultedPageSettings = React.useMemo(
-    () =>
-      ({
-        pageSize: 50,
-        pageSizes: ["All", 25, 50, 100, 150, 200, 500],
-        ...pageSettings,
-      } as PageSettingsModel),
-    [pageSettings]
-  )
 
   /***************************************************
    *
@@ -359,17 +348,28 @@ const StandardGrid = (
 
   /**
    * Event Handler
-   * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
-   * @param arg DialogEditEventArgs
+   * Triggers when Grid actions such as sorting, filtering, paging, grouping, etc. begin.
+   * @param arg ActionEventArgs
    */
-  const handleActionComplete = React.useCallback((arg?: any): void => {
-    if (arg && (arg.requestType === "beginEdit" || arg.requestType === "add")) {
-      const dialog = arg.dialog as Dialog
-      dialog.height = 400
-      // change the header of the dialog
-      dialog.header = arg.requestType === "beginEdit" ? "Existing Record" : "New Row"
-    }
-  }, [])
+  const handleActionBegin: GridModel["actionBegin"] = React.useCallback(
+    (arg): void => {
+      actionBegin && actionBegin(arg)
+    },
+    [actionBegin]
+  )
+
+  /**
+   * Event Handler
+   * Triggers when Grid actions such as sorting, filtering, paging, grouping, etc. are completed.
+   * @param arg ActionEventArgs
+   */
+  const handleActionComplete: GridModel["actionComplete"] = React.useCallback(
+    (arg): void => {
+      actionComplete && actionComplete(arg)
+      handleAddRow(arg)
+    },
+    [actionComplete]
+  )
 
   /***************************************************
    *
@@ -381,64 +381,72 @@ const StandardGrid = (
   const classes = classNames(class1, class2)
 
   return (
-    <Spin spinning={isLoading} indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
-      <PureGridComponent
-        // Forwarding ref to children ( see above const StandardGrid = React.forwardRef() )
-        // ref={ref}
-        ref={getGridRef}
-        // Event Handlers
-        actionComplete={handleActionComplete}
-        toolbarClick={handleToolbarClick}
-        dataBound={handleDataBound}
-        // Attributes
-        aggregates={aggregates}
-        allowExcelExport={true}
-        allowFiltering={true}
-        allowGrouping={groupSettings && groupSettings.columns ? groupSettings.columns.length > 0 : false}
-        allowMultiSorting={true}
-        allowPaging={true}
-        allowPdfExport={true}
-        allowReordering={true}
-        allowResizing={true}
-        allowSelection={false}
-        allowSorting={true}
-        allowTextWrap={true}
-        className={classes}
-        columnMenuItems={["SortAscending", "SortDescending"]}
-        columns={usableColumns}
-        // dataSource={usableData}
-        detailTemplate={detailTemplate}
-        enableAltRow={enableAltRow}
-        enableVirtualization={enableVirtualization}
-        filterSettings={{ type: "Menu" }}
-        groupSettings={{ disablePageWiseAggregates: true, ...groupSettings }}
-        height={enableVirtualization ? height || "100%" : "100%"}
-        width="100%"
-        pageSettings={defaultedPageSettings}
-        showColumnChooser={true}
-        sortSettings={sortSettings}
-        toolbar={[...toolbar]}>
-        <Inject
-          services={[
-            Toolbar,
-            ColumnChooser,
-            Resize,
-            DetailRow,
-            ExcelExport,
-            PdfExport,
-            Sort,
-            Filter,
-            Group,
-            Page,
-            Freeze,
-            AggregateSafe, //<-- IMPORTANT! This is an overridden class to fix a bug CHN-399
-            Edit,
-            VirtualScroll,
-          ]}
-        />
-      </PureGridComponent>
-    </Spin>
+    <GridComponent
+      // Forwarding ref to children ( see above const StandardGrid = React.forwardRef() )
+      // ref={ref}
+      ref={getGridRef}
+      // Event Handlers
+      actionBegin={handleActionBegin}
+      actionComplete={handleActionComplete}
+      toolbarClick={handleToolbarClick}
+      dataBound={handleDataBound}
+      // Attributes
+      aggregates={aggregates}
+      allowExcelExport={true}
+      allowFiltering={true}
+      allowGrouping={groupSettings && groupSettings.columns ? groupSettings.columns.length > 0 : false}
+      allowMultiSorting={true}
+      allowPaging={true}
+      allowPdfExport={true}
+      allowReordering={true}
+      allowResizing={true}
+      allowSelection={false}
+      allowSorting={true}
+      allowTextWrap={true}
+      className={classes}
+      columnMenuItems={["SortAscending", "SortDescending"]}
+      columns={usableColumns as ColumnModel[]}
+      // dataSource={usableData}
+      detailTemplate={detailTemplate}
+      enableAltRow={enableAltRow}
+      enableVirtualization={enableVirtualization}
+      filterSettings={filterSettings}
+      groupSettings={{ disablePageWiseAggregates: true, ...groupSettings }}
+      height={enableVirtualization ? height || "100%" : "100%"}
+      width="100%"
+      pageSettings={pageSettings}
+      showColumnChooser={true}
+      sortSettings={sortSettings}
+      toolbar={[...toolbar]}>
+      <Inject
+        services={[
+          Toolbar,
+          ColumnChooser,
+          Resize,
+          DetailRow,
+          ExcelExport,
+          PdfExport,
+          Sort,
+          Filter,
+          Group,
+          Page,
+          Freeze,
+          AggregateSafe, //<-- IMPORTANT! This is an overridden class to fix a bug CHN-399
+          Edit,
+          VirtualScroll,
+        ]}
+      />
+    </GridComponent>
   )
 }
 
 export default React.forwardRef(StandardGrid)
+
+function handleAddRow(arg: any) {
+  if (arg && (arg.requestType === "beginEdit" || arg.requestType === "add")) {
+    const dialog = arg.dialog as Dialog
+    dialog.height = 400
+    // change the header of the dialog
+    dialog.header = arg.requestType === "beginEdit" ? "Existing Record" : "New Row"
+  }
+}

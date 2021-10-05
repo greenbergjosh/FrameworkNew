@@ -1,7 +1,7 @@
 import { QuoteIcon } from "./components/QuoteIcon"
 
 export default {
-  category: "Special",
+  category: "Data",
   name: "string-template",
   title: "String Template",
   description: `Edit a string using form controls.

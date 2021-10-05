@@ -2,6 +2,7 @@ import React from "react"
 import ReactJson from "react-json-view"
 import styles from "./styles.scss"
 import { JSONEditorProps } from "./types"
+import { cloneDeep } from "lodash/fp"
 
 export function JSONEditor({
   data,
@@ -10,10 +11,11 @@ export function JSONEditor({
   collapsed = true,
   displayDataTypes = false,
 }: JSONEditorProps): JSX.Element {
+  const safeData: Record<string, unknown> | unknown[] = cloneDeep(data) || {}
   return (
     <div className={styles.jsonViewer} style={{ height }}>
       <ReactJson
-        src={data as Record<string, unknown>}
+        src={safeData}
         theme="shapeshifter:inverted"
         collapsed={collapsed}
         iconStyle="square"

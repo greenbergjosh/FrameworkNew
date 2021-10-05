@@ -6,10 +6,11 @@ import {
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { EnrichedColumnDefinition } from "./StandardGrid/types"
+import { SortDirection } from "@syncfusion/ej2-react-grids"
 
 interface ColumnSortOptions {
   allowSorting?: boolean
-  sortDirection?: "Ascending" | "Descending"
+  sortDirection?: SortDirection
   sortOrder?: number
 }
 
@@ -22,22 +23,26 @@ export type SortableGroupableColumnModel = EnrichedColumnDefinition & ColumnSort
 
 export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   abstract?: boolean
+  autoFitColumns?: boolean
   columns: SortableGroupableColumnModel[]
   component: "table"
-  showToolbar?: boolean
-  useSmallPager?: boolean
   defaultCollapseAll?: boolean
-  autoFitColumns?: boolean
-  useSmallFont?: boolean
+  defaultPageSize?: number | string
   enableAltRow?: boolean
   enableVirtualization?: boolean
+  filterByKey?: string
+  groupByKey?: string
   height?: number
-  defaultPageSize?: number | string
   loadingKey?: string
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
+  pagingKey?: string
   rowDetails?: ComponentDefinition[]
+  showToolbar?: boolean
+  orderByKey?: string
   userInterfaceData: UserInterfaceProps["data"]
+  useSmallFont?: boolean
+  useSmallPager?: boolean
   valueKey: string
 }
 
@@ -72,8 +77,8 @@ export function visiblityConditionType(type: string): JSONRecord {
 
 export interface TableProps {
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   getValue: AbstractBaseInterfaceComponentType["prototype"]["getValue"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   rowDetails?: ComponentDefinition[]
   setValue: AbstractBaseInterfaceComponentType["prototype"]["setValue"]
@@ -88,9 +93,13 @@ export interface DisplayTableProps extends TableProps {
   defaultPageSize?: number | string
   enableAltRow?: boolean
   enableVirtualization?: boolean
+  filterByKey?: string
+  groupByKey?: string
   height?: number
+  pagingKey?: string
   preview?: boolean
   showToolbar?: boolean
+  orderByKey?: string
   userInterfaceData: UserInterfaceProps["data"]
   useSmallFont?: boolean
   useSmallPager?: boolean

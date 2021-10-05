@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Data",
   name: "dev-tools",
   title: "Dev Tools",
   icon: "setting",

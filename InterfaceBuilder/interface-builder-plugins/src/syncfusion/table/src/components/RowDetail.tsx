@@ -12,9 +12,10 @@ export function RowDetail(props: {
   const { onChangeData } = props
   const [data, setData] = React.useState({ ...props.parentRowData })
 
-  const handleChangeData: UserInterfaceProps["onChangeData"] = React.useCallback((newData) => setData(newData), [
-    onChangeData,
-  ])
+  const handleChangeData: UserInterfaceProps["onChangeData"] = React.useCallback(
+    (newData) => setData(newData),
+    [onChangeData]
+  )
 
   return (
     <ComponentRenderer

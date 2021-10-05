@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Data",
   name: "query-builder",
   title: "Query Builder",
   icon: "search",

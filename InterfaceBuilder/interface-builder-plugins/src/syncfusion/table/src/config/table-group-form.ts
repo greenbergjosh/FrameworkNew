@@ -7,8 +7,7 @@ export const tableGroupForm = {
       key: "allowGrouping",
       valueKey: "allowGrouping",
       label: "Allow Grouping",
-      help:
-        "If turned off, users will not be able to add, remove, or change the grouping, but it can still be pre-configured below.",
+      help: "If turned off, users will not be able to add, remove, or change the grouping, but it can still be pre-configured below.",
       component: "toggle",
       defaultValue: true,
       size: "small",

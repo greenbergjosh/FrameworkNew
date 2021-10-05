@@ -45,6 +45,38 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Loading Key",
                 bindable: true,
               },
+              {
+                key: "orderByKey",
+                valueKey: "orderByKey",
+                component: "input",
+                defaultValue: "$app.location.querystring.orderBy",
+                label: "Sort By Key",
+                bindable: true,
+              },
+              {
+                key: "pagingKey",
+                valueKey: "pagingKey",
+                component: "input",
+                defaultValue: "$app.location.querystring.page",
+                label: "Paging Key",
+                bindable: true,
+              },
+              {
+                key: "filterByKey",
+                valueKey: "filterByKey",
+                component: "input",
+                defaultValue: "$app.location.querystring.filterBy",
+                label: "Filter By Key",
+                bindable: true,
+              },
+              {
+                key: "groupByKey",
+                valueKey: "groupByKey",
+                component: "input",
+                defaultValue: "$app.location.querystring.groupBy",
+                label: "Group By Key",
+                bindable: true,
+              },
             ],
           },
           {
@@ -139,7 +171,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                   values: [
                     {
                       label: "All",
-                      value: "All",
+                      value: "999999",
                     },
                     {
                       label: "25",
