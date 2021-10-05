@@ -228,7 +228,7 @@ const StandardGrid = (
     } else if (grid) {
       grid.dataSource = usableData
     }
-  }, [ref, usableData, isLoading])
+  }, [ref, usableData, isLoading, pageSettings])
 
   /**
    * Manage column change.

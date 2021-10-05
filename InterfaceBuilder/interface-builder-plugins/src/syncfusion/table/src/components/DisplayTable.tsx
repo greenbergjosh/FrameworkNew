@@ -193,9 +193,9 @@ export default React.memo(DisplayTable, propsAreEqual)
  * @param key
  */
 function isPropEqual(prevProps: Record<string, any>, nextProps: Record<string, any>, key: string) {
-  const prevFilterBy =
+  const prevValue =
     prevProps[key] && getValue(prevProps[key], prevProps.userInterfaceData, prevProps.getRootUserInterfaceData)
-  const nextFilterBy =
+  const nextValue =
     nextProps[key] && getValue(nextProps[key], nextProps.userInterfaceData, nextProps.getRootUserInterfaceData)
-  return isEqual(prevFilterBy, nextFilterBy)
+  return isEqual(prevValue, nextValue)
 }

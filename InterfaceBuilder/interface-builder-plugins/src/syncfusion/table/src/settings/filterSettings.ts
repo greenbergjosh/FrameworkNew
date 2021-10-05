@@ -14,14 +14,16 @@ export function getFilterSettings(
   columns: SortableGroupableColumnModel[],
   encodedFilterBy: EncodedFilterBy
 ): FilterSettingsModel {
+  debugger
   const decodedFilters = decodeFilters(encodedFilterBy)
   const filterColumns = decodedFilters.reduce<PredicateModel[]>((predicates, param) => {
     const col = columns.find((c) => c.field === param.field)
     if (col) {
-      predicates.push({
-        ...param,
-        uid: col.uid,
-      })
+      const p = { ...param }
+      if (col.uid) {
+        p.uid = col.uid
+      }
+      predicates.push(p)
     }
     return predicates
   }, [])
