@@ -7,7 +7,6 @@ import { hydrateNavigationNodes } from "./utils/hydrateNavigationNodes"
 import { getAppEntityFromPersistedConfig } from "./utils/getAppEntityFromPersistedConfig"
 import { getAppEntityByIdOrUri } from "./utils/getAppEntityByIdOrUri"
 import { AppSelectors } from "../store.types"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
 
 const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps) => ({
   /**
@@ -140,11 +139,15 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appPageModel(select) {
-    return createSelector(select.apps.appPageConfig, (appPageConfig): AppPageModel => {
-      return {
-        $app: { location: { parameters: appPageConfig.parameters } },
+    return createSelector(
+      select.apps.appPageConfig,
+      slice((state) => state.appPaths),
+      (appPageConfig, appPaths): AppPageModel => {
+        return {
+          $app: { location: { parameters: appPageConfig.parameters, querystring: appPaths.querystring } },
+        }
       }
-    })
+    )
   },
 })
 

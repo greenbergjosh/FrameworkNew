@@ -47,7 +47,6 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
     appPageConfig: store.select.apps.appPageConfig(appState),
-    appPageModel: store.select.apps.appPageModel(appState),
     appPaths: appState.apps.appPaths,
   }))
 
@@ -90,7 +89,7 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
       <Router>
         <RouteRenderer
           components={(appPageConfig && appPageConfig.layout) || []}
-          data={{ ...props.data, ...fromStore.appPageModel }}
+          data={props.data}
           getRootUserInterfaceData={props.getRootUserInterfaceData}
           onChangeRootData={props.onChangeRootData}
           onChangeData={props.onChangeData}

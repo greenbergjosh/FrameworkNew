@@ -16,6 +16,7 @@ export const apps: AppsStoreModel = {
       pageUri: "",
       rootUri: "",
       currentUrl: "",
+      querystring: {},
     },
     configs:
       initial ||

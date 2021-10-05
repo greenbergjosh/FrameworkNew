@@ -1,5 +1,9 @@
 import React from "react"
 
+/**
+ * Use this hook to determine if props have changed, among other uses.
+ * @param value
+ */
 export function usePrevious<T>(value: T): T | undefined {
   // The ref object is a generic container whose current property is mutable ...
   // ... and can hold any value, similar to an instance property on a class

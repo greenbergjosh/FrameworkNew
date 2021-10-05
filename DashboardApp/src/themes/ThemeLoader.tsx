@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useRematch } from "../hooks"
 import { store } from "../state/store"
 import OpgCorporateTheme from "../themes/opg-corporate"
-import { isEmpty } from "lodash/fp"
+import { isEmpty, isEqual } from "lodash/fp"
 import { ITheme, ThemeLoaderProps } from "./types"
 import { UserInterfaceProps } from "@opg/interface-builder"
 import { Router, RouteComponentProps, Redirect } from "@reach/router"
@@ -10,19 +10,21 @@ import { Landing, LandingProps } from "../views/login"
 import { WithRouteProps } from "../state/navigation"
 import { NotFound } from "../views/not-found"
 import { None, Some } from "../data/Option"
+import { usePrevious } from "../hooks/usePrevious"
 
 export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.Element {
-  /*
-   * For now, the user interacts with state, but it is not persisted.
-   */
-  const [data, setData] = useState<UserInterfaceProps["data"]>({})
-
   const [fromStore, dispatch] = useRematch((appState) => ({
     loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
     profile: appState.iam.profile,
     appConfig: store.select.apps.appConfig(appState),
     appPaths: appState.apps.appPaths,
+    appPageModel: store.select.apps.appPageModel(appState),
   }))
+  /*
+   * For now, the user interacts with state, but it is not persisted.
+   */
+  const [data, setData] = useState<UserInterfaceProps["data"]>({ ...fromStore.appPageModel })
+  const prevData = usePrevious<UserInterfaceProps["data"]>(data)
 
   // Make sure that remote configs are loaded
   React.useEffect(() => {
@@ -32,17 +34,35 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
     }
   }, [dispatch, fromStore.profile])
 
-  // Keep the app sync'd with the URL
+  // Keep the app model updated from the URL path (but not including querystring)
   React.useEffect(() => {
     if (props.location) {
       const url = `${props.location.host}${props.location.pathname}`
       if (url !== fromStore.appPaths.currentUrl) {
-        // Remove data from the page we navigated from
-        setData({})
-        dispatch.apps.updateAppPaths()
+        // User has moved to a new page.
+        // Reset data from the page we navigated from.
+        setData({ ...fromStore.appPageModel })
+        dispatch.apps.updateAppPaths(props.location)
       }
+      setData({ ...data, ...fromStore.appPageModel })
     }
-  }, [dispatch, fromStore.appPaths.currentUrl, props.location])
+  }, [dispatch, fromStore.appPaths.currentUrl, props.location, fromStore.appPageModel])
+
+  // Keep the Querystring updated from the app model
+  React.useEffect(() => {
+    if (
+      props.location &&
+      prevData &&
+      prevData.$app &&
+      prevData.$app.location &&
+      data &&
+      data.$app &&
+      data.$app.location &&
+      !isEqual(prevData.$app.location.querystring, data.$app.location.querystring)
+    ) {
+      dispatch.apps.updateQuerystring({ location: props.location, querystring: data.$app.location.querystring })
+    }
+  }, [dispatch, props.location, prevData, data])
 
   const SelectedTheme: ITheme = React.useMemo(() => {
     if (!isEmpty(fromStore.appConfig)) {

@@ -3,6 +3,7 @@ import * as Store from "../store.types"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { NotifyConfig } from "../feedback"
 import { RemoteData } from "@devexperts/remote-data-ts"
+import { WindowLocation } from "@reach/router"
 
 export interface AppEntity {
   id: string
@@ -41,6 +42,7 @@ export interface AppPageModel {
   $app: {
     location: {
       parameters: Record<string, string>
+      querystring: Record<string, string | number | boolean | (string | number | boolean)[] | null>
     }
   }
 }
@@ -63,6 +65,7 @@ export type AppPaths = {
   appRootPath: string
   pagePathSegments: string[]
   currentUrl: string
+  querystring: Record<string, string | number | boolean | (string | number | boolean)[] | null>
 }
 
 export interface State {
@@ -76,7 +79,11 @@ export interface Reducers {
 }
 
 export interface Effects {
-  updateAppPaths(): void
+  updateAppPaths(location: WindowLocation<unknown>): void
+  updateQuerystring(payload: {
+    location: WindowLocation<unknown>
+    querystring: Record<string, string | number | boolean | (string | number | boolean)[] | null>
+  }): void
   loadAppConfigs(): Promise<NotifyConfig>
 }
 

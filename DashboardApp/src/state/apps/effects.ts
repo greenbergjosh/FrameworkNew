@@ -4,15 +4,20 @@ import { isEmpty } from "lodash/fp"
 import { failure, pending, success } from "@devexperts/remote-data-ts"
 import { Left, Right } from "../../data/Either"
 import { NotifyConfig } from "../feedback"
+import qs from "query-string"
 
 const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
   return {
-    updateAppPaths() {
-      const { pathname, host, hostname } = window.location
+    updateAppPaths({ pathname, host, hostname, search }) {
       const currentUrl = `${host}${pathname}`
       const pathSegments = pathname.split("/")
       pathSegments.shift() // remove leading "/" element
       const useAppPath = pathSegments[0] === "app"
+      const querystring = qs.parse(search, {
+        parseBooleans: true,
+        parseNumbers: true,
+        arrayFormat: "comma",
+      })
 
       /*
        * USE REACT ROUTER TO GET APP
@@ -35,9 +40,8 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
         const pagePathSegments = pathSegments.length === 1 && isEmpty(pathSegments[0]) ? [] : pathSegments // remove empty string
 
         // Dispatch results
-        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePathSegments, currentUrl }
+        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePathSegments, currentUrl, querystring }
         dispatch.apps.update({ appPaths })
-        // console.log("store.apps.effects.updateAppPaths", { appPaths })
       } else {
         /*
          * USE SUBDOMAIN TO GET APP
@@ -50,10 +54,18 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
         const matches = regex.exec(hostname)
         const appUri = matches && matches.groups ? matches.groups.appname : ""
         const pagePathSegments = pathSegments
-        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePathSegments, currentUrl }
+        const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePathSegments, currentUrl, querystring }
         dispatch.apps.update({ appPaths })
-        // console.log("store.apps.effects.updateAppPaths", { appPaths })
       }
+    },
+
+    async updateQuerystring({ location, querystring }) {
+      const query = qs
+        .stringify(querystring, { arrayFormat: "comma", skipNull: true, skipEmptyString: true })
+        .replaceAll("%20", "+")
+      const fullQuery = `?${query}`
+      const newurl = `${location.protocol}//${location.host}${location.pathname}${fullQuery}`
+      window.history.pushState({ path: newurl }, "", newurl)
     },
 
     async loadAppConfigs() {
@@ -78,10 +90,10 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
             Unauthorized: () => {
               const notifyConfig: NotifyConfig = {
                 type: "error",
-                message: `You do not have permission to load the Global Config list`,
+                message: `You do not have permission to load the App Configs`,
               }
               dispatch.apps.update({
-                configs: failure(new Error(`Unauthorized to load GlobalConfig`)),
+                configs: failure(new Error(`Unauthorized to load App Configs`)),
               })
               dispatch.logger.logError(`Unauthorized attempt to load remote configs`)
               dispatch.feedback.notify(notifyConfig)
