@@ -38,6 +38,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\json-everything\JsonPath\JsonPath.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="port25.pmta.api.submitter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>Mta\Pmta\libs\port25.pmta.api.submitter.dll</HintPath>
     </Reference>
