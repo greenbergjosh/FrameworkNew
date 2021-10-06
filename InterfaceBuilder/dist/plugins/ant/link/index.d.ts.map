@@ -1,1 +1,0 @@
-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../../src/plugins/ant/link/index.ts"],"names":[],"mappings":"AAAA,OAAO,EACL,2BAA2B,IAAI,4BAA4B,EAC3D,2BAA2B,IAAI,4BAA4B,EAC5D,MAAM,SAAS,CAAA;AAEhB,oBAAY,2BAA2B,GAAG,4BAA4B,CAAA;AACtE,oBAAY,2BAA2B,GAAG,4BAA4B,CAAA;AACtE,OAAO,EAAE,wBAAwB,EAAE,MAAM,oBAAoB,CAAA;AAC7D,OAAO,EAAE,sBAAsB,EAAE,MAAM,kDAAkD,CAAA"}

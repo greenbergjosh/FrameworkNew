@@ -1,1 +1,0 @@
-{"version":3,"file":"JSONTypes.d.ts","sourceRoot":"","sources":["../../../../src/components/interface-builder/@types/JSONTypes.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,UAAU;IACzB,CAAC,CAAC,EAAE,MAAM,GAAG,QAAQ,GAAG,SAAS,CAAA;CAClC;AACD,MAAM,WAAW,SAAU,SAAQ,KAAK,CAAC,QAAQ,CAAC;CAAG;AACrD,oBAAY,QAAQ,GAAG,IAAI,GAAG,MAAM,GAAG,MAAM,GAAG,OAAO,GAAG,SAAS,GAAG,UAAU,CAAA"}

@@ -1,3 +1,0 @@
-import { ComponentDefinition } from "../../base/BaseInterfaceComponent";
-export declare const bulkTextInputManageForm: (...extend: (Partial<import("../../base/BaseInterfaceComponent").ComponentDefinitionNamedProps> | Partial<import("../../base/BaseInterfaceComponent").ComponentDefinitionNamedProps & import("../../base/BaseInterfaceComponent").ComponentDefinitionRecursiveProp>)[]) => ComponentDefinition[];
-//# sourceMappingURL=bulk-text-input-manage-form.d.ts.map
