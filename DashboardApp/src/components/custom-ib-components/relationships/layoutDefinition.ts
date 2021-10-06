@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Navigation",
   name: "relationships",
   title: "Relationships",
   icon: "deployment-unit",

@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Data",
   name: "query",
   title: "Query",
   icon: "database",

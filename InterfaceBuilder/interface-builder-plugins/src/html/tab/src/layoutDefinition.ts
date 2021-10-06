@@ -1,5 +1,5 @@
 export default {
-  category: "Display",
+  category: "Navigation",
   name: "tab",
   title: "Tab",
   icon: "folder",

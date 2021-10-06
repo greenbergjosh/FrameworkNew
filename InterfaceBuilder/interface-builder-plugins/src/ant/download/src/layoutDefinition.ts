@@ -1,5 +1,5 @@
 export default {
-  category: "Form",
+  category: "Data",
   name: "download",
   title: "Download",
   icon: "download",

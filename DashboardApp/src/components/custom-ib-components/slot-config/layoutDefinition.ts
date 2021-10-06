@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Data",
   name: "slot-config",
   title: "Slot Config",
   icon: "border-outer",

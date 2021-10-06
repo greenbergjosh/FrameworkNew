@@ -1,7 +1,7 @@
 export default {
-  category: "Display",
+  category: "Navigation",
   name: "sectioned-navigation",
-  title: "Sectioned Navigation",
+  title: "Sectioned Nav",
   icon: "more",
   componentDefinition: {
     component: "sectioned-navigation",

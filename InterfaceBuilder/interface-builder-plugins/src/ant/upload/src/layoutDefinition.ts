@@ -1,5 +1,5 @@
 export default {
-  category: "Form",
+  category: "Data",
   name: "upload",
   title: "Upload",
   icon: "upload",

@@ -1,5 +1,5 @@
 export default {
-  category: "Display",
+  category: "Navigation",
   name: "link",
   title: "Link",
   icon: "link",

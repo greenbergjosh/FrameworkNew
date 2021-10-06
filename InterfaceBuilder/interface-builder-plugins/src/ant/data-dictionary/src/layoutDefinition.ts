@@ -1,5 +1,5 @@
 export default {
-  category: "Form",
+  category: "Data",
   name: "data-dictionary",
   title: "Data Dictionary",
   icon: "book",

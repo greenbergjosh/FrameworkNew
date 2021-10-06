@@ -1,10 +1,10 @@
 export default {
-  category: "Special",
+  category: "Display",
   name: "remote-component",
-  title: "Remote Component",
+  title: "Component",
   icon: "select",
   componentDefinition: {
     component: "remote-component",
-    label: "Remote Component",
+    label: "Component",
   },
 }

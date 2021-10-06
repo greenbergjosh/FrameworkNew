@@ -1,5 +1,5 @@
 export default {
-  category: "Display",
+  category: "Navigation",
   name: "tab-set",
   title: "Tab Set",
   icon: "folder",

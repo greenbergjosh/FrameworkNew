@@ -1,5 +1,5 @@
 export default {
-  category: "Form",
+  category: "Data",
   name: "data-map",
   title: "Data Map",
   icon: "appstore",

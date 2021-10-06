@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Display",
   name: "user-interface",
   title: "User Interface",
   icon: "build",

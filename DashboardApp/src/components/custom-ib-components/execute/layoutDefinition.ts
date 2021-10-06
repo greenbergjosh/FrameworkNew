@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Data",
   name: "execute",
   title: "Execute",
   icon: "thunderbolt",

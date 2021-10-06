@@ -1,5 +1,5 @@
 export default {
-  category: "Special",
+  category: "Navigation",
   name: "route",
   title: "Route",
   icon: "deployment-unit",
