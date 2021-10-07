@@ -5,16 +5,24 @@ import {
   ComponentRenderer,
   DataPathContext,
   EventBus,
+  getMergedData,
   JSONRecord,
   LayoutDefinition,
   utils,
 } from "@opg/interface-builder"
 import { Card } from "antd"
-import { isEmpty } from "lodash/fp"
+import { isEmpty, toPairs } from "lodash/fp"
+import styled, { css } from "styled-components"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { tryCatch } from "fp-ts/lib/Option"
 import layoutDefinition from "./layoutDefinition"
+
+const Div = styled.div`
+  ${({ styleString }: { styleString: string }) => css`
+    ${styleString}
+  `}
+`
 
 export default class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   StringTemplateInterfaceComponentProps,
@@ -47,17 +55,11 @@ export default class StringTemplateInterfaceComponent extends BaseInterfaceCompo
   static manageForm = stringTemplateManageForm
 
   componentDidMount(): void {
-    // Load local config serialize function, if provided
-    if (!isEmpty(this.props.serializeSrc)) {
-      // export type SerializeType = (value?: JSONRecord | JSONRecord[]) => string | undefined
-      const serialize = utils.parseLBM<
-        StringTemplateInterfaceComponentProps,
-        { value?: JSONRecord | JSONRecord[] },
-        string | undefined
-      >(this.props.serializeSrc)
-      serialize && this.setState({ serialize })
-    }
+    this.parseSerializeSrc()
+    this.parseDeserializeSrc()
+  }
 
+  private parseDeserializeSrc() {
     // Load local config deserialize function, if provided
     if (!isEmpty(this.props.deserializeSrc)) {
       const deserialize = utils.parseLBM<
@@ -69,11 +71,30 @@ export default class StringTemplateInterfaceComponent extends BaseInterfaceCompo
     }
   }
 
+  private parseSerializeSrc() {
+    // Load local config serialize function, if provided
+    if (!isEmpty(this.props.serializeSrc)) {
+      // export type SerializeType = (value?: JSONRecord | JSONRecord[]) => string | undefined
+      const serialize = utils.parseLBM<
+        StringTemplateInterfaceComponentProps,
+        { value?: JSONRecord | JSONRecord[] },
+        string | undefined
+      >(this.props.serializeSrc)
+      serialize && this.setState({ serialize })
+    }
+  }
+
   componentDidUpdate(
     prevProps: Readonly<StringTemplateInterfaceComponentProps>,
     prevState: Readonly<StringTemplateInterfaceComponentState>
   ): void {
-    const prevValue = this.getValue(prevProps.valueKey) as string | undefined
+    if (prevProps.serializeSrc !== this.props.serializeSrc) {
+      this.parseSerializeSrc()
+    }
+    if (prevProps.deserializeSrc !== this.props.deserializeSrc) {
+      this.parseDeserializeSrc()
+    }
+    const prevValue = this.getValue(prevProps.valueKey, prevProps.userInterfaceData) as string | undefined
     const value = this.getValue(this.props.valueKey) as string | undefined
 
     if (
@@ -104,9 +125,20 @@ export default class StringTemplateInterfaceComponent extends BaseInterfaceCompo
     this.setState({ data })
   }
 
+  /**
+   * Sets the value in local or root UI parentRowData.
+   * Provide the "$root." keyword at the beginning of the value key to use root UI parentRowData.
+   * @param changeData
+   */
   handleChangeFromSubcomponents = (changeData: JSONRecord): void => {
-    const nextData = { ...this.state.data, ...changeData }
-
+    const changeKVPs = toPairs(changeData)
+    const { isLocalDataDirty, isRootDataDirty, localData, rootData } = getMergedData(
+      changeKVPs,
+      this.state.data || {},
+      this.props.getRootUserInterfaceData
+    )
+    isRootDataDirty ? this.props.onChangeRootData(rootData) : void 0
+    const nextData = isLocalDataDirty ? localData : this.state.data
     this.setState({ data: nextData })
     const params = {
       props: this.props,
@@ -131,6 +163,26 @@ export default class StringTemplateInterfaceComponent extends BaseInterfaceCompo
       <DataPathContext path="components">
         {showBorder ? (
           <Card size="small" style={{ marginTop: 8, marginBottom: 16 }}>
+            <Div styleString={this.props.style} className={"container"}>
+              <ComponentRenderer
+                components={components || ([] as ComponentDefinition[])}
+                data={this.state.data}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                onChangeRootData={onChangeRootData}
+                dragDropDisabled={!!preconfigured}
+                onChangeData={this.handleChangeFromSubcomponents}
+                onChangeSchema={(newSchema) => {
+                  console.warn(
+                    "StringTemplateInterfaceComponent.render",
+                    "TODO: Cannot alter schema inside ComponentRenderer in StringTemplate",
+                    { newSchema }
+                  )
+                }}
+              />
+            </Div>
+          </Card>
+        ) : (
+          <Div styleString={this.props.style} className={"container"}>
             <ComponentRenderer
               components={components || ([] as ComponentDefinition[])}
               data={this.state.data}
@@ -146,23 +198,7 @@ export default class StringTemplateInterfaceComponent extends BaseInterfaceCompo
                 )
               }}
             />
-          </Card>
-        ) : (
-          <ComponentRenderer
-            components={components || ([] as ComponentDefinition[])}
-            data={this.state.data}
-            getRootUserInterfaceData={getRootUserInterfaceData}
-            onChangeRootData={onChangeRootData}
-            dragDropDisabled={!!preconfigured}
-            onChangeData={this.handleChangeFromSubcomponents}
-            onChangeSchema={(newSchema) => {
-              console.warn(
-                "StringTemplateInterfaceComponent.render",
-                "TODO: Cannot alter schema inside ComponentRenderer in StringTemplate",
-                { newSchema }
-              )
-            }}
-          />
+          </Div>
         )}
       </DataPathContext>
     )

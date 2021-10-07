@@ -12,6 +12,7 @@ export default {
   a JSON object with properties that match each "API Key" used in the embedded controls.`,
   iconComponent: QuoteIcon,
   componentDefinition: {
+    classNames: ["container"],
     component: "string-template",
     components: [],
   },

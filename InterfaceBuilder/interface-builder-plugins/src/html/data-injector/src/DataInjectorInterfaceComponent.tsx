@@ -83,6 +83,13 @@ export default class DataInjectorInterfaceComponent extends BaseInterfaceCompone
         }
 
         /*
+         * Handle a json object
+         */
+        if (!isUndefined(jsonValue) && typeof jsonValue === "object" && isObjectLike(jsonValue)) {
+          return jsonValue
+        }
+
+        /*
          * Parse a json string from either the settings or bound data
          */
         if (isString(jsonValue)) {
@@ -94,7 +101,7 @@ export default class DataInjectorInterfaceComponent extends BaseInterfaceCompone
           console.warn(
             "DataInjectorInterfaceComponent.getValueByType",
             `Data type "json" expected a valid json string.`,
-            { value: jsonValue }
+            { jsonValue }
           )
           return null
         }
@@ -105,7 +112,7 @@ export default class DataInjectorInterfaceComponent extends BaseInterfaceCompone
         console.warn(
           "DataInjectorInterfaceComponent.getValueByType",
           `Data type "json" expected a valid json string or object but got a ${typeof jsonValue} instead.`,
-          { value: jsonValue }
+          { jsonValue }
         )
         return null
       case "number":

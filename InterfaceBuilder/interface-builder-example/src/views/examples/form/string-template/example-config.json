@@ -17,6 +17,7 @@
       "components": []
     },
     {
+      "handlerFunctionSrc": "return function({props, lib: { getValue, setValue, raiseEvent }, args}) {\n  // Do stuff here\n}",
       "showBorder": true,
       "invisible": false,
       "hidden": false,
@@ -24,9 +25,47 @@
       "label": "Flex",
       "hideLabel": false,
       "component": "string-template",
-      "serializeSrc": "return function (value) {\n    var flexGrow = typeof value.flexGrow !== \"undefined\" ? value.flexGrow : 0;\n    var flexShrink = typeof value.flexShrink !== \"undefined\" ? value.flexShrink : 0;\n    var flexBasis = typeof value.flexBasis !== \"undefined\" ? value.flexBasis : \"auto\";\n\n    return flexGrow + \" \" + flexShrink + \" \" + flexBasis\n}",
-      "deserializeSrc": "return function (value) {\n    if (typeof value === \"string\" && value.trim().length > 0) {\n        var res = value.trim().match(/(\\d+)\\s(\\d+)\\s(\\w+)/i)\n        if(!res) { return defaultReturn }\n        var ret = {}\n        res[1] ? ret.flexGrow = res[1] : void 0;\n        res[2] ? ret.flexShrink = res[2] : void 0;\n        res[3] ? ret.flexBasis = res[3] : void 0;\n    }\n}",
+      "serializeSrc": "return function ({ props, lib, args: { value } }) {\n    debugger\n    var flexGrow = typeof value.flexGrow !== \"undefined\" ? value.flexGrow : 0;\n    var flexShrink = typeof value.flexShrink !== \"undefined\" ? value.flexShrink : 0;\n    var flexBasis = typeof value.flexBasis !== \"undefined\" ? value.flexBasis : \"auto\";\n\n    return flexGrow + \" \" + flexShrink + \" \" + flexBasis\n}",
+      "deserializeSrc": "return function ({ props, lib, args: { value } }) {\n    debugger\n    if (typeof value === \"string\" && value.trim().length > 0) {\n        var res = value.trim().match(/(\\d+)\\s(\\d+)\\s(\\w+)/i)\n        if(!res) { return defaultReturn }\n        var ret = {}\n        res[1] ? ret.flexGrow = res[1] : void 0;\n        res[2] ? ret.flexShrink = res[2] : void 0;\n        res[3] ? ret.flexBasis = res[3] : void 0;\n    }\n}",
       "components": [
+        {
+          "handlerFunctionSrc": "return function({props, lib: { getValue, setValue, raiseEvent }, args}) {\n  // Do stuff here\n}",
+          "height": 150,
+          "invisible": false,
+          "hidden": false,
+          "valueKey": "$",
+          "label": "Number",
+          "hideLabel": false,
+          "size": "default",
+          "component": "dev-tools",
+          "components": []
+        },
+        {
+          "handlerFunctionSrc": "return function({props, lib: { getValue, setValue, raiseEvent }, args}) {\n  // Do stuff here\n}",
+          "height": 100,
+          "invisible": false,
+          "hidden": false,
+          "valueKey": "$",
+          "label": "Data",
+          "hideLabel": true,
+          "outgoingEventMap": {
+            "valueChanged": {
+              "type": "none"
+            }
+          },
+          "numberValue": 0,
+          "stringValue": "",
+          "booleanValue": false,
+          "jsonValue": {
+            "flexShrink": 0,
+            "flexGrow": 1,
+            "flexBasis": "auto"
+          },
+          "dataType": "json",
+          "outboundValueKey": "$",
+          "component": "data-injector",
+          "components": []
+        },
         {
           "key": "flexGrow",
           "valueKey": "flexGrow",

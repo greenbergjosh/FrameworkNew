@@ -68,6 +68,10 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
               },
             ],
           },
+          {
+            key: "style",
+            components: [],
+          },
         ],
       },
     ],

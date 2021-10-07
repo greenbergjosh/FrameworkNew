@@ -21,6 +21,7 @@ export interface StringTemplateInterfaceComponentProps extends ComponentDefiniti
   serialize?: SerializeType
   deserialize?: DeserializeType
   showBorder?: boolean
+  style: string
 }
 
 export type SerializeType = LBMFunctionType<

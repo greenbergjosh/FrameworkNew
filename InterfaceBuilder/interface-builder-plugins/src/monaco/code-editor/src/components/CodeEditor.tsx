@@ -102,22 +102,24 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
    */
   const handleEditorDidMount = React.useCallback(
     (getEditorValue, monaco: editor.IStandaloneCodeEditor, argsSetState) => {
-      const customEditorWillMount = _getCustomEditorWillMount(
-        languages.registerLinkProvider,
-        languages.registerHoverProvider,
-        Range
-      )
-      const willMountRegistry = [customEditorWillMount]
-      const disposables = willMountRegistry.reduce(
-        (acc: IDisposable[], customEditorWillMount: CustomEditorWillMount) => [
-          ...acc,
-          ...customEditorWillMount(monaco),
-        ],
-        []
-      )
+      if (_getCustomEditorWillMount) {
+        const customEditorWillMount = _getCustomEditorWillMount(
+          languages.registerLinkProvider,
+          languages.registerHoverProvider,
+          Range
+        )
+        const willMountRegistry = [customEditorWillMount]
+        const disposables = willMountRegistry.reduce(
+          (acc: IDisposable[], customEditorWillMount: CustomEditorWillMount) => [
+            ...acc,
+            ...customEditorWillMount(monaco),
+          ],
+          []
+        )
 
-      monkeyPatchSetModelMarkers(props)
-      argsSetState({ disposables })
+        monkeyPatchSetModelMarkers(props)
+        argsSetState({ disposables })
+      }
 
       /* Store editor in ref so we can get the current value from it later */
       editorRef.current = monaco
