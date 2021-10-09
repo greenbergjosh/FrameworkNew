@@ -2,7 +2,7 @@
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public abstract class IndexExpression
+    public interface IIndexExpression
     {
         protected static bool TryGetInt(ReadOnlySpan<char> query, ref int index, out int value)
         {

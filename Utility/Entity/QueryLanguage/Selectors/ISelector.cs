@@ -4,6 +4,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
 {
     public interface ISelector
     {
-        IEnumerable<EntityDocument> Process(EntityDocument entityDocument);
+        IAsyncEnumerable<Entity> Process(Entity entity);
     }
 }

@@ -7,18 +7,26 @@ using Utility.Entity.QueryLanguage;
 
 namespace Utility.Entity
 {
-    public delegate Task<EntityDocument> EntityParser(string content);
+    public delegate Task<EntityDocument> EntityParser(Entity entity, string content);
     public delegate Task<Entity> EntityRetriever(Uri uri);
 
-    public class Entity
+    public class Entity : IEquatable<Entity>
     {
         private readonly ConcurrentDictionary<string, EntityParser> _parsers;
         private readonly ConcurrentDictionary<string, EntityRetriever> _retrievers;
         private readonly EntityDocument _root;
 
-        public string Query => _root?.Query;
+        public string Query
+        {
+            get { return _root?.Query; }
+            internal set { _root.Query = value; }
+        }
 
-        public T Value<T>() => _root.Value<T>();
+        internal EntityDocument Document => _root;
+
+        public EntityValueType ValueType => _root?.ValueType ?? EntityValueType.Undefined;
+
+        public T Value<T>() => _root == null ? default : _root.Value<T>();
 
         private Entity()
         {
@@ -28,7 +36,16 @@ namespace Utility.Entity
 
         private Entity(EntityDocument root, ConcurrentDictionary<string, EntityParser> parsers, ConcurrentDictionary<string, EntityRetriever> retrievers)
         {
-            _root = root;
+            if (root != null)
+            {
+                _root = root;
+                _root.Entity = this;
+            }
+            else
+            {
+                _root = EntityDocumentConstant.Null;
+            }
+
             _parsers = parsers;
             _retrievers = retrievers;
         }
@@ -56,6 +73,8 @@ namespace Utility.Entity
             return entity;
         }
 
+        public static Entity Create(Entity baseEntity, EntityDocument entityDocument) => new(entityDocument, baseEntity._parsers, baseEntity._retrievers);
+
         public async Task<Entity> Parse(string contentType, string content)
         {
             if (!_parsers.TryGetValue(contentType, out var parser))
@@ -63,14 +82,16 @@ namespace Utility.Entity
                 throw new ArgumentException($"ContentType {contentType} is not supported", nameof(contentType));
             }
 
-            var entityDocument = await parser(content);
+            var entityDocument = await parser(this, content);
 
             return new Entity(entityDocument, _parsers, _retrievers);
         }
 
+        public Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(new[] { this }, query);
+
         public async Task<IEnumerable<Entity>> Evaluate(string query)
         {
-            IEnumerable<EntityDocument> root;
+            IEnumerable<Entity> root;
             Query parsedQuery;
 
             if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
@@ -80,14 +101,14 @@ namespace Utility.Entity
                     throw new ArgumentException($"No retriever for scheme {uri.Scheme} in URI {query}");
                 }
 
-                root = new[] { (await retriever(uri))._root };
+                root = new[] { (await retriever(uri)) };
 
                 if (root == null)
                 {
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
 
-                parsedQuery = QueryLanguage.Query.Parse(uri.Query ?? "$");
+                parsedQuery = QueryLanguage.Query.Parse(this, uri.Query ?? "$");
             }
             else
             {
@@ -96,23 +117,11 @@ namespace Utility.Entity
                     throw new InvalidOperationException("Cannot run a relative query on a null entity");
                 }
 
-                root = new[] { _root };
-                parsedQuery = QueryLanguage.Query.Parse(query);
+                root = new[] { this };
+                parsedQuery = QueryLanguage.Query.Parse(this, query);
             }
 
-            var current = root;
-            foreach (var token in parsedQuery.Tokens)
-            {
-                var next = new List<EntityDocument>();
-                foreach (var document in current)
-                {
-                    var matches = document.Process(token);
-                    next.AddRange(matches);
-                }
-                current = next;
-            }
-
-            return current.Select(entityDocument => new Entity(entityDocument, _parsers, _retrievers));
+            return await Evaluate(root, parsedQuery);
         }
 
         public async Task<Entity> Get(string query)
@@ -132,5 +141,30 @@ namespace Utility.Entity
         public async Task<int> GetI(string query) => (await Get(query)).Value<int>();
 
         public override string ToString() => $"Query: {Query} Data: {_root}";
+
+        private static async Task<IEnumerable<Entity>> Evaluate(IEnumerable<Entity> root, Query query)
+        {
+            var current = root;
+            foreach (var selector in query.Selectors)
+            {
+                var next = new List<Entity>();
+                foreach (var document in current)
+                {
+                    await foreach (var match in selector.Process(document))
+                    {
+                        next.Add(match);
+                    }
+                }
+                current = next;
+            }
+
+            return current;
+        }
+
+        public bool Equals(Entity other) => _root?.Equals(other?.Document) ?? false;
+
+        public override bool Equals(object obj) => Equals(obj as Entity);
+
+        public override int GetHashCode() => _root?.GetHashCode() ?? base.GetHashCode();
     }
 }

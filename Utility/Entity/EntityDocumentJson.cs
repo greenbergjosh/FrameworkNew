@@ -3,125 +3,93 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Utility.Entity.QueryLanguage.Tokens;
 
 namespace Utility.Entity
 {
     public class EntityDocumentJson : EntityDocument
     {
         private readonly JsonElement _root;
+        private readonly int _length;
+
         private static readonly Dictionary<Type, Func<JsonElement, object>> _valueMap = new()
         {
             [typeof(string)] = element => element.GetString(),
-            [typeof(int)] = element => element.GetInt32()
+            [typeof(int)] = element => element.GetInt32(),
+            [typeof(decimal)] = element => element.GetDecimal()
         };
 
-        public override string Query { get; internal set; }
+        public override EntityValueType ValueType => _root.ValueKind switch
+        {
+            JsonValueKind.Array => EntityValueType.Array,
+            JsonValueKind.False => EntityValueType.Boolean,
+            JsonValueKind.Null => EntityValueType.Null,
+            JsonValueKind.Number => EntityValueType.Number,
+            JsonValueKind.Object => EntityValueType.Object,
+            JsonValueKind.String => EntityValueType.String,
+            JsonValueKind.True => EntityValueType.Boolean,
+            JsonValueKind.Undefined => EntityValueType.Undefined,
+            _ => throw new InvalidOperationException($"{nameof(JsonValueKind)} {_root.ValueKind} does not map to a known {nameof(ValueType)}")
+        };
 
-        protected override int Length =>
-            _root.ValueKind switch
+        public override int Length => _length == -1 ? throw new InvalidOperationException($"ValueKind {_root.ValueKind} does not have a length") : _length;
+
+        public EntityDocumentJson(JsonElement root)
+        {
+            _root = root;
+
+            _length = _root.ValueKind switch
             {
                 JsonValueKind.Array => _root.GetArrayLength(),
                 JsonValueKind.Object => _root.EnumerateObject().Count(),
-                _ => throw new InvalidOperationException($"ValueKind {_root.ValueKind} does not have a length")
+                JsonValueKind.String => _root.GetString().Length,
+                _ => -1
             };
-
-        public EntityDocumentJson(JsonElement root, string query)
-        {
-            _root = root;
-            Query = query;
         }
 
-        public static Task<EntityDocument> Parse(string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement, "$"));
+        public static Task<EntityDocument> Parse(Entity entity, string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement));
 
-        protected override EntityDocument GetArrayElement(Index index)
+        #region EntityDocument Implementation
+        protected override IEnumerable<EntityDocument> EnumerateArrayCore()
         {
-            var max = _root.GetArrayLength();
-            var i = Math.Min(max, index.IsFromEnd ? max - index.Value : index.Value);
-            return new EntityDocumentJson(_root[i], Query + $"[{i}]");
-        }
-
-        protected override IEnumerable<EntityDocument> GetPropertyCore(PropertyToken token)
-        {
-            if (token == PropertyToken.Wildcard)
+            foreach (var item in _root.EnumerateArray())
             {
-                switch (_root.ValueKind)
-                {
-                    case JsonValueKind.Object:
-                        foreach (var property in _root.EnumerateObject())
-                        {
-                            yield return new EntityDocumentJson(property.Value, Query + $".{property.Name}");
-                        }
-                        break;
-                    case JsonValueKind.Array:
-                        foreach (var (item, index) in _root.EnumerateArray().Select((item, index) => (item, index)))
-                        {
-                            yield return new EntityDocumentJson(item, Query + $"[{index}]");
-                        }
-                        break;
-                }
+                yield return new EntityDocumentJson(item);
+            }
+        }
 
-                yield break;
+        protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+        {
+            foreach (var property in _root.EnumerateObject())
+            {
+                yield return (property.Name, new EntityDocumentJson(property.Value));
+            }
+        }
+
+        protected override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        {
+            if (_root.TryGetProperty(name, out var value))
+            {
+                propertyEntityDocument = new EntityDocumentJson(value);
+                return true;
             }
 
-            if (_root.ValueKind != JsonValueKind.Object) yield break;
-
-            if (!_root.TryGetProperty(token.Name, out var element)) yield break;
-
-            yield return new EntityDocumentJson(element, Query + $".{token.Name}");
+            propertyEntityDocument = null;
+            return false;
         }
-
-        protected override IEnumerable<EntityDocument> NestedDescent(NestedDescentToken token) => GetChildren(_root, Query);
-
-        public override string ToString() => _root.ToString();
 
         public override T Value<T>()
         {
             var targetType = typeof(T);
 
-            if(!_valueMap.TryGetValue(targetType, out var getter))
+            if (!_valueMap.TryGetValue(targetType, out var getter))
             {
                 throw new Exception($"Unable to convert value to type {targetType}");
             }
 
             return (T)getter(_root);
         }
+        #endregion
 
-        private static IEnumerable<EntityDocument> GetChildren(JsonElement current, string query)
-        {
-            switch (current.ValueKind)
-            {
-                case JsonValueKind.Object:
-                    yield return new EntityDocumentJson(current, query);
-                    foreach (var property in current.EnumerateObject())
-                    {
-                        foreach (var child in GetChildren(property.Value, query + $".{property.Name}"))
-                        {
-                            yield return child;
-                        }
-                    }
-                    break;
-                case JsonValueKind.Array:
-                    yield return new EntityDocumentJson(current, query);
-                    foreach (var (item, index) in current.EnumerateArray().Select((item, index) => (item, index)))
-                    {
-                        foreach (var child in GetChildren(item, query + $"[{index}]"))
-                        {
-                            yield return child;
-                        }
-                    }
-                    break;
-                case JsonValueKind.String:
-                case JsonValueKind.Number:
-                case JsonValueKind.True:
-                case JsonValueKind.False:
-                case JsonValueKind.Null:
-                    yield return new EntityDocumentJson(current, query);
-                    break;
-                case JsonValueKind.Undefined:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(current), $"Unhandled {nameof(JsonValueKind)}: {current.ValueKind}");
-            }
-        }
+        public override string ToString() => _root.ToString();
     }
 }

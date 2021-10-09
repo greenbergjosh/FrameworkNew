@@ -12,7 +12,26 @@ namespace QuickTester
     {
         internal static async Task Run()
         {
-            var testDocument = @"{""a"": { ""b"": { ""c"": ""A string value"", ""d"": [""giraffe"", ""elephant"", ""mouse"", ""mongoose""], ""e"": 123 } } }";
+            var testDocument = @"{
+	""a"": {
+		""b"": {
+			""c"": ""A string value"",
+			""d"": [""giraffe"", ""elephant"", ""mouse"", ""mongoose""],
+			""e"": 123
+		}
+	},
+	""f"": [{
+			""color"": ""red"",
+			""count"": 5
+		}, {
+			""color"": ""blue"",
+			""count"": 3
+		}, {
+			""color"": ""green"",
+			""count"": 10
+		}
+	]
+}";
 
             var jsonDocument = JsonDocument.Parse(testDocument);
 
@@ -35,6 +54,21 @@ namespace QuickTester
                 "$.a.b.d[-1]",
                 "$.a.b['c']",
                 "$.a.b[\"c\"]",
+                "$.a.b.d[0:2:1]",
+                "$.a.b.f[::2]",
+                "$.f[?(@.count==3+2)]", // addition operator
+                "$.f[?(@.count==5 && @.color==\"red\")]", // && operator
+                "$.f[?(@.count==9/3)]", // division operator
+                "$.f[?(@.color==\"red\")]", // == operator
+                "$.f[?(@.count>3)]", // > operator
+                "$.f[?(@.count>=3)]", // >= operator
+                "$.f[?(@.count<5)]", // < operator
+                "$.f[?(@.count<=5)]", // <= operator
+                "$.f[?(@.count==8%5)]", // % operator
+                "$.f[?(@.count==5*2)]", // * operator
+                "$.f[?(@.color!=\"red\")]", // != operator
+                "$.f[?(@.count==3 || @.color==\"red\")]", // || operator
+                "$.f[?(@.count==5-2)]", // subtraction operator
             };
 
             foreach (var query in queries)

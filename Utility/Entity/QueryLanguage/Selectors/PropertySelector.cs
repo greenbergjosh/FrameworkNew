@@ -3,58 +3,60 @@ using System.Linq;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    public class PropertySelector : ISelector
+    internal class PropertySelector : ISelector
     {
         private readonly string _name;
 
-        public static PropertySelector Wildcard => new(null);
+        public static PropertySelector Wildcard { get; } = new(null);
 
         public PropertySelector(string name)
         {
             _name = name;
         }
 
-        public override string ToString() => $".{_name ?? "*"}";
-
-        public IEnumerable<EntityDocument> Process(EntityDocument entityDocument)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<Entity> Process(Entity entity)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (this == Wildcard)
             {
-                if (entityDocument.IsObject)
+                if (entity.Document.IsObject)
                 {
-                    foreach (var (name, value) in entityDocument.EnumerateObject())
+                    foreach (var (name, value) in entity.Document.EnumerateObject())
                     {
-                        value.Query = entityDocument.Query + $".{name}";
+                        value.Query = $"{entity.Document.Query}.{name}";
                         yield return value;
                     }
                 }
-                else if (entityDocument.IsArray)
+                else if (entity.Document.IsArray)
                 {
-                    foreach (var (item, index) in entityDocument.EnumerateArray().Select((item, index) => (item, index)))
+                    foreach (var (item, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
                     {
-                        item.Query = entityDocument.Query + $".[{index}]";
+                        item.Query = $"{entity.Document.Query}.[{index}]";
                         yield return item;
                     }
                 }
-                else
+
+                yield break;
+            }
+
+            if (entity.Document.IsObject)
+            {
+                if (entity.Document.TryGetProperty(_name, out var propertyEntity))
                 {
+                    propertyEntity.Query = $"{entity.Document.Query}.{_name}";
+
+                    yield return propertyEntity;
                     yield break;
                 }
             }
 
-            if (!entityDocument.IsObject)
+            if (_name == "length")
             {
-                yield break;
+                yield return Entity.Create(entity, new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number, $"{entity.Document.Query}.length"));
             }
-
-            if (!entityDocument.TryGetProperty(_name, out var propertyEntityDocument))
-            {
-                yield break;
-            }
-
-            propertyEntityDocument.Query = entityDocument.Query + $".{_name}";
-
-            yield return propertyEntityDocument;
         }
+
+        public override string ToString() => $".{_name ?? "*"}";
     }
 }

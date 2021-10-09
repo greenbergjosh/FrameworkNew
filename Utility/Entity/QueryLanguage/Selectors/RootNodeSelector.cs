@@ -2,9 +2,14 @@
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    public class RootNodeSelector : ISelector
+    internal class RootNodeSelector : ISelector
     {
-        public IEnumerable<EntityDocument> Process(EntityDocument entityDocument) => new[] { entityDocument };
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<Entity> Process(Entity entity)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            yield return entity;
+        }
 
         public override string ToString() => "$";
     }

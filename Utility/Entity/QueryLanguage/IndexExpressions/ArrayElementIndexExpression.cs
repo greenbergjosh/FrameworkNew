@@ -1,21 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ArrayElementIndexExpression : ArrayIndexExpression
+    public class ArrayElementIndexExpression : IArrayIndexExpression
     {
-        public override IEnumerable<Index> Indexes { get; init; }
+        private readonly Index _index;
 
         private ArrayElementIndexExpression(Index index)
         {
-            Indexes = new[] { index };
+            _index = index;
         }
 
-        internal static bool TryParse(ReadOnlySpan<char> query, ref int index, out IndexExpression elementIndex)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<int> GetIndexes(Entity entity)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            if (!TryGetInt(query, ref index, out var value))
+            var end = _index.IsFromEnd ? entity.Document.Length - _index.Value : _index.Value;
+            yield return end;
+        }
+
+        public static bool TryParse(ReadOnlySpan<char> query, ref int index, out IIndexExpression elementIndex)
+        {
+            if (!IIndexExpression.TryGetInt(query, ref index, out var value) || query[index] != ']')
             {
                 index = -1;
                 elementIndex = null;
@@ -26,6 +33,6 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             return true;
         }
 
-        public override string ToString() => IndexToPath(Indexes.First());
+        public override string ToString() => IIndexExpression.IndexToPath(_index);
     }
 }

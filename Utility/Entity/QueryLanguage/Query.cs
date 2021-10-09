@@ -1,80 +1,130 @@
 ﻿using System;
 using System.Collections.Generic;
 using Utility.Entity.QueryLanguage.IndexExpressions;
-using Utility.Entity.QueryLanguage.Tokens;
+using Utility.Entity.QueryLanguage.Selectors;
 
 namespace Utility.Entity.QueryLanguage
 {
     public class Query
     {
-        public IEnumerable<Token> Tokens { get; init; }
+        public IEnumerable<ISelector> Selectors { get; init; }
 
-        private Query(IEnumerable<Token> tokens)
+        private Query(IEnumerable<ISelector> selectors)
         {
-            Tokens = tokens;
+            Selectors = selectors;
         }
 
-        public static Query Parse(ReadOnlySpan<char> query)
+        public static Query Parse(Entity entity, ReadOnlySpan<char> query)
         {
             var index = 0;
+            if (!TryParse(entity, query, ref index, false, out var value, out var exception))
+            {
+                throw exception;
+            }
 
-            var tokens = new List<Token>();
+            return value;
+        }
+
+        public static bool TryParse(Entity entity, ReadOnlySpan<char> query, out Query value)
+        {
+            var index = 0;
+            return TryParse(entity, query, ref index, false, out value, out var _);
+        }
+
+        internal static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int index, bool allowTrailingContent, out Query value, out QueryParseException exception)
+        {
+            var selectors = new List<ISelector>();
 
             while (index < query.Length)
             {
-                var token = query[index] switch
+                var selector = query[index] switch
                 {
                     '$' => AddRootNode(ref index),
                     '@' => AddLocalNode(ref index),
-                    '.' => AddPropertyOrRecursive(query, ref index),
-                    '[' => AddIndex(query, ref index),
+                    '.' => AddPropertyOrNestedDescent(query, ref index),
+                    '[' => AddIndex(entity, query, ref index),
                     _ => null
                 };
 
-                if (token == null)
+                if (selector == null)
                 {
-                    throw new QueryParseException(index, $"Could not identify selector at index {index}");
+                    if (allowTrailingContent)
+                    {
+                        break;
+                    }
+                    value = null;
+                    exception = new QueryParseException(index, $"Could not identify selector at index {index}");
+                    return false;
                 }
 
-                if (token is ErrorToken errorToken)
+                if (selector is ErrorSelector errorSelector)
                 {
-                    throw new QueryParseException(index, errorToken.Message);
+                    if (allowTrailingContent)
+                    {
+                        break;
+                    }
+
+                    value = null;
+                    exception = new QueryParseException(index, errorSelector.Message);
+                    return false;
                 }
 
-                tokens.Add(token);
+                selectors.Add(selector);
             }
 
-            if (tokens.Count == 0)
+            if (selectors.Count == 0)
             {
-                throw new QueryParseException(index, "No query found");
+                value = null;
+                exception = new QueryParseException(index, "No query found");
+                return false;
             }
 
-            return new Query(tokens);
+            value = new Query(selectors);
+            exception = null;
+            return true;
         }
 
-        private static Token AddIndex(ReadOnlySpan<char> query, ref int index)
+        #region Private Implementation
+        private delegate bool TryParseMethod(ReadOnlySpan<char> span, ref int i, out IIndexExpression index);
+        private delegate bool TryParseWithEntityMethod(Entity entity, ReadOnlySpan<char> span, ref int i, out IIndexExpression index);
+
+        private static readonly List<TryParseMethod> _indexParseMethods =
+            new()
+            {
+                ArrayElementIndexExpression.TryParse,
+                ArraySliceIndexExpression.TryParse,
+                ObjectPropertyIndexExpression.TryParse,
+            };
+
+        private static readonly List<TryParseWithEntityMethod> _indexParseWithEntityMethods =
+            new()
+            {
+                ItemQueryIndexExpression.TryParse
+            };
+
+        private static ISelector AddIndex(Entity entity, ReadOnlySpan<char> query, ref int index)
         {
             var slice = query[index..];
             if (slice.StartsWith("[*]"))
             {
                 index += 3;
-                return new IndexToken(null);
+                return IndexSelector.Wildcard;
             }
 
             index++;
             var current = ',';
-            var indexes = new List<IndexExpression>();
+            var indexes = new List<IIndexExpression>();
             while (current == ',')
             {
-                ConsumeWhitespace(query, ref index);
-                if (!ParseIndex(query, ref index, out var indexExpression))
+                Helpers.ConsumeWhitespace(query, ref index);
+                if (!ParseIndex(entity, query, ref index, out var indexExpression))
                 {
-                    return new ErrorToken($"Error parsing index value near position {index}");
+                    return new ErrorSelector($"Error parsing index value near position {index}");
                 }
 
                 indexes.Add(indexExpression);
 
-                ConsumeWhitespace(query, ref index);
+                Helpers.ConsumeWhitespace(query, ref index);
 
                 if (index >= query.Length)
                 {
@@ -86,32 +136,61 @@ namespace Utility.Entity.QueryLanguage
 
             if (current != ']')
             {
-                return new ErrorToken($"Expected ']' or ',' near position {index}");
+                return new ErrorSelector($"Expected ']' or ',' near position {index}");
             }
 
-            return new IndexToken(indexes);
+            return new IndexSelector(indexes);
         }
 
-        private static void ConsumeWhitespace(ReadOnlySpan<char> query, ref int index)
+        private static ISelector AddLocalNode(ref int index)
         {
-            while (index < query.Length && char.IsWhiteSpace(query[index]))
+            index++;
+            return new RootNodeSelector();
+        }
+
+        private static ISelector AddPropertyOrNestedDescent(ReadOnlySpan<char> query, ref int index)
+        {
+            var slice = query[index..];
+            if (slice.StartsWith("..") || slice.StartsWith(".["))
             {
                 index++;
+                return new NestedDescentSelector();
             }
+
+            if (slice.StartsWith(".*"))
+            {
+                index += 2;
+                return PropertySelector.Wildcard;
+            }
+
+            slice = slice[1..];
+            var propertyNameLength = 0;
+            while (propertyNameLength < slice.Length && IsValidForPropertyName(slice[propertyNameLength]))
+            {
+                propertyNameLength++;
+            }
+
+            var propertyName = slice[..propertyNameLength];
+            index += 1 + propertyNameLength;
+            return new PropertySelector(propertyName.ToString());
         }
 
-        private delegate bool TryParseMethod(ReadOnlySpan<char> span, ref int i, out IndexExpression index);
-
-        private static readonly List<TryParseMethod> _parseMethods =
-            new()
-            {
-                ArrayElementIndexExpression.TryParse,
-                ObjectElementIndexExpression.TryParse
-            };
-
-        private static bool ParseIndex(ReadOnlySpan<char> query, ref int index, out IndexExpression indexExpression)
+        private static ISelector AddRootNode(ref int index)
         {
-            foreach (var tryParse in _parseMethods)
+            index++;
+            return new RootNodeSelector();
+        }
+
+        private static bool IsValidForPropertyName(char ch) =>
+            (ch >= 'a' && ch <= 'z') ||
+            (ch >= 'A' && ch <= 'Z') ||
+            (ch >= '0' && ch <= '9') ||
+            ch == '_' ||
+            (ch >= 0x80 && ch < 0x10FFFF);
+
+        private static bool ParseIndex(Entity entity, ReadOnlySpan<char> query, ref int index, out IIndexExpression indexExpression)
+        {
+            foreach (var tryParse in _indexParseMethods)
             {
                 var consumed = index;
                 if (tryParse(query, ref consumed, out indexExpression))
@@ -128,56 +207,28 @@ namespace Utility.Entity.QueryLanguage
                 }
             }
 
+            foreach (var tryParse in _indexParseWithEntityMethods)
+            {
+                var consumed = index;
+                if (tryParse(entity, query, ref consumed, out indexExpression))
+                {
+                    index = consumed;
+                    return true;
+                }
+
+                if (consumed != -1)
+                {
+                    index = consumed;
+                    indexExpression = null;
+                    return false;
+                }
+            }
+
             indexExpression = null;
             return false;
         }
+        #endregion
 
-        private static Token AddPropertyOrRecursive(ReadOnlySpan<char> query, ref int index)
-        {
-            var slice = query[index..];
-            if (slice.StartsWith("..") || slice.StartsWith(".["))
-            {
-                index++;
-                return new NestedDescentToken();
-            }
-
-            if (slice.StartsWith(".*"))
-            {
-                index += 2;
-                return PropertyToken.Wildcard;
-            }
-
-            slice = slice[1..];
-            var propertyNameLength = 0;
-            while (propertyNameLength < slice.Length && IsValidForPropertyName(slice[propertyNameLength]))
-            {
-                propertyNameLength++;
-            }
-
-            var propertyName = slice[..propertyNameLength];
-            index += 1 + propertyNameLength;
-            return new PropertyToken(propertyName.ToString());
-        }
-
-        private static bool IsValidForPropertyName(char ch) =>
-            (ch >= 'a' && ch <= 'z') ||
-            (ch >= 'A' && ch <= 'Z') ||
-            (ch >= '0' && ch <= '9') ||
-            ch == '_' ||
-            (ch >= 0x80 && ch < 0x10FFFF);
-
-        private static Token AddRootNode(ref int index)
-        {
-            index++;
-            return new RootNodeToken();
-        }
-
-        private static Token AddLocalNode(ref int index)
-        {
-            index++;
-            return new RootNodeToken();
-        }
-
-        public override string ToString() => string.Concat(Tokens);
+        public override string ToString() => string.Concat(Selectors);
     }
 }

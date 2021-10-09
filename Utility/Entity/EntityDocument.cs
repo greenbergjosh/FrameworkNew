@@ -1,129 +1,103 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Utility.Entity.QueryLanguage.IndexExpressions;
-using Utility.Entity.QueryLanguage.Tokens;
+using System.Threading.Tasks;
+using Utility.Entity.QueryLanguage;
 
 namespace Utility.Entity
 {
-    public abstract class EntityDocument
+    public abstract class EntityDocument : IEquatable<EntityDocument>
     {
-        public abstract string Query { get; internal set; }
+        public Entity Entity { get; internal set; }
 
-        protected abstract int Length { get; }
-        public bool IsObject { get; internal set; }
-        public bool IsArray { get; internal set; }
+        public string Query { get; internal set; } = "$";
 
-        internal IEnumerable<EntityDocument> Process(Token token) => token switch
+        public abstract EntityValueType ValueType { get; }
+
+        public bool IsArray => ValueType == EntityValueType.Array;
+
+        public bool IsObject => ValueType == EntityValueType.Object;
+
+        public abstract int Length { get; }
+
+        public IEnumerable<Entity> EnumerateArray()
         {
-            RootNodeToken => new[] { this },
-            LocalNodeToken => new[] { this },
-            PropertyToken propertyToken => GetProperty(propertyToken),
-            NestedDescentToken nestedDescentToken => NestedDescent(nestedDescentToken),
-            IndexToken indexToken => ProcessIndex(indexToken),
-            _ => throw new ArgumentException($"Unknown token type {token.GetType().Name}", nameof(token))
-        };
+            if (!IsArray)
+            {
+                throw new InvalidOperationException($"Entity of type {ValueType} is not an array");
+            }
 
-        internal abstract IEnumerable<(string name, EntityDocument value)> EnumerateObject();
+            foreach (var item in EnumerateArrayCore())
+            {
+                yield return Entity.Create(Entity, item);
+            }
+        }
 
-        internal bool TryGetProperty(string name, out EntityDocument propertyEntityDocument) => throw new NotImplementedException();
-        
-        internal abstract IEnumerable<EntityDocument> EnumerateArray();
+        protected abstract IEnumerable<EntityDocument> EnumerateArrayCore();
+
+        public IEnumerable<(string name, Entity value)> EnumerateObject()
+        {
+            if (!IsObject)
+            {
+                throw new InvalidOperationException($"Entity of type {ValueType} is not an object");
+            }
+
+            foreach (var (name, value) in EnumerateObjectCore())
+            {
+                yield return (name, Entity.Create(Entity, value));
+            }
+        }
+
+        protected abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
+
+        public async Task<IEnumerable<EntityDocument>> Evaluate(Query query) => (await Entity.Evaluate(query)).Select(entity => entity.Document);
+
+        public bool TryGetProperty(string name, out Entity propertyEntity)
+        {
+            if (TryGetPropertyCore(name, out var document))
+            {
+                propertyEntity = Entity.Create(Entity, document);
+                return true;
+            }
+
+            propertyEntity = null;
+            return false;
+        }
+
+        protected abstract bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument);
 
         public abstract T Value<T>();
 
-        protected static object Cast(Type type, object value)
+        public bool Equals(EntityDocument other)
         {
-            if (value == null)
+            if (object.ReferenceEquals(this, other))
             {
-                if (!type.IsValueType)
-                {
-                    return null;
-                }
-
-                return Activator.CreateInstance(type);
+                return true;
             }
 
-            if (value.GetType() == type || type.IsInstanceOfType(value))
+            if (other == null || ValueType != other.ValueType)
             {
-                return value;
+                return false;
             }
 
-            if (type == typeof(string))
+            return ValueType switch
             {
-                return value.ToString();
-            }
-
-            try
-            {
-                var tryParseMethod = type.GetMethod("TryParse", new Type[] { typeof(string), type.MakeByRefType() });
-                if (tryParseMethod != null)
-                {
-                    var parameters = new[] { value, null };
-                    tryParseMethod.Invoke(null, parameters);
-                    return parameters[1];
-                }
-
-                return Convert.ChangeType(value, type);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Couldn't convert [{value}] to type: {type.AssemblyQualifiedName}{Environment.NewLine}{ex.Message}");
-            }
+                EntityValueType.Array => Length == other.Length && EnumerateArrayCore().SequenceEqual(other.EnumerateArrayCore()),
+                EntityValueType.Boolean => Value<bool>() == other.Value<bool>(),
+                EntityValueType.Null => true,
+                EntityValueType.Number => Value<decimal>() == other.Value<decimal>(),
+                EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
+                EntityValueType.String => Value<string>() == other.Value<string>(),
+                EntityValueType.Undefined => false,
+                _ => throw new InvalidOperationException($"Unknown {nameof(ValueType)} {ValueType}")
+            };
         }
 
-        private IEnumerable<EntityDocument> GetProperty(PropertyToken token)
+        public override bool Equals(object obj)
         {
-            var result = GetPropertyCore(token);
-            if ((result == null || !result.Any()) && token.Name == "length")
-            {
-                return new[] { new EntityDocumentConstant(Length, Query + ".length") };
-            }
-
-            return result;
+            return Equals(obj as EntityDocument);
         }
 
-        private IEnumerable<EntityDocument> ProcessIndex(IndexToken indexToken)
-        {
-            if (indexToken.Indexes == null)
-            {
-                foreach (var entityDocument in GetPropertyCore(PropertyToken.Wildcard))
-                {
-                    yield return entityDocument;
-                }
-                yield break;
-            }
-
-            foreach (var index in indexToken.Indexes)
-            {
-                var entityDocuments = index switch
-                {
-                    ArrayIndexExpression arrayIndexExpression => ProcessArrayIndexExpression(arrayIndexExpression),
-                    ObjectElementIndexExpression elementIndex => ProcessObjectElementIndex(elementIndex),
-                    _ => throw new ArgumentException($"Unknown index type {index.GetType()}")
-                };
-
-                foreach(var entityDocument in entityDocuments)
-                {
-                    yield return entityDocument;
-                }
-            }
-        }
-
-        private IEnumerable<EntityDocument> ProcessArrayIndexExpression(ArrayIndexExpression arrayIndexExpression)
-        {
-            foreach(var indexExpression in arrayIndexExpression.Indexes)
-            {
-                foreach()
-            }
-        }
-
-        private IEnumerable<EntityDocument> ProcessObjectElementIndex(ObjectElementIndexExpression elementIndex)
-        {
-        }
-
-        protected abstract EntityDocument GetArrayElement(Index index);
-        protected abstract IEnumerable<EntityDocument> GetPropertyCore(PropertyToken token);
-        protected abstract IEnumerable<EntityDocument> NestedDescent(NestedDescentToken token);
+        public override int GetHashCode() => base.GetHashCode();
     }
 }

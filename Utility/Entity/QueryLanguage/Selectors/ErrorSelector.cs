@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    public class ErrorSelector : ISelector
+    internal class ErrorSelector : ISelector
     {
         public string Message { get; init; }
 
@@ -12,6 +12,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
             Message = message;
         }
 
-        public IEnumerable<EntityDocument> Process(EntityDocument entityDocument) => throw new NotImplementedException();
+        public IAsyncEnumerable<Entity> Process(Entity entity) => throw new NotImplementedException();
     }
 }

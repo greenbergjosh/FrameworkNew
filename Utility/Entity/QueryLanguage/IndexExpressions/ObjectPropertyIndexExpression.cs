@@ -5,20 +5,25 @@ using System.Text.RegularExpressions;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ObjectElementIndexExpression : ObjectIndexExpression
+    public class ObjectPropertyIndexExpression : IObjectIndexExpression
     {
-        public override IEnumerable<string> Properties { get; init; }
-
         private readonly string _name;
         private readonly char _quoteChar;
 
-        private ObjectElementIndexExpression(string name, char quoteChar)
+        private ObjectPropertyIndexExpression(string name, char quoteChar)
         {
-            Properties = new[] { name };
+            _name = name;
             _quoteChar = quoteChar;
         }
 
-        internal static bool TryParse(ReadOnlySpan<char> span, ref int index, out IndexExpression indexExpression)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async IAsyncEnumerable<string> GetProperties(Entity entity)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            yield return _name;
+        }
+
+        internal static bool TryParse(ReadOnlySpan<char> span, ref int index, out IIndexExpression indexExpression)
         {
             if (span[index] != '\'' && span[index] != '"')
             {
@@ -38,7 +43,10 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
                     length += 2;
                     continue;
                 }
-                if (span[index + length] == start) break;
+                if (span[index + length] == start)
+                {
+                    break;
+                }
                 length++;
             }
 
@@ -55,7 +63,9 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             try
             {
                 if (start == '\'')
+                {
                     key = key.Replace("\\'", "'").Replace("\"", "\\\"");
+                }
                 using var doc = JsonDocument.Parse($"\"{key}\"");
                 key = doc.RootElement.GetString();
             }
@@ -65,14 +75,10 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
                 return false;
             }
 
-            indexExpression = new ObjectElementIndexExpression(key, start);
+            indexExpression = new ObjectPropertyIndexExpression(key, start);
             return true;
         }
 
-        public override string ToString()
-        {
-            // TODO: add escaping
-            return $"{_quoteChar}{_name}{_quoteChar}";
-        }
+        public override string ToString() => $"{_quoteChar}{_name}{_quoteChar}";
     }
 }
