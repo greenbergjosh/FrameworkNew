@@ -33,14 +33,24 @@ namespace QuickTester
 	]
 }";
 
-            var jsonDocument = JsonDocument.Parse(testDocument);
-
             var E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
                 ["application/json"] = EntityDocumentJson.Parse
-            }, null);
+            }, new Dictionary<string, EntityRetriever>
+            {
+                ["entity"] = (entity, uri) =>
+                {
+                    if (uri.Host == "testdocument")
+                    {
+                        return entity.Parse("application/json", testDocument);
+                    }
+
+                    throw new Exception($"Unknown entity: {uri.Host}");
+                }
+            });
 
             var testEntity = await E.Parse("application/json", testDocument);
+            var testJsonDocument = JsonDocument.Parse(testDocument);
 
             Console.WriteLine($"Document: {testEntity}");
             Console.WriteLine();
@@ -75,7 +85,7 @@ namespace QuickTester
             foreach (var query in queries)
             {
                 var jsonPath = JsonPath.Parse(query);
-                var jsonPathResult = jsonPath.Evaluate(jsonDocument.RootElement);
+                var jsonPathResult = jsonPath.Evaluate(testJsonDocument.RootElement);
 
                 Console.WriteLine($"Query: {query}");
                 Console.WriteLine($"JsonPath:");
@@ -106,12 +116,22 @@ namespace QuickTester
             var arrayQuery = "$.a.b.d.*";
             Console.WriteLine($"Query: {arrayQuery}");
             Console.WriteLine($"JsonPath:");
-            Console.WriteLine(string.Join(Environment.NewLine, JsonPath.Parse(arrayQuery).Evaluate(jsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}")));
+            Console.WriteLine(string.Join(Environment.NewLine, JsonPath.Parse(arrayQuery).Evaluate(testJsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}")));
             Console.WriteLine("Entity:");
             foreach (var result in await testEntity.GetL(arrayQuery))
             {
                 Console.WriteLine($"{result} GetS: {await result.GetS("$")}");
             }
+            Console.WriteLine();
+
+            var absoluteQuery = "entity://testDocument?$.a.b";
+            Console.WriteLine($"Query: {absoluteQuery}");
+            Console.WriteLine("Entity:");
+            foreach (var result in await E.Evaluate(absoluteQuery))
+            {
+                Console.WriteLine(result?.ToString() ?? "null");
+            }
+            Console.WriteLine();
         }
     }
 }

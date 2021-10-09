@@ -8,7 +8,7 @@ using Utility.Entity.QueryLanguage;
 namespace Utility.Entity
 {
     public delegate Task<EntityDocument> EntityParser(Entity entity, string content);
-    public delegate Task<Entity> EntityRetriever(Uri uri);
+    public delegate Task<Entity> EntityRetriever(Entity entity, Uri uri);
 
     public class Entity : IEquatable<Entity>
     {
@@ -103,14 +103,14 @@ namespace Utility.Entity
                     throw new ArgumentException($"No retriever for scheme {uri.Scheme} in URI {query}");
                 }
 
-                root = new[] { (await retriever(uri)) };
+                root = new[] { (await retriever(this, uri)) };
 
                 if (root == null)
                 {
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
 
-                parsedQuery = QueryLanguage.Query.Parse(this, uri.Query ?? "$");
+                parsedQuery = QueryLanguage.Query.Parse(this, uri.Query[1..] ?? "$");
             }
             else
             {
