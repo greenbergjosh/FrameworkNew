@@ -10,6 +10,8 @@ namespace Utility.Entity
 
         public static EntityDocument Null { get; } = new EntityDocumentConstant(null, EntityValueType.Null, "");
 
+        public static EntityDocument Undefined { get; } = new EntityDocumentConstant(null, EntityValueType.Undefined, "");
+
         public override EntityValueType ValueType => _valueType;
 
         public override int Length => throw new NotImplementedException();

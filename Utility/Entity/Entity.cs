@@ -26,6 +26,8 @@ namespace Utility.Entity
 
         public EntityValueType ValueType => _root?.ValueType ?? EntityValueType.Undefined;
 
+        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, null);
+
         public T Value<T>() => _root == null ? default : _root.Value<T>();
 
         private Entity()

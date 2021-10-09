@@ -99,7 +99,8 @@ namespace Utility.Entity.QueryLanguage
         private static readonly List<TryParseWithEntityMethod> _indexParseWithEntityMethods =
             new()
             {
-                ItemQueryIndexExpression.TryParse
+                ItemQueryIndexExpression.TryParse,
+                ContainerQueryIndexExpression.TryParse
             };
 
         private static ISelector AddIndex(Entity entity, ReadOnlySpan<char> query, ref int index)

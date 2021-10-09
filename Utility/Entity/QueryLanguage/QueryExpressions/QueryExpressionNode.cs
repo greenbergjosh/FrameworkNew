@@ -47,7 +47,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
             {
                 var result = await entity.Evaluate(_query);
                 // don't set _value; need to always eval
-                return result.SingleOrDefault();
+                return result.SingleOrDefault() ?? Entity.Undefined;
             }
 
             if (OutputType == QueryExpressionType.Invalid)

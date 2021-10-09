@@ -67,6 +67,7 @@ namespace QuickTester
                 "$.f[?(@.count==8%5)]", // % operator
                 "$.f[?(@.count==5*2)]", // * operator
                 "$.f[?(@.color!=\"red\")]", // != operator
+                "$.f[?(!@.colora)]", // ! operator
                 "$.f[?(@.count==3 || @.color==\"red\")]", // || operator
                 "$.f[?(@.count==5-2)]", // subtraction operator
             };
