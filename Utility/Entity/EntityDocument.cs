@@ -52,6 +52,13 @@ namespace Utility.Entity
 
         public async Task<IEnumerable<EntityDocument>> Evaluate(Query query) => (await Entity.Evaluate(query)).Select(entity => entity.Document);
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public virtual async IAsyncEnumerable<Entity> ProcessReference()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            yield break;
+        }
+
         public bool TryGetProperty(string name, out Entity propertyEntity)
         {
             if (TryGetPropertyCore(name, out var document))

@@ -33,19 +33,33 @@ namespace QuickTester
 	]
 }";
 
+            var refTestParentDocument = @"{
+    ""a"": {
+        ""$ref"": ""entity://refTestChildDocument""
+    },
+    ""b"": 5,
+    ""c"": {
+        ""$ref"": ""$.b""
+    }
+}";
+            var refTestChildDocument = @"{
+    ""x"": 50
+}";
+
             var E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
-                ["application/json"] = EntityDocumentJson.Parse
+                ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
             }, new Dictionary<string, EntityRetriever>
             {
                 ["entity"] = (entity, uri) =>
                 {
-                    if (uri.Host == "testdocument")
+                    return uri.Host switch
                     {
-                        return entity.Parse("application/json", testDocument);
-                    }
-
-                    throw new Exception($"Unknown entity: {uri.Host}");
+                        "testdocument" => entity.Parse("application/json", testDocument),
+                        "reftestparentdocument" => entity.Parse("application/json", refTestParentDocument),
+                        "reftestchilddocument" => entity.Parse("application/json", refTestChildDocument),
+                        _ => throw new Exception($"Unknown entity: {uri.Host}"),
+                    };
                 }
             });
 
@@ -128,6 +142,15 @@ namespace QuickTester
             Console.WriteLine($"Query: {absoluteQuery}");
             Console.WriteLine("Entity:");
             foreach (var result in await E.Evaluate(absoluteQuery))
+            {
+                Console.WriteLine(result?.ToString() ?? "null");
+            }
+            Console.WriteLine();
+
+            var refQuery = "entity://refTestParentDocument?$.a.x";
+            Console.WriteLine($"Query: {refQuery}");
+            Console.WriteLine("Entity:");
+            foreach (var result in await E.Evaluate(refQuery))
             {
                 Console.WriteLine(result?.ToString() ?? "null");
             }

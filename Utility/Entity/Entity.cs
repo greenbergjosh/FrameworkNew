@@ -110,7 +110,12 @@ namespace Utility.Entity
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
 
-                parsedQuery = QueryLanguage.Query.Parse(this, uri.Query[1..] ?? "$");
+                var queryString = uri.Query.TrimStart('?');
+                if (string.IsNullOrWhiteSpace(queryString))
+                {
+                    queryString = "$";
+                }
+                parsedQuery = QueryLanguage.Query.Parse(this, queryString);
             }
             else
             {
@@ -150,11 +155,22 @@ namespace Utility.Entity
             foreach (var selector in query.Selectors)
             {
                 var next = new List<Entity>();
-                foreach (var document in current)
+                foreach (var entity in current)
                 {
-                    await foreach (var match in selector.Process(document))
+                    await foreach (var child in selector.Process(entity))
                     {
-                        next.Add(match);
+                        var hadReference = false;
+                        await foreach (var referenceChild in child.Document.ProcessReference())
+                        {
+                            referenceChild.Query = referenceChild.Query.Replace("$", child.Query);
+                            next.Add(referenceChild);
+                            hadReference = true;
+                        }
+
+                        if (!hadReference)
+                        {
+                            next.Add(child);
+                        }
                     }
                 }
                 current = next;
