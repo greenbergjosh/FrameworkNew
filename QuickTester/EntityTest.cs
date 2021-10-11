@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Json.Path;
+using Utility;
 using Utility.Entity;
 
 namespace QuickTester
@@ -39,7 +40,7 @@ namespace QuickTester
     },
     ""b"": 5,
     ""c"": {
-        ""$ref"": ""$.b""
+        ""$ref"": ""memory://thread?$.threadVariable1""
     }
 }";
             var refTestChildDocument = @"{
@@ -56,6 +57,8 @@ namespace QuickTester
                 ["processVariable1"] = "Hello there"
             });
 
+            var fw = new FrameworkWrapper();
+
             var E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
                 ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
@@ -66,7 +69,7 @@ namespace QuickTester
                     "testdocument" => entity.Parse("application/json", testDocument),
                     "reftestparentdocument" => entity.Parse("application/json", refTestParentDocument),
                     "reftestchilddocument" => entity.Parse("application/json", refTestChildDocument),
-                    _ => throw new Exception($"Unknown entity: {uri.Host}"),
+                    _ => GetEntity(fw, entity, uri.Host)
                 },
                 ["memory"] = (entity, uri) => Task.FromResult(Entity.Create(entity, uri.Host switch
                 {
@@ -155,7 +158,9 @@ namespace QuickTester
             {
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?$.a.x",
-                "memory://thread?$.threadVariable1"
+                "memory://thread?$.threadVariable1",
+                "entity://refTestParentDocument?$.c",
+                "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?$.RsConfigId"
             };
 
             foreach (var absoluteQuery in absoluteQueries)
@@ -168,6 +173,13 @@ namespace QuickTester
                 }
                 Console.WriteLine();
             }
+        }
+
+        private static async Task<Entity> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
+        {
+            var id = Guid.Parse(entityId);
+            var entity = await fw.Entities.GetEntity(id);
+            return await root.Parse("application/json", entity.GetS("/Config"));
         }
     }
 }

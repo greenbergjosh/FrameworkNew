@@ -51,8 +51,6 @@ namespace Utility.Entity
 
         protected abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
-        public async Task<IEnumerable<EntityDocument>> Evaluate(Query query) => (await Entity.Evaluate(query)).Select(entity => entity.Document);
-
         protected EntityDocument MapValue(object value) => value switch
         {
             null => new EntityDocumentConstant(null, EntityValueType.Null, Query),

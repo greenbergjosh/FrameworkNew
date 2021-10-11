@@ -141,6 +141,9 @@ namespace Utility.Entity
             return null;
         }
 
+        public async Task<bool> GetB(string query) => (await Get(query)).Value<bool>();
+
+
         public Task<IEnumerable<Entity>> GetL(string query) => Evaluate(query);
 
         public async Task<string> GetS(string query) => (await Get(query)).Value<string>();
