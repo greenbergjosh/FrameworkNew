@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,6 +52,18 @@ namespace Utility.Entity
         protected abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
         public async Task<IEnumerable<EntityDocument>> Evaluate(Query query) => (await Entity.Evaluate(query)).Select(entity => entity.Document);
+
+        protected EntityDocument MapValue(object value) => value switch
+        {
+            null => new EntityDocumentConstant(null, EntityValueType.Null, Query),
+            string => new EntityDocumentConstant(value, EntityValueType.String, Query),
+            int => new EntityDocumentConstant(value, EntityValueType.Number, Query),
+            float => new EntityDocumentConstant(value, EntityValueType.Number, Query),
+            decimal => new EntityDocumentConstant(value, EntityValueType.Number, Query),
+            IDictionary dictionary => new EntityDocumentObject(dictionary),
+            IEnumerable array => EntityDocumentArray.Create(array),
+            _ => throw new Exception($"Type {value.GetType().Name} is not supported")
+        };
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public virtual async IAsyncEnumerable<Entity> ProcessReference()

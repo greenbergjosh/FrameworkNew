@@ -46,21 +46,34 @@ namespace QuickTester
     ""x"": 50
 }";
 
+            var threadState = new EntityDocumentObject(new Dictionary<string, object>()
+            {
+                ["threadVariable1"] = 20
+            });
+
+            var processState = new EntityDocumentObject(new Dictionary<string, object>()
+            {
+                ["processVariable1"] = "Hello there"
+            });
+
             var E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
                 ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
             }, new Dictionary<string, EntityRetriever>
             {
-                ["entity"] = (entity, uri) =>
+                ["entity"] = (entity, uri) => uri.Host switch
                 {
-                    return uri.Host switch
-                    {
-                        "testdocument" => entity.Parse("application/json", testDocument),
-                        "reftestparentdocument" => entity.Parse("application/json", refTestParentDocument),
-                        "reftestchilddocument" => entity.Parse("application/json", refTestChildDocument),
-                        _ => throw new Exception($"Unknown entity: {uri.Host}"),
-                    };
-                }
+                    "testdocument" => entity.Parse("application/json", testDocument),
+                    "reftestparentdocument" => entity.Parse("application/json", refTestParentDocument),
+                    "reftestchilddocument" => entity.Parse("application/json", refTestChildDocument),
+                    _ => throw new Exception($"Unknown entity: {uri.Host}"),
+                },
+                ["memory"] = (entity, uri) => Task.FromResult(Entity.Create(entity, uri.Host switch
+                {
+                    "thread" => threadState,
+                    "process" => processState,
+                    _ => throw new Exception($"Unknown memory location {uri.Host}"),
+                }))
             });
 
             var testEntity = await E.Parse("application/json", testDocument);
@@ -138,23 +151,23 @@ namespace QuickTester
             }
             Console.WriteLine();
 
-            var absoluteQuery = "entity://testDocument?$.a.b";
-            Console.WriteLine($"Query: {absoluteQuery}");
-            Console.WriteLine("Entity:");
-            foreach (var result in await E.Evaluate(absoluteQuery))
+            var absoluteQueries = new[]
             {
-                Console.WriteLine(result?.ToString() ?? "null");
-            }
-            Console.WriteLine();
+                "entity://testDocument?$.a.b",
+                "entity://refTestParentDocument?$.a.x",
+                "memory://thread?$.threadVariable1"
+            };
 
-            var refQuery = "entity://refTestParentDocument?$.a.x";
-            Console.WriteLine($"Query: {refQuery}");
-            Console.WriteLine("Entity:");
-            foreach (var result in await E.Evaluate(refQuery))
+            foreach (var absoluteQuery in absoluteQueries)
             {
-                Console.WriteLine(result?.ToString() ?? "null");
+                Console.WriteLine($"Query: {absoluteQuery}");
+                Console.WriteLine("Entity:");
+                foreach (var result in await E.Evaluate(absoluteQuery))
+                {
+                    Console.WriteLine(result?.ToString() ?? "null");
+                }
+                Console.WriteLine();
             }
-            Console.WriteLine();
         }
     }
 }

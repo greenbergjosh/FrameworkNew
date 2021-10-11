@@ -8,6 +8,15 @@ namespace Utility.Entity
         private readonly object _value;
         private readonly EntityValueType _valueType;
 
+        private static readonly HashSet<EntityValueType> _allowedTypes = new()
+        {
+            EntityValueType.Boolean,
+            EntityValueType.Null,
+            EntityValueType.Number,
+            EntityValueType.String,
+            EntityValueType.Undefined
+        };
+
         public static EntityDocument Null { get; } = new EntityDocumentConstant(null, EntityValueType.Null, "");
 
         public static EntityDocument Undefined { get; } = new EntityDocumentConstant(null, EntityValueType.Undefined, "");
@@ -18,6 +27,11 @@ namespace Utility.Entity
 
         public EntityDocumentConstant(object value, EntityValueType valueType, string query)
         {
+            if (!_allowedTypes.Contains(valueType))
+            {
+                throw new ArgumentException($"EntityValueType {valueType} is not supported by this class.", nameof(valueType));
+            }
+
             _value = value;
             _valueType = valueType;
             Query = query;
