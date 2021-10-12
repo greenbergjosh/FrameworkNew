@@ -60,11 +60,6 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
                 return false;
             }
 
-            if (start == '\'')
-            {
-                key = key.Replace("\\'", "'").Replace("\"", "\\\"");
-            }
-
             indexExpression = new ObjectPropertyIndexExpression(key, start);
             return true;
         }

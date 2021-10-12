@@ -131,15 +131,15 @@ namespace Utility.Entity
             return await Evaluate(root, parsedQuery);
         }
 
-        public async Task<Entity> Get(string query) => (await Evaluate(query)).FirstOrDefault();
+        public async Task<Entity> GetE(string query) => (await Evaluate(query)).FirstOrDefault();
 
-        public async Task<bool> GetB(string query) => (await Get(query)).Value<bool>();
+        public async Task<bool> GetB(string query) => (await GetE(query)).Value<bool>();
 
-        public Task<IEnumerable<Entity>> GetL(string query) => Evaluate(query);
+        public Task<IEnumerable<Entity>> Get(string query) => Evaluate(query);
 
-        public async Task<string> GetS(string query) => (await Get(query)).Value<string>();
+        public async Task<string> GetS(string query) => (await GetE(query)).Value<string>();
 
-        public async Task<int> GetI(string query) => (await Get(query)).Value<int>();
+        public async Task<int> GetI(string query) => (await GetE(query)).Value<int>();
 
         public override string ToString() => $"Query: {Query} Data: {_root}";
 

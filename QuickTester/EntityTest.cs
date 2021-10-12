@@ -151,7 +151,7 @@ namespace QuickTester
             Console.WriteLine($"JsonPath:");
             Console.WriteLine(string.Join(Environment.NewLine, JsonPath.Parse(arrayQuery).Evaluate(testJsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}")));
             Console.WriteLine("Entity:");
-            foreach (var result in await testEntity.GetL(arrayQuery))
+            foreach (var result in await testEntity.Get(arrayQuery))
             {
                 Console.WriteLine($"{result} GetS: {await result.GetS("$")}");
             }
