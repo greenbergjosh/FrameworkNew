@@ -9,10 +9,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public static PropertySelector Wildcard { get; } = new(null);
 
-        public PropertySelector(string name)
-        {
-            _name = name;
-        }
+        public PropertySelector(string name) => _name = name;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerable<Entity> Process(Entity entity)

@@ -18,10 +18,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
         public QueryExpressionType OutputType => _outputType ??= GetOutputType();
 
-        public QueryExpressionNode(Entity value)
-        {
-            _value = value;
-        }
+        public QueryExpressionNode(Entity value) => _value = value;
 
         public QueryExpressionNode(Query query)
         {
@@ -64,10 +61,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
             return value;
         }
 
-        public void InsertRight(IQueryExpressionOperator op, QueryExpressionNode newRight)
-        {
-            _right = new QueryExpressionNode(_right, op, newRight);
-        }
+        public void InsertRight(IQueryExpressionOperator op, QueryExpressionNode newRight) => _right = new QueryExpressionNode(_right, op, newRight);
 
         public static bool TryParseSingleValue(Entity entity, ReadOnlySpan<char> query, ref int index, out QueryExpressionNode node)
         {
@@ -149,10 +143,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
             };
         }
 
-        public override string ToString()
-        {
-            return Operator?.ToString(_left!, _right!) ?? _value?.ToString() ?? _query!.ToString();
-        }
+        public override string ToString() => Operator?.ToString(_left!, _right!) ?? _value?.ToString() ?? _query!.ToString();
 
         private static readonly HashSet<char> _numberCharacters = new()
         {

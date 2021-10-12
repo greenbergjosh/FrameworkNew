@@ -96,6 +96,9 @@ namespace QuickTester
                 "$.a.b[\"c\"]",
                 "$.a.b.d[0:2:1]",
                 "$.a.b.f[::2]",
+                "$..color",
+                "$..[?(@.color)]",
+                "$..[?(@.color==\"red\")]",
                 "$.f[?(@.count==3+2)]", // addition operator
                 "$.f[?(@.count==5 && @.color==\"red\")]", // && operator
                 "$.f[?(@.count==9/3)]", // division operator

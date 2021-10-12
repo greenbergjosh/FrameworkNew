@@ -10,10 +10,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
     {
         private readonly QueryExpressionNode _expression;
 
-        private ItemQueryIndexExpression(QueryExpressionNode expression)
-        {
-            _expression = expression;
-        }
+        private ItemQueryIndexExpression(QueryExpressionNode expression) => _expression = expression;
 
         public async IAsyncEnumerable<int> GetIndexes(Entity entity)
         {
@@ -28,7 +25,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public async IAsyncEnumerable<string> GetProperties(Entity entity)
         {
-            foreach(var (name, value) in entity.Document.EnumerateObject())
+            foreach (var (name, value) in entity.Document.EnumerateObject())
             {
                 if (await Evaluate(value))
                 {
@@ -83,9 +80,6 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             return true;
         }
 
-        public override string ToString()
-        {
-            return $"?({_expression})";
-        }
+        public override string ToString() => $"?({_expression})";
     }
 }

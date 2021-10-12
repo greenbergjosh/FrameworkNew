@@ -6,9 +6,6 @@ namespace Utility.Entity.QueryLanguage
     {
         public int Index { get; init; }
 
-        public QueryParseException(int index, string message) : base(message)
-        {
-            Index = index;
-        }
+        public QueryParseException(int index, string message) : base(message) => Index = index;
     }
 }

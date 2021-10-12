@@ -7,10 +7,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
     {
         public string Message { get; init; }
 
-        public ErrorSelector(string message)
-        {
-            Message = message;
-        }
+        public ErrorSelector(string message) => Message = message;
 
         public IAsyncEnumerable<Entity> Process(Entity entity) => throw new NotImplementedException();
     }

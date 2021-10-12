@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Utility.Entity
 {
@@ -13,8 +11,7 @@ namespace Utility.Entity
 
         public static EntityDocumentArray Create(IEnumerable array)
         {
-            var enumerableType = array.GetType()
-                .GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            var enumerableType = array.GetType().GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
             var genericType = enumerableType.GetGenericArguments().Single();
 
@@ -30,18 +27,9 @@ namespace Utility.Entity
 
         public override int Length => _array.Count();
 
-        public EntityDocumentArray(IEnumerable<T> array)
-        {
-            _array = array;
-        }
+        public EntityDocumentArray(IEnumerable<T> array) => _array = array;
 
-        protected override IEnumerable<EntityDocument> EnumerateArrayCore()
-        {
-            foreach (var item in _array)
-            {
-                yield return MapValue(item);
-            }
-        }
+        protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _array.Select(item => MapValue(item));
 
         protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
 

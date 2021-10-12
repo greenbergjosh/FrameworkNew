@@ -12,6 +12,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             {
                 return QueryExpressionType.Invalid;
             }
+
             if (left.OutputType == QueryExpressionType.Number)
             {
                 return QueryExpressionType.Number;
@@ -37,12 +38,6 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             return new EntityDocumentConstant(leftEntity.Value<decimal>() * rightEntity.Value<decimal>(), EntityValueType.Number, ToString());
         }
 
-        public string ToString(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            var lString = left.MaybeAddParentheses(OrderOfOperation);
-            var rString = right.MaybeAddParentheses(OrderOfOperation);
-
-            return $"{lString}*{rString}";
-        }
+        public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}*{right.MaybeAddParentheses(OrderOfOperation)}";
     }
 }

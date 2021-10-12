@@ -13,9 +13,13 @@ namespace Utility.Entity
 
         private static readonly Dictionary<Type, Func<JsonElement, object>> _valueMap = new()
         {
-            [typeof(string)] = element => element.GetString(),
+            [typeof(bool)] = element => element.GetBoolean(),
+            [typeof(decimal)] = element => element.GetDecimal(),
+            [typeof(double)] = element => element.GetDouble(),
+            [typeof(float)] = element => element.GetSingle(),
             [typeof(int)] = element => element.GetInt32(),
-            [typeof(decimal)] = element => element.GetDecimal()
+            [typeof(long)] = element => element.GetInt64(),
+            [typeof(string)] = element => element.GetString(),
         };
 
         public override EntityValueType ValueType => _root.ValueKind switch

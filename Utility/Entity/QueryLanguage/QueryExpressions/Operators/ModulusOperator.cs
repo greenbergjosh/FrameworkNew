@@ -44,12 +44,6 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             return new EntityDocumentConstant(leftEntity.Value<decimal>() % rightValue, EntityValueType.Number, ToString());
         }
 
-        public string ToString(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            var lString = left.MaybeAddParentheses(OrderOfOperation);
-            var rString = right.MaybeAddParentheses(OrderOfOperation, true);
-
-            return $"{lString}%{rString}";
-        }
+        public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}%{right.MaybeAddParentheses(OrderOfOperation, true)}";
     }
 }

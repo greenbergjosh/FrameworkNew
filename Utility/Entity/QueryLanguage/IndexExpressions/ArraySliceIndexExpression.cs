@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
@@ -40,6 +38,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             {
                 var i = lower ?? 0;
                 upper ??= arrayLength;
+
                 while (i < upper)
                 {
                     yield return i;
@@ -50,6 +49,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             {
                 var i = upper ?? arrayLength - 1;
                 lower ??= -1;
+
                 while (lower < i)
                 {
                     yield return i;
@@ -58,10 +58,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             }
         }
 
-        private static int? Normalize(int? index, int length)
-        {
-            return index >= 0 ? index : length + index;
-        }
+        private static int? Normalize(int? index, int length) => index >= 0 ? index : length + index;
 
         private static (int?, int?) Bounds(int? start, int? end, int? step, int length)
         {
@@ -72,13 +69,13 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
             if (step >= 0)
             {
-                lower = startIndex.HasValue ? Math.Min(Math.Max(startIndex.Value, 0), length) : (int?)null;
-                upper = endIndex.HasValue ? Math.Min(Math.Max(endIndex.Value, 0), length) : (int?)null;
+                lower = startIndex.HasValue ? Math.Min(Math.Max(startIndex.Value, 0), length) : null;
+                upper = endIndex.HasValue ? Math.Min(Math.Max(endIndex.Value, 0), length) : null;
             }
             else
             {
-                upper = startIndex.HasValue ? Math.Min(Math.Max(startIndex.Value, -1), length - 1) : (int?)null;
-                lower = endIndex.HasValue ? Math.Min(Math.Max(endIndex.Value, -1), length - 1) : (int?)null;
+                upper = startIndex.HasValue ? Math.Min(Math.Max(startIndex.Value, -1), length - 1) : null;
+                lower = endIndex.HasValue ? Math.Min(Math.Max(endIndex.Value, -1), length - 1) : null;
             }
 
             return (lower, upper);

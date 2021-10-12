@@ -80,9 +80,6 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             return true;
         }
 
-        public override string ToString()
-        {
-            return $"({_expression})";
-        }
+        public override string ToString() => $"({_expression})";
     }
 }

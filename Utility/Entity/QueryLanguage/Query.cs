@@ -9,10 +9,7 @@ namespace Utility.Entity.QueryLanguage
     {
         public IEnumerable<ISelector> Selectors { get; init; }
 
-        private Query(IEnumerable<ISelector> selectors)
-        {
-            Selectors = selectors;
-        }
+        private Query(IEnumerable<ISelector> selectors) => Selectors = selectors;
 
         public static Query Parse(Entity entity, ReadOnlySpan<char> query)
         {
@@ -173,6 +170,7 @@ namespace Utility.Entity.QueryLanguage
 
             var propertyName = slice[..propertyNameLength];
             index += 1 + propertyNameLength;
+
             return new PropertySelector(propertyName.ToString());
         }
 

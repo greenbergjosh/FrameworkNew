@@ -10,10 +10,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public static IndexSelector Wildcard { get; } = new(null);
 
-        public IndexSelector(IEnumerable<IIndexExpression> indexes)
-        {
-            _indexes = indexes;
-        }
+        public IndexSelector(IEnumerable<IIndexExpression> indexes) => _indexes = indexes;
 
         public async IAsyncEnumerable<Entity> Process(Entity entity)
         {

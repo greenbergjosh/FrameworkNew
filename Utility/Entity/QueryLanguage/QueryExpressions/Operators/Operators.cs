@@ -50,7 +50,11 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                     op = Subtraction;
                     return true;
                 case '=':
-                    if (index + 1 >= query.Length) return false;
+                    if (index + 1 >= query.Length)
+                    {
+                        return false;
+                    }
+
                     if (query[index + 1] == '=')
                     {
                         index += 2;
@@ -59,7 +63,11 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                     }
                     break;
                 case '!':
-                    if (index + 1 >= query.Length) return false;
+                    if (index + 1 >= query.Length)
+                    {
+                        return false;
+                    }
+
                     if (query[index + 1] == '=')
                     {
                         index += 2;
@@ -74,6 +82,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                         op = LessThanOrEqualTo;
                         return true;
                     }
+
                     index++;
                     op = LessThan;
                     return true;
@@ -84,11 +93,16 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                         op = GreaterThanOrEqualTo;
                         return true;
                     }
+
                     index++;
                     op = GreaterThan;
                     return true;
                 case '&':
-                    if (index + 1 >= query.Length) return false;
+                    if (index + 1 >= query.Length)
+                    {
+                        return false;
+                    }
+
                     if (query[index + 1] == '&')
                     {
                         index += 2;
@@ -97,7 +111,11 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                     }
                     break;
                 case '|':
-                    if (index + 1 >= query.Length) return false;
+                    if (index + 1 >= query.Length)
+                    {
+                        return false;
+                    }
+
                     if (query[index + 1] == '|')
                     {
                         index += 2;

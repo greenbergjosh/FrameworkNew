@@ -7,14 +7,12 @@ namespace Utility.Entity
     public class EntityDocumentObject : EntityDocument
     {
         private readonly IDictionary _dictionary;
-        public override EntityValueType ValueType => EntityValueType.Object;
 
         public override int Length => _dictionary.Count;
 
-        public EntityDocumentObject(IDictionary dictionary)
-        {
-            _dictionary = dictionary;
-        }
+        public override EntityValueType ValueType => EntityValueType.Object;
+
+        public EntityDocumentObject(IDictionary dictionary) => _dictionary = dictionary;
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 

@@ -8,8 +8,16 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
 
         public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)
         {
-            if (left.OutputType != right.OutputType) return QueryExpressionType.Invalid;
-            if (left.OutputType == QueryExpressionType.Boolean) return QueryExpressionType.Boolean;
+            if (left.OutputType != right.OutputType)
+            {
+                return QueryExpressionType.Invalid;
+            }
+
+            if (left.OutputType == QueryExpressionType.Boolean)
+            {
+                return QueryExpressionType.Boolean;
+            }
+
             return QueryExpressionType.Invalid;
         }
 
@@ -30,12 +38,6 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             return new EntityDocumentConstant(leftEntity.Value<bool>() || rightEntity.Value<bool>(), EntityValueType.Boolean, ToString());
         }
 
-        public string ToString(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            var lString = left.MaybeAddParentheses(OrderOfOperation);
-            var rString = right.MaybeAddParentheses(OrderOfOperation);
-
-            return $"{lString}||{rString}";
-        }
+        public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}||{right.MaybeAddParentheses(OrderOfOperation)}";
     }
 }

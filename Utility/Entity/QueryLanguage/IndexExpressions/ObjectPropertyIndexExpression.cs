@@ -60,19 +60,9 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
                 return false;
             }
 
-            try
+            if (start == '\'')
             {
-                if (start == '\'')
-                {
-                    key = key.Replace("\\'", "'").Replace("\"", "\\\"");
-                }
-                using var doc = JsonDocument.Parse($"\"{key}\"");
-                key = doc.RootElement.GetString();
-            }
-            catch
-            {
-                indexExpression = null;
-                return false;
+                key = key.Replace("\\'", "'").Replace("\"", "\\\"");
             }
 
             indexExpression = new ObjectPropertyIndexExpression(key, start);

@@ -131,18 +131,9 @@ namespace Utility.Entity
             return await Evaluate(root, parsedQuery);
         }
 
-        public async Task<Entity> Get(string query)
-        {
-            foreach (var entity in await Evaluate(query))
-            {
-                return entity;
-            }
-
-            return null;
-        }
+        public async Task<Entity> Get(string query) => (await Evaluate(query)).FirstOrDefault();
 
         public async Task<bool> GetB(string query) => (await Get(query)).Value<bool>();
-
 
         public Task<IEnumerable<Entity>> GetL(string query) => Evaluate(query);
 
@@ -155,6 +146,7 @@ namespace Utility.Entity
         private static async Task<IEnumerable<Entity>> Evaluate(IEnumerable<Entity> root, Query query)
         {
             var current = root;
+
             foreach (var selector in query.Selectors)
             {
                 var next = new List<Entity>();

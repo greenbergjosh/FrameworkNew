@@ -15,9 +15,6 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             return new EntityDocumentConstant(leftEntity.ValueType != EntityValueType.Undefined, EntityValueType.Boolean, ToString());
         }
 
-        public string ToString(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            return left.ToString();
-        }
+        public string ToString(QueryExpressionNode left, QueryExpressionNode right) => left.ToString();
     }
 }

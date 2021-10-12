@@ -88,7 +88,7 @@ namespace Utility.Entity
 
         public bool Equals(EntityDocument other)
         {
-            if (object.ReferenceEquals(this, other))
+            if (ReferenceEquals(this, other))
             {
                 return true;
             }

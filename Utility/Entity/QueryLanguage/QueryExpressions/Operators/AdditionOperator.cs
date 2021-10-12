@@ -45,12 +45,6 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             }
         }
 
-        public string ToString(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            var lString = left.MaybeAddParentheses(OrderOfOperation);
-            var rString = right.MaybeAddParentheses(OrderOfOperation);
-
-            return $"{lString}+{rString}";
-        }
+        public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}+{right.MaybeAddParentheses(OrderOfOperation)}";
     }
 }

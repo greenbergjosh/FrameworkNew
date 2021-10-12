@@ -6,10 +6,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
     {
         public int OrderOfOperation => 1;
 
-        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            return QueryExpressionType.Boolean;
-        }
+        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)=>QueryExpressionType.Boolean;
 
         public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
         {
