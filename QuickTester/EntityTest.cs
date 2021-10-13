@@ -137,6 +137,7 @@ namespace QuickTester
                 ("$.a.b.c", async (query, entity) => await entity.GetS(query)),
                 ("$.a.b.e", async (query, entity) => await entity.GetI(query)),
                 ("$.a.b.d.length", async (query, entity) => await entity.GetI(query)),
+                ("a.b", async (query, entity) => await entity.GetE(query))
             };
 
             foreach (var valueQuery in valueQueries)

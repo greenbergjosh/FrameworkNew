@@ -40,6 +40,7 @@ namespace Utility.Entity.QueryLanguage
                     '@' => AddLocalNode(ref index),
                     '.' => AddPropertyOrNestedDescent(query, ref index),
                     '[' => AddIndex(entity, query, ref index),
+                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescent(query, ref index, true),
                     _ => null
                 };
 
@@ -146,22 +147,27 @@ namespace Utility.Entity.QueryLanguage
             return new RootNodeSelector();
         }
 
-        private static ISelector AddPropertyOrNestedDescent(ReadOnlySpan<char> query, ref int index)
+        private static ISelector AddPropertyOrNestedDescent(ReadOnlySpan<char> query, ref int index, bool noDot = false)
         {
             var slice = query[index..];
-            if (slice.StartsWith("..") || slice.StartsWith(".["))
+
+            if (!noDot)
             {
-                index++;
-                return new NestedDescentSelector();
+                if (slice.StartsWith("..") || slice.StartsWith(".["))
+                {
+                    index++;
+                    return new NestedDescentSelector();
+                }
+
+                if (slice.StartsWith(".*"))
+                {
+                    index += 2;
+                    return PropertySelector.Wildcard;
+                }
+
+                slice = slice[1..];
             }
 
-            if (slice.StartsWith(".*"))
-            {
-                index += 2;
-                return PropertySelector.Wildcard;
-            }
-
-            slice = slice[1..];
             var propertyNameLength = 0;
             while (propertyNameLength < slice.Length && IsValidForPropertyName(slice[propertyNameLength]))
             {
@@ -169,7 +175,7 @@ namespace Utility.Entity.QueryLanguage
             }
 
             var propertyName = slice[..propertyNameLength];
-            index += 1 + propertyNameLength;
+            index += (noDot ? 0 : 1) + propertyNameLength;
 
             return new PropertySelector(propertyName.ToString());
         }
