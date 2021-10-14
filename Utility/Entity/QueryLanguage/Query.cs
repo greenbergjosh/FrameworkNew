@@ -30,6 +30,7 @@ namespace Utility.Entity.QueryLanguage
 
         internal static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int index, bool allowTrailingContent, out Query value, out QueryParseException exception)
         {
+            var startIndex = index;
             var selectors = new List<ISelector>();
 
             while (index < query.Length)
@@ -40,7 +41,7 @@ namespace Utility.Entity.QueryLanguage
                     '@' => AddLocalNode(ref index),
                     '.' => AddPropertyOrNestedDescent(query, ref index),
                     '[' => AddIndex(entity, query, ref index),
-                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescent(query, ref index, true),
+                    char ch when Query.IsValidForPropertyName(ch) && index == startIndex => AddPropertyOrNestedDescent(query, ref index, true),
                     _ => null
                 };
 
