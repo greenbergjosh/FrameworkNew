@@ -1,18 +1,23 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Utility;
+using Utility.Entity;
 using Utility.GenericEntity;
 
 namespace QuickTester
 {
     class EdwGrammar
     {
-        public static Stack<(string name, IGenericEntity ge)> scope = new();
+        public static Stack<(string name, Entity ge)> scope = new();
+        public static Entity SymbolEntity = null;
+        public static Entity E = null;
 
-        public static IGenericEntity GetScope(string name)
+        public static Entity GetScope(string name)
         {
             return scope.Where(x => x.name.Equals(name)).ToArray()[0].ge;
         }
@@ -47,26 +52,26 @@ namespace QuickTester
         public static Dictionary<string, string> productions = new()
         {
             ["rlp_std_group_by"] = @"
-<<!process_constants[]|0|constant=g://constants>>
-  SELECT event_id, event_ts, rs.id rs_id, <<??g://thread_group_id/thread_group_type!=""singleton""->multiton_cols>>
-    <<event_elements[,]|1|evt=g://event_elements|,>>
-    <<rs_elements[,]|2|rs=g://rs_elements|,>>
-    <<derived_elements[,]|3|der=g://derived_elements|,>>
-  FROM satisfied_set ws JOIN warehouse_report_sequence.""<<sym://config_name>>"" rs 
+<<!process_constants[]|0|constant=g://$.constants.*>>
+  SELECT event_id, event_ts, rs.id rs_id <<??g://$.thread_group_id[?(@.thread_group_type!=""singleton"")]->multiton_cols>>
+    <<event_elements[,]|1|evt=g://$.event_elements.*|,>>
+    <<rs_elements[,]|2|rs=g://$.rs_elements.*|,>>
+    <<derived_elements[,]|3|der=g://$.derived_elements.*|,>>
+  FROM satisfied_set ws JOIN warehouse_report_sequence.""<<sym://$.config_name>>"" rs 
     ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)",
 
-            ["process_constants"] = "'<<constant://value>>'::<<constant://data_type>>``<<constant://name>>",
+            ["process_constants"] = "'<<constant://$.value>>'::<<constant://$.data_type>>``<<constant://$.name>>",
 
             ["multiton_cols"] = ", rs.id rs_id, rs.ts rs_ts ",
 
-            ["event_elements"] = "<<event_element>> \"<<evt://alias>>\"",
-            ["event_element"] = "(coalesce(event_payload -> 'body' <<evt://json_path>>, ''))::<<evt://data_type>>``<<evt://alias>>",
-            ["derived_elements"] = "<<derived_element>> \"<<der://alias>>\"",
-            ["derived_element"] = "<<der://col_value>>::<<der://data_type>>``<<der://alias>>",
-            ["rs_elements"] = "<<rs_element>> \"<<rs://alias>>\"",
-            ["rs_element"] = "rs.<<rs://alias>>``<<rs://alias>>",
+            ["event_elements"] = "<<event_element>> \"<<evt://$.alias>>\"",
+            ["event_element"] = "(coalesce(event_payload -> 'body' <<evt://$.json_path>>, ''))::<<evt://$.data_type>>``<<evt://$.alias>>",
+            ["derived_elements"] = "<<derived_element>> \"<<der://$.alias>>\"",
+            ["derived_element"] = "<<der://$.col_value>>::<<der://$.data_type>>``<<der://$.alias>>",
+            ["rs_elements"] = "<<rs_element>> \"<<rs://$.alias>>\"",
+            ["rs_element"] = "rs.<<rs://$.alias>>``<<rs://$.alias>>",
 
-            ["union"] = "<<union_select[ UNION ]|0|tbl=g://names>>",
+            ["union"] = "<<union_select[ UNION ]|0|tbl=g://$.names>>",
             ["union_select"] = "SELECT id, ts FROM warehouse_report_sequence.\"<<tbl://>>\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>' ",
             ["long_term_union"] = "<<long_term_union_select[ UNION ]|0|tbl=g://names>>",
             ["long_term_union_select"] = @"SELECT id, ts FROM warehouse_report_sequence.""<<tbl://>>"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'
@@ -107,7 +112,7 @@ namespace QuickTester
             }
         }
 
-        public static List<Production> GetSubProductions(string productionBody)
+        public static async Task<List<Production>> GetSubProductions(string productionBody)
         {
             List<Production> matches = new();
             foreach (Match m in Regex.Matches(productionBody, @"<<.*?>>"))
@@ -144,7 +149,7 @@ namespace QuickTester
             return matches;
         }
         
-        public static string CallProduction(string productionName)
+        public static async Task<string> CallProduction(string productionName)
         {
             //return (string)Type.GetType("QuickTester.EdwGrammar").GetMethod(productionName)
             //    .Invoke(null, new object[] { productions[productionName] });
@@ -153,23 +158,8 @@ namespace QuickTester
             {
                 string nsn = productionName.Split("://")[0];
                 string nsp = productionName.Split("://")[1];
-                if (nsn.Equals("sym")) return symbolTable[nsp];
-                else return CallProduction(GetScope(nsn).GetS(nsp));
-            }
-
-            if (productions.ContainsKey(productionName) && productions[productionName].StartsWith("<<??"))
-            {
-                string[] matchSplit = productions[productionName][4..^2].Split('|');
-                foreach (var m in matchSplit)
-                {
-                    string[] branch = m.Split("->");
-                    string nsn = branch[0].Split("://")[0];
-                    string nsp = branch[0].Split("://")[1];
-                    if (GetScope(nsn).GetE(nsp) != null)
-                    {
-                        return CallProduction(branch[1]);
-                    }
-                }
+                if (nsn.Equals("sym")) return await SymbolEntity.GetS(nsp); // symbolTable[nsp];
+                else return await CallProduction(await GetScope(nsn).GetS(nsp));
             }
 
             string pb;
@@ -187,13 +177,38 @@ namespace QuickTester
                 pbName = pbSplit.GetElementOrDefault(1, "");
             }            
 
-            var subProductions = GetSubProductions(pb);
+            var subProductions = await GetSubProductions(pb);
 
             foreach (var sp in subProductions)
             {
-                if (sp.Scope == "")
+                if (sp.Match.StartsWith("<<??"))
                 {
-                    string cp = CallProduction(sp.ProdNames[0].matchName);
+                    string[] matchSplit = sp.Match[4..^2].Split('|');
+                    bool found = false;
+                    foreach (var m in matchSplit)
+                    {
+                        string[] branch = m.Split("->");
+                        string nsn = branch[0].Split("://")[0];
+                        string nsp = branch[0].Split("://")[1];
+                        var xx1 = await GetScope(nsn).Get(nsp);
+                        int ct = xx1.Count();
+                        if (ct != 0)
+                        {
+                            string cp = await CallProduction(branch[1]);
+                            cp = !string.IsNullOrEmpty(cp) ? sp.PrependString + cp : "";
+                            pb = pb.Replace(sp.Match, sp.SuppressOutput ? "" : cp);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        pb = pb.Replace(sp.Match, "");
+                    }
+                }
+                else if (sp.Scope == "")
+                {
+                    string cp = await CallProduction (sp.ProdNames[0].matchName);
                     cp = !string.IsNullOrEmpty(cp) ? sp.PrependString + cp : "";
                     pb = pb.Replace(sp.Match, sp.SuppressOutput ? "" : cp);
                 }
@@ -207,13 +222,13 @@ namespace QuickTester
                     if (sp.DoRepeat)
                     {
                         Dictionary<(string matchName, string repeatingCharacter, string symbolName), List<string>> rets = new();
-                        foreach (var scp in GetScope(curScopeName).GetL(scopePath))
+                        foreach (var scp in await GetScope(curScopeName).Get(scopePath))
                         {
                             scope.Push((newScopeName, scp));
                             foreach (var pn in sp.ProdNames)
                             {
                                 if (!rets.ContainsKey(pn)) rets.Add(pn, new List<string>());
-                                rets[pn].Add(CallProduction(pn.matchName));
+                                rets[pn].Add(await CallProduction (pn.matchName));
                             }
                             scope.Pop();
                         }
@@ -230,15 +245,15 @@ namespace QuickTester
                                 string scp = string.Join(n.repeatingCharacter,
                                         rets[(n.matchName, n.repeatingCharacter, n.symbolName)]);
                                 scp = !string.IsNullOrEmpty(scp) ? sp.PrependString + scp : "";  // may be n.PrependString
-                                symbolTable.Add((productions.ContainsKey(n.symbolName) ? CallProduction(n.symbolName) : n.symbolName),
+                                symbolTable.Add((productions.ContainsKey(n.symbolName) ? await CallProduction (n.symbolName) : n.symbolName),
                                     scp);
                             }
                         }
                     }
                     else
                     {
-                        scope.Push((newScopeName, GetScope(curScopeName).GetE(scopePath)));
-                        string cp = CallProduction(sp.ProdNames[0].matchName);
+                        scope.Push((newScopeName, await GetScope(curScopeName).GetE(scopePath)));
+                        string cp = await CallProduction (sp.ProdNames[0].matchName);
                         cp = !string.IsNullOrEmpty(cp) ? sp.PrependString + cp : "";
                         pb = pb.Replace(sp.Match, sp.SuppressOutput ? "" : cp);
                         scope.Pop();
@@ -246,34 +261,59 @@ namespace QuickTester
                 }
             }
 
-            if (pbName != "") symbolTable.TryAdd(CallProduction(pbName), pb);
+            if (pbName != "") symbolTable.TryAdd(await CallProduction(pbName), pb);
 
             return pb;
         }
-        
-        public static Dictionary<string, string> GenerateSql(IGenericEntity ge)
+
+        private static async Task<Entity> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
+        {
+            var id = Guid.Parse(entityId);
+            var entity = await fw.Entities.GetEntity(id);
+            return await root.Parse("application/json", entity.GetS("/Config"));
+        }
+
+        public static async Task<Dictionary<string, string>> GenerateSql()  // Guid g
         {
             Dictionary<string, string> d = new();
 
-            scope.Push(("g", ge));
+            var fw = new FrameworkWrapper();
+
+            E = Entity.Initialize(new Dictionary<string, EntityParser>
+            {
+                ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
+            }, new Dictionary<string, EntityRetriever>
+            {
+                ["entity"] = (entity, uri) => GetEntity(fw, entity, uri.Host)//,
+                //["sym"] = (entity, uri) => SymbolEntity.GetE(uri.Host)
+            });
+            SymbolEntity = Entity.Create(E, new EntityDocumentObject(symbolTable));
+
+            string s = await E.GetS("entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?$.RsConfigId");
+
+            Entity e = await E.GetE("entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
+            
+
+            scope.Push(("g", e));  // "g", Entity(g)
+            // g://path    g.Get(path).Value<bool>()
 
             //string initial_production = "long_term_union"; //rlp.GetS("initial_production");
-            //string sql = CallProduction(initial_production);
+            //string sql = await CallProduction(initial_production);
 
             symbolTable.Add("config_name", "Path Session");
 
-            /*
-            foreach (IGenericEntity rlp in ge.GetL("rollups"))
+            
+            foreach (Entity rlp in await e.Get("$.rollups.*"))
             {
                 scope.Push(("rollup", rlp));
-                string name = rlp.GetS("name");
+                string name = await rlp.GetS("$.name");
                 //string grammar = rlp.GetS("grammar");
                 string initial_production = "rlp_std_group_by"; //rlp.GetS("initial_production");
-                string sql = CallProduction(initial_production);
+                string sql = await CallProduction(initial_production);
                 scope.Pop();
                 d[name] = sql;
             }
-            */
+            
             return d;
         }
         

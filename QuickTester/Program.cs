@@ -7,7 +7,8 @@ namespace QuickTester
 
         private static Task Main()
         {
-            return EntityTest.Run();
+            return EdwGrammar.GenerateSql();
+            //return EntityTest.Run();
         }
     }
 }
