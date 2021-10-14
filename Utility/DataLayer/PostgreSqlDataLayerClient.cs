@@ -101,12 +101,9 @@ namespace Utility.DataLayer
                 outval = (string)cmd.Parameters["@Return"].Value;
                 await cn.CloseAsync();
             }
-            catch (NpgsqlException sqlex)
+            catch (NpgsqlException)
             {
-                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed"))
-                {
-                    outval = "Walkaway";
-                }
+                outval = "Walkaway";
             }
             catch (Exception ex)
             {
