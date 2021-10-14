@@ -32,8 +32,8 @@ namespace Utility.Entity
 
         private Entity()
         {
-            _retrievers = new();
-            _parsers = new();
+            _retrievers = new(StringComparer.CurrentCultureIgnoreCase);
+            _parsers = new(StringComparer.CurrentCultureIgnoreCase);
         }
 
         private Entity(EntityDocument root, ConcurrentDictionary<string, EntityParser> parsers, ConcurrentDictionary<string, EntityRetriever> retrievers)
@@ -110,7 +110,7 @@ namespace Utility.Entity
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
 
-                var queryString = uri.Query.TrimStart('?');
+                var queryString = Uri.UnescapeDataString(uri.Query.TrimStart('?'));
                 if (string.IsNullOrWhiteSpace(queryString))
                 {
                     queryString = "$";

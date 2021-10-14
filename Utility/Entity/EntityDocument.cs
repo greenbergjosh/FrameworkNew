@@ -60,6 +60,7 @@ namespace Utility.Entity
             decimal => new EntityDocumentConstant(value, EntityValueType.Number, Query),
             IDictionary dictionary => new EntityDocumentObject(dictionary),
             IEnumerable array => EntityDocumentArray.Create(array),
+            Utility.Entity.Entity => ((Entity)value).Document,
             _ => throw new Exception($"Type {value.GetType().Name} is not supported")
         };
 

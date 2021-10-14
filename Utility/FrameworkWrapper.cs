@@ -12,7 +12,6 @@ using Utility.EDW.Logging;
 using Utility.EDW.Queueing;
 using Utility.EDW.Reporting;
 using Utility.GenericEntity;
-using Utility.LongRunningWorkflow;
 
 namespace Utility
 {
