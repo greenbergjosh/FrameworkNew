@@ -121,8 +121,7 @@ namespace Utility.EDW
                         break;
                     }
                     alreadyChosen.Add(p);
-                    writeError = await p.Write(w, secondaryWrite, timeoutSeconds)
-                        .ConfigureAwait(false);
+                    writeError = await p.Write(w, secondaryWrite, timeoutSeconds).ConfigureAwait(false);
                     if (writeError == LoadBalancedWriter.Result.Success)
                     {
                         break;
@@ -136,8 +135,7 @@ namespace Utility.EDW
                     {
                         RemoveEndpoint(p, true);
                         secondaryWrite = true;
-                        await initiateWalkaway(w, timeoutSeconds)
-                            .ConfigureAwait(false);
+                        await initiateWalkaway(w, timeoutSeconds).ConfigureAwait(false);
                     }
                     else if (writeError == LoadBalancedWriter.Result.RemoveEndpoint)
                     {
@@ -234,7 +232,7 @@ namespace Utility.EDW
                             endpoints[p] = new Tuple<bool, int>(false, nextTimeout);
                             var _ = Task.Run(async () =>
                             {
-                                await Task.Delay(nextTimeout).ConfigureAwait(false);
+                                await Task.Delay(nextTimeout * 1000).ConfigureAwait(false);
                                 try
                                 {
                                     await AuditEndpoint(p).ConfigureAwait(false);

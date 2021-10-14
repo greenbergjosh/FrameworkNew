@@ -50,21 +50,27 @@ namespace Utility.EDW.Reporting
             if (previousValue == 0) return 1;
             else if (previousValue == 1) return 5;
             else if (previousValue == 5) return 60;
-            else return 0;
+            else return 60;
         }
 
         public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen)
         {
-            IEndpoint e = null;
+            IEndpoint chosen = null;
+
             var es = endpoints.Keys.ToList();
             var rnd = new Random(DateTime.Now.Millisecond);
             for (int i = rnd.Next(0, es.Count), k = 0; k < es.Count; k++)
             {
-                e = es[i];
-                if (!alreadyChosen.Contains(e) && endpoints[e].Item1) break;
+                var current = es[i];
+                if (!alreadyChosen.Contains(current) && endpoints[current].Item1)
+                {
+                    chosen = current;
+                    break;
+                }
                 i = (i + 1) % es.Count;
             }
-            return e;
+
+            return chosen;
         }
 
         public static Task NoValid(object w, string dataFilePath, string errorFilePath)

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Utility.DataLayer;
 
 namespace Utility.EDW.Reporting
@@ -13,28 +15,36 @@ namespace Utility.EDW.Reporting
             this.connectionString = connectionString;
             dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
         }
-        public Task<bool> Audit()
+
+        public async Task<bool> Audit()
         {
-            // TODO: Replace audit logic with select top 1 id (nolock) from EDW event table
-            // string res = await SqlWrapper.InsertErrorLog(this.connectionString, 1, "EDWLogAudit", "", "", "").ConfigureAwait(false);
-            //string result = res.ToLower();
-            //if (result == "success") return true;
-            //else return false;
-            return Task.FromResult(true);  // Default to true for now
+            var e = new EdwBulkEvent();
+            e.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid, DateTime)>() { [Guid.Parse("f15d0bf2-87a8-4131-80c4-4284229f7e1d")] = (default, default) }, new { audit = true });
+
+            try
+            {
+                var result = await Write(e, false, 120);
+                Console.WriteLine($"{DateTime.Now}: Audit result: {result == LoadBalancedWriter.Result.Success}");
+                return result == LoadBalancedWriter.Result.Success;
+            }
+            catch
+            {
+                Console.WriteLine($"{DateTime.Now}: Audit result: false");
+                return false;
+            }
         }
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
-            var res = await dataLayerClient.InsertEdwPayload(connectionString, w.ToString(), timeoutSeconds)
-                .ConfigureAwait(false);
+            var res = await dataLayerClient.InsertEdwPayload(connectionString, w.ToString(), timeoutSeconds).ConfigureAwait(false);
             var result = res.ToLower();
-            if (result == "success" || result == "200 ok")
+            return result switch
             {
-                return LoadBalancedWriter.Result.Success;
-            }
-            else if (result == "walkaway") return LoadBalancedWriter.Result.Walkaway;
-            else if (result == "removeendpoint") return LoadBalancedWriter.Result.RemoveEndpoint;
-            else return LoadBalancedWriter.Result.Failure;
+                "success" or "200 ok" => LoadBalancedWriter.Result.Success,
+                "walkaway" => LoadBalancedWriter.Result.Walkaway,
+                "removeendpoint" => LoadBalancedWriter.Result.RemoveEndpoint,
+                _ => LoadBalancedWriter.Result.Failure
+            };
         }
 
         public override bool Equals(object obj) => ((EdwSiloEndpoint)obj).connectionString == connectionString;
