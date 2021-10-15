@@ -34,7 +34,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
                     return false;
                 }
 
-                QueryExpressionNode? right;
+                QueryExpressionNode right;
                 Helpers.ConsumeWhitespace(span, ref i);
                 if (span[i] == '(')
                 {
@@ -67,7 +67,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             }
 
             var current = new Stack<QueryExpressionNode>();
-            QueryExpressionNode? root = null;
+            QueryExpressionNode root = null;
             foreach (var (op, node) in followingNodes)
             {
                 if (root == null)

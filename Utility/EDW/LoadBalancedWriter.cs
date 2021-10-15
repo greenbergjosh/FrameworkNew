@@ -34,7 +34,7 @@ namespace Utility.EDW
 
         public delegate int NextWalkawayValueDelegate(int previousValue);
 
-        private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim cacheLock = new();
 
         public int writeTimeoutSec = 120;
         public int endpointPollingInterval;

@@ -89,6 +89,11 @@ namespace Utility.Entity
 
         public bool Equals(EntityDocument other)
         {
+            if (ValueType == EntityValueType.Undefined || other?.ValueType == EntityValueType.Undefined)
+            {
+                return false;
+            }
+
             if (ReferenceEquals(this, other))
             {
                 return true;

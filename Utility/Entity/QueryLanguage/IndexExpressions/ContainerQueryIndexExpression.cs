@@ -52,7 +52,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             yield return property;
         }
 
-        internal static bool TryParse(Entity entity, ReadOnlySpan<char> span, ref int i, out IIndexExpression? index)
+        internal static bool TryParse(Entity entity, ReadOnlySpan<char> span, ref int i, out IIndexExpression index)
         {
             if (span[i] != '(')
             {

@@ -8,7 +8,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
         public async IAsyncEnumerable<Entity> Process(Entity entity)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            yield return entity;
+            yield return entity.Root;
         }
 
         public override string ToString() => "$";

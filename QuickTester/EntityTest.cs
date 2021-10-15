@@ -14,6 +14,7 @@ namespace QuickTester
         internal static async Task Run()
         {
             var testDocument = @"{
+	""targetColor"": ""green"",
 	""a"": {
 		""b"": {
 			""c"": ""A string value"",
@@ -40,9 +41,10 @@ namespace QuickTester
     },
     ""b"": 5,
     ""c"": {
-        ""$ref"": ""memory://thread?$.threadVariable1""
+        ""$ref"": ""memory://thread?threadVariable1""
     }
 }";
+
             var refTestChildDocument = @"{
     ""x"": 50
 }";
@@ -87,32 +89,34 @@ namespace QuickTester
 
             var queries = new[]
             {
-                "$.a.b.*",
-                "$.a.b.d",
-                "$.a.b.d.length",
-                "$.a.b.d[1]",
-                "$.a.b.d[-1]",
-                "$.a.b['c']",
-                "$.a.b[\"c\"]",
-                "$.a.b.d[0:2:1]",
-                "$.a.b.f[::2]",
-                "$..color",
-                "$..[?(@.color)]",
-                "$..[?(@.color==\"red\")]",
-                "$.f[?(@.count==3+2)]", // addition operator
-                "$.f[?(@.count==5 && @.color==\"red\")]", // && operator
-                "$.f[?(@.count==9/3)]", // division operator
-                "$.f[?(@.color==\"red\")]", // == operator
-                "$.f[?(@.count>3)]", // > operator
-                "$.f[?(@.count>=3)]", // >= operator
-                "$.f[?(@.count<5)]", // < operator
-                "$.f[?(@.count<=5)]", // <= operator
-                "$.f[?(@.count==8%5)]", // % operator
-                "$.f[?(@.count==5*2)]", // * operator
-                "$.f[?(@.color!=\"red\")]", // != operator
-                "$.f[?(!@.colora)]", // ! operator
-                "$.f[?(@.count==3 || @.color==\"red\")]", // || operator
-                "$.f[?(@.count==5-2)]", // subtraction operator
+                //"$.a.b.*",
+                //"$.a.b.d",
+                //"$.a.b.d.length",
+                //"$.a.b.d[1]",
+                //"$.a.b.d[-1]",
+                //"$.a.b['c']",
+                //"$.a.b[\"c\"]",
+                //"$.a.b.d[0:2:1]",
+                "$.a.b.d[::2]",
+                //"$..color",
+                //"$..[?(@.color)]",
+                //"$.f[?(@.color)]",
+                //"$..[?(@.color==\"red\")]",
+                //"$.f[?(@.count==3+2)]", // addition operator
+                //"$.f[?(@.count==5 && @.color==\"red\")]", // && operator
+                //"$.f[?(@.count==9/3)]", // division operator
+                //"$.f[?(@.color==\"red\")]", // == operator
+                //"$.f[?(@.count>3)]", // > operator
+                //"$.f[?(@.count>=3)]", // >= operator
+                //"$.f[?(@.count<5)]", // < operator
+                //"$.f[?(@.count<=5)]", // <= operator
+                //"$.f[?(@.count==8%5)]", // % operator
+                //"$.f[?(@.count==5*2)]", // * operator
+                //"$.f[?(@.color!=\"red\")]", // != operator
+                //"$.f[?(!@.colora)]", // ! operator
+                //"$.f[?(@.count==3 || @.color==\"red\")]", // || operator
+                //"$.f[?(@.count==5-2)]", // subtraction operator
+                //"$..[?(@.color==$.targetColor)]", // root selector in an operator
             };
 
             foreach (var query in queries)
@@ -122,15 +126,17 @@ namespace QuickTester
 
                 Console.WriteLine($"Query: {query}");
                 Console.WriteLine($"JsonPath:");
-                Console.WriteLine(string.Join(Environment.NewLine, jsonPathResult.Matches.Select(m => $"Query: {m.Location} Data: {m.Value}")));
+                Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", jsonPathResult.Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
                 Console.WriteLine("Entity:");
 
                 foreach (var result in await testEntity.Evaluate(query))
                 {
-                    Console.WriteLine(result?.ToString() ?? "null");
+                    Console.WriteLine($"\t{result?.ToString() ?? "null"}");
                 }
                 Console.WriteLine();
             }
+
+            return;
 
             var valueQueries = new (string query, Func<string, Entity, Task<object>> getter)[]
             {
@@ -138,7 +144,7 @@ namespace QuickTester
                 ("$.a.b.e", async (query, entity) => await entity.GetI(query)),
                 ("$.a.b.d.length", async (query, entity) => await entity.GetI(query)),
                 ("a.b", async (query, entity) => await entity.GetE(query)),
-                ("$..[?(color=='blue')]", async (query, entity) => await entity.GetE(query)),
+                ("$..[?(@.color=='blue')]", async (query, entity) => await entity.GetE(query)),
             };
 
             foreach (var valueQuery in valueQueries)
@@ -151,11 +157,11 @@ namespace QuickTester
             var arrayQuery = "$.a.b.d.*";
             Console.WriteLine($"Query: {arrayQuery}");
             Console.WriteLine($"JsonPath:");
-            Console.WriteLine(string.Join(Environment.NewLine, JsonPath.Parse(arrayQuery).Evaluate(testJsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}")));
+            Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", JsonPath.Parse(arrayQuery).Evaluate(testJsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
             Console.WriteLine("Entity:");
             foreach (var result in await testEntity.Get(arrayQuery))
             {
-                Console.WriteLine($"{result} GetS: {await result.GetS("$")}");
+                Console.WriteLine($"\t{result} GetS: {await result.GetS("@")}");
             }
             Console.WriteLine();
 
@@ -163,8 +169,9 @@ namespace QuickTester
             {
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?$.a.x",
+                "entity://refTestParentDocument?$.a.$ref",
                 "memory://thread?$.threadVariable1",
-                "entity://refTestParentDocument?$.c",
+                "entity://refTestParentDocument?c",
                 "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?$.RsConfigId"
             };
 
@@ -174,7 +181,7 @@ namespace QuickTester
                 Console.WriteLine("Entity:");
                 foreach (var result in await E.Evaluate(absoluteQuery))
                 {
-                    Console.WriteLine(result?.ToString() ?? "null");
+                    Console.WriteLine($"\t{result?.ToString() ?? "null"}");
                 }
                 Console.WriteLine();
             }

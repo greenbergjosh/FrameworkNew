@@ -7,9 +7,9 @@ namespace Utility.Entity.QueryLanguage
 {
     public class Query
     {
-        public IEnumerable<ISelector> Selectors { get; init; }
+        public IReadOnlyList<ISelector> Selectors { get; init; }
 
-        private Query(IEnumerable<ISelector> selectors) => Selectors = selectors;
+        private Query(IReadOnlyList<ISelector> selectors) => Selectors = selectors;
 
         public static Query Parse(Entity entity, ReadOnlySpan<char> query)
         {
@@ -30,7 +30,6 @@ namespace Utility.Entity.QueryLanguage
 
         internal static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int index, bool allowTrailingContent, out Query value, out QueryParseException exception)
         {
-            var startIndex = index;
             var selectors = new List<ISelector>();
 
             while (index < query.Length)
@@ -39,9 +38,9 @@ namespace Utility.Entity.QueryLanguage
                 {
                     '$' => AddRootNode(ref index),
                     '@' => AddLocalNode(ref index),
-                    '.' => AddPropertyOrNestedDescent(query, ref index),
+                    '.' => AddPropertyOrNestedDescentOrRef(query, ref index),
                     '[' => AddIndex(entity, query, ref index),
-                    char ch when Query.IsValidForPropertyName(ch) && index == startIndex => AddPropertyOrNestedDescent(query, ref index, true),
+                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRef(query, ref index, true),
                     _ => null
                 };
 
@@ -145,10 +144,10 @@ namespace Utility.Entity.QueryLanguage
         private static ISelector AddLocalNode(ref int index)
         {
             index++;
-            return new RootNodeSelector();
+            return new LocalNodeSelector();
         }
 
-        private static ISelector AddPropertyOrNestedDescent(ReadOnlySpan<char> query, ref int index, bool noDot = false)
+        private static ISelector AddPropertyOrNestedDescentOrRef(ReadOnlySpan<char> query, ref int index, bool noDot = false)
         {
             var slice = query[index..];
 
@@ -157,10 +156,18 @@ namespace Utility.Entity.QueryLanguage
                 if (slice.StartsWith("..") || slice.StartsWith(".["))
                 {
                     index++;
+                    if (slice.StartsWith("..["))
+                    {
+                        index++;
+                    }
                     return new NestedDescentSelector();
                 }
-
-                if (slice.StartsWith(".*"))
+                else if (slice.StartsWith(".$ref"))
+                {
+                    index += 5;
+                    return new RefSelector();
+                }
+                else if (slice.StartsWith(".*"))
                 {
                     index += 2;
                     return PropertySelector.Wildcard;

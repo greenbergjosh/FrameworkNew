@@ -10,8 +10,8 @@ namespace Utility
     public class ConfigEntityRepo
     {
         public string ConName;
-        private readonly ConcurrentDictionary<Guid, IGenericEntity> _entities = new ConcurrentDictionary<Guid, IGenericEntity>();
-        private readonly ConcurrentDictionary<string, Guid> _entityIds = new ConcurrentDictionary<string, Guid>();
+        private readonly ConcurrentDictionary<Guid, IGenericEntity> _entities = new();
+        private readonly ConcurrentDictionary<string, Guid> _entityIds = new();
 
         public ConfigEntityRepo(string conName) => ConName = conName;
 

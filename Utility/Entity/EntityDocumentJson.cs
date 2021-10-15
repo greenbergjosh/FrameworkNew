@@ -8,7 +8,7 @@ namespace Utility.Entity
 {
     public class EntityDocumentJson : EntityDocument
     {
-        private readonly JsonElement _root;
+        private readonly JsonElement _value;
         private readonly int _length;
 
         private static readonly Dictionary<Type, Func<JsonElement, object>> _valueMap = new()
@@ -22,7 +22,7 @@ namespace Utility.Entity
             [typeof(string)] = element => element.GetString(),
         };
 
-        public override EntityValueType ValueType => _root.ValueKind switch
+        public override EntityValueType ValueType => _value.ValueKind switch
         {
             JsonValueKind.Array => EntityValueType.Array,
             JsonValueKind.False => EntityValueType.Boolean,
@@ -32,20 +32,20 @@ namespace Utility.Entity
             JsonValueKind.String => EntityValueType.String,
             JsonValueKind.True => EntityValueType.Boolean,
             JsonValueKind.Undefined => EntityValueType.Undefined,
-            _ => throw new InvalidOperationException($"{nameof(JsonValueKind)} {_root.ValueKind} does not map to a known {nameof(ValueType)}")
+            _ => throw new InvalidOperationException($"{nameof(JsonValueKind)} {_value.ValueKind} does not map to a known {nameof(ValueType)}")
         };
 
-        public override int Length => _length == -1 ? throw new InvalidOperationException($"ValueKind {_root.ValueKind} does not have a length") : _length;
+        public override int Length => _length == -1 ? throw new InvalidOperationException($"ValueKind {_value.ValueKind} does not have a length") : _length;
 
         public EntityDocumentJson(JsonElement root)
         {
-            _root = root;
+            _value = root;
 
-            _length = _root.ValueKind switch
+            _length = _value.ValueKind switch
             {
-                JsonValueKind.Array => _root.GetArrayLength(),
-                JsonValueKind.Object => _root.EnumerateObject().Count(),
-                JsonValueKind.String => _root.GetString().Length,
+                JsonValueKind.Array => _value.GetArrayLength(),
+                JsonValueKind.Object => _value.EnumerateObject().Count(),
+                JsonValueKind.String => _value.GetString().Length,
                 _ => -1
             };
         }
@@ -53,13 +53,13 @@ namespace Utility.Entity
         public static Task<EntityDocument> Parse(string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement));
 
         #region EntityDocument Implementation
-        protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _root.EnumerateArray().Select(item => new EntityDocumentJson(item));
+        protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _value.EnumerateArray().Select(item => new EntityDocumentJson(item));
 
-        protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => _root.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value)));
+        protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value)));
 
         public override async IAsyncEnumerable<Entity> ProcessReference()
         {
-            if (_root.ValueKind == JsonValueKind.Object && _root.TryGetProperty("$ref", out var refProperty))
+            if (_value.ValueKind == JsonValueKind.Object && _value.TryGetProperty("$ref", out var refProperty))
             {
                 foreach (var entity in await Entity.Evaluate(refProperty.GetString()))
                 {
@@ -70,7 +70,7 @@ namespace Utility.Entity
 
         protected override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
         {
-            if (_root.TryGetProperty(name, out var value))
+            if (_value.TryGetProperty(name, out var value))
             {
                 propertyEntityDocument = new EntityDocumentJson(value);
                 return true;
@@ -89,10 +89,10 @@ namespace Utility.Entity
                 throw new Exception($"Unable to convert value to type {targetType}");
             }
 
-            return (T)getter(_root);
+            return (T)getter(_value);
         }
         #endregion
 
-        public override string ToString() => _root.ToString();
+        public override string ToString() => _value.ToString();
     }
 }
