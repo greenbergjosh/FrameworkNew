@@ -89,34 +89,34 @@ namespace QuickTester
 
             var queries = new[]
             {
-                //"$.a.b.*",
-                //"$.a.b.d",
-                //"$.a.b.d.length",
-                //"$.a.b.d[1]",
-                //"$.a.b.d[-1]",
-                //"$.a.b['c']",
-                //"$.a.b[\"c\"]",
-                //"$.a.b.d[0:2:1]",
+                "$.a.b.*",
+                "$.a.b.d",
+                "$.a.b.d.length",
+                "$.a.b.d[1]",
+                "$.a.b.d[-1]",
+                "$.a.b['c']",
+                "$.a.b[\"c\"]",
+                "$.a.b.d[0:2:1]",
                 "$.a.b.d[::2]",
-                //"$..color",
-                //"$..[?(@.color)]",
-                //"$.f[?(@.color)]",
-                //"$..[?(@.color==\"red\")]",
-                //"$.f[?(@.count==3+2)]", // addition operator
-                //"$.f[?(@.count==5 && @.color==\"red\")]", // && operator
-                //"$.f[?(@.count==9/3)]", // division operator
-                //"$.f[?(@.color==\"red\")]", // == operator
-                //"$.f[?(@.count>3)]", // > operator
-                //"$.f[?(@.count>=3)]", // >= operator
-                //"$.f[?(@.count<5)]", // < operator
-                //"$.f[?(@.count<=5)]", // <= operator
-                //"$.f[?(@.count==8%5)]", // % operator
-                //"$.f[?(@.count==5*2)]", // * operator
-                //"$.f[?(@.color!=\"red\")]", // != operator
-                //"$.f[?(!@.colora)]", // ! operator
-                //"$.f[?(@.count==3 || @.color==\"red\")]", // || operator
-                //"$.f[?(@.count==5-2)]", // subtraction operator
-                //"$..[?(@.color==$.targetColor)]", // root selector in an operator
+                "$..color",
+                "$..[?(@.color)]",
+                "$.f[?(@.color)]",
+                "$..[?(@.color==\"red\")]",
+                "$.f[?(@.count==3+2)]", // addition operator
+                "$.f[?(@.count==5 && @.color==\"red\")]", // && operator
+                "$.f[?(@.count==9/3)]", // division operator
+                "$.f[?(@.color==\"red\")]", // == operator
+                "$.f[?(@.count>3)]", // > operator
+                "$.f[?(@.count>=3)]", // >= operator
+                "$.f[?(@.count<5)]", // < operator
+                "$.f[?(@.count<=5)]", // <= operator
+                "$.f[?(@.count==8%5)]", // % operator
+                "$.f[?(@.count==5*2)]", // * operator
+                "$.f[?(@.color!=\"red\")]", // != operator
+                "$.f[?(!@.colora)]", // ! operator
+                "$.f[?(@.count==3 || @.color==\"red\")]", // || operator
+                "$.f[?(@.count==5-2)]", // subtraction operator
+                "$..[?(@.color==$.targetColor)]", // root selector in an operator
             };
 
             foreach (var query in queries)
@@ -135,8 +135,6 @@ namespace QuickTester
                 }
                 Console.WriteLine();
             }
-
-            return;
 
             var valueQueries = new (string query, Func<string, Entity, Task<object>> getter)[]
             {
