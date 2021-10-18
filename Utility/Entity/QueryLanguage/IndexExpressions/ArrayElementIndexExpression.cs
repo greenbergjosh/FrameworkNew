@@ -18,7 +18,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public static bool TryParse(ReadOnlySpan<char> query, ref int index, out IIndexExpression elementIndex)
         {
-            if (!IIndexExpression.TryGetInt(query, ref index, out var value) || query[index] != ']')
+            if (!IIndexExpression.TryGetInt(query, ref index, out var value))
             {
                 index = -1;
                 elementIndex = null;

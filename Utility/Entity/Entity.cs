@@ -94,11 +94,11 @@ namespace Utility.Entity
             return new Entity(entityDocument, null, _parsers, _retrievers);
         }
 
-        public Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(new[] { this }, query);
+        public Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(this, query);
 
         public async Task<IEnumerable<Entity>> Evaluate(string query)
         {
-            IEnumerable<Entity> entities;
+            Entity entity;
             Query parsedQuery;
 
             if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
@@ -108,9 +108,9 @@ namespace Utility.Entity
                     throw new ArgumentException($"No retriever for scheme {uri.Scheme} in URI {query}");
                 }
 
-                entities = new[] { (await retriever(this, uri)) };
+                entity = await retriever(this, uri);
 
-                if (entities == null)
+                if (entity == null)
                 {
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
@@ -129,11 +129,11 @@ namespace Utility.Entity
                     throw new InvalidOperationException("Cannot run a relative query on a null entity");
                 }
 
-                entities = new[] { this };
+                entity = this;
                 parsedQuery = QueryLanguage.Query.Parse(this, query);
             }
 
-            return await Evaluate(entities, parsedQuery);
+            return await Evaluate(entity, parsedQuery);
         }
 
         public async Task<Entity> GetE(string query) => (await Evaluate(query)).FirstOrDefault();
@@ -148,9 +148,9 @@ namespace Utility.Entity
 
         public override string ToString() => $"Query: {Query} Data: {_value}";
 
-        private static async Task<IEnumerable<Entity>> Evaluate(IEnumerable<Entity> entities, Query query)
+        private static async Task<IEnumerable<Entity>> Evaluate(Entity rootEntity, Query query)
         {
-            var current = entities;
+            IEnumerable<Entity> current = new[] { rootEntity };
 
             for (var i = 0; i < query.Selectors.Count; i++)
             {
@@ -178,6 +178,7 @@ namespace Utility.Entity
                         }
                     }
                 }
+
                 current = next;
             }
 

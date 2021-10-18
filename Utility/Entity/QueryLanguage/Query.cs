@@ -89,8 +89,8 @@ namespace Utility.Entity.QueryLanguage
         private static readonly List<TryParseMethod> _indexParseMethods =
             new()
             {
-                ArrayElementIndexExpression.TryParse,
                 ArraySliceIndexExpression.TryParse,
+                ArrayElementIndexExpression.TryParse,
                 ObjectPropertyIndexExpression.TryParse,
             };
 
