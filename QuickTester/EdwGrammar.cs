@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
 using Utility.Entity;
+using Utility.Entity.Implementations;
 using Utility.GenericEntity;
 
 namespace QuickTester

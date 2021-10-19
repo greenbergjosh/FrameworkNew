@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Json.Path;
 using Utility;
 using Utility.Entity;
+using Utility.Entity.Implementations;
 
 namespace QuickTester
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
 {

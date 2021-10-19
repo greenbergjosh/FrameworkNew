@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Utility.Entity
+namespace Utility.Entity.Implementations
 {
     public class EntityDocumentObject : EntityDocument
     {

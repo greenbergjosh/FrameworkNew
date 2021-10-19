@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Utility.Entity.Implementations;
 using Utility.Entity.QueryLanguage;
 using Utility.Entity.QueryLanguage.Selectors;
 
