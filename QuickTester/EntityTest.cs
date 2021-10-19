@@ -94,6 +94,7 @@ namespace QuickTester
                 "$.a.b.d.length",
                 "$.a.b.d[1]",
                 "$.a.b.d[-1]",
+                "$.a.b.d[0,1,?(@==\"mongoose\")]",
                 "$.a.b['c']",
                 "$.a.b[\"c\"]",
                 "$.a.b.d[0:2:1]",
@@ -166,11 +167,11 @@ namespace QuickTester
             var absoluteQueries = new[]
             {
                 "entity://testDocument?$.a.b",
-                "entity://refTestParentDocument?$.a.x",
-                "entity://refTestParentDocument?$.a.$ref",
+                "entity://refTestParentDocument?a.x",
+                "entity://refTestParentDocument?a.$ref",
                 "memory://thread?$.threadVariable1",
                 "entity://refTestParentDocument?c",
-                "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?$.RsConfigId"
+                "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId"
             };
 
             foreach (var absoluteQuery in absoluteQueries)
