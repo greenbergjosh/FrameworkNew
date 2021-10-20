@@ -3,13 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Utility.Entity.Implementations;
 using Utility.Entity.QueryLanguage;
 using Utility.Entity.QueryLanguage.Selectors;
 
 namespace Utility.Entity
 {
     public delegate Task<EntityDocument> EntityParser(Entity entity, string content);
-    public delegate Task<Entity> EntityRetriever(Entity entity, Uri uri);
+    public delegate (Task<Entity> entity, string query) EntityRetriever(Entity entity, Uri uri);
 
     public class Entity : IEquatable<Entity>
     {
@@ -108,19 +109,15 @@ namespace Utility.Entity
                     throw new ArgumentException($"No retriever for scheme {uri.Scheme} in URI {query}");
                 }
 
-                entity = await retriever(this, uri);
+                var result = retriever(this, uri);
+                entity = await result.entity;
 
                 if (entity == null)
                 {
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
 
-                var queryString = Uri.UnescapeDataString(uri.Query.TrimStart('?'));
-                if (string.IsNullOrWhiteSpace(queryString))
-                {
-                    queryString = "$";
-                }
-                parsedQuery = QueryLanguage.Query.Parse(this, queryString);
+                parsedQuery = QueryLanguage.Query.Parse(this, string.IsNullOrWhiteSpace(result.query) ? "$" : result.query);
             }
             else
             {

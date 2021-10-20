@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Utility.Entity
+namespace Utility.Entity.Implementations
 {
     public class EntityDocumentJson : EntityDocument
     {

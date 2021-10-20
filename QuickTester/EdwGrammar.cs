@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
 using Utility.Entity;
+using Utility.Entity.Implementations;
 using Utility.GenericEntity;
 
 namespace Utility.Entity
@@ -288,14 +289,16 @@ namespace QuickTester
 
             var fw = new FrameworkWrapper();
 
+            static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
+
             E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
                 ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
             }, new Dictionary<string, EntityRetriever>
             {
-                ["entity"] = (entity, uri) => GetEntity(fw, entity, uri.Host),
-                ["entityType"] = (entity, uri) => GetEntityType(entity, uri.Host),   // entityType://EDW.ThreadGroup
-                ["context"] = (entity, uri) => ContextEntity.GetE(uri.Host)
+                ["entity"] = (entity, uri) => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
+                ["entityType"] = (entity, uri) => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
+                ["context"] = (entity, uri) => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
             });
 
             context = new Dictionary<string, Entity>

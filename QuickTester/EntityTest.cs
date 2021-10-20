@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Json.Path;
 using Utility;
 using Utility.Entity;
+using Utility.Entity.Implementations;
 
 namespace QuickTester
 {
@@ -61,6 +62,8 @@ namespace QuickTester
 
             var fw = new FrameworkWrapper();
 
+            static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
+
             var E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
                 ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
@@ -68,17 +71,17 @@ namespace QuickTester
             {
                 ["entity"] = (entity, uri) => uri.Host switch
                 {
-                    "testdocument" => entity.Parse("application/json", testDocument),
-                    "reftestparentdocument" => entity.Parse("application/json", refTestParentDocument),
-                    "reftestchilddocument" => entity.Parse("application/json", refTestChildDocument),
-                    _ => GetEntity(fw, entity, uri.Host)
+                    "testdocument" => (entity.Parse("application/json", testDocument), UnescapeQueryString(uri)),
+                    "reftestparentdocument" => (entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
+                    "reftestchilddocument" => (entity.Parse("application/json", refTestChildDocument), UnescapeQueryString(uri)),
+                    _ => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
                 },
-                ["memory"] = (entity, uri) => Task.FromResult(Entity.Create(entity, uri.Host switch
+                ["memory"] = (entity, uri) => (Task.FromResult(Entity.Create(entity, uri.Host switch
                 {
                     "thread" => threadState,
                     "process" => processState,
                     _ => throw new Exception($"Unknown memory location {uri.Host}"),
-                }))
+                })), UnescapeQueryString(uri))
             });
 
             var testEntity = await E.Parse("application/json", testDocument);
@@ -99,8 +102,8 @@ namespace QuickTester
                 "$.a.b[\"c\"]",
                 "$.a.b.d[0:2:1]",
                 "$.a.b.d[::2]",
-                "$..color",
-                "$..[?(@.color)]",
+                "$..color", // any property named color
+                "$..[?(@.color)]", // any object with a property named color
                 "$.f[?(@.color)]",
                 "$..[?(@.color==\"red\")]",
                 "$.f[?(@.count==3+2)]", // addition operator
@@ -166,6 +169,7 @@ namespace QuickTester
 
             var absoluteQueries = new[]
             {
+                "entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@!=\"multiton\")]",
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?a.x",
                 "entity://refTestParentDocument?a.$ref",

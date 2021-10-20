@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Utility.Entity
+namespace Utility.Entity.Implementations
 {
     public class EntityDocumentConstant : EntityDocument
     {
