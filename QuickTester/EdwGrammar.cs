@@ -220,7 +220,8 @@ namespace QuickTester
                 bool isString = (curStr[arrowIdx + 1] == '\'');
                 string stringVal = new(curStr.TakeWhile(x => x != (isString ? '\'' : ';')).ToArray());
                 var b = await E.Get(curStr[0..arrowIdx]);
-                var c = await E.Get("context://g?thread_group_id.thread_group_type[?(@==\"multiton\")]");
+                var c = (await E.Get("context://g?thread_group_id.thread_group_type[?(@==\"multiton\")]")).Any();
+                var d = (await E.Get("context://g?thread_group_id.thread_group_type[?(@!=\"multiton\")]")).Any();
                 bool done = ((arrowIdx == -1) || (await E.Get(curStr[0..arrowIdx])).Any());
                 if (done && isString) return stringVal[(arrowIdx + 3)..-1];
                 if (done) return await CallProduction(stringVal[(arrowIdx + 2)..]);
@@ -289,16 +290,14 @@ namespace QuickTester
 
             var fw = new FrameworkWrapper();
 
-            static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
-
             E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
                 ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
             }, new Dictionary<string, EntityRetriever>
             {
-                ["entity"] = (entity, uri) => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
-                ["entityType"] = (entity, uri) => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
-                ["context"] = (entity, uri) => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
+                ["entity"] = (entity, uri) => GetEntity(fw, entity, uri.Host),
+                ["entityType"] = (entity, uri) => GetEntityType(entity, uri.Host),   // entityType://EDW.ThreadGroup
+                ["context"] = (entity, uri) => ContextEntity.GetE(uri.Host)
             });
 
             context = new Dictionary<string, Entity>
