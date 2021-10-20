@@ -34,7 +34,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             }
         }
 
-        private async Task<bool> Evaluate(Entity entity)
+        public async Task<bool> Evaluate(Entity entity)
         {
             if (_expression.OutputType != QueryExpressionType.Boolean && _expression.OutputType != QueryExpressionType.InstanceDependent)
             {

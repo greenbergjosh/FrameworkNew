@@ -79,6 +79,23 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     }
                 }
             }
+            else
+            {
+                var succeeded = true;
+                foreach (var indexExpression in _indexes.OfType<ItemQueryIndexExpression>())
+                {
+                    if (!await indexExpression.Evaluate(entity))
+                    {
+                        succeeded = false;
+                        break;
+                    }
+                }
+
+                if (succeeded)
+                {
+                    yield return entity;
+                }
+            }
         }
 
         public override string ToString() => this == Wildcard ? "[*]" : $"[{string.Join(",", _indexes.Select(r => r.ToString()))}]";
