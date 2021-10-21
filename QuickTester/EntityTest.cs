@@ -78,12 +78,14 @@ namespace QuickTester
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
             var E = Entity.Initialize(new EntityConfig(
-                new Dictionary<string, EntityParser>
+                Parser: (entity, contentType, content) => contentType switch
                 {
-                    ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
-                }, new Dictionary<string, EntityRetriever>
+                    "application/json" => EntityDocumentJson.Parse(content),
+                    _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
+                },
+                Retriever: (entity, uri) => uri.Scheme switch
                 {
-                    ["entity"] = (entity, uri) => uri.Host switch
+                    "entity" => uri.Host switch
                     {
                         "testdocument" => (entity.Parse("application/json", testDocument), UnescapeQueryString(uri)),
                         "reftestparentdocument" => (entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
@@ -91,14 +93,15 @@ namespace QuickTester
                         "reftestchilddocument2" => (entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
                         _ => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
                     },
-                    ["memory"] = (entity, uri) => (Task.FromResult(Entity.Create(entity, uri.Host switch
+                    "memory" => (Task.FromResult(Entity.Create(entity, uri.Host switch
                     {
                         "thread" => threadState,
                         "process" => processState,
                         _ => throw new Exception($"Unknown memory location {uri.Host}"),
-                    })), UnescapeQueryString(uri))
+                    })), UnescapeQueryString(uri)),
+                    _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
-                (entity, propertyName) =>
+                MissingPropertyHandler: (entity, propertyName) =>
                 {
                     Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
                     return Task.FromResult<EntityDocument>(null);

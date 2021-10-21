@@ -282,7 +282,7 @@ namespace QuickTester
             var entities = await Data.CallFn("config", "SelectConfigsByType", new { type = entityType });
 
             var convertedEntities = new List<Entity>();
-            foreach(var entity in entities.GetL("result"))
+            foreach (var entity in entities.GetL("result"))
             {
                 entity.Set("/Config/$id", entity.GetS("/Id"));
                 entity.Set("/Config/$name", entity.GetS("/Name"));
@@ -302,17 +302,19 @@ namespace QuickTester
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
             E = Entity.Initialize(new EntityConfig(
-                new Dictionary<string, EntityParser>
+                Parser: (entity, contentType, content) => contentType switch
                 {
-                    ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
+                    "application/json" => EntityDocumentJson.Parse(content),
+                    _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
                 },
-                new Dictionary<string, EntityRetriever>
+                Retriever: (entity, uri) => uri.Scheme switch
                 {
-                    ["entity"] = (entity, uri) => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
-                    ["entityType"] = (entity, uri) => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),   // entityType://EDW.ThreadGroup
-                    ["context"] = (entity, uri) => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
+                    "entity" => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
+                    "entityType" => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
+                    "context" => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
+                    _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
-                null)
+                MissingPropertyHandler: null)
             );
 
             context = new Dictionary<string, Entity>
