@@ -77,6 +77,34 @@ namespace QuickTester
 
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
+            static async IAsyncEnumerable<Entity> functionHandler(Entity entity, string functionName, IReadOnlyList<object> functionArguments, string query)
+            {
+                switch (functionName)
+                {
+                    case "replace":
+                        if (entity.ValueType == EntityValueType.Array)
+                        {
+                            foreach(var child in await entity.Get("@.*"))
+                            {
+                                yield return entity.FromConstant(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), query);
+                            }
+                        }
+                        else
+                        {
+                            yield return entity.FromConstant(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), query);
+                        }
+                        break;
+                    case "repeat":
+                        for(var i = 0; i < (int)functionArguments[0]; i++)
+                        {
+                            yield return entity.Clone($"{query}[{i}]");
+                        }
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown function {functionName}");
+                }
+            }
+
             var E = Entity.Initialize(new EntityConfig(
                 Parser: (entity, contentType, content) => contentType switch
                 {
@@ -105,7 +133,8 @@ namespace QuickTester
                 {
                     Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
                     return Task.FromResult<EntityDocument>(null);
-                }
+                },
+                FunctionHandler: functionHandler
             ));
 
             var testEntity = await E.Parse("application/json", testDocument);
@@ -202,6 +231,11 @@ namespace QuickTester
                 "entity://refTestParentDocument?c",
                 "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId",
                 "entity://refTestParentDocument?d",
+                "entity://testDocument?$.a.b.c",
+                "entity://testDocument?$.a.b.c.replace(\"string\", \"COOL STRING\")",
+                "entity://testDocument?$.a.b.c.repeat(4)",
+                "entity://testDocument?$.a.b.d",
+                "entity://testDocument?$.a.b.d.replace(\"e\", \"E\")",
             };
 
             foreach (var absoluteQuery in absoluteQueries)

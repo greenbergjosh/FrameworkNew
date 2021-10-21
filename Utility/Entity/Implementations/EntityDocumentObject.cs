@@ -12,7 +12,13 @@ namespace Utility.Entity.Implementations
 
         public override EntityValueType ValueType => EntityValueType.Object;
 
-        public EntityDocumentObject(IDictionary dictionary) => _dictionary = dictionary;
+        public EntityDocumentObject(IDictionary dictionary, string query = null)
+        {
+            _dictionary = dictionary;
+            Query = query;
+        }
+
+        public override EntityDocument Clone(string query) => new EntityDocumentObject(_dictionary, query);
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 

@@ -18,7 +18,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public static bool TryParse(ReadOnlySpan<char> query, ref int index, out IIndexExpression elementIndex)
         {
-            if (!IIndexExpression.TryGetInt(query, ref index, out var value))
+            if (!Helpers.TryGetInt(query, ref index, out var value))
             {
                 index = -1;
                 elementIndex = null;
@@ -29,6 +29,6 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             return true;
         }
 
-        public override string ToString() => IIndexExpression.IndexToPath(_index);
+        public override string ToString() => IArrayIndexExpression.IndexToPath(_index);
     }
 }

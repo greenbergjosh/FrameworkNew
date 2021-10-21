@@ -51,18 +51,22 @@ namespace Utility.Entity
 
         protected abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
-        protected EntityDocument MapValue(object value) => value switch
+        public static EntityDocument MapValue(object value, string query = null) => value switch
         {
-            null => new EntityDocumentConstant(null, EntityValueType.Null, Query),
-            string => new EntityDocumentConstant(value, EntityValueType.String, Query),
-            int => new EntityDocumentConstant(value, EntityValueType.Number, Query),
-            float => new EntityDocumentConstant(value, EntityValueType.Number, Query),
-            decimal => new EntityDocumentConstant(value, EntityValueType.Number, Query),
-            IDictionary dictionary => new EntityDocumentObject(dictionary),
-            IEnumerable array => EntityDocumentArray.Create(array),
+            null => new EntityDocumentConstant(null, EntityValueType.Null, query),
+            string => new EntityDocumentConstant(value, EntityValueType.String, query),
+            int => new EntityDocumentConstant(value, EntityValueType.Number, query),
+            float => new EntityDocumentConstant(value, EntityValueType.Number, query),
+            decimal => new EntityDocumentConstant(value, EntityValueType.Number, query),
+            IDictionary dictionary => new EntityDocumentObject(dictionary, query),
+            IEnumerable array => EntityDocumentArray.Create(array, query),
             Utility.Entity.Entity => ((Entity)value).Document,
             _ => throw new Exception($"Type {value.GetType().Name} is not supported")
         };
+
+        protected EntityDocument MapValue(object value) => MapValue(value, Query);
+
+        public abstract EntityDocument Clone(string query);
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public virtual async IAsyncEnumerable<Entity> ProcessReference()

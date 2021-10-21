@@ -37,7 +37,7 @@ namespace Utility.Entity.Implementations
 
         public override int Length => _length == -1 ? throw new InvalidOperationException($"ValueKind {_value.ValueKind} does not have a length") : _length;
 
-        public EntityDocumentJson(JsonElement root)
+        public EntityDocumentJson(JsonElement root, string query = null)
         {
             _value = root;
 
@@ -48,11 +48,15 @@ namespace Utility.Entity.Implementations
                 JsonValueKind.String => _value.GetString().Length,
                 _ => -1
             };
+
+            Query = query ?? Query;
         }
 
         public static Task<EntityDocument> Parse(string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement));
 
         #region EntityDocument Implementation
+        public override EntityDocument Clone(string query) => new EntityDocumentJson(_value, query);
+
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _value.EnumerateArray().Select(item => new EntityDocumentJson(item));
 
         protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value)));

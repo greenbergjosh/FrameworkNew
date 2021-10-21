@@ -9,13 +9,13 @@ namespace Utility.Entity.Implementations
     {
         public override EntityValueType ValueType => EntityValueType.Array;
 
-        public static EntityDocumentArray Create(IEnumerable array)
+        public static EntityDocumentArray Create(IEnumerable array, string query = null)
         {
             var enumerableType = array.GetType().GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
             var genericType = enumerableType.GetGenericArguments().Single();
 
-            var constructor = typeof(EntityDocumentArray<>).MakeGenericType(genericType).GetConstructor(new[] { enumerableType });
+            var constructor = typeof(EntityDocumentArray<>).MakeGenericType(genericType).GetConstructor(new[] { enumerableType, typeof(string) });
 
             return (EntityDocumentArray)constructor.Invoke(new object[] { array });
         }
@@ -27,7 +27,13 @@ namespace Utility.Entity.Implementations
 
         public override int Length => _array.Count();
 
-        public EntityDocumentArray(IEnumerable<T> array) => _array = array;
+        public EntityDocumentArray(IEnumerable<T> array, string query)
+        {
+            _array = array;
+            Query = query;
+        }
+
+        public override EntityDocument Clone(string query) => new EntityDocumentArray<T>(_array, query);
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _array.Select(item => MapValue(item));
 

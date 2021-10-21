@@ -52,9 +52,9 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             yield return property;
         }
 
-        internal static bool TryParse(Entity entity, ReadOnlySpan<char> span, ref int i, out IIndexExpression index)
+        internal static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int i, out IIndexExpression index)
         {
-            if (span[i] != '(')
+            if (query[i] != '(')
             {
                 i = -1;
                 index = null;
@@ -62,7 +62,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             }
 
             var localIndex = i;
-            if (!TryParseExpression(entity, span, ref localIndex, out var expression) ||
+            if (!TryParseExpression(entity, query, ref localIndex, out var expression) ||
                 !(expression.OutputType == QueryExpressionType.Number || expression.OutputType == QueryExpressionType.InstanceDependent))
             {
                 index = null;
@@ -70,7 +70,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             }
 
             i = localIndex;
-            if (i >= span.Length)
+            if (i >= query.Length)
             {
                 index = null;
                 return false;

@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
     public interface IArrayIndexExpression : IIndexExpression
     {
         IAsyncEnumerable<int> GetIndexes(Entity entity);
+
+        protected static string IndexToPath(Index index) => index.IsFromEnd ? $"-{index.Value}" : index.Value.ToString();
     }
 }
