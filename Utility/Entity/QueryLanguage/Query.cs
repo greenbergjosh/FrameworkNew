@@ -177,6 +177,11 @@ namespace Utility.Entity.QueryLanguage
             }
 
             var propertyNameLength = 0;
+            if (slice.StartsWith("$"))
+            {
+                propertyNameLength++;
+            }
+
             while (propertyNameLength < slice.Length && IsValidForPropertyName(slice[propertyNameLength]))
             {
                 propertyNameLength++;

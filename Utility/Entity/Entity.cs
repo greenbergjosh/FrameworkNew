@@ -11,11 +11,15 @@ namespace Utility.Entity
 {
     public delegate Task<EntityDocument> EntityParser(Entity entity, string content);
     public delegate (Task<Entity> entity, string query) EntityRetriever(Entity entity, Uri uri);
+    public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
+
+    public record EntityConfig(IDictionary<string, EntityParser> Parsers, IDictionary<string, EntityRetriever> Retrievers = null, MissingPropertyHandler MissingPropertyHandler = null);
 
     public class Entity : IEquatable<Entity>
     {
         private readonly ConcurrentDictionary<string, EntityParser> _parsers;
         private readonly ConcurrentDictionary<string, EntityRetriever> _retrievers;
+
         private readonly EntityDocument _value;
 
         public string Query
@@ -28,19 +32,44 @@ namespace Utility.Entity
 
         internal EntityDocument Document => _value;
 
+        internal MissingPropertyHandler MissingPropertyHandler { get; init; }
+
         public EntityValueType ValueType => _value?.ValueType ?? EntityValueType.Undefined;
 
-        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, null, null);
+        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, null, null, null);
 
         public T Value<T>() => _value == null ? default : _value.Value<T>();
 
-        private Entity()
+        private Entity(EntityConfig config)
         {
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
             _retrievers = new(StringComparer.CurrentCultureIgnoreCase);
             _parsers = new(StringComparer.CurrentCultureIgnoreCase);
+
+            if (config.Retrievers != null)
+            {
+                foreach (var (scheme, retriever) in config.Retrievers)
+                {
+                    _retrievers.TryAdd(scheme, retriever);
+                }
+            }
+
+            if (config.Parsers != null)
+            {
+                foreach (var (contentType, parser) in config.Parsers)
+                {
+                    _parsers.TryAdd(contentType, parser);
+                }
+            }
+
+            MissingPropertyHandler = config.MissingPropertyHandler;
         }
 
-        private Entity(EntityDocument value, Entity root, ConcurrentDictionary<string, EntityParser> parsers, ConcurrentDictionary<string, EntityRetriever> retrievers)
+        private Entity(EntityDocument value, Entity root, ConcurrentDictionary<string, EntityParser> parsers, ConcurrentDictionary<string, EntityRetriever> retrievers, MissingPropertyHandler missingPropertyHandler)
         {
             if (value != null)
             {
@@ -54,34 +83,14 @@ namespace Utility.Entity
 
             _parsers = parsers;
             _retrievers = retrievers;
+            MissingPropertyHandler = missingPropertyHandler;
 
             Root = root?.Root ?? this;
         }
 
-        public static Entity Initialize(IDictionary<string, EntityParser> parsers, IDictionary<string, EntityRetriever> retrievers)
-        {
-            var entity = new Entity();
+        public static Entity Initialize(EntityConfig config) => new(config);
 
-            if (retrievers != null)
-            {
-                foreach (var (scheme, retriever) in retrievers)
-                {
-                    entity._retrievers.TryAdd(scheme, retriever);
-                }
-            }
-
-            if (parsers != null)
-            {
-                foreach (var (contentType, parser) in parsers)
-                {
-                    entity._parsers.TryAdd(contentType, parser);
-                }
-            }
-
-            return entity;
-        }
-
-        public static Entity Create(Entity baseEntity, EntityDocument entityDocument) => new(entityDocument, baseEntity, baseEntity._parsers, baseEntity._retrievers);
+        public static Entity Create(Entity baseEntity, EntityDocument entityDocument) => new(entityDocument, baseEntity, baseEntity._parsers, baseEntity._retrievers, baseEntity.MissingPropertyHandler);
 
         public async Task<Entity> Parse(string contentType, string content)
         {
@@ -92,7 +101,7 @@ namespace Utility.Entity
 
             var entityDocument = await parser(this, content);
 
-            return new Entity(entityDocument, null, _parsers, _retrievers);
+            return new Entity(entityDocument, null, _parsers, _retrievers, MissingPropertyHandler);
         }
 
         public Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(this, query);
