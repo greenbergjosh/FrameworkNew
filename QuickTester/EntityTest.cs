@@ -191,6 +191,7 @@ namespace QuickTester
             var absoluteQueries = new[]
             {
                 "entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@!=\"multiton\")]",
+                "entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$id",
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?a.x",
                 "entity://refTestParentDocument?a.$ref",

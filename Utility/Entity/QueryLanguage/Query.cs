@@ -36,7 +36,7 @@ namespace Utility.Entity.QueryLanguage
             {
                 var selector = query[index] switch
                 {
-                    '$' => AddRootNode(ref index),
+                    '$' => AddRootNode(query, ref index),
                     '@' => AddLocalNode(ref index),
                     '.' => AddPropertyOrNestedDescentOrRef(query, ref index),
                     '[' => AddIndex(entity, query, ref index),
@@ -193,10 +193,17 @@ namespace Utility.Entity.QueryLanguage
             return new PropertySelector(propertyName.ToString());
         }
 
-        private static ISelector AddRootNode(ref int index)
+        private static ISelector AddRootNode(ReadOnlySpan<char> query, ref int index)
         {
-            index++;
-            return new RootNodeSelector();
+            if (index + 1 < query.Length && IsValidForPropertyName(query[index + 1]))
+            {
+                return AddPropertyOrNestedDescentOrRef(query, ref index, true);
+            }
+            else
+            {
+                index++;
+                return new RootNodeSelector();
+            }
         }
 
         private static bool IsValidForPropertyName(char ch) =>
