@@ -12,9 +12,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public PropertySelector(string name) => _name = name;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerable<Entity> Process(Entity entity)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (this == Wildcard)
             {
@@ -40,7 +38,8 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
             if (entity.Document.IsObject)
             {
-                if (entity.Document.TryGetProperty(_name, out var propertyEntity))
+                var (found, propertyEntity) = await entity.Document.TryGetProperty(_name);
+                if (found)
                 {
                     propertyEntity.Query = $"{entity.Document.Query}.{_name}";
 

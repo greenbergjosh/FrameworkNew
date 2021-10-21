@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
-using Utility.Entity.QueryLanguage;
 
 namespace Utility.Entity
 {
@@ -72,16 +71,22 @@ namespace Utility.Entity
             yield break;
         }
 
-        public bool TryGetProperty(string name, out Entity propertyEntity)
+        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name)
         {
             if (TryGetPropertyCore(name, out var document))
             {
-                propertyEntity = Entity.Create(Entity, document);
-                return true;
+                return (true, Entity.Create(Entity, document));
+            }
+            else if (Entity.MissingPropertyHandler != null)
+            {
+                var foundEntity = await Entity.MissingPropertyHandler(Entity, name);
+                if (foundEntity != null)
+                {
+                    return (true, Entity.Create(Entity, foundEntity));
+                }
             }
 
-            propertyEntity = null;
-            return false;
+            return (false, default);
         }
 
         protected abstract bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument);

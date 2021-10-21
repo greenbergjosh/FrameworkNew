@@ -1,15 +1,12 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
 using Utility.Entity;
 using Utility.Entity.Implementations;
-using Utility.GenericEntity;
 
 namespace Utility.Entity
 {
@@ -43,7 +40,8 @@ namespace QuickTester
 
         public static Dictionary<string, string> symbolTable = new();
 
-        public static Dictionary<string, Func<Production, Task<string>>> instructions = new() {
+        public static Dictionary<string, Func<Production, Task<string>>> instructions = new()
+        {
             ["__production"] = (p) => ProductionInstruction(p),
             ["__getter"] = (p) => GetterInstruction(p),
             ["[]"] = (p) => RepetitionInstruction(p),
@@ -116,7 +114,7 @@ namespace QuickTester
                 match = match[ord.Length..];
 
                 p.PrependString = (match[0] == '{') ? new string(match[1..].TakeWhile(x => x != '}').ToArray()) : "";
-                match = (p.PrependString.Length > 0) ? match[(p.PrependString.Length+2)..] : match;
+                match = (p.PrependString.Length > 0) ? match[(p.PrependString.Length + 2)..] : match;
 
                 if (!match.Contains("|"))
                 {
@@ -135,7 +133,7 @@ namespace QuickTester
                 {
                     p.InstructionType = new string(match.TakeWhile(x => x != '|').ToArray());
                     p.InstructionBody = match[(p.InstructionType.Length + 1)..];
-                }                
+                }
                 parsedMatches.Add(p);
             }
 
@@ -225,7 +223,7 @@ namespace QuickTester
                 bool done = ((arrowIdx == -1) || (await E.Get(curStr[0..arrowIdx])).Any());
                 if (done && isString) return stringVal[(arrowIdx + 3)..-1];
                 if (done) return await CallProduction(stringVal[(arrowIdx + 2)..]);
-                                
+
                 if (isString) curStr = curStr[(stringVal.Length + 3)..];
                 else curStr = curStr[(stringVal.Length + 2)..];
             }
@@ -268,19 +266,30 @@ namespace QuickTester
         public static async Task<string> ProductionInstruction(Production p)
         {
             return await CallProduction(p.InstructionBody);
-        }        
+        }
 
         private static async Task<Entity> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
         {
             var id = Guid.Parse(entityId);
             var entity = await fw.Entities.GetEntity(id);
+            entity.Set("/Config/$id", id);
+            entity.Set("/Config/$name", entity.GetS("/Name"));
             return await root.Parse("application/json", entity.GetS("/Config"));
         }
 
         private static async Task<Entity> GetEntityType(Entity root, string entityType)
         {
             var entities = await Data.CallFn("config", "SelectConfigsByType", new { type = entityType });
-            return await root.Parse("application/json", entities.GetE("result").GetS(""));
+
+            var convertedEntities = new List<Entity>();
+            foreach(var entity in entities.GetL("result"))
+            {
+                entity.Set("/Config/$id", entity.GetS("/Id"));
+                entity.Set("/Config/$name", entity.GetS("/Name"));
+                var convertedEntity = await root.Parse("application/json", entity.GetS(""));
+                convertedEntities.Add(convertedEntity);
+            }
+            return Entity.Create(root, EntityDocumentArray.Create(convertedEntities));
         }
 
 
@@ -290,15 +299,21 @@ namespace QuickTester
 
             var fw = new FrameworkWrapper();
 
-            E = Entity.Initialize(new Dictionary<string, EntityParser>
-            {
-                ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
-            }, new Dictionary<string, EntityRetriever>
-            {
-                ["entity"] = (entity, uri) => GetEntity(fw, entity, uri.Host),
-                ["entityType"] = (entity, uri) => GetEntityType(entity, uri.Host),   // entityType://EDW.ThreadGroup
-                ["context"] = (entity, uri) => ContextEntity.GetE(uri.Host)
-            });
+            static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
+
+            E = Entity.Initialize(new EntityConfig(
+                new Dictionary<string, EntityParser>
+                {
+                    ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
+                },
+                new Dictionary<string, EntityRetriever>
+                {
+                    ["entity"] = (entity, uri) => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
+                    ["entityType"] = (entity, uri) => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),   // entityType://EDW.ThreadGroup
+                    ["context"] = (entity, uri) => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
+                },
+                null)
+            );
 
             context = new Dictionary<string, Entity>
             {
@@ -353,7 +368,7 @@ namespace QuickTester
         //    }
         //}
 
-        
+
         public static IEnumerable<Dictionary<string, Entity>> EnumerateParallel(Dictionary<string, IEnumerable<Entity>> es)
         {
             var ies = new Dictionary<string, IEnumerator<Entity>>();

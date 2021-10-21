@@ -22,7 +22,7 @@ namespace Utility
     public static class DynamicMutations
     {
 
-        public static Dictionary<Type, PropertyInfo[]> KnownTypeInfo = new Dictionary<Type, PropertyInfo[]>();
+        public static Dictionary<Type, PropertyInfo[]> KnownTypeInfo = new();
 
         /// <summary>
         /// Tries to mutate a JToken into an instance of a static object.
