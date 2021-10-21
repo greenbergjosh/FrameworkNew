@@ -12,8 +12,9 @@ namespace Utility.Entity
     public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
     public delegate (Task<Entity> entity, string query) EntityRetriever(Entity baseEntity, Uri uri);
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
+    public delegate IAsyncEnumerable<Entity> FunctionHandler(Entity entity, string functionName, IReadOnlyList<object> functionArguments, string query);
 
-    public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null);
+    public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 
     public class Entity : IEquatable<Entity>
     {
@@ -32,11 +33,12 @@ namespace Utility.Entity
 
         internal MissingPropertyHandler MissingPropertyHandler => _config.MissingPropertyHandler;
 
+        internal FunctionHandler FunctionHandler => _config.FunctionHandler;
+
         public EntityValueType ValueType => _value?.ValueType ?? EntityValueType.Undefined;
 
         public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null));
 
-        public T Value<T>() => _value == null ? default : _value.Value<T>();
 
         private Entity(EntityConfig config)
         {
@@ -61,6 +63,10 @@ namespace Utility.Entity
         }
 
         public static Entity Initialize(EntityConfig config) => new(config);
+
+        public Entity FromConstant<T>(T value, string query = null) => Create(this, EntityDocument.MapValue(value, query));
+
+        public Entity Clone(string query) => Create(this, Document.Clone(query));
 
         public static Entity Create(Entity baseEntity, EntityDocument entityDocument) => new(entityDocument, baseEntity, baseEntity._config);
 
@@ -118,6 +124,8 @@ namespace Utility.Entity
         public async Task<string> GetS(string query) => (await GetE(query)).Value<string>();
 
         public async Task<int> GetI(string query) => (await GetE(query)).Value<int>();
+
+        public T Value<T>() => _value == null ? default : _value.Value<T>();
 
         public override string ToString() => $"Query: {Query} Data: {_value}";
 

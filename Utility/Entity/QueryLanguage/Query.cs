@@ -187,10 +187,39 @@ namespace Utility.Entity.QueryLanguage
                 propertyNameLength++;
             }
 
-            var propertyName = slice[..propertyNameLength];
             index += (noDot ? 0 : 1) + propertyNameLength;
+            if (propertyNameLength < slice.Length && slice[propertyNameLength] == '(')
+            {
+                var functionName = slice[..propertyNameLength].ToString();
+                index++;
+                var current = ',';
+                var functionArguments = new List<(object argument, char? enclosingCharacter)>();
+                while (current == ',')
+                {
+                    Helpers.ConsumeWhitespace(query, ref index);
+                    if (Helpers.TryGetInt(query, ref index, out var number))
+                    {
+                        functionArguments.Add((number, null));
+                    }
+                    else if (Helpers.TryGetString(query, ref index, out var text, out var enclosingCharacter))
+                    {
+                        functionArguments.Add((text, enclosingCharacter));
+                    }
+                    else
+                    {
+                        return new ErrorSelector($"Functions only support int and string types as arguments near position {index}");
+                    }
 
-            return new PropertySelector(propertyName.ToString());
+                    current = query[index++];
+                }
+
+                return new FunctionSelector(functionName, functionArguments);
+            }
+            else
+            {
+                var propertyName = slice[..propertyNameLength];
+                return new PropertySelector(propertyName.ToString());
+            }
         }
 
         private static ISelector AddRootNode(ReadOnlySpan<char> query, ref int index)
