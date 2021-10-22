@@ -17,18 +17,15 @@ namespace Utility.Entity.QueryLanguage.Selectors
             _query = $"{_functionName}({string.Join<object>(", ", functionArguments.Select(arg => arg.enclosingCharacter.HasValue ? $"{arg.enclosingCharacter}{arg.argument}{arg.enclosingCharacter}" : arg.argument?.ToString()))})";
         }
 
-        public async IAsyncEnumerable<Entity> Process(Entity entity)
+        public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
         {
-            if (entity.FunctionHandler == null)
+            var functionHandler = entities.FirstOrDefault()?.FunctionHandler;
+            if (functionHandler == null)
             {
                 throw new InvalidOperationException($"No function handler defined");
             }
 
-            var query = $"{entity.Document.Query}.{_query}";
-            await foreach (var result in entity.FunctionHandler(entity, _functionName, _functionArgumentValues, query))
-            {
-                yield return result;
-            }
+            return functionHandler(entities, _functionName, _functionArgumentValues, _query);
         }
     }
 }

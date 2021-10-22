@@ -5,7 +5,16 @@ namespace Utility.Entity.QueryLanguage.Selectors
 {
     internal class NestedDescentSelector : ISelector
     {
-        public IAsyncEnumerable<Entity> Process(Entity entity) => GetChildren(entity);
+        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
+        {
+            foreach (var entity in entities)
+            {
+                await foreach (var child in GetChildren(entity))
+                {
+                    yield return child;
+                }
+            }
+        }
 
         private static async IAsyncEnumerable<Entity> GetChildren(Entity entity)
         {

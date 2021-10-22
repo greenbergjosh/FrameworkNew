@@ -12,45 +12,43 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public PropertySelector(string name) => _name = name;
 
-        public async IAsyncEnumerable<Entity> Process(Entity entity)
+        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
         {
-            if (this == Wildcard)
+            foreach (var entity in entities)
             {
-                if (entity.Document.IsObject)
+                if (this == Wildcard)
                 {
-                    foreach (var (name, value) in entity.Document.EnumerateObject())
+                    if (entity.Document.IsObject)
                     {
-                        value.Query = $"{entity.Document.Query}.{name}";
-                        yield return value;
+                        foreach (var (name, value) in entity.Document.EnumerateObject())
+                        {
+                            value.Query = $"{entity.Document.Query}.{name}";
+                            yield return value;
+                        }
+                    }
+                    else if (entity.Document.IsArray)
+                    {
+                        foreach (var (item, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
+                        {
+                            item.Query = $"{entity.Document.Query}.[{index}]";
+                            yield return item;
+                        }
                     }
                 }
-                else if (entity.Document.IsArray)
+                else if (entity.Document.IsObject)
                 {
-                    foreach (var (item, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
+                    var (found, propertyEntity) = await entity.Document.TryGetProperty(_name);
+                    if (found)
                     {
-                        item.Query = $"{entity.Document.Query}.[{index}]";
-                        yield return item;
+                        propertyEntity.Query = $"{entity.Document.Query}.{_name}";
+
+                        yield return propertyEntity;
                     }
                 }
-
-                yield break;
-            }
-
-            if (entity.Document.IsObject)
-            {
-                var (found, propertyEntity) = await entity.Document.TryGetProperty(_name);
-                if (found)
+                else if (_name == "length")
                 {
-                    propertyEntity.Query = $"{entity.Document.Query}.{_name}";
-
-                    yield return propertyEntity;
-                    yield break;
+                    yield return Entity.Create(entity, new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number, $"{entity.Document.Query}.length"));
                 }
-            }
-
-            if (_name == "length")
-            {
-                yield return Entity.Create(entity, new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number, $"{entity.Document.Query}.length"));
             }
         }
 
