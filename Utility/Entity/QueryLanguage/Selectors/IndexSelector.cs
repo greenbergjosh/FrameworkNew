@@ -12,89 +12,92 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public IndexSelector(IEnumerable<IIndexExpression> indexes) => _indexes = indexes;
 
-        public async IAsyncEnumerable<Entity> Process(Entity entity)
+        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
         {
-            if (entity.Document.IsArray)
+            foreach (var entity in entities)
             {
-                var arrayLength = entity.Document.Length;
+                if (entity.Document.IsArray)
+                {
+                    var arrayLength = entity.Document.Length;
 
-                IEnumerable<int> indexes;
-                if (this == Wildcard)
-                {
-                    indexes = Enumerable.Range(0, arrayLength).ToHashSet();
-                }
-                else
-                {
-                    var returnedIndexes = new HashSet<int>();
-                    foreach (var indexExpression in _indexes.OfType<IArrayIndexExpression>())
+                    IEnumerable<int> indexes;
+                    if (this == Wildcard)
                     {
-                        await foreach (var index in indexExpression.GetIndexes(entity))
+                        indexes = Enumerable.Range(0, arrayLength).ToHashSet();
+                    }
+                    else
+                    {
+                        var returnedIndexes = new HashSet<int>();
+                        foreach (var indexExpression in _indexes.OfType<IArrayIndexExpression>())
                         {
-                            if (index >= 0 && index < arrayLength)
+                            await foreach (var index in indexExpression.GetIndexes(entity))
                             {
-                                returnedIndexes.Add(index);
+                                if (index >= 0 && index < arrayLength)
+                                {
+                                    returnedIndexes.Add(index);
+                                }
                             }
                         }
+
+                        indexes = returnedIndexes;
                     }
 
-                    indexes = returnedIndexes;
-                }
+                    var matched = entity.Document.EnumerateArray().Select((entity, index) => (entity, index)).Where(item => indexes.Contains(item.index));
 
-                var matched = entity.Document.EnumerateArray().Select((entity, index) => (entity, index)).Where(item => indexes.Contains(item.index));
-
-                foreach (var match in matched)
-                {
-                    match.entity.Query = $"{entity.Query}[{match.index}]";
-                    yield return match.entity;
-                }
-            }
-            else if (entity.Document.IsObject)
-            {
-                if (this == Wildcard)
-                {
-                    foreach (var (name, value) in entity.Document.EnumerateObject())
+                    foreach (var match in matched)
                     {
-                        value.Query = $"{entity.Query}.{name}";
-                        yield return value;
+                        match.entity.Query = $"{entity.Query}[{match.index}]";
+                        yield return match.entity;
                     }
                 }
-                else
+                else if (entity.Document.IsObject)
                 {
-                    var properties = new HashSet<string>();
-                    foreach (var indexExpression in _indexes.OfType<IObjectIndexExpression>())
+                    if (this == Wildcard)
                     {
-                        await foreach (var property in indexExpression.GetProperties(entity))
+                        foreach (var (name, value) in entity.Document.EnumerateObject())
                         {
-                            properties.Add(property);
-                        }
-                    }
-
-                    foreach (var property in properties)
-                    {
-                        var (found, value) = await entity.Document.TryGetProperty(property);
-                        if (found)
-                        {
-                            value.Query = $"{entity.Query}.{property}";
+                            value.Query = $"{entity.Query}.{name}";
                             yield return value;
                         }
                     }
-                }
-            }
-            else
-            {
-                var succeeded = true;
-                foreach (var indexExpression in _indexes.OfType<ItemQueryIndexExpression>())
-                {
-                    if (!await indexExpression.Evaluate(entity))
+                    else
                     {
-                        succeeded = false;
-                        break;
+                        var properties = new HashSet<string>();
+                        foreach (var indexExpression in _indexes.OfType<IObjectIndexExpression>())
+                        {
+                            await foreach (var property in indexExpression.GetProperties(entity))
+                            {
+                                properties.Add(property);
+                            }
+                        }
+
+                        foreach (var property in properties)
+                        {
+                            var (found, value) = await entity.Document.TryGetProperty(property);
+                            if (found)
+                            {
+                                value.Query = $"{entity.Query}.{property}";
+                                yield return value;
+                            }
+                        }
                     }
                 }
-
-                if (succeeded)
+                else
                 {
-                    yield return entity;
+                    var succeeded = true;
+                    foreach (var indexExpression in _indexes.OfType<ItemQueryIndexExpression>())
+                    {
+                        if (!await indexExpression.Evaluate(entity))
+                        {
+                            succeeded = false;
+                            break;
+                        }
+                    }
+
+                    if (succeeded)
+                    {
+                        yield return entity;
+                    }
                 }
             }
         }

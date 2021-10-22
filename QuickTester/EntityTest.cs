@@ -77,31 +77,36 @@ namespace QuickTester
 
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
-            static async IAsyncEnumerable<Entity> functionHandler(Entity entity, string functionName, IReadOnlyList<object> functionArguments, string query)
+            static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<object> functionArguments, string query)
             {
-                switch (functionName)
+                foreach (var entity in entities)
                 {
-                    case "replace":
-                        if (entity.ValueType == EntityValueType.Array)
-                        {
-                            foreach(var child in await entity.Get("@.*"))
+                    switch (functionName)
+                    {
+                        case "replace":
+                            if (entity.ValueType == EntityValueType.Array)
                             {
-                                yield return entity.FromConstant(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), query);
+                                var index = 0;
+                                foreach (var child in await entity.Get("@.*"))
+                                {
+                                    yield return entity.Create(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}[{index}].{query}");
+                                    index++;
+                                }
                             }
-                        }
-                        else
-                        {
-                            yield return entity.FromConstant(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), query);
-                        }
-                        break;
-                    case "repeat":
-                        for(var i = 0; i < (int)functionArguments[0]; i++)
-                        {
-                            yield return entity.Clone($"{query}[{i}]");
-                        }
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unknown function {functionName}");
+                            else
+                            {
+                                yield return entity.Create(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}.{query}");
+                            }
+                            break;
+                        case "repeat":
+                            for (var i = 0; i < (int)functionArguments[0]; i++)
+                            {
+                                yield return entity.Clone($"{entity.Query}.{query}[{i}]");
+                            }
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Unknown function {functionName}");
+                    }
                 }
             }
 
@@ -121,7 +126,7 @@ namespace QuickTester
                         "reftestchilddocument2" => (entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
                         _ => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
                     },
-                    "memory" => (Task.FromResult(Entity.Create(entity, uri.Host switch
+                    "memory" => (Task.FromResult(entity.Create(uri.Host switch
                     {
                         "thread" => threadState,
                         "process" => processState,
@@ -236,6 +241,8 @@ namespace QuickTester
                 "entity://testDocument?$.a.b.c.repeat(4)",
                 "entity://testDocument?$.a.b.d",
                 "entity://testDocument?$.a.b.d.replace(\"e\", \"E\")",
+                "entity://testDocument?$.z.repeat(4)",
+                "entity://testDocument?$.z.replace(\"e\", \"E\")",
             };
 
             foreach (var absoluteQuery in absoluteQueries)

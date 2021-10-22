@@ -30,7 +30,7 @@ namespace Utility.Entity
 
             foreach (var item in EnumerateArrayCore())
             {
-                yield return Entity.Create(Entity, item);
+                yield return Entity.Create(item);
             }
         }
 
@@ -45,7 +45,7 @@ namespace Utility.Entity
 
             foreach (var (name, value) in EnumerateObjectCore())
             {
-                yield return (name, Entity.Create(Entity, value));
+                yield return (name, Entity.Create(value));
             }
         }
 
@@ -61,6 +61,7 @@ namespace Utility.Entity
             IDictionary dictionary => new EntityDocumentObject(dictionary, query),
             IEnumerable array => EntityDocumentArray.Create(array, query),
             Utility.Entity.Entity => ((Entity)value).Document,
+            EntityDocument entityDocument => entityDocument,
             _ => throw new Exception($"Type {value.GetType().Name} is not supported")
         };
 
@@ -79,14 +80,14 @@ namespace Utility.Entity
         {
             if (TryGetPropertyCore(name, out var document))
             {
-                return (true, Entity.Create(Entity, document));
+                return (true, Entity.Create(document));
             }
             else if (Entity.MissingPropertyHandler != null)
             {
                 var foundEntity = await Entity.MissingPropertyHandler(Entity, name);
                 if (foundEntity != null)
                 {
-                    return (true, Entity.Create(Entity, foundEntity));
+                    return (true, Entity.Create(foundEntity));
                 }
             }
 

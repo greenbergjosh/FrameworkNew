@@ -312,7 +312,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     {
                         if (defCollection[kvp.Key].Item2 == STRG)
                         {
-                            context[kvp.Key] = Entity.Create(E, new EntityDocumentConstant(defCollection[kvp.Key].Item1, EntityValueType.String, ""));
+                            context[kvp.Key] = E.Create(new EntityDocumentConstant(defCollection[kvp.Key].Item1, EntityValueType.String, ""));
                         }
                         else if (defCollection[kvp.Key].Item2 == JSON)
                         {
@@ -321,7 +321,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                         }
                         else if (defCollection[kvp.Key].Item2 == PROD)
                         {
-                            context[kvp.Key] = Entity.Create(E, new EntityDocumentConstant(await CallProduction(defCollection[kvp.Key].Item1), EntityValueType.String, ""));
+                            context[kvp.Key] = E.Create(new EntityDocumentConstant(await CallProduction(defCollection[kvp.Key].Item1), EntityValueType.String, ""));
                         }
                         else
                         {
@@ -406,7 +406,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                 var convertedEntity = await root.Parse("application/json", entity.GetS(""));
                 convertedEntities.Add(convertedEntity);
             }
-            return Entity.Create(root, EntityDocumentArray.Create(convertedEntities));
+            return root.Create(EntityDocumentArray.Create(convertedEntities));
         }
 
 
@@ -437,10 +437,10 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
 
             context = new Dictionary<string, Entity>
             {
-                ["sym"] = Entity.Create(E, new EntityDocumentObject(symbolTable))
+                ["sym"] = E.Create(new EntityDocumentObject(symbolTable))
             };
 
-            ContextEntity = Entity.Create(E, new EntityDocumentObject(context));
+            ContextEntity = E.Create(new EntityDocumentObject(context));
 
 
             // add_thread_group
