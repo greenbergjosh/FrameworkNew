@@ -21,6 +21,11 @@ namespace QuickTester
 			""c"": ""A string value"",
 			""d"": [""giraffe"", ""elephant"", ""mouse"", ""mongoose""],
 			""e"": 123
+		},
+		""f"": {
+			""c"": ""A string value"",
+			""d"": [""giraffe"", ""elephant"", ""mouse"", ""mongoose""],
+			""e"": 123
 		}
 	},
 	""f"": [{
@@ -43,12 +48,20 @@ namespace QuickTester
     ""b"": 5,
     ""c"": {
         ""$ref"": ""memory://thread?threadVariable1""
+    },
+    ""d"": {
+        ""$ref"": ""entity://refTestChildDocument2""
+    },
+    ""d"": {
+        ""$ref"": ""entity://testdocument?$.a..c""
     }
 }";
 
             var refTestChildDocument = @"{
     ""x"": 50
 }";
+
+            var refTestChildDocument2 = @"[1,2,3,4,5]";
 
             var threadState = new EntityDocumentObject(new Dictionary<string, object>()
             {
@@ -64,25 +77,65 @@ namespace QuickTester
 
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
-            var E = Entity.Initialize(new Dictionary<string, EntityParser>
+            static async IAsyncEnumerable<Entity> functionHandler(Entity entity, string functionName, IReadOnlyList<object> functionArguments, string query)
             {
-                ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
-            }, new Dictionary<string, EntityRetriever>
-            {
-                ["entity"] = (entity, uri) => uri.Host switch
+                switch (functionName)
                 {
-                    "testdocument" => (entity.Parse("application/json", testDocument), UnescapeQueryString(uri)),
-                    "reftestparentdocument" => (entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
-                    "reftestchilddocument" => (entity.Parse("application/json", refTestChildDocument), UnescapeQueryString(uri)),
-                    _ => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
+                    case "replace":
+                        if (entity.ValueType == EntityValueType.Array)
+                        {
+                            foreach(var child in await entity.Get("@.*"))
+                            {
+                                yield return entity.FromConstant(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), query);
+                            }
+                        }
+                        else
+                        {
+                            yield return entity.FromConstant(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), query);
+                        }
+                        break;
+                    case "repeat":
+                        for(var i = 0; i < (int)functionArguments[0]; i++)
+                        {
+                            yield return entity.Clone($"{query}[{i}]");
+                        }
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown function {functionName}");
+                }
+            }
+
+            var E = Entity.Initialize(new EntityConfig(
+                Parser: (entity, contentType, content) => contentType switch
+                {
+                    "application/json" => EntityDocumentJson.Parse(content),
+                    _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
                 },
-                ["memory"] = (entity, uri) => (Task.FromResult(Entity.Create(entity, uri.Host switch
+                Retriever: (entity, uri) => uri.Scheme switch
                 {
-                    "thread" => threadState,
-                    "process" => processState,
-                    _ => throw new Exception($"Unknown memory location {uri.Host}"),
-                })), UnescapeQueryString(uri))
-            });
+                    "entity" => uri.Host switch
+                    {
+                        "testdocument" => (entity.Parse("application/json", testDocument), UnescapeQueryString(uri)),
+                        "reftestparentdocument" => (entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
+                        "reftestchilddocument" => (entity.Parse("application/json", refTestChildDocument), UnescapeQueryString(uri)),
+                        "reftestchilddocument2" => (entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
+                        _ => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
+                    },
+                    "memory" => (Task.FromResult(Entity.Create(entity, uri.Host switch
+                    {
+                        "thread" => threadState,
+                        "process" => processState,
+                        _ => throw new Exception($"Unknown memory location {uri.Host}"),
+                    })), UnescapeQueryString(uri)),
+                    _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
+                },
+                MissingPropertyHandler: (entity, propertyName) =>
+                {
+                    Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
+                    return Task.FromResult<EntityDocument>(null);
+                },
+                FunctionHandler: functionHandler
+            ));
 
             var testEntity = await E.Parse("application/json", testDocument);
             var testJsonDocument = JsonDocument.Parse(testDocument);
@@ -170,12 +223,19 @@ namespace QuickTester
             var absoluteQueries = new[]
             {
                 "entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@!=\"multiton\")]",
+                "entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$id",
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?a.x",
                 "entity://refTestParentDocument?a.$ref",
                 "memory://thread?$.threadVariable1",
                 "entity://refTestParentDocument?c",
-                "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId"
+                "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId",
+                "entity://refTestParentDocument?d",
+                "entity://testDocument?$.a.b.c",
+                "entity://testDocument?$.a.b.c.replace(\"string\", \"COOL STRING\")",
+                "entity://testDocument?$.a.b.c.repeat(4)",
+                "entity://testDocument?$.a.b.d",
+                "entity://testDocument?$.a.b.d.replace(\"e\", \"E\")",
             };
 
             foreach (var absoluteQuery in absoluteQueries)
@@ -194,6 +254,8 @@ namespace QuickTester
         {
             var id = Guid.Parse(entityId);
             var entity = await fw.Entities.GetEntity(id);
+            entity.Set("/Config/$id", id);
+            entity.Set("/Config/$name", entity.GetS("/Name"));
             return await root.Parse("application/json", entity.GetS("/Config"));
         }
     }

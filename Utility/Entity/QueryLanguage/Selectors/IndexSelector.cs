@@ -71,7 +71,8 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
                     foreach (var property in properties)
                     {
-                        if (entity.Document.TryGetProperty(property, out var value))
+                        var (found, value) = await entity.Document.TryGetProperty(property);
+                        if (found)
                         {
                             value.Query = $"{entity.Query}.{property}";
                             yield return value;

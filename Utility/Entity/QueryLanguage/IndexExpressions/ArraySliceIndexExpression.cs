@@ -86,7 +86,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             var start = Index.End;
             var end = Index.End;
 
-            if (IIndexExpression.TryGetInt(query, ref index, out var v))
+            if (Helpers.TryGetInt(query, ref index, out var v))
             {
                 start = new Index(Math.Abs(v), v < 0);
             }
@@ -100,7 +100,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
             index++;
 
-            if (IIndexExpression.TryGetInt(query, ref index, out v))
+            if (Helpers.TryGetInt(query, ref index, out v))
             {
                 end = new Index(Math.Abs(v), v < 0);
             }
@@ -113,7 +113,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
             index++;
 
-            if (!IIndexExpression.TryGetInt(query, ref index, out v))
+            if (!Helpers.TryGetInt(query, ref index, out v))
             {
                 arraySliceIndex = new ArraySliceIndexExpression(start..end);
                 return true;
@@ -128,13 +128,13 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             var sb = new StringBuilder();
             if (!_range.Start.Equals(Index.End))
             {
-                sb.Append(IIndexExpression.IndexToPath(_range.Start));
+                sb.Append(IArrayIndexExpression.IndexToPath(_range.Start));
             }
 
             sb.Append(':');
             if (!_range.End.Equals(Index.End))
             {
-                sb.Append(IIndexExpression.IndexToPath(_range.End));
+                sb.Append(IArrayIndexExpression.IndexToPath(_range.End));
             }
 
             if (_step != 1)

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
-using Utility.Entity.QueryLanguage;
 
 namespace Utility.Entity
 {
@@ -52,18 +51,22 @@ namespace Utility.Entity
 
         protected abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
-        protected EntityDocument MapValue(object value) => value switch
+        public static EntityDocument MapValue(object value, string query = null) => value switch
         {
-            null => new EntityDocumentConstant(null, EntityValueType.Null, Query),
-            string => new EntityDocumentConstant(value, EntityValueType.String, Query),
-            int => new EntityDocumentConstant(value, EntityValueType.Number, Query),
-            float => new EntityDocumentConstant(value, EntityValueType.Number, Query),
-            decimal => new EntityDocumentConstant(value, EntityValueType.Number, Query),
-            IDictionary dictionary => new EntityDocumentObject(dictionary),
-            IEnumerable array => EntityDocumentArray.Create(array),
+            null => new EntityDocumentConstant(null, EntityValueType.Null, query),
+            string => new EntityDocumentConstant(value, EntityValueType.String, query),
+            int => new EntityDocumentConstant(value, EntityValueType.Number, query),
+            float => new EntityDocumentConstant(value, EntityValueType.Number, query),
+            decimal => new EntityDocumentConstant(value, EntityValueType.Number, query),
+            IDictionary dictionary => new EntityDocumentObject(dictionary, query),
+            IEnumerable array => EntityDocumentArray.Create(array, query),
             Utility.Entity.Entity => ((Entity)value).Document,
             _ => throw new Exception($"Type {value.GetType().Name} is not supported")
         };
+
+        protected EntityDocument MapValue(object value) => MapValue(value, Query);
+
+        public abstract EntityDocument Clone(string query);
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public virtual async IAsyncEnumerable<Entity> ProcessReference()
@@ -72,16 +75,22 @@ namespace Utility.Entity
             yield break;
         }
 
-        public bool TryGetProperty(string name, out Entity propertyEntity)
+        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name)
         {
             if (TryGetPropertyCore(name, out var document))
             {
-                propertyEntity = Entity.Create(Entity, document);
-                return true;
+                return (true, Entity.Create(Entity, document));
+            }
+            else if (Entity.MissingPropertyHandler != null)
+            {
+                var foundEntity = await Entity.MissingPropertyHandler(Entity, name);
+                if (foundEntity != null)
+                {
+                    return (true, Entity.Create(Entity, foundEntity));
+                }
             }
 
-            propertyEntity = null;
-            return false;
+            return (false, default);
         }
 
         protected abstract bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument);

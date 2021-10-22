@@ -37,6 +37,8 @@ namespace Utility.Entity.Implementations
             Query = query;
         }
 
+        public override EntityDocument Clone(string query) => new EntityDocumentConstant(_value, _valueType, query);
+
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
         protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();

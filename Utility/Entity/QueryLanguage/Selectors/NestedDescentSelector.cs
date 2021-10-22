@@ -14,9 +14,9 @@ namespace Utility.Entity.QueryLanguage.Selectors
                 yield return entity;
                 foreach (var (name, value) in entity.Document.EnumerateObject())
                 {
+                    value.Query = $"{entity.Query}.{name}";
                     await foreach (var child in GetChildren(value))
                     {
-                        child.Query = $"{entity.Query}.{name}";
                         yield return child;
                     }
                 }
@@ -26,9 +26,9 @@ namespace Utility.Entity.QueryLanguage.Selectors
                 yield return entity;
                 foreach (var (item, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
                 {
+                    item.Query = $"{entity.Query}[{index}]";
                     await foreach (var child in GetChildren(item))
                     {
-                        child.Query = $"{entity.Query}[{index}]";
                         yield return child;
                     }
                 }
@@ -38,5 +38,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                 yield return entity;
             }
         }
+
+        public override string ToString() => ".";
     }
 }

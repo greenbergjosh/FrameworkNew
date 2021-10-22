@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
@@ -23,34 +22,34 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             yield return _name;
         }
 
-        internal static bool TryParse(ReadOnlySpan<char> span, ref int index, out IIndexExpression indexExpression)
+        internal static bool TryParse(ReadOnlySpan<char> query, ref int index, out IIndexExpression indexExpression)
         {
-            if (span[index] != '\'' && span[index] != '"')
+            if (query[index] != '\'' && query[index] != '"')
             {
                 index = -1;
                 indexExpression = null;
                 return false;
             }
 
-            var start = span[index];
+            var start = query[index];
             var other = start == '\'' ? '"' : '\'';
             index++;
             var length = 0;
-            while (index + length < span.Length)
+            while (index + length < query.Length)
             {
-                if (span[index + length] == '\\')
+                if (query[index + length] == '\\')
                 {
                     length += 2;
                     continue;
                 }
-                if (span[index + length] == start)
+                if (query[index + length] == start)
                 {
                     break;
                 }
                 length++;
             }
 
-            var name = span.Slice(index, length);
+            var name = query.Slice(index, length);
             index += length + 1;
             var key = name.ToString();
             // don't escape the other quote

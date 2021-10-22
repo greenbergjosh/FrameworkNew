@@ -9,13 +9,16 @@ using Utility.Entity.QueryLanguage.Selectors;
 
 namespace Utility.Entity
 {
-    public delegate Task<EntityDocument> EntityParser(Entity entity, string content);
-    public delegate (Task<Entity> entity, string query) EntityRetriever(Entity entity, Uri uri);
+    public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
+    public delegate (Task<Entity> entity, string query) EntityRetriever(Entity baseEntity, Uri uri);
+    public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
+    public delegate IAsyncEnumerable<Entity> FunctionHandler(Entity entity, string functionName, IReadOnlyList<object> functionArguments, string query);
+
+    public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 
     public class Entity : IEquatable<Entity>
     {
-        private readonly ConcurrentDictionary<string, EntityParser> _parsers;
-        private readonly ConcurrentDictionary<string, EntityRetriever> _retrievers;
+        private readonly EntityConfig _config;
         private readonly EntityDocument _value;
 
         public string Query
@@ -28,19 +31,21 @@ namespace Utility.Entity
 
         internal EntityDocument Document => _value;
 
+        internal MissingPropertyHandler MissingPropertyHandler => _config.MissingPropertyHandler;
+
+        internal FunctionHandler FunctionHandler => _config.FunctionHandler;
+
         public EntityValueType ValueType => _value?.ValueType ?? EntityValueType.Undefined;
 
-        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, null, null);
+        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null));
 
-        public T Value<T>() => _value == null ? default : _value.Value<T>();
 
-        private Entity()
+        private Entity(EntityConfig config)
         {
-            _retrievers = new(StringComparer.CurrentCultureIgnoreCase);
-            _parsers = new(StringComparer.CurrentCultureIgnoreCase);
+            _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
-        private Entity(EntityDocument value, Entity root, ConcurrentDictionary<string, EntityParser> parsers, ConcurrentDictionary<string, EntityRetriever> retrievers)
+        private Entity(EntityDocument value, Entity root, EntityConfig config)
         {
             if (value != null)
             {
@@ -52,47 +57,24 @@ namespace Utility.Entity
                 _value = EntityDocumentConstant.Null;
             }
 
-            _parsers = parsers;
-            _retrievers = retrievers;
+            _config = config;
 
             Root = root?.Root ?? this;
         }
 
-        public static Entity Initialize(IDictionary<string, EntityParser> parsers, IDictionary<string, EntityRetriever> retrievers)
-        {
-            var entity = new Entity();
+        public static Entity Initialize(EntityConfig config) => new(config);
 
-            if (retrievers != null)
-            {
-                foreach (var (scheme, retriever) in retrievers)
-                {
-                    entity._retrievers.TryAdd(scheme, retriever);
-                }
-            }
+        public Entity FromConstant<T>(T value, string query = null) => Create(this, EntityDocument.MapValue(value, query));
 
-            if (parsers != null)
-            {
-                foreach (var (contentType, parser) in parsers)
-                {
-                    entity._parsers.TryAdd(contentType, parser);
-                }
-            }
+        public Entity Clone(string query) => Create(this, Document.Clone(query));
 
-            return entity;
-        }
-
-        public static Entity Create(Entity baseEntity, EntityDocument entityDocument) => new(entityDocument, baseEntity, baseEntity._parsers, baseEntity._retrievers);
+        public static Entity Create(Entity baseEntity, EntityDocument entityDocument) => new(entityDocument, baseEntity, baseEntity._config);
 
         public async Task<Entity> Parse(string contentType, string content)
         {
-            if (!_parsers.TryGetValue(contentType, out var parser))
-            {
-                throw new ArgumentException($"ContentType {contentType} is not supported", nameof(contentType));
-            }
+            var entityDocument = await _config.Parser(this, contentType, content);
 
-            var entityDocument = await parser(this, content);
-
-            return new Entity(entityDocument, null, _parsers, _retrievers);
+            return new Entity(entityDocument, null, _config);
         }
 
         public Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(this, query);
@@ -104,12 +86,12 @@ namespace Utility.Entity
 
             if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
             {
-                if (!_retrievers.TryGetValue(uri.Scheme, out var retriever))
+                if (_config.Retriever == null)
                 {
-                    throw new ArgumentException($"No retriever for scheme {uri.Scheme} in URI {query}");
+                    throw new InvalidOperationException($"Absolute queries are not allowed unless a retriever has been provided.");
                 }
 
-                var result = retriever(this, uri);
+                var result = _config.Retriever(this, uri);
                 entity = await result.entity;
 
                 if (entity == null)
@@ -142,6 +124,8 @@ namespace Utility.Entity
         public async Task<string> GetS(string query) => (await GetE(query)).Value<string>();
 
         public async Task<int> GetI(string query) => (await GetE(query)).Value<int>();
+
+        public T Value<T>() => _value == null ? default : _value.Value<T>();
 
         public override string ToString() => $"Query: {Query} Data: {_value}";
 

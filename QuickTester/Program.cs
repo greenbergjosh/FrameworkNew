@@ -9,7 +9,7 @@ namespace QuickTester
     internal class Program
     {
 
-        private static Task Main()
+        private static async Task Main()
         {
             return EdwGrammar.GenerateSql();
             //return EntityTest.Run();

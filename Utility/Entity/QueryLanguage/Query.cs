@@ -36,7 +36,7 @@ namespace Utility.Entity.QueryLanguage
             {
                 var selector = query[index] switch
                 {
-                    '$' => AddRootNode(ref index),
+                    '$' => AddRootNode(query, ref index),
                     '@' => AddLocalNode(ref index),
                     '.' => AddPropertyOrNestedDescentOrRef(query, ref index),
                     '[' => AddIndex(entity, query, ref index),
@@ -177,21 +177,62 @@ namespace Utility.Entity.QueryLanguage
             }
 
             var propertyNameLength = 0;
+            if (slice.StartsWith("$"))
+            {
+                propertyNameLength++;
+            }
+
             while (propertyNameLength < slice.Length && IsValidForPropertyName(slice[propertyNameLength]))
             {
                 propertyNameLength++;
             }
 
-            var propertyName = slice[..propertyNameLength];
             index += (noDot ? 0 : 1) + propertyNameLength;
+            if (propertyNameLength < slice.Length && slice[propertyNameLength] == '(')
+            {
+                var functionName = slice[..propertyNameLength].ToString();
+                index++;
+                var current = ',';
+                var functionArguments = new List<(object argument, char? enclosingCharacter)>();
+                while (current == ',')
+                {
+                    Helpers.ConsumeWhitespace(query, ref index);
+                    if (Helpers.TryGetInt(query, ref index, out var number))
+                    {
+                        functionArguments.Add((number, null));
+                    }
+                    else if (Helpers.TryGetString(query, ref index, out var text, out var enclosingCharacter))
+                    {
+                        functionArguments.Add((text, enclosingCharacter));
+                    }
+                    else
+                    {
+                        return new ErrorSelector($"Functions only support int and string types as arguments near position {index}");
+                    }
 
-            return new PropertySelector(propertyName.ToString());
+                    current = query[index++];
+                }
+
+                return new FunctionSelector(functionName, functionArguments);
+            }
+            else
+            {
+                var propertyName = slice[..propertyNameLength];
+                return new PropertySelector(propertyName.ToString());
+            }
         }
 
-        private static ISelector AddRootNode(ref int index)
+        private static ISelector AddRootNode(ReadOnlySpan<char> query, ref int index)
         {
-            index++;
-            return new RootNodeSelector();
+            if (index + 1 < query.Length && IsValidForPropertyName(query[index + 1]))
+            {
+                return AddPropertyOrNestedDescentOrRef(query, ref index, true);
+            }
+            else
+            {
+                index++;
+                return new RootNodeSelector();
+            }
         }
 
         private static bool IsValidForPropertyName(char ch) =>
