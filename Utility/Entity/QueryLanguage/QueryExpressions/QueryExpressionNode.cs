@@ -53,7 +53,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
                 return default;
             }
 
-            var value = Entity.Create(entity, await Operator.Evaluate(_left, _right, entity));
+            var value = entity.Create(await Operator.Evaluate(_left, _right, entity));
             if (OutputType != QueryExpressionType.InstanceDependent)
             {
                 _value = value;
@@ -86,7 +86,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
             if (TryParseEntityDocument(query, ref index, out var entityDocument))
             {
-                node = new QueryExpressionNode(Entity.Create(entity, entityDocument));
+                node = new QueryExpressionNode(entity.Create(entityDocument));
                 return true;
             }
 

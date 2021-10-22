@@ -47,7 +47,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                 }
                 else if (_name == "length")
                 {
-                    yield return Entity.Create(entity, new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number, $"{entity.Document.Query}.length"));
+                    yield return entity.Create(new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number, $"{entity.Document.Query}.length"));
                 }
             }
         }

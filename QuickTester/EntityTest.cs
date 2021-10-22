@@ -89,13 +89,13 @@ namespace QuickTester
                                 var index = 0;
                                 foreach (var child in await entity.Get("@.*"))
                                 {
-                                    yield return entity.FromConstant(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}[{index}].{query}");
+                                    yield return entity.Create(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}[{index}].{query}");
                                     index++;
                                 }
                             }
                             else
                             {
-                                yield return entity.FromConstant(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}.{query}");
+                                yield return entity.Create(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}.{query}");
                             }
                             break;
                         case "repeat":
@@ -126,7 +126,7 @@ namespace QuickTester
                         "reftestchilddocument2" => (entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
                         _ => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
                     },
-                    "memory" => (Task.FromResult(Entity.Create(entity, uri.Host switch
+                    "memory" => (Task.FromResult(entity.Create(uri.Host switch
                     {
                         "thread" => threadState,
                         "process" => processState,

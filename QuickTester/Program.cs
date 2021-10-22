@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Utility;
-using Utility.EDW.Reporting;
+﻿using System.Threading.Tasks;
 
 namespace QuickTester
 {
@@ -11,8 +7,8 @@ namespace QuickTester
 
         private static async Task Main()
         {
-            return EdwGrammar.GenerateSql();
-            //return EntityTest.Run();
+            await EdwGrammar.GenerateSql();
+            await EntityTest.Run();
         }
     }
 }

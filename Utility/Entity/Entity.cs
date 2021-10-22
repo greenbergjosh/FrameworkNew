@@ -64,11 +64,11 @@ namespace Utility.Entity
 
         public static Entity Initialize(EntityConfig config) => new(config);
 
-        public Entity FromConstant<T>(T value, string query = null) => Create(this, EntityDocument.MapValue(value, query));
+        public Entity Create<T>(T value, string query = null) => Create(EntityDocument.MapValue(value, query));
 
-        public Entity Clone(string query) => Create(this, Document.Clone(query));
+        public Entity Clone(string query) => Create(Document.Clone(query));
 
-        public static Entity Create(Entity baseEntity, EntityDocument entityDocument) => new(entityDocument, baseEntity, baseEntity._config);
+        public Entity Create(EntityDocument entityDocument) => new(entityDocument, this, _config);
 
         public async Task<Entity> Parse(string contentType, string content)
         {
