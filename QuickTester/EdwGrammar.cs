@@ -43,11 +43,11 @@ namespace QuickTester
 
         public static Dictionary<string, string> symbolTable = new();
 
-        public static Dictionary<string, Func<Production, Task<string>>> instructions = new() {
-            ["__production"] = (p) => ProductionInstruction(p),
-            ["__getter"] = (p) => GetterInstruction(p),
-            ["[]"] = (p) => RepetitionInstruction(p),
-            ["??"] = (p) => ConditionInstruction(p)
+        public static Dictionary<string, Func<Dictionary<string, (string body, string symbol)>, Production, Task<string>>> instructions = new() {
+            ["__production"] = (c, p) => ProductionInstruction(c, p),
+            ["__getter"] = (c, p) => GetterInstruction(c, p),
+            ["[]"] = (c, p) => RepetitionInstruction(c, p),
+            ["??"] = (c, p) => ConditionInstruction(c, p)
         };
 
         public static Dictionary<string, (string body, string symbol)> productions = new()
@@ -62,8 +62,30 @@ namespace QuickTester
   FROM satisfied_set ws JOIN warehouse_report_sequence.""<<context://sym?config_name>>"" rs 
     ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)", null),
 
-            ["insert_thread_group_records"] = (@"INSERT edw.thread_group_periods
-                (<<??|context://g?thread_group_id[?(@.thread_group_type==""singleton"")]->'singleton_'>>rollup_groups.{_thread_group_name}_{replace(_thread_group_id::TEXT, '-', '')}_period)", null),
+            //  .replace('-', '') for the id
+            ["tg_id"] = ("<<context://g?id>>", null),
+            ["tg_name"] = ("<<context://g?name>>", null),
+            ["tg_period"] = ("<<context://period?period>>", null),
+            ["tg_next_period"] = ("<<context://nextperiod?period>>", null),
+            ["tg_prefix"] = (@"<<??|context://g?thread_group_id.thread_group_type[?(@==""singleton"")]->'singleton_'>>", null),
+            ["tg_table_name_base"] = ("<<tg_prefix>>rollup_groups.<<tg_name>>_<<tg_id>>", null),
+            ["tg_table_name"] = ("<<tg_table_name_base>>_<<tg_period>>", null),
+            ["tg_next_table_name"] = ("<<tg_table_name_base>>_<<tg_next_period>>", null),
+
+            ["period"] = ("context://g?rollup_group_periods[0:]", null),
+            ["nextperiod"] = (@"{ ""period"": ""catch_all"" }|context://g?rollup_group_periods[1:]", null),
+
+            ["insert_thread_group_records"] = (@"
+INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period, table_name, next_table_name)
+VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
+<<insert_thread_group_catch_all>>
+", null),
+
+           
+            ["insert_thread_group_record"] = (@"('<<tg_id>>', '<<tg_name>>', '<<tg_period>>', '<<tg_table_name>>', '<<tg_next_table_name>>')", null),
+            ["insert_thread_group_catch_all"] = (@",( '<<tg_id>>', '<<tg_name>>', '0d', '<tg_table_name_base>>_catch_all', null)", null),
+
+            
 
             ["process_constants"] = ("'<<context://constant?value>>'::<<context://constant?data_type>>", "<<context://constant?name>>"),
 
@@ -84,7 +106,16 @@ namespace QuickTester
             ["long_term_union_select"] = (@"SELECT id, ts FROM warehouse_report_sequence.""<<context://tbl?$>>"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'
                                             UNION
                                             SELECT id, ts FROM warehouse_report_sequence.""<<context://tbl?$>>_long_term"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>",
-                                            null)
+                                            null),
+
+
+
+
+            ["insert_thread_group_records2"] = (@"
+INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period, table_name, next_table_name)
+VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0:];nextperiod/{""period"": ""catch_all""}=context://g?rollup_group_periods[1:]|,>>
+<<insert_thread_group_catch_all>>
+", null),
         };
 
         public class Production
@@ -159,7 +190,7 @@ namespace QuickTester
         {
             foreach (var sp in GetSubProductions(instruction))
             {
-                string res = await instructions[sp.InstructionType](sp);
+                string res = await instructions[sp.InstructionType](productions, sp);
                 res = (!string.IsNullOrWhiteSpace(res)) ? sp.PrependString + res : "";
                 instruction = instruction.Replace(sp.Match, sp.SuppressOutput ? "" : res);
             }
@@ -168,7 +199,7 @@ namespace QuickTester
             {
                 foreach (var sp in GetSubProductions(symbol))
                 {
-                    string res = await instructions[sp.InstructionType](sp);
+                    string res = await instructions[sp.InstructionType](productions, sp);
                     res = (!string.IsNullOrWhiteSpace(res)) ? sp.PrependString + res : "";
                     symbol = symbol.Replace(sp.Match, sp.SuppressOutput ? "" : res);
                 }
@@ -179,18 +210,60 @@ namespace QuickTester
             return instruction;
         }
 
-        public static async Task<string> RepetitionInstruction(Production p)
+        public static async Task<string> RepetitionInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
         {
-            // {production_name}|{scope_name}={scope_injection_expression}|{join_character}
+            // {production_name}|{scope_name}/{default}={scope_injection_expression}|{join_character}
+            const int NDEF = 0;
+            const int PROD = 1;
+            const int JSON = 2;
+            const int STRG = 3;
+
             string[] parts = p.InstructionBody.Split('|');
             string productionName = parts[0];
 
             var scopeCollection = new Dictionary<string, IEnumerable<Entity>>();
+            var defCollection = new Dictionary<string, (string, int)>();
             string[] scopes = parts[1].Split(';');
             foreach (var scope in scopes)
             {
-                string scopeName = new(scope.TakeWhile(x => x != '=').ToArray());
-                string scopeInjection = scope[(scopeName.Length + 1)..];
+                string curScope;
+                if (scope[0] == '(')
+                {
+                    string rslvd = await CallProduction(scope[1..^1]);
+                    var scopeParts = rslvd.Split("|");
+                    curScope = (scopeParts.Length == 1) ? scope[1..^1] + "=" + scopeParts[0] :
+                        scope[1..^1] + "/" + scopeParts[0] + "=" + scopeParts[1];
+                }
+                else
+                {
+                    curScope = scope;
+                }
+
+                string scopeName = new(curScope.TakeWhile(x => x != '=').ToArray());
+                string scopeDef = "";
+                string[] scopePlusDefault = scopeName.Split('/');
+                if (scopePlusDefault.Length == 2)
+                {
+                    scopeName = scopePlusDefault[0];
+                    scopeDef = scopePlusDefault[1];
+                    if (scopeDef[0] == '\'')
+                    {
+                        defCollection[scopeName] = (scopeDef[1..^1], STRG);
+                    }
+                    else if ((scopeDef[0] == '{') || (scopeDef[0] == '['))
+                    {
+                        defCollection[scopeName] = (scopeDef, JSON);
+                    }
+                    else
+                    {
+                        defCollection[scopeName] = (scopeDef, PROD);
+                    }
+                }
+                else
+                {
+                    defCollection[scopeName] = ("", NDEF);
+                }
+                string scopeInjection = curScope[(scopeName.Length + (scopeDef.Length == 0 ? 0 : scopeDef.Length + 1) + 1)..];
                 var scopeEnumerable = await E.Get(scopeInjection);
                 scopeCollection[scopeName] = scopeEnumerable;
             }
@@ -200,7 +273,33 @@ namespace QuickTester
             List<string> rets = new();
             foreach (var scp in EnumerateParallel(scopeCollection))
             {
-                foreach (var kvp in scp) context[kvp.Key] = kvp.Value;
+                foreach (var kvp in scp)
+                {
+                    if (kvp.Value == null)
+                    {
+                        if (defCollection[kvp.Key].Item2 == STRG)
+                        {
+                            context[kvp.Key] = Entity.Create(E, new EntityDocumentConstant(defCollection[kvp.Key].Item1, EntityValueType.String, ""));
+                        }
+                        else if (defCollection[kvp.Key].Item2 == JSON)
+                        {
+                            
+                            context[kvp.Key] = await E.Parse("application/json", defCollection[kvp.Key].Item1);
+                        }
+                        else if (defCollection[kvp.Key].Item2 == PROD)
+                        {
+                            context[kvp.Key] = Entity.Create(E, new EntityDocumentConstant(await CallProduction(defCollection[kvp.Key].Item1), EntityValueType.String, ""));
+                        }
+                        else
+                        {
+                            context[kvp.Key] = null;
+                        }
+                    }
+                    else
+                    {
+                        context[kvp.Key] = kvp.Value;
+                    } 
+                }
                 var ret = await CallProduction(productionName);
                 rets.Add(ret);
                 foreach (var kvp in scp) context.Remove(kvp.Key);
@@ -209,49 +308,32 @@ namespace QuickTester
             return string.Join(joinString, rets);
         }
 
-        public static async Task<string> ConditionInstruction(Production p)
+        public static async Task<string> ConditionInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
         {
             //{expression}->{production|'string'};{expression}->{production};{else-production}>>
             //context://g?thread_group_id[?(@.thread_group_type!=""singleton"")]->multiton_cols>>
             string curStr = p.InstructionBody;
             while (curStr.Length != 0)
             {
-                int arrowIdx = curStr.IndexOf("->");
-                bool isString = (curStr[arrowIdx + 1] == '\'');
-                string stringVal = new(curStr.TakeWhile(x => x != (isString ? '\'' : ';')).ToArray());
-                var b = await E.Get(curStr[0..arrowIdx]);
-                var c = (await E.Get("context://g?thread_group_id.thread_group_type[?(@==\"multiton\")]")).Any();
-                var d = (await E.Get("context://g?thread_group_id.thread_group_type[?(@!=\"multiton\")]")).Any();
-                bool done = ((arrowIdx == -1) || (await E.Get(curStr[0..arrowIdx])).Any());
-                if (done && isString) return stringVal[(arrowIdx + 3)..-1];
-                if (done) return await CallProduction(stringVal[(arrowIdx + 2)..]);
-                                
-                if (isString) curStr = curStr[(stringVal.Length + 3)..];
-                else curStr = curStr[(stringVal.Length + 2)..];
+                string nextCond = new(curStr.TakeWhile(x => x != ';').ToArray());
+                int arrowIdx = nextCond.IndexOf("->");
+                bool isString = (nextCond[^1] == '\'');
+                string expr = (arrowIdx == -1) ? "" : curStr[0..arrowIdx];
+                string rtrn = nextCond[(arrowIdx == -1 ? 0 : expr.Length + 2)..];
+                rtrn = (isString) ? rtrn[1..^1] : rtrn;
+                rtrn = rtrn.Replace("''", "'");
+                bool done = ((arrowIdx == -1) || (await E.Get(expr)).Any());
+                if (done && isString) return rtrn;
+                if (done) return await CallProduction(rtrn);
+
+                if (nextCond.Length < curStr.Length) curStr = curStr[(nextCond.Length + 1)..];
+                else break;
             }
 
             return "";
-
-            //string[] conds = p.InstructionBody.Split(';');
-
-            //string s = "";
-            //foreach (var cond in conds)
-            //{
-            //    string pr = null;
-            //    string[] cp = cond.Split("->");
-            //    if (cp.Length == 1) pr = cp[0];
-            //    else if ((await E.Get(cp[0])).Any()) pr = cp[1];
-            //    if (!String.IsNullOrEmpty(pr))
-            //    {
-            //        s = await CallProduction(pr);
-            //        break;
-            //    }
-            //}
-
-            //return s;
         }
 
-        public static async Task<string> GetterInstruction(Production p)
+        public static async Task<string> GetterInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
         {
             string nsn = p.InstructionBody.Split("://")[0];
             string nsp = p.InstructionBody.Split("://")[1];
@@ -265,7 +347,7 @@ namespace QuickTester
             }
         }
 
-        public static async Task<string> ProductionInstruction(Production p)
+        public static async Task<string> ProductionInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
         {
             return await CallProduction(p.InstructionBody);
         }        
@@ -290,15 +372,18 @@ namespace QuickTester
 
             var fw = new FrameworkWrapper();
 
+            static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
+
             E = Entity.Initialize(new Dictionary<string, EntityParser>
             {
                 ["application/json"] = (entity, json) => EntityDocumentJson.Parse(json)
             }, new Dictionary<string, EntityRetriever>
             {
-                ["entity"] = (entity, uri) => GetEntity(fw, entity, uri.Host),
-                ["entityType"] = (entity, uri) => GetEntityType(entity, uri.Host),   // entityType://EDW.ThreadGroup
-                ["context"] = (entity, uri) => ContextEntity.GetE(uri.Host)
+                ["entity"] = (entity, uri) => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
+                ["entityType"] = (entity, uri) => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
+                ["context"] = (entity, uri) => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
             });
+
 
             context = new Dictionary<string, Entity>
             {
@@ -307,10 +392,20 @@ namespace QuickTester
 
             ContextEntity = Entity.Create(E, new EntityDocumentObject(context));
 
+
+            // add_thread_group
+            Entity e1 = await E.GetE("entity://e97f0bac-2640-448c-b6f2-2a9a5510cc76");
+            context["g"] = e1;
+            string sql1 = await CallProduction("insert_thread_group_records");
+            // end add_thread_group
+
+
+
             string s = await E.GetS("entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId");
 
             Entity e = await E.GetE("entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
 
+            
 
             context["g"] = e;  // "g", Entity(g)
             // context://g?path    g.Get(path).Value<bool>()
@@ -320,9 +415,9 @@ namespace QuickTester
 
             symbolTable.Add("config_name", "Path Session");
 
-            Production p = new Production();
-            p.InstructionBody = @"context://g?thread_group_id[?(@.thread_group_type!=""multiton"")]->multiton_cols;context://g?thread_group_id[?(@.thread_group_type!=""singleton"")]->multiton_cols;'bob'";
-            await ConditionInstruction(p);
+            //Production p = new Production();
+            //p.InstructionBody = @"context://g?thread_group_id.thread_group_type[?(@!=""multiton"")]->'multiton_cols';context://g?thread_group_id.thread_group_type[?(@!=""multiton"")]->multiton_cols;bob";
+            //await ConditionInstruction(p);
 
 
             foreach (Entity rlp in await e.Get("rollups.*"))
