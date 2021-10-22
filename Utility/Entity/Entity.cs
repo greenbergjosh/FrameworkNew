@@ -12,7 +12,7 @@ namespace Utility.Entity
     public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
     public delegate (Task<Entity> entity, string query) EntityRetriever(Entity baseEntity, Uri uri);
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
-    public delegate IAsyncEnumerable<Entity> FunctionHandler(Entity entity, string functionName, IReadOnlyList<object> functionArguments, string query);
+    public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<object> functionArguments, string query);
 
     public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 
@@ -133,30 +133,27 @@ namespace Utility.Entity
         {
             IEnumerable<Entity> current = new[] { rootEntity };
 
-            for (var i = 0; i < query.Selectors.Count; i++)
+            for (var i = 0; i < query.Selectors.Count && current.Any(); i++)
             {
                 var selector = query.Selectors[i];
 
                 var next = new List<Entity>();
-                foreach (var entity in current)
+                await foreach (var child in selector.Process(current))
                 {
-                    await foreach (var child in selector.Process(entity))
+                    var hadReference = false;
+                    if (i == query.Selectors.Count - 1 || query.Selectors[i + 1] is not RefSelector)
                     {
-                        var hadReference = false;
-                        if (i == query.Selectors.Count - 1 || query.Selectors[i + 1] is not RefSelector)
+                        await foreach (var referenceChild in child.Document.ProcessReference())
                         {
-                            await foreach (var referenceChild in child.Document.ProcessReference())
-                            {
-                                referenceChild.Query = referenceChild.Query.Replace("$", child.Query);
-                                next.Add(referenceChild);
-                                hadReference = true;
-                            }
+                            referenceChild.Query = referenceChild.Query.Replace("$", child.Query);
+                            next.Add(referenceChild);
+                            hadReference = true;
                         }
+                    }
 
-                        if (!hadReference)
-                        {
-                            next.Add(child);
-                        }
+                    if (!hadReference)
+                    {
+                        next.Add(child);
                     }
                 }
 
