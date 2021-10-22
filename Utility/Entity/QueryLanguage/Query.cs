@@ -240,6 +240,7 @@ namespace Utility.Entity.QueryLanguage
             (ch >= 'A' && ch <= 'Z') ||
             (ch >= '0' && ch <= '9') ||
             ch == '_' ||
+            ch == '-' ||
             (ch >= 0x80 && ch < 0x10FFFF);
 
         private static bool ParseIndex(Entity entity, ReadOnlySpan<char> query, ref int index, out IIndexExpression indexExpression)

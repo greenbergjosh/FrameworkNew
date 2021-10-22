@@ -11,7 +11,7 @@ namespace QuickTester
 
         private static async Task Main()
         {
-            return EdwGrammar.GenerateSql();
+            var x = await EdwGrammar.GenerateSql();
             //return EntityTest.Run();
         }
     }

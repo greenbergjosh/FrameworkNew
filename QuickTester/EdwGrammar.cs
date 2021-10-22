@@ -38,13 +38,14 @@ namespace QuickTester
             return context[name];
         }
 
-        public static Dictionary<string, string> symbolTable = new();
+        // Ed change to <string, Entity>
+        public static Dictionary<string, object> symbolTable = new();
 
-        public static Dictionary<string, Func<Dictionary<string, (string body, string symbol)>, Production, Task<string>>> instructions = new() {
-            ["__production"] = (c, p) => ProductionInstruction(c, p),
-            ["__getter"] = (c, p) => GetterInstruction(c, p),
-            ["[]"] = (c, p) => RepetitionInstruction(c, p),
-            ["??"] = (c, p) => ConditionInstruction(c, p)
+        public static Dictionary<string, Func<Production, Task<string>>> instructions = new() {
+            ["__production"] = (p) => ProductionInstruction(p),
+            ["__getter"] = (p) => GetterInstruction(p),
+            ["[]"] = (p) => RepetitionInstruction(p),
+            ["??"] = (p) => ConditionInstruction(p)
         };
 
         public static Dictionary<string, (string body, string symbol)> productions = new()
@@ -59,30 +60,36 @@ namespace QuickTester
   FROM satisfied_set ws JOIN warehouse_report_sequence.""<<context://sym?config_name>>"" rs 
     ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)", null),
 
+            // add_thread_group
             //  .replace('-', '') for the id
+            ["delete_thread_group_records"] = (@"DELETE FROM edw.thread_group_periods WHERE thread_group_id = <<tg_id>>", null),
+
+            ["insert_thread_group_records"] = (@"
+INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period, table_name, next_table_name)
+VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
+       <<insert_thread_group_catch_all>>", null),
+
+            ["insert_thread_group_record"] = (@"('<<tg_id>>', '<<tg_name>>', '<<tg_period>>', '<<tg_table_name>>', '<<tg_next_table_name>>')", null),
+            ["insert_thread_group_catch_all"] = (@",( '<<tg_id>>', '<<tg_name>>', '0d', '<<tg_table_name_catch_all>>', null)", null),
+
             ["tg_id"] = ("<<context://g?id>>", null),
             ["tg_name"] = ("<<context://g?name>>", null),
             ["tg_period"] = ("<<context://period?period>>", null),
             ["tg_next_period"] = ("<<context://nextperiod?period>>", null),
             ["tg_prefix"] = (@"<<??|context://g?thread_group_id.thread_group_type[?(@==""singleton"")]->'singleton_'>>", null),
             ["tg_table_name_base"] = ("<<tg_prefix>>rollup_groups.<<tg_name>>_<<tg_id>>", null),
-            ["tg_table_name"] = ("<<tg_table_name_base>>_<<tg_period>>", null),
+            ["tg_table_name"] = ("<<tg_table_name_base>>_<<tg_period>>", "<<tg_id>>_tables|tg_<<tg_period>>"),
+            ["tg_table_name_catch_all"] = ("<<tg_table_name_base>>_catch_all", "<<tg_id>>_tables|tg_catch_all"),
             ["tg_next_table_name"] = ("<<tg_table_name_base>>_<<tg_next_period>>", null),
 
             ["period"] = ("context://g?rollup_group_periods[0:]", null),
             ["nextperiod"] = (@"{ ""period"": ""catch_all"" }|context://g?rollup_group_periods[1:]", null),
+            ["tg_tables"] = ("context://sym?<<tg_id>>_tables.*", ""),
 
-            ["insert_thread_group_records"] = (@"
-INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period, table_name, next_table_name)
-VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
-<<insert_thread_group_catch_all>>
-", null),
+            ["create_tg_tables_and_indexes"] = ("<<[]|create_tg_table_and_index|(tg_tables)|,>>", null),
+            ["create_tg_table_and_index"] = ("<<context://tg_tables>>", null),
 
-           
-            ["insert_thread_group_record"] = (@"('<<tg_id>>', '<<tg_name>>', '<<tg_period>>', '<<tg_table_name>>', '<<tg_next_table_name>>')", null),
-            ["insert_thread_group_catch_all"] = (@",( '<<tg_id>>', '<<tg_name>>', '0d', '<tg_table_name_base>>_catch_all', null)", null),
-
-            
+            // end: add_thread_group
 
             ["process_constants"] = ("'<<context://constant?value>>'::<<context://constant?data_type>>", "<<context://constant?name>>"),
 
@@ -187,27 +194,56 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
         {
             foreach (var sp in GetSubProductions(instruction))
             {
-                string res = await instructions[sp.InstructionType](productions, sp);
+                string res = await instructions[sp.InstructionType](sp);
                 res = (!string.IsNullOrWhiteSpace(res)) ? sp.PrependString + res : "";
                 instruction = instruction.Replace(sp.Match, sp.SuppressOutput ? "" : res);
             }
 
             if (!string.IsNullOrWhiteSpace(symbol))
             {
-                foreach (var sp in GetSubProductions(symbol))
+                string coll = "";
+                string sym;
+                var collAndSym = symbol.Split("|");
+
+                if (collAndSym.Length == 2)
                 {
-                    string res = await instructions[sp.InstructionType](productions, sp);
-                    res = (!string.IsNullOrWhiteSpace(res)) ? sp.PrependString + res : "";
-                    symbol = symbol.Replace(sp.Match, sp.SuppressOutput ? "" : res);
+                    coll = collAndSym[0];
+                    sym = collAndSym[1];
+
+                    foreach (var sp in GetSubProductions(coll))
+                    {
+                        string res = await instructions[sp.InstructionType](sp);
+                        res = (!string.IsNullOrWhiteSpace(res)) ? sp.PrependString + res : "";
+                        coll = coll.Replace(sp.Match, sp.SuppressOutput ? "" : res);
+                    }
+                }
+                else
+                {
+                    sym = collAndSym[0];
                 }
 
-                symbolTable[symbol] = instruction;
+                foreach (var sp in GetSubProductions(sym))
+                {
+                    string res = await instructions[sp.InstructionType](sp);
+                    res = (!string.IsNullOrWhiteSpace(res)) ? sp.PrependString + res : "";
+                    sym = sym.Replace(sp.Match, sp.SuppressOutput ? "" : res);
+                }
+
+                if (!String.IsNullOrWhiteSpace(coll))
+                {
+                    if (!symbolTable.ContainsKey(coll)) symbolTable[coll] = new Dictionary<string, string>();
+                    ((Dictionary<string, string>)symbolTable[coll])[sym] = instruction;
+                }
+                else
+                {
+                    symbolTable[sym] = instruction;
+                }                
             }
 
             return instruction;
         }
 
-        public static async Task<string> RepetitionInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
+        public static async Task<string> RepetitionInstruction(Production p)
         {
             // {production_name}|{scope_name}/{default}={scope_injection_expression}|{join_character}
             const int NDEF = 0;
@@ -305,7 +341,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             return string.Join(joinString, rets);
         }
 
-        public static async Task<string> ConditionInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
+        public static async Task<string> ConditionInstruction(Production p)
         {
             //{expression}->{production|'string'};{expression}->{production};{else-production}>>
             //context://g?thread_group_id[?(@.thread_group_type!=""singleton"")]->multiton_cols>>
@@ -330,7 +366,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             return "";
         }
 
-        public static async Task<string> GetterInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
+        public static async Task<string> GetterInstruction(Production p)
         {
             string nsn = p.InstructionBody.Split("://")[0];
             string nsp = p.InstructionBody.Split("://")[1];
@@ -344,7 +380,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
         }
 
-        public static async Task<string> ProductionInstruction(Dictionary<string, (string body, string symbol)> c, Production p)
+        public static async Task<string> ProductionInstruction(Production p)
         {
             return await CallProduction(p.InstructionBody);
         }
@@ -411,6 +447,8 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             Entity e1 = await E.GetE("entity://e97f0bac-2640-448c-b6f2-2a9a5510cc76");
             context["g"] = e1;
             string sql1 = await CallProduction("insert_thread_group_records");
+            string sql2 = await CallProduction("create_tg_tables_and_indexes");
+            
             // end add_thread_group
 
 
