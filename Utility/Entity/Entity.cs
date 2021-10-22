@@ -99,7 +99,7 @@ namespace Utility.Entity
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
 
-                parsedQuery = QueryLanguage.Query.Parse(this, string.IsNullOrWhiteSpace(result.query) ? "$" : result.query);
+                parsedQuery = QueryLanguage.Query.Parse(this, string.IsNullOrWhiteSpace(result.query) ? "@" : result.query);
             }
             else
             {
