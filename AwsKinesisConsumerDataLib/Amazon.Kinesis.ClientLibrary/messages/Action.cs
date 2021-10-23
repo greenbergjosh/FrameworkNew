@@ -14,7 +14,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
@@ -62,10 +61,7 @@ namespace Amazon.Kinesis.ClientLibrary
         [DataMember(Name = "action")]
         public string Type { get; set; }
 
-        public virtual void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer)
-        {
-            throw new NotImplementedException("Actions need to implement Dispatch, this likely indicates a bug.");
-        }
+        public virtual void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer) => throw new NotImplementedException("Actions need to implement Dispatch, this likely indicates a bug.");
 
         public string ToJson()
         {
@@ -79,9 +75,6 @@ namespace Amazon.Kinesis.ClientLibrary
             }
         }
 
-        public override string ToString()
-        {
-            return ToJson();
-        }
+        public override string ToString() => ToJson();
     }
 }

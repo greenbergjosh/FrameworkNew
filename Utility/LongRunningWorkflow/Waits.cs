@@ -73,10 +73,7 @@ namespace Utility.LongRunningWorkflow
     {
         public override string Logic => "all";
 
-        public WaitAll(string name, params Wait[] children) : this(children)
-        {
-            Name = name;
-        }
+        public WaitAll(string name, params Wait[] children) : this(children) => Name = name;
 
         public WaitAll(params Wait[] children) : base(children)
         {
@@ -87,10 +84,7 @@ namespace Utility.LongRunningWorkflow
     {
         public override string Logic => "any";
 
-        public WaitAny(string name, params Wait[] children) : this(children)
-        {
-            Name = name;
-        }
+        public WaitAny(string name, params Wait[] children) : this(children) => Name = name;
 
         public WaitAny(params Wait[] children) : base(children)
         {

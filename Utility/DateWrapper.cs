@@ -12,11 +12,8 @@ namespace Utility
             return dtDateTime;
         }
 
-        public static int DateTimeToUnixTimestamp(DateTime dateTime)
-        {
-            return (TimeZoneInfo.ConvertTimeToUtc(dateTime) -
+        public static int DateTimeToUnixTimestamp(DateTime dateTime) => (TimeZoneInfo.ConvertTimeToUtc(dateTime) -
                    new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).Milliseconds;
-        }
 
         public static Dictionary<string, int> MonthFullNameToNumber =
             new Dictionary<string, int>()

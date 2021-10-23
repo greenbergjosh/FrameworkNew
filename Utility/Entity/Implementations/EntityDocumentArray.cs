@@ -27,13 +27,7 @@ namespace Utility.Entity.Implementations
 
         public override int Length => _array.Count();
 
-        public EntityDocumentArray(IEnumerable<T> array, string query)
-        {
-            _array = array;
-            Query = query;
-        }
-
-        public override EntityDocument Clone(string query) => new EntityDocumentArray<T>(_array, query);
+        public EntityDocumentArray(IEnumerable<T> array) => _array = array;
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _array.Select(item => MapValue(item));
 

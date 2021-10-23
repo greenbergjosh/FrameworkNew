@@ -44,10 +44,7 @@ namespace Amazon.Kinesis.ClientLibrary
         /// </para>
         /// </summary>
         /// <param name="errorHandler">CheckpointErrorHandler that is invoked when the checkpoint operation fails.</param>
-        public void Checkpoint(CheckpointErrorHandler errorHandler = null)
-        {
-            Checkpoint(null as string, errorHandler);
-        }
+        public void Checkpoint(CheckpointErrorHandler errorHandler = null) => Checkpoint(null as string, errorHandler);
 
         /// <summary>
         /// <para>
@@ -71,9 +68,6 @@ namespace Amazon.Kinesis.ClientLibrary
         /// </summary>
         /// <param name="record">Record whose sequence number to checkpoint at.</param>
         /// <param name="errorHandler">CheckpointErrorHandler that is invoked when the checkpoint operation fails.</param>
-        public void Checkpoint(Record record, CheckpointErrorHandler errorHandler = null)
-        {
-            Checkpoint(record.SequenceNumber, errorHandler);
-        }
+        public void Checkpoint(Record record, CheckpointErrorHandler errorHandler = null) => Checkpoint(record.SequenceNumber, errorHandler);
     }
 }

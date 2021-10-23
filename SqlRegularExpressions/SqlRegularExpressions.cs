@@ -1,10 +1,5 @@
-﻿using Microsoft.SqlServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
+using Microsoft.SqlServer.Server;
 
 namespace SqlRegularExpressions
 {
@@ -15,7 +10,7 @@ namespace SqlRegularExpressions
         public static bool Like(string text, string pattern)
         {
             Match match = Regex.Match(text, pattern);
-            return (match.Value != String.Empty);
+            return (match.Value != string.Empty);
         }
 
         [SqlFunction(DataAccess = DataAccessKind.Read)]

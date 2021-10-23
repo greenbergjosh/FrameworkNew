@@ -12,7 +12,7 @@ namespace Utility.Dataflow
     public class DynamicDataflow
     {
         #region Prvate Fields
-        private Dictionary<int, IDataflowBlock> _dataflowBlocks;
+        private readonly Dictionary<int, IDataflowBlock> _dataflowBlocks;
         #endregion
 
         #region Constructor

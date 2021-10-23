@@ -1,11 +1,10 @@
-﻿using DnsClient;
-using DnsClient.Protocol;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
+using DnsClient;
+using DnsClient.Protocol;
 
 namespace Utility
 {
@@ -18,7 +17,7 @@ namespace Utility
         {
             string[] octets = ip.Trim().Split('.');
             Array.Reverse(octets);
-            return String.Join(".", octets);
+            return string.Join(".", octets);
         }
 
         public static async Task<string> LookupIp(string name, string dnsHost = DefaultDnsHost)

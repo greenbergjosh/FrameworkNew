@@ -43,19 +43,16 @@ namespace Utility
 
         public static string exeSort = @"C:\Program Files\Git\usr\bin\sort";
 
-        public static async Task SortFile(string sourcePath, string inputFile, string outputFile, bool caseSensitive, bool unique, int timeout = 1000 * 60 * 5, int parallel = 4, string mem = "")
-        {
-            _ = await ProcessWrapper.StartProcess(
+        public static async Task SortFile(string sourcePath, string inputFile, string outputFile, bool caseSensitive, bool unique, int timeout = 1000 * 60 * 5, int parallel = 4, string mem = "") => _ = await ProcessWrapper.StartProcess(
                         exeSort,
                         $"--parallel={parallel} {inputFile}"
-                            + (String.IsNullOrEmpty(mem) ? "" : (" --buffer-size=" + mem))
+                            + (string.IsNullOrEmpty(mem) ? "" : (" --buffer-size=" + mem))
                             + $" --output={outputFile}"
                             + (caseSensitive ? "" : " -f") + (unique ? " -u" : ""),
                         sourcePath,
                         timeout,
                         null,
                         null).ConfigureAwait(continueOnCapturedContext: false);
-        }
 
         public static string exeTr = @"C:\Program Files\Git\usr\bin\tr";
 
@@ -190,10 +187,7 @@ namespace Utility
         }
 
 
-        public static async Task<bool> BinarySearchSortedFile(string filePath, int baseLineLength, string key)
-        {
-            return (await BinarySearchSortedFile(filePath, baseLineLength, new List<string>() { key })).found.Count > 0;
-        }
+        public static async Task<bool> BinarySearchSortedFile(string filePath, int baseLineLength, string key) => (await BinarySearchSortedFile(filePath, baseLineLength, new List<string>() { key })).found.Count > 0;
 
         public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedFile(string filePath, int baseLineLength, List<string> keys)
         {

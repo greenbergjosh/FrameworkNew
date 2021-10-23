@@ -10,7 +10,7 @@ using Utility.DataLayer;
 
 namespace QuickTester
 {
-    class Ccpa
+    internal class Ccpa
     {
         public static async Task CcpaBackfill(string[] _args)
         {

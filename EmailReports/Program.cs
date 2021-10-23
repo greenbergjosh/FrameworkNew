@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
-using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -17,9 +16,9 @@ namespace EmailReports
     public class Program
     {
         private static FrameworkWrapper _fw = null;
-        private static List<Action> _dispose = new List<Action>();
+        private static readonly List<Action> _dispose = new List<Action>();
 
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
 
             IGenericEntity jconf;
@@ -291,10 +290,7 @@ namespace EmailReports
             }
         }
 
-        private static string HtmlEscape(string str)
-        {
-            return WebUtility.HtmlEncode(str);
-        }
+        private static string HtmlEscape(string str) => WebUtility.HtmlEncode(str);
 
         private static MailAddress ParseAddress(string addr)
         {

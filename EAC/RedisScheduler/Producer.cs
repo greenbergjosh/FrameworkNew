@@ -1,19 +1,19 @@
-﻿using StackExchange.Redis;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using StackExchange.Redis;
 
 namespace RedisScheduler
 {
     public static class Producer
     {
-        static Subject<Unit> s;
-        static int TotalMessages = 0;
-        static int ImmediateId = 0;
-        static int SignalId = 0;
-        static int InterruptId = 0;
+        private static Subject<Unit> s;
+        private static int TotalMessages = 0;
+        private static int ImmediateId = 0;
+        private static int SignalId = 0;
+        private static int InterruptId = 0;
 
         public static void Run(IDatabase db, int nbThreads, int nbMessages)
         {
@@ -43,22 +43,13 @@ namespace RedisScheduler
             FastConsole.WriteLine($"{endTime}");
         }
 
-        static void ProduceImmediate(IDatabase db, string id)
-        {
-            ProduceMessage(db, id, Constants.Immediate, ImmediateId++.ToString());
-        }
+        private static void ProduceImmediate(IDatabase db, string id) => ProduceMessage(db, id, Constants.Immediate, ImmediateId++.ToString());
 
-        static void ProduceSignal(IDatabase db, string id)
-        {
-            ProduceMessage(db, id, Constants.Signal, SignalId++.ToString());
-        }
+        private static void ProduceSignal(IDatabase db, string id) => ProduceMessage(db, id, Constants.Signal, SignalId++.ToString());
 
-        static void ProduceInterrupt(IDatabase db, string id)
-        {
-            ProduceMessage(db, id, Constants.Interrupt, InterruptId++.ToString());
-        }
+        private static void ProduceInterrupt(IDatabase db, string id) => ProduceMessage(db, id, Constants.Interrupt, InterruptId++.ToString());
 
-        static void ProduceMessage(IDatabase db, string id, string type, string value)
+        private static void ProduceMessage(IDatabase db, string id, string type, string value)
         {
             if (s == null)
             {

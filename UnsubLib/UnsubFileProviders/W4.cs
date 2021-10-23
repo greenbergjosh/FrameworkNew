@@ -11,10 +11,7 @@ namespace UnsubLib.UnsubFileProviders
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(W4)}";
 
-        public W4(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public W4(FrameworkWrapper fw) => _fw = fw;
 
         public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("w4api.com");
 

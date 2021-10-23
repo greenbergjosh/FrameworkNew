@@ -36,14 +36,14 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                         return default;
                     }
 
-                    return new EntityDocumentConstant(leftEntity.Value<decimal>() > rightEntity.Value<decimal>(), EntityValueType.Boolean, ToString());
+                    return new EntityDocumentConstant(leftEntity.Value<decimal>() > rightEntity.Value<decimal>(), EntityValueType.Boolean);
                 case EntityValueType.String:
                     if (leftEntity.ValueType != EntityValueType.String || rightEntity.ValueType != EntityValueType.String)
                     {
                         return default;
                     }
 
-                    return new EntityDocumentConstant(string.Compare(leftEntity.Value<string>(), rightEntity.Value<string>(), StringComparison.Ordinal) > 0, EntityValueType.Boolean, ToString());
+                    return new EntityDocumentConstant(string.Compare(leftEntity.Value<string>(), rightEntity.Value<string>(), StringComparison.Ordinal) > 0, EntityValueType.Boolean);
                 default:
                     return default;
             }

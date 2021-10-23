@@ -6,7 +6,7 @@ using Utility.EDW.Reporting;
 
 namespace QuickTester
 {
-    static class EdwTestDataGenerator
+    internal static class EdwTestDataGenerator
     {
         public static void GenerateTestData()
         {

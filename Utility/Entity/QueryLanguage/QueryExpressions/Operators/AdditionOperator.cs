@@ -34,13 +34,13 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                     {
                         return default;
                     }
-                    return new EntityDocumentConstant(leftEntity.Value<decimal>() + rightEntity.Value<decimal>(), EntityValueType.Number, ToString());
+                    return new EntityDocumentConstant(leftEntity.Value<decimal>() + rightEntity.Value<decimal>(), EntityValueType.Number);
                 case QueryExpressionType.String:
                     if (leftEntity.ValueType != EntityValueType.String || rightEntity.ValueType != EntityValueType.String)
                     {
                         return default;
                     }
-                    return new EntityDocumentConstant(string.Concat(leftEntity.Value<string>(), rightEntity.Value<string>()), EntityValueType.Number, ToString());
+                    return new EntityDocumentConstant(string.Concat(leftEntity.Value<string>(), rightEntity.Value<string>()), EntityValueType.Number);
                 default:
                     return default;
             }

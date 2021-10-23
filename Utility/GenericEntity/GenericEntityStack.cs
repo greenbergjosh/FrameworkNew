@@ -6,7 +6,7 @@ namespace Utility.GenericEntity
 {
     public class GenericEntityStack : IGenericEntity
     {
-        private Stack<IGenericEntity> _stack = new();
+        private readonly Stack<IGenericEntity> _stack = new();
 
         public void Push(IGenericEntity genericEntity) => _stack.Push(genericEntity);
 

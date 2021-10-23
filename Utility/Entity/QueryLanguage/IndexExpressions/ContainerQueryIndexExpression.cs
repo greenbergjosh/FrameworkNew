@@ -8,10 +8,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
     {
         private readonly QueryExpressionNode _expression;
 
-        private ContainerQueryIndexExpression(QueryExpressionNode expression)
-        {
-            _expression = expression;
-        }
+        private ContainerQueryIndexExpression(QueryExpressionNode expression) => _expression = expression;
 
         public async IAsyncEnumerable<int> GetIndexes(Entity entity)
         {

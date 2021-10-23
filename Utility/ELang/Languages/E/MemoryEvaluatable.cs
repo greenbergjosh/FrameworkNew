@@ -7,7 +7,7 @@ namespace Framework.Core.Languages.E
     // This will get moved to dynamic code once it is available
     internal static class MemoryEvaluatable
     {
-        private static IDictionary<Tuple<Guid, string>, IDictionary<string, object>> _memory = new Dictionary<Tuple<Guid, string>, IDictionary<string, object>>();
+        private static readonly IDictionary<Tuple<Guid, string>, IDictionary<string, object>> _memory = new Dictionary<Tuple<Guid, string>, IDictionary<string, object>>();
 
         private static async Task<IDictionary<string, object>> Evaluate(Request request, DictionaryStack parameters)
         {

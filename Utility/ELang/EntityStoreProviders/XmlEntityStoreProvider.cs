@@ -15,19 +15,15 @@ namespace Framework.Core.EntityStoreProviders
 {
     public class XmlEntityStoreProvider : IEntityStoreProvider
     {
-        private static ConcurrentDictionary<Guid, Entity> _entities = new ConcurrentDictionary<Guid, Entity>();
+        private static readonly ConcurrentDictionary<Guid, Entity> _entities = new ConcurrentDictionary<Guid, Entity>();
 
         public async Task<Entity> GetEntity(Guid entityId)
         {
-            Entity entity;
-            _entities.TryGetValue(entityId, out entity);
+            _entities.TryGetValue(entityId, out Entity entity);
             return await Task.FromResult(entity);
         }
 
-        public XElement SerializeEntity(IDictionary<string, object> entity)
-        {
-            return SerializeValue(entity);
-        }
+        public XElement SerializeEntity(IDictionary<string, object> entity) => SerializeValue(entity);
 
         public void AddEntity(IDictionary<string, object> entityData)
         {
@@ -44,19 +40,14 @@ namespace Framework.Core.EntityStoreProviders
         {
             var entityId = entityData.Get<Guid>("EntityId");
             var entity = new Entity(entityData);
-            Entity existing;
-            _entities.TryGetValue(entityId, out existing);
+            _entities.TryGetValue(entityId, out Entity existing);
             if (!_entities.TryUpdate(entityId, entity, existing))
             {
                 throw new ArgumentException("No entity with ID [" + entityId + "]");
             }
         }
 
-        public void DeleteEntity(Guid entityId)
-        {
-            Entity entity;
-            _entities.TryRemove(entityId, out entity);
-        }
+        public void DeleteEntity(Guid entityId) => _entities.TryRemove(entityId, out Entity entity);
 
         public void Save()
         {

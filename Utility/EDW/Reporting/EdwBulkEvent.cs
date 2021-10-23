@@ -24,10 +24,7 @@ namespace Utility.EDW.Reporting
         };
 
         #region Event Methods
-        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, TimeSpan aggregationTtl = default)
-        {
-            AddEvent(eventId, eventTimestamp, reportingSequences, body, (object)null, aggregationTtl);
-        }
+        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, TimeSpan aggregationTtl = default) => AddEvent(eventId, eventTimestamp, reportingSequences, body, (object)null, aggregationTtl);
 
         public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, IEnumerable<(Guid eventId, DateTime eventTimestamp)> parentEvents, TimeSpan aggregationTtl = default)
         {
@@ -82,20 +79,11 @@ namespace Utility.EDW.Reporting
         #endregion
 
         #region Reporting Sequence Methods
-        public void AddReportingSequence(Guid rsId, DateTime rsTimestamp, object body, Guid rsConfigId, TimeSpan aggregationTtl = default)
-        {
-            AddRS(EdwType.Immediate, rsId, rsTimestamp, body, rsConfigId, aggregationTtl, default);
-        }
+        public void AddReportingSequence(Guid rsId, DateTime rsTimestamp, object body, Guid rsConfigId, TimeSpan aggregationTtl = default) => AddRS(EdwType.Immediate, rsId, rsTimestamp, body, rsConfigId, aggregationTtl, default);
 
-        public void AddCheckedReportingSequence(Guid rsId, DateTime rsTimestamp, object body, Guid rsConfigId, TimeSpan aggregationTtl = default, TimeSpan satisfactionTtl = default)
-        {
-            AddRS(EdwType.Checked, rsId, rsTimestamp, body, rsConfigId, aggregationTtl, satisfactionTtl);
-        }
+        public void AddCheckedReportingSequence(Guid rsId, DateTime rsTimestamp, object body, Guid rsConfigId, TimeSpan aggregationTtl = default, TimeSpan satisfactionTtl = default) => AddRS(EdwType.Checked, rsId, rsTimestamp, body, rsConfigId, aggregationTtl, satisfactionTtl);
 
-        public void AddCheckedReportingSequenceDetail(Guid checkedRsId, DateTime checkedRsTimestamp, DateTime checkedDetailTimestamp, object body, Guid rsConfigId, TimeSpan satisfactionTtl = default)
-        {
-            AddRS(EdwType.CheckedDetail, checkedRsId, checkedRsTimestamp, body, rsConfigId, default, satisfactionTtl, ("checkedDetailTs", checkedDetailTimestamp));
-        }
+        public void AddCheckedReportingSequenceDetail(Guid checkedRsId, DateTime checkedRsTimestamp, DateTime checkedDetailTimestamp, object body, Guid rsConfigId, TimeSpan satisfactionTtl = default) => AddRS(EdwType.CheckedDetail, checkedRsId, checkedRsTimestamp, body, rsConfigId, default, satisfactionTtl, ("checkedDetailTs", checkedDetailTimestamp));
 
         private void AddRS(EdwType type, Guid rsId, DateTime rsTimestamp, object body, Guid rsConfigId, TimeSpan aggregationTtl, TimeSpan satisfactionTtl, params (string key, object value)[] additionalPayload)
         {

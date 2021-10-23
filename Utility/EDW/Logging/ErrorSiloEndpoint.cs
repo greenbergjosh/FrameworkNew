@@ -35,14 +35,8 @@ namespace Utility.EDW.Logging
             else return LoadBalancedWriter.Result.Failure;
         }
 
-        public override bool Equals(object obj)
-        {
-            return ((ErrorSiloEndpoint)obj).connectionString == this.connectionString;
-        }
+        public override bool Equals(object obj) => ((ErrorSiloEndpoint)obj).connectionString == this.connectionString;
 
-        public override int GetHashCode()
-        {
-            return this.connectionString.GetHashCode();
-        }
+        public override int GetHashCode() => this.connectionString.GetHashCode();
     }
 }

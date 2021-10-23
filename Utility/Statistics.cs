@@ -101,22 +101,13 @@ namespace Utility
             _expires = DateTime.Now.Add(timeToLive);
         }
 
-        public void Completed()
-        {
-            _stopwatch.Stop();
-        }
+        public void Completed() => _stopwatch.Stop();
 
-        public TimeSpan GetElapsed()
-        {
-            return _stopwatch.Elapsed;
-        }
+        public TimeSpan GetElapsed() => _stopwatch.Elapsed;
 
         public bool Expired => _expires < DateTime.Now;
 
-        public void Start()
-        {
-            _stopwatch.Start();
-        }
+        public void Start() => _stopwatch.Start();
 
         public bool IsCompleted => !_stopwatch.IsRunning;
     }
@@ -129,15 +120,9 @@ namespace Utility
     {
         private static readonly NullStatInstance NullStat = new NullStatInstance();
 
-        public override IStatInstance StartNewInstance(string name, TimeSpan timeToLive)
-        {
-            return NullStat;
-        }
+        public override IStatInstance StartNewInstance(string name, TimeSpan timeToLive) => NullStat;
 
-        public override IEnumerable<StatsResult> GetResults()
-        {
-            return new List<StatsResult>();
-        }
+        public override IEnumerable<StatsResult> GetResults() => new List<StatsResult>();
     }
 
 
@@ -147,10 +132,7 @@ namespace Utility
 
         public void Completed() { }
 
-        public TimeSpan GetElapsed()
-        {
-            return default(TimeSpan);
-        }
+        public TimeSpan GetElapsed() => default(TimeSpan);
 
         public void Start() { }
 

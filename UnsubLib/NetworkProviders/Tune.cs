@@ -10,15 +10,12 @@ using Utility.GenericEntity;
 
 namespace UnsubLib.NetworkProviders
 {
-    class Tune : INetworkProvider
+    internal class Tune : INetworkProvider
     {
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Tune)}";
 
-        public Tune(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public Tune(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
         {

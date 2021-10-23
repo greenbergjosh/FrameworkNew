@@ -9,7 +9,7 @@ using Utility.GenericEntity;
 
 namespace UnsubJob
 {
-    class Program
+    internal class Program
     {
         private static FrameworkWrapper Fw = null;
 
@@ -42,12 +42,12 @@ namespace UnsubJob
                 await Fw.Error(nameof(Main), $"CleanUnusedFiles:: {exClean}");
             }
 
-            if (args.Any(a => String.Equals(a, "useLocal", StringComparison.CurrentCultureIgnoreCase)))
+            if (args.Any(a => string.Equals(a, "useLocal", StringComparison.CurrentCultureIgnoreCase)))
             {
                 unsub.UseLocalNetworkFile = true;
             }
 
-            if (args.Any(a => String.Equals(a, "singleThread", StringComparison.CurrentCultureIgnoreCase)))
+            if (args.Any(a => string.Equals(a, "singleThread", StringComparison.CurrentCultureIgnoreCase)))
             {
                 unsub.MaxParallelism = 1;
             }

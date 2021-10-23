@@ -28,8 +28,7 @@ namespace QuickTester
                 { "SelectProvider", "[VisitorId].[spSelectProvider]" }
             };
 
-            string sp = null;
-            spMap.TryGetValue(method, out sp);
+            spMap.TryGetValue(method, out string sp);
             if (sp == null) return "";
             ret = await ExecuteSql(args, payload, sp, conStr, timeout);
 

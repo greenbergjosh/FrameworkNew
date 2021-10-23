@@ -28,48 +28,45 @@ namespace GenericDaemonLib
             }
         }
 
-        public void OnStart()
-        {
-            _ = Task.Run(async () =>
-            {
-                await _fw.Log($"{nameof(DaemonRunner)}.OnStart", "Starting...");
+        public void OnStart() => _ = Task.Run(async () =>
+                               {
+                                   await _fw.Log($"{nameof(DaemonRunner)}.OnStart", "Starting...");
 
-                foreach (var daemonConfig in _fw.StartupConfiguration.GetDe("Config/Daemons"))
-                {
-                    var daemonName = daemonConfig.key;
-                    var daemonEntityId = Guid.Parse(daemonConfig.entity.GetS("EntityId"));
-                    var paused = daemonConfig.entity.GetB("Paused");
+                                   foreach (var daemonConfig in _fw.StartupConfiguration.GetDe("Config/Daemons"))
+                                   {
+                                       var daemonName = daemonConfig.key;
+                                       var daemonEntityId = Guid.Parse(daemonConfig.entity.GetS("EntityId"));
+                                       var paused = daemonConfig.entity.GetB("Paused");
 
-                    if (paused)
-                    {
-                        await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Skipping daemon: {daemonName} because it is paused");
-                        continue;
-                    }
+                                       if (paused)
+                                       {
+                                           await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Skipping daemon: {daemonName} because it is paused");
+                                           continue;
+                                       }
 
-                    var parameters = new GenericEntityDictionary(new Dictionary<string, object>
-                    {
-                        ["daemonName"] = daemonName,
-                        ["cancellationToken"] = _cancellationTokenSource.Token
-                    });
+                                       var parameters = new GenericEntityDictionary(new Dictionary<string, object>
+                                       {
+                                           ["daemonName"] = daemonName,
+                                           ["cancellationToken"] = _cancellationTokenSource.Token
+                                       });
 
-                    await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Starting daemon: {daemonName}...");
-                    try
-                    {
-                        _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, parameters).ContinueWith(async t =>
-                        {
-                            await _fw.Error($"{nameof(DaemonRunner)}.RunDaemon", $"Error running daemon ${daemonName}: {t.Exception}");
-                        }, TaskContinuationOptions.OnlyOnFaulted));
-                        await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Started daemon: {daemonName}...");
-                    }
-                    catch (Exception ex)
-                    {
-                        await _fw.Error($"{nameof(DaemonRunner)}.OnStart", $"Error starting daemon: {daemonName}\r\nException: {ex}");
-                    }
-                }
+                                       await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Starting daemon: {daemonName}...");
+                                       try
+                                       {
+                                           _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, parameters).ContinueWith(async t =>
+                                           {
+                                               await _fw.Error($"{nameof(DaemonRunner)}.RunDaemon", $"Error running daemon ${daemonName}: {t.Exception}");
+                                           }, TaskContinuationOptions.OnlyOnFaulted));
+                                           await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Started daemon: {daemonName}...");
+                                       }
+                                       catch (Exception ex)
+                                       {
+                                           await _fw.Error($"{nameof(DaemonRunner)}.OnStart", $"Error starting daemon: {daemonName}\r\nException: {ex}");
+                                       }
+                                   }
 
-                await _fw.Log($"{nameof(DaemonRunner)}.OnStart", "Started...");
-            }, _cancellationTokenSource.Token);
-        }
+                                   await _fw.Log($"{nameof(DaemonRunner)}.OnStart", "Started...");
+                               }, _cancellationTokenSource.Token);
 
         public void OnStop()
         {

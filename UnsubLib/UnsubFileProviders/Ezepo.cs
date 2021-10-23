@@ -14,10 +14,7 @@ namespace UnsubLib.UnsubFileProviders
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(Ezepo)}";
 
-        public Ezepo(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public Ezepo(FrameworkWrapper fw) => _fw = fw;
 
         public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("ezepo.net");
 

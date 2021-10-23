@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.Selectors
@@ -22,15 +21,13 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     {
                         foreach (var (name, value) in entity.Document.EnumerateObject())
                         {
-                            value.Query = $"{entity.Document.Query}.{name}";
                             yield return value;
                         }
                     }
                     else if (entity.Document.IsArray)
                     {
-                        foreach (var (item, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
+                        foreach (var item in entity.Document.EnumerateArray())
                         {
-                            item.Query = $"{entity.Document.Query}.[{index}]";
                             yield return item;
                         }
                     }
@@ -40,14 +37,14 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     var (found, propertyEntity) = await entity.Document.TryGetProperty(_name);
                     if (found)
                     {
-                        propertyEntity.Query = $"{entity.Document.Query}.{_name}";
+                        propertyEntity.Query = $"{entity.Query}.{_name}";
 
                         yield return propertyEntity;
                     }
                 }
                 else if (_name == "length")
                 {
-                    yield return entity.Create(new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number, $"{entity.Document.Query}.length"));
+                    yield return entity.Create(new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number), $"{entity.Query}.length");
                 }
             }
         }

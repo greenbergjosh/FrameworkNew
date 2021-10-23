@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using Utility;
 using Utility.DataLayer;
 
@@ -220,17 +220,14 @@ namespace QueueProcessorLib
         /// </summary>
         private DateTime GetNextRetryDate(int retryNumber, DateTime timeFrom) => timeFrom.Add(TimeSpan.FromSeconds(Math.Exp(retryNumber) * 10));
 
-        private Func<object, Task> GetQueueItemOutputWriter(QueueItem queueItem)
-        {
-            return (output) =>
-            {
-                return Data.CallFn("QueueProcessor", "QueueItemOutputAdd", JsonConvert.SerializeObject(new
-                {
-                    QueueItemId = queueItem.Id,
-                    Output = output
-                }));
-            };
-        }
+        private Func<object, Task> GetQueueItemOutputWriter(QueueItem queueItem) => (output) =>
+                                                                                              {
+                                                                                                  return Data.CallFn("QueueProcessor", "QueueItemOutputAdd", JsonConvert.SerializeObject(new
+                                                                                                  {
+                                                                                                      QueueItemId = queueItem.Id,
+                                                                                                      Output = output
+                                                                                                  }));
+                                                                                              };
 
         public async Task HandleHttpRequest(HttpContext context)
         {

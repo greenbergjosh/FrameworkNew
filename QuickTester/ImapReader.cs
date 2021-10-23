@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
@@ -10,11 +9,11 @@ namespace QuickTester
 {
     public class ImapReader
     {
-        private string _mailServer;
-        private string _login;
-        private string _password;
-        private int _port;
-        private bool _ssl;
+        private readonly string _mailServer;
+        private readonly string _login;
+        private readonly string _password;
+        private readonly int _port;
+        private readonly bool _ssl;
 
         public ImapReader(string mailServer, string login, string password, int port, bool ssl)
         {

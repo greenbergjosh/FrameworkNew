@@ -61,7 +61,7 @@
 //                    // We are not the lockFileCreater - this is simply how we know that
 //                }
 //            }
-            
+
 //                // First check if the file is there - check destFile
 //                // If it is there, we are done, return
 //                // Try to create and open exclusively a lock file with the name destFile.lck
@@ -77,9 +77,9 @@
 
 
 //                //if (destLocation is not exclusively locked) return true;
-                
 
-           
+
+
 
 //            if (!String.IsNullOrEmpty(FileCacheFtpServer) || !String.IsNullOrEmpty(FileCacheDirectory))
 //            {

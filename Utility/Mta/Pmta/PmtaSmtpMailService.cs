@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
@@ -65,9 +64,6 @@ namespace Utility.Mta.Pmta
             return results;
         }
 
-        public override Task<string> GetStatus(string jobId)
-        {
-            throw new System.NotImplementedException();
-        }
+        public override Task<string> GetStatus(string jobId) => throw new System.NotImplementedException();
     }
 }

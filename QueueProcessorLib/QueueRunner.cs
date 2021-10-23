@@ -70,21 +70,18 @@ namespace QueueProcessorLib
             await _fw.Log(_logMethod, "Stopped");
         }
 
-        public object GetStatus()
+        public object GetStatus() => new
         {
-            return new
+            Producer = new
             {
-                Producer = new
-                {
-                    _producer.Config,
-                    _producer.QueueSnapshot
-                },
-                Consumer = new
-                {
-                    _consumer.Config,
-                    _consumer.InFlightSnapshot
-                }
-            };
-        }
+                _producer.Config,
+                _producer.QueueSnapshot
+            },
+            Consumer = new
+            {
+                _consumer.Config,
+                _consumer.InFlightSnapshot
+            }
+        };
     }
 }

@@ -109,24 +109,12 @@ namespace SimpleImportExport
             return Filter(dirFiles.Select(f => (new SourceFileInfo(f.directory, f.file), CombineUrl(f.directory, f.file))).ToArray());
         }
 
-        public override Task Delete(string directoryPath, string fileName)
-        {
-            throw new System.NotImplementedException();
-        }
+        public override Task Delete(string directoryPath, string fileName) => throw new System.NotImplementedException();
 
-        public override Task Rename(string directoryPath, string fileName, Regex pattern, string patternReplace, bool overwrite)
-        {
-            throw new System.NotImplementedException();
-        }
+        public override Task Rename(string directoryPath, string fileName, Regex pattern, string patternReplace, bool overwrite) => throw new System.NotImplementedException();
 
-        public override Task Move(string directoryPath, string fileName, string relativeBasePath, bool overwrite)
-        {
-            throw new System.NotImplementedException();
-        }
+        public override Task Move(string directoryPath, string fileName, string relativeBasePath, bool overwrite) => throw new System.NotImplementedException();
 
-        public override string ToString()
-        {
-            return $"ftp://{Host}/{BasePath}";
-        }
+        public override string ToString() => $"ftp://{Host}/{BasePath}";
     }
 }

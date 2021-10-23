@@ -27,16 +27,13 @@ namespace Utility.Entity
 
 namespace QuickTester
 {
-    class EdwGrammar
+    internal class EdwGrammar
     {
         public static Dictionary<string, Entity> context = new();
         public static Entity ContextEntity = null;
         public static Entity E = null;
 
-        public static Entity GetScope(string name)
-        {
-            return context[name];
-        }
+        public static Entity GetScope(string name) => context[name];
 
         // Ed change to <string, Entity>
         public static Dictionary<string, object> symbolTable = new();
@@ -146,7 +143,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                 if (p.SuppressOutput) match = match[1..];
 
                 string ord = new string(match.TakeWhile(char.IsDigit).ToArray());
-                if (!String.IsNullOrEmpty(ord)) p.MatchOrder = Int32.Parse(ord);
+                if (!string.IsNullOrEmpty(ord)) p.MatchOrder = int.Parse(ord);
                 else p.MatchOrder = matchOrder--;
                 match = match[ord.Length..];
 
@@ -185,10 +182,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
         }
 
-        public static async Task<string> CallProduction(string productionName)
-        {
-            return await CallProduction(productions[productionName].body, productions[productionName].symbol);
-        }
+        public static async Task<string> CallProduction(string productionName) => await CallProduction(productions[productionName].body, productions[productionName].symbol);
 
         public static async Task<string> CallProduction(string instruction, string symbol)
         {
@@ -229,7 +223,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     sym = sym.Replace(sp.Match, sp.SuppressOutput ? "" : res);
                 }
 
-                if (!String.IsNullOrWhiteSpace(coll))
+                if (!string.IsNullOrWhiteSpace(coll))
                 {
                     if (!symbolTable.ContainsKey(coll)) symbolTable[coll] = new Dictionary<string, string>();
                     ((Dictionary<string, string>)symbolTable[coll])[sym] = instruction;
@@ -312,7 +306,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     {
                         if (defCollection[kvp.Key].Item2 == STRG)
                         {
-                            context[kvp.Key] = E.Create(new EntityDocumentConstant(defCollection[kvp.Key].Item1, EntityValueType.String, ""));
+                            context[kvp.Key] = E.Create(new EntityDocumentConstant(defCollection[kvp.Key].Item1, EntityValueType.String));
                         }
                         else if (defCollection[kvp.Key].Item2 == JSON)
                         {
@@ -321,7 +315,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                         }
                         else if (defCollection[kvp.Key].Item2 == PROD)
                         {
-                            context[kvp.Key] = E.Create(new EntityDocumentConstant(await CallProduction(defCollection[kvp.Key].Item1), EntityValueType.String, ""));
+                            context[kvp.Key] = E.Create(new EntityDocumentConstant(await CallProduction(defCollection[kvp.Key].Item1), EntityValueType.String));
                         }
                         else
                         {
@@ -380,10 +374,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
         }
 
-        public static async Task<string> ProductionInstruction(Production p)
-        {
-            return await CallProduction(p.InstructionBody);
-        }
+        public static async Task<string> ProductionInstruction(Production p) => await CallProduction(p.InstructionBody);
 
         private static async Task<Entity> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
         {

@@ -7,8 +7,8 @@
 
 using System;
 using System.Collections;
-using System.Threading;
 using System.IO;
+using System.Threading;
 using port25.pmta.api.submitter;
 
 
@@ -32,16 +32,16 @@ public class ExampleMultiThreaded {
 
 
 internal class Mailhost {
-    private String _host;
-    private int _port;
-    private String _username;
-    private String _password;
+    private readonly string _host;
+    private readonly int _port;
+    private readonly string _username;
+    private readonly string _password;
 
 
-    public Mailhost(String host, int port) : this (host, port, null, null) {}
+    public Mailhost(string host, int port) : this (host, port, null, null) {}
 
 
-    public Mailhost(String host, int port, String username, String password) {
+    public Mailhost(string host, int port, string username, string password) {
         _host = host;
         _port = port;
         _username = username;
@@ -49,32 +49,16 @@ internal class Mailhost {
     }
 
 
-    public String Host {
-        get {
-            return _host;
-        }
-    }
+    public string Host => _host;
 
 
-    public int Port {
-        get {
-            return _port;
-        }
-    }
+    public int Port => _port;
 
 
-    public String Username {
-        get {
-            return _username;
-        }
-    }
+    public string Username => _username;
 
 
-    public String Password {
-        get {
-            return _password;
-        }
-    }
+    public string Password => _password;
 }
 
 
@@ -84,9 +68,7 @@ internal class RecipientProvider {
     private int _left;
 
 
-    public RecipientProvider() {
-        _left = 100; // how many dummy emails to generate
-    }
+    public RecipientProvider() => _left = 100; // how many dummy emails to generate
 
 
     public Recipient GetNext() {
@@ -114,16 +96,16 @@ internal class RecipientProvider {
 
 
 internal class ThreadCoordinator {
-    private ArrayList _servers;
+    private readonly ArrayList _servers;
     private int _connectionsPerServer;
     private int _threadsPerConnection;
-    private String _mailfrom;
-    private ArrayList _threads;
-    private ArrayList _connections;
+    private readonly string _mailfrom;
+    private readonly ArrayList _threads;
+    private readonly ArrayList _connections;
     private RecipientProvider _recipientProvider;
 
 
-    public ThreadCoordinator(String mailfrom) {
+    public ThreadCoordinator(string mailfrom) {
         _mailfrom = mailfrom;
         _servers = new ArrayList();
         _threads = new ArrayList();
@@ -133,17 +115,16 @@ internal class ThreadCoordinator {
     }
 
 
-    public void AddServer(Mailhost host) {
-        _servers.Add(host);
-    }
+    public void AddServer(Mailhost host) => _servers.Add(host);
 
 
-    public int ConnectionsPerServer {
-        get {
-            return _connectionsPerServer;
-        }
-        set {
-            if (value < 1) {
+    public int ConnectionsPerServer
+    {
+        get => _connectionsPerServer;
+        set
+        {
+            if (value < 1)
+            {
                 throw new ArgumentOutOfRangeException(
                     "Must have at least one connection per server");
             }
@@ -152,12 +133,13 @@ internal class ThreadCoordinator {
     }
 
 
-    public int ThreadsPerConnection {
-        get {
-            return _threadsPerConnection;
-        }
-        set {
-            if (value < 1) {
+    public int ThreadsPerConnection
+    {
+        get => _threadsPerConnection;
+        set
+        {
+            if (value < 1)
+            {
                 throw new ArgumentOutOfRangeException(
                     "Must have at least one thread per connection");
             }
@@ -167,12 +149,8 @@ internal class ThreadCoordinator {
 
 
     public RecipientProvider RecipientProvider {
-        set {
-            _recipientProvider = value;
-        }
-        get {
-            return _recipientProvider;
-        }
+        set => _recipientProvider = value;
+        get => _recipientProvider;
     }
 
 
@@ -221,13 +199,13 @@ internal class ThreadCoordinator {
 
 
 internal class SendThread {
-    private String _mailfrom;
-    private Connection _con;
-    private RecipientProvider _recipientProvider;
-    private String _vmta;
+    private readonly string _mailfrom;
+    private readonly Connection _con;
+    private readonly RecipientProvider _recipientProvider;
+    private readonly string _vmta;
 
     
-    public SendThread(String mailfrom, Connection con, String vmta,
+    public SendThread(string mailfrom, Connection con, string vmta,
             RecipientProvider provider) {
         _mailfrom = mailfrom;
         _con = con;
@@ -252,11 +230,11 @@ internal class SendThread {
         Message msg = new Message(_mailfrom);
         msg.VirtualMTA = _vmta;
         msg.AddRecipient(r);
-        
-        String outerBoundary = "outerboundary";
-        String innerBoundary = "innerboundary";
-        
-        String headers =
+
+        string outerBoundary = "outerboundary";
+        string innerBoundary = "innerboundary";
+
+        string headers =
             "To: \"[firstname] [lastname]\" <[*to]>\n" +
             "From: \"Trip Reminder Service\" <" + _mailfrom + ">\n" +
             "Subject: Trip reminder\n" +
@@ -266,23 +244,23 @@ internal class SendThread {
             "\"\n";
         msg.AddMergeData(headers);
         msg.AddDateHeader();
-        
+
         // Optionally add a preamble for old mail clients that don't know
         // MIME:
-        String preamble =
+        string preamble =
             "\n" +
             "This is a multi-part message in MIME format.\n" +
             "\n";
         AddData(msg, preamble);
 
-        String innerPart =
+        string innerPart =
             "--" + outerBoundary + "\n" +
             "Content-Type: multipart/alternative; boundary=\"" +
             innerBoundary + "\"\n" +
             "\n";
         AddData(msg, innerPart);
 
-        String plainTextBody =
+        string plainTextBody =
             "--" + innerBoundary + "\n" +
             "Content-Type: text/plain; charset=utf-8\n" +
             "\n" +
@@ -295,8 +273,8 @@ internal class SendThread {
             "Thanks for your business and have a good trip!\n";
         msg.AddMergeData(plainTextBody);
 
-        String logoId = "logo";
-        String htmlBody = 
+        string logoId = "logo";
+        string htmlBody = 
             "--" + innerBoundary + "\n" +
             "Content-Type: text/html; charset=utf-8\n" +
             "\n" +
@@ -319,13 +297,13 @@ internal class SendThread {
         msg.AddMergeData(htmlBody);
         AddData(msg, "\n--" + innerBoundary + "--\n");
 
-        String file = System.IO.Path.Combine("examples", "port25_LOGO.gif");
+        string file = System.IO.Path.Combine("examples", "port25_LOGO.gif");
         InlineImage(msg, logoId, file, outerBoundary);
         return msg;
     }
 
 
-    private void AddData(Message msg, String data) {
+    private void AddData(Message msg, string data) =>
         // PowerMTA encodes strings in UTF-8.  If you need a different encoding,
         // use something like this:
         //
@@ -334,11 +312,10 @@ internal class SendThread {
         // where X is the desired encoding.  You must also set the body part's
         // character set accordingly. 
         msg.AddData(data);
-    }
 
 
-    private void InlineImage(Message msg, String id, String path, String boundary) {
-        String imageHeader = 
+    private void InlineImage(Message msg, string id, string path, string boundary) {
+        string imageHeader = 
             "\n--" + boundary + "\n" +
             "Content-ID: <" + id + ">\n" +
             "Content-Type: image/gif\n" + 

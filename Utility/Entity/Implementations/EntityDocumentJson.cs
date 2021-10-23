@@ -10,6 +10,7 @@ namespace Utility.Entity.Implementations
     {
         private readonly JsonElement _value;
         private readonly int _length;
+        private readonly EntityValueType _valueType;
 
         private static readonly Dictionary<Type, Func<JsonElement, object>> _valueMap = new()
         {
@@ -22,22 +23,11 @@ namespace Utility.Entity.Implementations
             [typeof(string)] = element => element.GetString(),
         };
 
-        public override EntityValueType ValueType => _value.ValueKind switch
-        {
-            JsonValueKind.Array => EntityValueType.Array,
-            JsonValueKind.False => EntityValueType.Boolean,
-            JsonValueKind.Null => EntityValueType.Null,
-            JsonValueKind.Number => EntityValueType.Number,
-            JsonValueKind.Object => EntityValueType.Object,
-            JsonValueKind.String => EntityValueType.String,
-            JsonValueKind.True => EntityValueType.Boolean,
-            JsonValueKind.Undefined => EntityValueType.Undefined,
-            _ => throw new InvalidOperationException($"{nameof(JsonValueKind)} {_value.ValueKind} does not map to a known {nameof(ValueType)}")
-        };
+        public override EntityValueType ValueType => _valueType;
 
         public override int Length => _length == -1 ? throw new InvalidOperationException($"ValueKind {_value.ValueKind} does not have a length") : _length;
 
-        public EntityDocumentJson(JsonElement root, string query = null)
+        public EntityDocumentJson(JsonElement root)
         {
             _value = root;
 
@@ -49,14 +39,23 @@ namespace Utility.Entity.Implementations
                 _ => -1
             };
 
-            Query = query ?? Query;
+            _valueType = _value.ValueKind switch
+            {
+                JsonValueKind.Array => EntityValueType.Array,
+                JsonValueKind.False => EntityValueType.Boolean,
+                JsonValueKind.Null => EntityValueType.Null,
+                JsonValueKind.Number => EntityValueType.Number,
+                JsonValueKind.Object => EntityValueType.Object,
+                JsonValueKind.String => EntityValueType.String,
+                JsonValueKind.True => EntityValueType.Boolean,
+                JsonValueKind.Undefined => EntityValueType.Undefined,
+                _ => throw new InvalidOperationException($"{nameof(JsonValueKind)} {_value.ValueKind} does not map to a known {nameof(ValueType)}")
+            };
         }
 
         public static Task<EntityDocument> Parse(string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement));
 
         #region EntityDocument Implementation
-        public override EntityDocument Clone(string query) => new EntityDocumentJson(_value, query);
-
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _value.EnumerateArray().Select(item => new EntityDocumentJson(item));
 
         protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value)));
@@ -97,6 +96,6 @@ namespace Utility.Entity.Implementations
         }
         #endregion
 
-        public override string ToString() => _value.ToString();
+        public override string ToString() => _value.ValueKind == JsonValueKind.String ? _value.GetRawText() : _value.ToString();
     }
 }

@@ -17,15 +17,15 @@ namespace Utility.Entity.Implementations
             EntityValueType.Undefined
         };
 
-        public static EntityDocument Null { get; } = new EntityDocumentConstant(null, EntityValueType.Null, "");
+        public static EntityDocument Null { get; } = new EntityDocumentConstant(null, EntityValueType.Null);
 
-        public static EntityDocument Undefined { get; } = new EntityDocumentConstant(null, EntityValueType.Undefined, "");
+        public static EntityDocument Undefined { get; } = new EntityDocumentConstant(null, EntityValueType.Undefined);
 
         public override EntityValueType ValueType => _valueType;
 
         public override int Length => throw new NotImplementedException();
 
-        public EntityDocumentConstant(object value, EntityValueType valueType, string query)
+        public EntityDocumentConstant(object value, EntityValueType valueType)
         {
             if (!_allowedTypes.Contains(valueType))
             {
@@ -34,10 +34,7 @@ namespace Utility.Entity.Implementations
 
             _value = value;
             _valueType = valueType;
-            Query = query;
         }
-
-        public override EntityDocument Clone(string query) => new EntityDocumentConstant(_value, _valueType, query);
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 

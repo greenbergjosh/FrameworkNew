@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using Utility;
-using Utility.DataLayer;
 using Utility.EDW.Reporting;
 using Jw = Utility.JsonWrapper;
 
@@ -18,10 +17,7 @@ namespace SignalApiLib.SourceHandlers
         private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
         private readonly string _defaultFailureResponse = Jw.Serialize(new { Result = "Failure" });
 
-        public ConsoleFeed(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public ConsoleFeed(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
         {

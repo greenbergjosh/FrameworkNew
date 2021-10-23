@@ -1,6 +1,6 @@
 ﻿namespace Utility.Entity.QueryLanguage.QueryExpressions
 {
-	internal enum QueryExpressionType
+    internal enum QueryExpressionType
 	{
 		Invalid,
 		InstanceDependent,

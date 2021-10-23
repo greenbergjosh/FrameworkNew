@@ -12,13 +12,7 @@ namespace Utility.Entity.Implementations
 
         public override EntityValueType ValueType => EntityValueType.Object;
 
-        public EntityDocumentObject(IDictionary dictionary, string query = null)
-        {
-            _dictionary = dictionary;
-            Query = query;
-        }
-
-        public override EntityDocument Clone(string query) => new EntityDocumentObject(_dictionary, query);
+        public EntityDocumentObject(IDictionary dictionary) => _dictionary = dictionary;
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
@@ -28,7 +22,6 @@ namespace Utility.Entity.Implementations
             {
                 var value = _dictionary[key];
                 var entityDocument = MapValue(value);
-                entityDocument.Query = $"{Query}.{key}";
                 yield return (key.ToString(), entityDocument);
             }
         }
@@ -39,7 +32,6 @@ namespace Utility.Entity.Implementations
             {
                 var value = _dictionary[name];
                 propertyEntityDocument = MapValue(value);
-                propertyEntityDocument.Query = $"{Query}.{name}";
                 return true;
             }
 

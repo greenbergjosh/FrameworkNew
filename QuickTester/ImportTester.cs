@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace QuickTester
 {
-    class ImportTester
+    internal class ImportTester
     {
         /*
 FileSetWorkflow: ([(sourceEndpoint, filepattern, filecmd/curlcmd(sourceEndpoint), workspaceEndpoint, destFileNames/Locations(workspaceEndpoint))], schedule/workflow, raiseSignalName)

@@ -13,13 +13,13 @@
 // permissions and limitations under the License.
 //
 
-using CommandLine;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using CommandLine;
+using Microsoft.Win32;
 using Utility;
 
 namespace Amazon.Kinesis.ClientLibrary.Bootstrap
@@ -388,9 +388,6 @@ namespace Amazon.Kinesis.ClientLibrary.Bootstrap
             return proc;
         }
 
-        private static void JavaProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            _fw.Error("AwsKinesisConsumerDataLib", $"Java message: {e.Data}");
-        }
+        private static void JavaProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e) => _fw.Error("AwsKinesisConsumerDataLib", $"Java message: {e.Data}");
     }
 }

@@ -46,7 +46,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
                     foreach (var match in matched)
                     {
-                        match.entity.Query = $"{entity.Query}[{match.index}]";
                         yield return match.entity;
                     }
                 }
@@ -56,7 +55,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     {
                         foreach (var (name, value) in entity.Document.EnumerateObject())
                         {
-                            value.Query = $"{entity.Query}.{name}";
                             yield return value;
                         }
                     }

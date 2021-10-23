@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Utility.DataLayer;
 using Utility.GenericEntity;
@@ -54,14 +53,11 @@ namespace Utility
             var res = await Data.CallFn(Conn, "addDataCache", args);
         }
 
-        public static bool IsInCacheKeys(IEnumerable<IGenericEntity> cacheKeys, params string[] keys)
-        {
-            return cacheKeys.Any(c =>
-            {
-                return keys
-                    .Where((k, i) => string.CompareOrdinal(c.Get("x" + (i + 1))?.ToString(), k) == 0)
-                    .Count() == keys.Length;
-            });
-        }
+        public static bool IsInCacheKeys(IEnumerable<IGenericEntity> cacheKeys, params string[] keys) => cacheKeys.Any(c =>
+                                                                                                                   {
+                                                                                                                       return keys
+                                                                                                                           .Where((k, i) => string.CompareOrdinal(c.Get("x" + (i + 1))?.ToString(), k) == 0)
+                                                                                                                           .Count() == keys.Length;
+                                                                                                                   });
     }
 }

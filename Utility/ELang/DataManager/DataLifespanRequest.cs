@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataManager
+﻿namespace DataManager
 {
     // Data that only lives for this request
     public class DataLifespanRequest<T> : GenericEntityBase where T : IGenericEntity, new()

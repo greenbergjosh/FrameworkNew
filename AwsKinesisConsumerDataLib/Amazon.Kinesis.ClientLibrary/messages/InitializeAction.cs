@@ -34,9 +34,6 @@ namespace Amazon.Kinesis.ClientLibrary
             ShardId = shardId;
         }
 
-        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer)
-        {
-            processor.Initialize(new DefaultInitializationInput(this));
-        }
+        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer) => processor.Initialize(new DefaultInitializationInput(this));
     }
 }
