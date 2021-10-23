@@ -130,7 +130,7 @@ namespace Amazon.Kinesis.ClientLibrary.Bootstrap
             ? OperatingSystemCategory.UNIX
             : OperatingSystemCategory.WINDOWS;
 
-        private static readonly List<MavenPackage> MAVEN_PACKAGES = new List<MavenPackage>()
+        private static readonly List<MavenPackage> MAVEN_PACKAGES = new()
         {
             new MavenPackage("software.amazon.kinesis", "amazon-kinesis-client-multilang", "2.1.2"),
             new MavenPackage("software.amazon.kinesis", "amazon-kinesis-client", "2.1.2"),
@@ -255,18 +255,21 @@ namespace Amazon.Kinesis.ClientLibrary.Bootstrap
             }
 
             // Failing that, look in the registry.
-            foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
             {
-                var localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-                var javaRootKey = localKey.OpenSubKey(@"SOFTWARE\WOW6432Node\JavaSoft\Java Runtime Environment");
-                foreach (var jreKeyName in javaRootKey.GetSubKeyNames())
+                foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
                 {
-                    var jreKey = javaRootKey.OpenSubKey(jreKeyName);
-                    var javaHome = jreKey.GetValue("JavaHome") as string;
-                    var javaExe = Path.Combine(javaHome, "bin", "java.exe");
-                    if (File.Exists(javaExe))
+                    var localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+                    var javaRootKey = localKey.OpenSubKey(@"SOFTWARE\WOW6432Node\JavaSoft\Java Runtime Environment");
+                    foreach (var jreKeyName in javaRootKey.GetSubKeyNames())
                     {
-                        return javaExe;
+                        var jreKey = javaRootKey.OpenSubKey(jreKeyName);
+                        var javaHome = jreKey.GetValue("JavaHome") as string;
+                        var javaExe = Path.Combine(javaHome, "bin", "java.exe");
+                        if (File.Exists(javaExe))
+                        {
+                            return javaExe;
+                        }
                     }
                 }
             }
