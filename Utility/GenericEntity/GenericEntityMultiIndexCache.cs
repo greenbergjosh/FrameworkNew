@@ -7,9 +7,9 @@ namespace Utility.GenericEntity
 {
     public class MultiIndexCacheIndex<TKey, TValue, TObject>
     {
-        string _indexName;
-        private ConcurrentDictionary<TKey, TValue> _indexCache;
-        Func<TObject, TKey> _getKey;
+        private readonly string _indexName;
+        private readonly ConcurrentDictionary<TKey, TValue> _indexCache;
+        private readonly Func<TObject, TKey> _getKey;
 
         public MultiIndexCacheIndex(string indexName, Func<TObject, TKey> getKey)
         {
@@ -18,31 +18,22 @@ namespace Utility.GenericEntity
             _getKey = getKey;
         }
 
-        public bool TryRemove(TObject item, out TValue pKey)
-        {
-            return _indexCache.TryRemove(_getKey(item), out pKey);
-        }
+        public bool TryRemove(TObject item, out TValue pKey) => _indexCache.TryRemove(_getKey(item), out pKey);
 
-        public void Add(TObject item, TValue pKey)
-        {
-            _indexCache[_getKey(item)] = pKey;
-        }
+        public void Add(TObject item, TValue pKey) => _indexCache[_getKey(item)] = pKey;
 
-        public bool TryGetPrimaryKey(TKey secondaryKey, out TValue pKey)
-        {
-            return _indexCache.TryGetValue(secondaryKey, out pKey);
-        }
+        public bool TryGetPrimaryKey(TKey secondaryKey, out TValue pKey) => _indexCache.TryGetValue(secondaryKey, out pKey);
     }
 
     public class GenericEntityMultiIndexCache<TObject>
     {
         public delegate bool GetItem(ref string pKey, string index, string sKey, out TObject item);
 
-        private string _cacheName;
-        private MemoryCache _cache;
-        private Dictionary<string, MultiIndexCacheIndex<string, string, TObject>> _indexes;
-        private GetItem _getItem;
-        private CacheItemPolicy _cacheItemPolicy;
+        private readonly string _cacheName;
+        private readonly MemoryCache _cache;
+        private readonly Dictionary<string, MultiIndexCacheIndex<string, string, TObject>> _indexes;
+        private readonly GetItem _getItem;
+        private readonly CacheItemPolicy _cacheItemPolicy;
         private readonly object cacheLock = new object();
 
         public GenericEntityMultiIndexCache(string cacheName, GetItem getItem,
@@ -61,12 +52,11 @@ namespace Utility.GenericEntity
         public void CacheEntryUpdateCallback_Handler(CacheEntryUpdateArguments args)
         {
             // Called prior to cache entry being removed
-            string pKey;
             lock (cacheLock)
             {
                 foreach (var index in _indexes)
                 {
-                    index.Value.TryRemove((TObject)_cache[args.Key], out pKey);
+                    index.Value.TryRemove((TObject)_cache[args.Key], out string pKey);
                 }
             }
         }

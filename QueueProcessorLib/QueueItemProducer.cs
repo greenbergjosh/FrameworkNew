@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Utility;
 
 namespace QueueProcessorLib
 {
     internal sealed class QueueItemProducer
     {
-        private FrameworkWrapper _fw;
+        private readonly FrameworkWrapper _fw;
         private bool _started = false;
 
         public QueueItemProducerConfig Config { get; }

@@ -8,7 +8,7 @@ namespace UtilityTest
 {
     public class UnixWrapperTest
     {
-        private string cwd = Directory.GetCurrentDirectory();
+        private readonly string cwd = Directory.GetCurrentDirectory();
 
         [Fact]
         public void UnzipTest()

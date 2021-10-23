@@ -13,7 +13,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     var (found, propertyEntity) = await entity.Document.TryGetProperty("$ref");
                     if (found)
                     {
-                        propertyEntity.Query = $"{entity.Document.Query}.$ref";
+                        propertyEntity.Query = $"{entity.Query}.$ref";
 
                         yield return propertyEntity;
                     }

@@ -22,7 +22,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             var leftEntity = await left.Evaluate(entity);
             var rightEntity = await right.Evaluate(entity);
 
-            return new EntityDocumentConstant(leftEntity.Equals(rightEntity), EntityValueType.Boolean, ToString());
+            return new EntityDocumentConstant(leftEntity.Equals(rightEntity), EntityValueType.Boolean);
         }
 
         public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}=={right.MaybeAddParentheses(OrderOfOperation)}";

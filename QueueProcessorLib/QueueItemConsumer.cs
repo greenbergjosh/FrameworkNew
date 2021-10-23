@@ -9,9 +9,9 @@ namespace QueueProcessorLib
 {
     internal sealed class QueueItemConsumer
     {
-        private FrameworkWrapper _fw;
+        private readonly FrameworkWrapper _fw;
         private bool _started = false;
-        private ConcurrentDictionary<QueueItem, QueueItem> _itemsInFlight = new ConcurrentDictionary<QueueItem, QueueItem>();
+        private readonly ConcurrentDictionary<QueueItem, QueueItem> _itemsInFlight = new ConcurrentDictionary<QueueItem, QueueItem>();
 
         public QueueItemConsumerConfig Config { get; }
 

@@ -192,10 +192,7 @@ SETTINGS index_granularity = 8192;";
             return parameters;
         }
 
-        private IEnumerable<Parameters> CreateFileTasks(Parameters parameters)
-        {
-            return Enumerable.Range(0, parameters.Config.GetL("source_tables").Count()).Select(i => parameters with { TableIndex = i });
-        }
+        private IEnumerable<Parameters> CreateFileTasks(Parameters parameters) => Enumerable.Range(0, parameters.Config.GetL("source_tables").Count()).Select(i => parameters with { TableIndex = i });
 
         private async Task<Parameters> CreateExportFile(Parameters parameters)
         {

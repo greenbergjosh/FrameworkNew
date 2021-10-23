@@ -42,7 +42,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                 return default;
             }
 
-            return new EntityDocumentConstant(leftEntity.Value<decimal>() / rightValue, EntityValueType.Number, ToString());
+            return new EntityDocumentConstant(leftEntity.Value<decimal>() / rightValue, EntityValueType.Number);
         }
 
         public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}/{right.MaybeAddParentheses(OrderOfOperation, true)}";

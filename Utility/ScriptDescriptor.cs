@@ -1,8 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Scripting;
-using System;
-using System.Security.Cryptography;
-using System.Text;
-using Utility;
+﻿using System;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace Utility
 {

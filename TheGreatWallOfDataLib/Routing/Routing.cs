@@ -67,45 +67,42 @@ namespace TheGreatWallOfDataLib.Routing
             return func ?? DbFunc();
         }
 
-        private static ApiFunc DbFunc()
-        {
-            return async (scope, funcName, requestArgs, identity, ip) =>
-            {
-                await Authentication.CheckPermissions(scope, funcName, identity, ip);
+        private static ApiFunc DbFunc() => async (scope, funcName, requestArgs, identity, ip) =>
+                                                     {
+                                                         await Authentication.CheckPermissions(scope, funcName, identity, ip);
 
                 // Check if requestArgs is JSON (which is should be since we're passing it to CallFn
                 // If it is JSON and have only 2 properties (args, payload), then grab them and pass
                 // them both to CallFn in the matching parameters.
                 // Otherwise, continue to just pass the entire requestArgs in as args.
                 var args = requestArgs;
-                string payload = null;
-                try
-                {
-                    var request = JToken.Parse(requestArgs);
-                    if (request is JObject obj
-                        && obj.Count == 2
-                        && obj["args"] != null
-                        && obj["payload"] != null
-                    )
-                    {
-                        args = obj["args"].ToString();
-                        payload = obj["payload"].ToString();
-                    }
-                }
-                catch { }
+                                                         string payload = null;
+                                                         try
+                                                         {
+                                                             var request = JToken.Parse(requestArgs);
+                                                             if (request is JObject obj
+                                                                 && obj.Count == 2
+                                                                 && obj["args"] != null
+                                                                 && obj["payload"] != null
+                                                             )
+                                                             {
+                                                                 args = obj["args"].ToString();
+                                                                 payload = obj["payload"].ToString();
+                                                             }
+                                                         }
+                                                         catch { }
 
-                var res = await Data.CallFn(scope, funcName, args, payload);
-                var resStr = res?.GetS("");
+                                                         var res = await Data.CallFn(scope, funcName, args, payload);
+                                                         var resStr = res?.GetS("");
 
-                if (resStr?.IsNullOrWhitespace() != false) throw new FunctionException(100, "Empty DB response");
+                                                         if (resStr?.IsNullOrWhitespace() != false) throw new FunctionException(100, "Empty DB response");
 
-                var r = res.GetS("r")?.ParseInt();
+                                                         var r = res.GetS("r")?.ParseInt();
 
-                if (!r.HasValue) res = Jw.ToGenericEntity(JObject.FromObject(new { r = 0, result = Jw.TryParse(resStr) }));
+                                                         if (!r.HasValue) res = Jw.ToGenericEntity(JObject.FromObject(new { r = 0, result = Jw.TryParse(resStr) }));
 
-                return res;
-            };
-        }
+                                                         return res;
+                                                     };
 
         private static async Task<IGenericEntity> RunTests(string scope, string func, string requestArgs, string identity, HttpContext ctx)
         {

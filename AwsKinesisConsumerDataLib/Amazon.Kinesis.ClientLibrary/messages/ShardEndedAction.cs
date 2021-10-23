@@ -22,14 +22,8 @@ namespace Amazon.Kinesis.ClientLibrary
 
         public const string ACTION = "shardEnded";
 
-        public ShardEndedAction()
-        {
-            Type = ACTION;
-        }
-        
-        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer)
-        {
-            processor.ShardEnded(new DefaultShardEndedInput(checkpointer));
-        }
+        public ShardEndedAction() => Type = ACTION;
+
+        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer) => processor.ShardEnded(new DefaultShardEndedInput(checkpointer));
     }
 }

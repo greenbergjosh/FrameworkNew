@@ -11,7 +11,7 @@ namespace EACServiceLib
 {
     public static class StickyQueues
     {
-        const int NbNodes = 20;
+        private const int NbNodes = 20;
         public static int GetNodeFromId(Guid id)
         {
             var hashAlg = xxHashFactory.Instance.Create();
@@ -49,13 +49,7 @@ namespace EACServiceLib
 
             public ManualResetEvent Signaled { get; } = new ManualResetEvent(false);
 
-            public int Count
-            {
-                get
-                {
-                    return _queue.Count;
-                }
-            }
+            public int Count => _queue.Count;
 
             public bool TryDequeue(out TMessage message)
             {
@@ -85,11 +79,11 @@ namespace EACServiceLib
             }
         }
 
-        static Dictionary<int, MessageQueue<RequestMessage>> _immediateQueues =
+        private static readonly Dictionary<int, MessageQueue<RequestMessage>> _immediateQueues =
             new Dictionary<int, MessageQueue<RequestMessage>>();
-        static Dictionary<int, MessageQueue<SignalMessage>> _signalQueues =
+        private static readonly Dictionary<int, MessageQueue<SignalMessage>> _signalQueues =
             new Dictionary<int, MessageQueue<SignalMessage>>();
-        static Dictionary<int, MessageQueue<InterruptMessage>> _interruptQueues =
+        private static readonly Dictionary<int, MessageQueue<InterruptMessage>> _interruptQueues =
             new Dictionary<int, MessageQueue<InterruptMessage>>();
         public static void InitQueues()
         {
@@ -108,32 +102,23 @@ namespace EACServiceLib
             queues[nodeId].Enqueue(message);
         }
 
-        public static void ProduceRequest(Guid id, string request)
+        public static void ProduceRequest(Guid id, string request) => Produce(_immediateQueues, new RequestMessage()
         {
-            Produce(_immediateQueues, new RequestMessage()
-            {
-                Id = id,
-                Request = request
-            });
-        }
+            Id = id,
+            Request = request
+        });
 
-        public static void ProduceSignal(Guid id, string signal)
+        public static void ProduceSignal(Guid id, string signal) => Produce(_signalQueues, new SignalMessage()
         {
-            Produce(_signalQueues, new SignalMessage()
-            {
-                Id = id,
-                Signal = signal
-            });
-        }
+            Id = id,
+            Signal = signal
+        });
 
-        public static void ProduceInterrupt(Guid id, string interrupt)
+        public static void ProduceInterrupt(Guid id, string interrupt) => Produce(_interruptQueues, new InterruptMessage()
         {
-            Produce(_interruptQueues, new InterruptMessage()
-            {
-                Id = id,
-                Interrupt = interrupt
-            });
-        }
+            Id = id,
+            Interrupt = interrupt
+        });
 
         public static void Consumer(int nodeId, CancellationToken cancellationToken)
         {
@@ -214,8 +199,8 @@ namespace EACServiceLib
             }
         }
 
-        static readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        static Task[] _tasks;
+        private static readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private static Task[] _tasks;
         public static void StartConsumers()
         {
             _tasks = new Task[NbNodes];
@@ -237,7 +222,7 @@ namespace EACServiceLib
             _cancellationTokenSource.Dispose();
         }
 
-        static void SendFakeData(Guid id, string msg)
+        private static void SendFakeData(Guid id, string msg)
         {
             ProduceInterrupt(id, msg);
             ProduceInterrupt(id, msg);

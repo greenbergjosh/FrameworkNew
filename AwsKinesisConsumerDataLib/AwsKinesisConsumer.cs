@@ -1,9 +1,8 @@
-﻿using Amazon.Kinesis.ClientLibrary;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
+using Amazon.Kinesis.ClientLibrary;
 using Utility;
 
 namespace AwsKinesisConsumerDataLib
@@ -16,7 +15,7 @@ namespace AwsKinesisConsumerDataLib
         /// <value>The next checkpoint time expressed in milliseconds.</value>
         private DateTime _nextCheckpointTime = DateTime.UtcNow;
 
-        private FrameworkWrapper _fw;
+        private readonly FrameworkWrapper _fw;
 
         public AwsKinesisConsumer(FrameworkWrapper fw)
         {

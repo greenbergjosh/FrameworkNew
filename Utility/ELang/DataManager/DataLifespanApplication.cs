@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataManager
+﻿namespace DataManager
 {
     // Data that lives in a distributed cache, a database, or a third-party store, that is not locally cached on this server
     // This data is resilient to hardware failure and is stored in a distributed cache (e.g. redis)

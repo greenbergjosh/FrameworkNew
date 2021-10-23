@@ -23,25 +23,22 @@ namespace XIncludeTester
             }
         }
 
-        public void OnStart()
-        {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await _fw.Log($"{nameof(XIncludeTester)}.OnStart", "Starting...");
+        public void OnStart() => _ = Task.Run(async () =>
+                               {
+                                   try
+                                   {
+                                       await _fw.Log($"{nameof(XIncludeTester)}.OnStart", "Starting...");
 
 
 
-                    await _fw.Log($"{nameof(XIncludeTester)}.OnStart", "Started...");
-                }
-                catch (Exception ex)
-                {
-                    throw;
-                }
-                
-            });
-        }
+                                       await _fw.Log($"{nameof(XIncludeTester)}.OnStart", "Started...");
+                                   }
+                                   catch (Exception ex)
+                                   {
+                                       throw;
+                                   }
+
+                               });
 
         public void OnStop()
         {

@@ -6,7 +6,7 @@ using Utility.GenericEntity;
 
 namespace QuickTester
 {
-    class ClickhouseQueryGenerator
+    internal class ClickhouseQueryGenerator
     {
         public static string generateClickhouseQuery(IGenericEntity ge)
         {
@@ -27,10 +27,7 @@ namespace QuickTester
             return "(" + r + ")";
         }
 
-        public static string generateClickhouseNary(string op, IGenericEntity ge)
-        {
-            return ge.GetL("").Select(x => generateClickhouseWhere(x)).Join(" " + op + " ");
-        }
+        public static string generateClickhouseNary(string op, IGenericEntity ge) => ge.GetL("").Select(x => generateClickhouseWhere(x)).Join(" " + op + " ");
 
         public static string generateClickhouseUnary(string op, IGenericEntity ge)
         {
@@ -51,14 +48,8 @@ namespace QuickTester
             return r;
         }
 
-        public static string generateClickhouseIn(string var, string set)
-        {
-            return "hasAny(" + var + "," + set + ")";
-        }
+        public static string generateClickhouseIn(string var, string set) => "hasAny(" + var + "," + set + ")";
 
-        public static string generateClickhouseBinary(string op, string var, string val)
-        {
-            return var + op + val;
-        }
+        public static string generateClickhouseBinary(string op, string var, string val) => var + op + val;
     }
 }

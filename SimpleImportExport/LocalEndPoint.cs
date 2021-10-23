@@ -11,7 +11,7 @@ namespace SimpleImportExport
 {
     public class LocalEndPoint : Endpoint
     {
-        private FrameworkWrapper _fw;
+        private readonly FrameworkWrapper _fw;
 
         public LocalEndPoint(IGenericEntity ge, FrameworkWrapper fw) : base(ge)
         {
@@ -25,10 +25,7 @@ namespace SimpleImportExport
 
         public DirectoryInfo BaseDir { get; }
 
-        public override Task<Stream> GetStream(SourceFileInfo file)
-        {
-            return Task.FromResult<Stream>(File.OpenRead(Path.Combine(BaseDir.FullName, file.SourceDirectory, file.FileName)));
-        }
+        public override Task<Stream> GetStream(SourceFileInfo file) => Task.FromResult<Stream>(File.OpenRead(Path.Combine(BaseDir.FullName, file.SourceDirectory, file.FileName)));
 
         public override async Task<(long size, long? records, string destinationDirectoryPath)> SendStream(SourceFileInfo file, Endpoint source)
         {
@@ -110,9 +107,6 @@ namespace SimpleImportExport
             }
         }
 
-        public override string ToString()
-        {
-            return BaseDir.FullName;
-        }
+        public override string ToString() => BaseDir.FullName;
     }
 }

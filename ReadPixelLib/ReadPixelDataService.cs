@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Utility;
 using Utility.DataLayer;
 using Jw = Utility.JsonWrapper;
@@ -19,7 +19,7 @@ namespace ReadPixelLib
             Fw = fw;
 
             this.PixelValue = fw.StartupConfiguration.GetS("Config/PixelValue");
-            this.PixelDuration = Int32.Parse(fw.StartupConfiguration.GetS("Config/PixelDuration"));
+            this.PixelDuration = int.Parse(fw.StartupConfiguration.GetS("Config/PixelDuration"));
         }
 
         public async Task Run (HttpContext context)
@@ -31,7 +31,7 @@ namespace ReadPixelLib
                 requestFromPost = await context.GetRawBodyStringAsync();
 
                 string pixelValue = context.Request.Query["pxl"];
-                if (!String.IsNullOrEmpty(pixelValue))
+                if (!string.IsNullOrEmpty(pixelValue))
                 {
                     Stopwatch stopWatch = new Stopwatch();                    
                     stopWatch.Start();

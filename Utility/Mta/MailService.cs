@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -47,10 +46,7 @@ namespace Utility.Mta
             return vmta.Trim();
         }
 
-        protected string GenerateMissingEnvelopeId(MailPackage msg, Recipient recipient)
-        {
-            return Hashing.CalculateMD5Hash($"{msg.JobId}:{recipient.Address.Address}");
-        }
+        protected string GenerateMissingEnvelopeId(MailPackage msg, Recipient recipient) => Hashing.CalculateMD5Hash($"{msg.JobId}:{recipient.Address.Address}");
 
         protected void CleanAndValidatePackage(MailPackage pkg)
         {
@@ -67,85 +63,82 @@ namespace Utility.Mta
             if (pkg.JobId.IsNullOrWhitespace()) pkg.JobId = Guid.NewGuid().ToString();
         }
 
-        protected ICollection<RecipientMessage> GetRecipientMessages(MailPackage pkg)
-        {
-            return pkg?.To?.Where(r => r?.Address != null).Select(r =>
-            {
-                var result = new RecipientMessage();
-                var errors = new List<string>();
+        protected ICollection<RecipientMessage> GetRecipientMessages(MailPackage pkg) => pkg?.To?.Where(r => r?.Address != null).Select(r =>
+                                                                                                   {
+                                                                                                       var result = new RecipientMessage();
+                                                                                                       var errors = new List<string>();
 
-                if (r.SendId.IsNullOrWhitespace()) r.SendId = GenerateMissingEnvelopeId(pkg, r);
+                                                                                                       if (r.SendId.IsNullOrWhitespace()) r.SendId = GenerateMissingEnvelopeId(pkg, r);
 
-                result.To = r;
-                result.Subject = ReplaceTokens(pkg.Subject, r.Tokens);
-                result.Body = ReplaceTokens(pkg.Body, r.Tokens);
-                result.Headers = pkg.Headers?.Select(h => new HPair(ReplaceTokens(h.Key, r.Tokens), ReplaceTokens(h.Value, r.Tokens))) ?? Enumerable.Empty<HPair>();
-                result.From = pkg.FromHasTokens
-                    ? new Sender(ReplaceTokens(pkg.From.Name, r.Tokens), ReplaceTokens(pkg.From.LocalPart, r.Tokens), ReplaceTokens(pkg.From.Domain, r.Tokens))
-                    : pkg.From;
+                                                                                                       result.To = r;
+                                                                                                       result.Subject = ReplaceTokens(pkg.Subject, r.Tokens);
+                                                                                                       result.Body = ReplaceTokens(pkg.Body, r.Tokens);
+                                                                                                       result.Headers = pkg.Headers?.Select(h => new HPair(ReplaceTokens(h.Key, r.Tokens), ReplaceTokens(h.Value, r.Tokens))) ?? Enumerable.Empty<HPair>();
+                                                                                                       result.From = pkg.FromHasTokens
+                                                                                                           ? new Sender(ReplaceTokens(pkg.From.Name, r.Tokens), ReplaceTokens(pkg.From.LocalPart, r.Tokens), ReplaceTokens(pkg.From.Domain, r.Tokens))
+                                                                                                           : pkg.From;
 
-                var unreplaced = HasTokens(result.Subject).ToArray();
+                                                                                                       var unreplaced = HasTokens(result.Subject).ToArray();
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Subject)}: {unreplaced.Join(", ")}");
+                                                                                                       if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Subject)}: {unreplaced.Join(", ")}");
 
-                unreplaced = HasTokens(result.Body).ToArray();
+                                                                                                       unreplaced = HasTokens(result.Body).ToArray();
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Body)}: {unreplaced.Join(", ")}");
+                                                                                                       if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Body)}: {unreplaced.Join(", ")}");
 
-                unreplaced = HasTokens(result.From.Name).ToArray();
+                                                                                                       unreplaced = HasTokens(result.From.Name).ToArray();
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.From)}: {unreplaced.Join(", ")}");
+                                                                                                       if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.From)}: {unreplaced.Join(", ")}");
 
-                var badFrom = false;
+                                                                                                       var badFrom = false;
 
-                unreplaced = HasTokens(result.From.LocalPart).ToArray();
+                                                                                                       unreplaced = HasTokens(result.From.LocalPart).ToArray();
 
-                if (unreplaced.Any())
-                {
-                    badFrom = true;
-                    errors.Add($"Missing tokens for {nameof(result.From.LocalPart)}: {unreplaced.Join(", ")}");
-                }
+                                                                                                       if (unreplaced.Any())
+                                                                                                       {
+                                                                                                           badFrom = true;
+                                                                                                           errors.Add($"Missing tokens for {nameof(result.From.LocalPart)}: {unreplaced.Join(", ")}");
+                                                                                                       }
 
-                unreplaced = HasTokens(result.From.Domain).ToArray();
+                                                                                                       unreplaced = HasTokens(result.From.Domain).ToArray();
 
-                if (unreplaced.Any())
-                {
-                    badFrom = true;
-                    errors.Add($"Missing tokens for {nameof(result.From.Domain)}: {unreplaced.Join(", ")}");
-                }
+                                                                                                       if (unreplaced.Any())
+                                                                                                       {
+                                                                                                           badFrom = true;
+                                                                                                           errors.Add($"Missing tokens for {nameof(result.From.Domain)}: {unreplaced.Join(", ")}");
+                                                                                                       }
 
-                if (!badFrom)
-                {
-                    try
-                    {
-                        new MailAddress(result.From.Address);
-                    }
-                    catch (Exception)
-                    {
-                        errors.Add($"Invalid from address {result.From.Address}");
-                    }
-                }
+                                                                                                       if (!badFrom)
+                                                                                                       {
+                                                                                                           try
+                                                                                                           {
+                                                                                                               new MailAddress(result.From.Address);
+                                                                                                           }
+                                                                                                           catch (Exception)
+                                                                                                           {
+                                                                                                               errors.Add($"Invalid from address {result.From.Address}");
+                                                                                                           }
+                                                                                                       }
 
-                unreplaced = result.Headers.Select(h =>
-                {
-                    var keyTokens = HasTokens(h.Key).ToArray();
-                    var valTokens = HasTokens(h.Value).ToArray();
+                                                                                                       unreplaced = result.Headers.Select(h =>
+                                                                                                       {
+                                                                                                           var keyTokens = HasTokens(h.Key).ToArray();
+                                                                                                           var valTokens = HasTokens(h.Value).ToArray();
 
 
-                    if (!keyTokens.Any() && !valTokens.Any()) return null;
+                                                                                                           if (!keyTokens.Any() && !valTokens.Any()) return null;
 
-                    if (valTokens.Any()) return $"Key: \"{h.Key}\" Value: \"{h.Value}\"";
+                                                                                                           if (valTokens.Any()) return $"Key: \"{h.Key}\" Value: \"{h.Value}\"";
 
-                    return $"Key: \"{h.Key}\"";
-                }).Where(e => e != null).ToArray();
+                                                                                                           return $"Key: \"{h.Key}\"";
+                                                                                                       }).Where(e => e != null).ToArray();
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Headers)}:\n{unreplaced.Join("\n")}");
+                                                                                                       if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Headers)}:\n{unreplaced.Join("\n")}");
 
-                result.Errors = errors;
+                                                                                                       result.Errors = errors;
 
-                return result;
-            }).ToArray();
-        }
+                                                                                                       return result;
+                                                                                                   }).ToArray();
 
         protected class RecipientMessage
         {

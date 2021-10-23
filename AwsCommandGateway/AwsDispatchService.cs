@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Utility;
-using Jw = Utility.JsonWrapper;
 
 namespace AwsCommandGatewayLib
 
@@ -13,10 +12,7 @@ namespace AwsCommandGatewayLib
 
         public FrameworkWrapper Fw;
 
-        public void Config(FrameworkWrapper fw)
-        {
-            Fw = fw;
-        }
+        public void Config(FrameworkWrapper fw) => Fw = fw;
 
         public async Task Run (HttpContext context)
         {

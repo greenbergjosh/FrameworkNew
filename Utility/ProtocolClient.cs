@@ -939,30 +939,27 @@ namespace Utility
             return attrVals == null || attrVals.Count == 0 ? nodes.Count > 0 : SearchNodes(attrVals);
         }
 
-        private static HttpClient GetHttpClient(int maxConnectionsPerServer = 0, double timeoutSeconds = 0, DecompressionMethods decompressionMethods = DecompressionMethods.None, string proxyHostAndPort = null)
-        {
-            return _httpClients.GetOrAdd((maxConnectionsPerServer, decompressionMethods, proxyHostAndPort, timeoutSeconds), (_) =>
-            {
-                var handler = new HttpClientHandler()
-                {
-                    AutomaticDecompression = decompressionMethods,
-                    Proxy = string.IsNullOrWhiteSpace(proxyHostAndPort) ? null : new WebProxy(proxyHostAndPort)
-                };
+        private static HttpClient GetHttpClient(int maxConnectionsPerServer = 0, double timeoutSeconds = 0, DecompressionMethods decompressionMethods = DecompressionMethods.None, string proxyHostAndPort = null) => _httpClients.GetOrAdd((maxConnectionsPerServer, decompressionMethods, proxyHostAndPort, timeoutSeconds), (_) =>
+                                                                                                                                                                                                                                {
+                                                                                                                                                                                                                                    var handler = new HttpClientHandler()
+                                                                                                                                                                                                                                    {
+                                                                                                                                                                                                                                        AutomaticDecompression = decompressionMethods,
+                                                                                                                                                                                                                                        Proxy = string.IsNullOrWhiteSpace(proxyHostAndPort) ? null : new WebProxy(proxyHostAndPort)
+                                                                                                                                                                                                                                    };
 
-                if (maxConnectionsPerServer > 0)
-                {
-                    handler.MaxConnectionsPerServer = maxConnectionsPerServer;
-                }
+                                                                                                                                                                                                                                    if (maxConnectionsPerServer > 0)
+                                                                                                                                                                                                                                    {
+                                                                                                                                                                                                                                        handler.MaxConnectionsPerServer = maxConnectionsPerServer;
+                                                                                                                                                                                                                                    }
 
-                var client = new HttpClient(handler);
+                                                                                                                                                                                                                                    var client = new HttpClient(handler);
 
-                if (timeoutSeconds > 0)
-                {
-                    client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
-                }
+                                                                                                                                                                                                                                    if (timeoutSeconds > 0)
+                                                                                                                                                                                                                                    {
+                                                                                                                                                                                                                                        client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                                                                                                                                                                                                                                    }
 
-                return client;
-            });
-        }
+                                                                                                                                                                                                                                    return client;
+                                                                                                                                                                                                                                });
     }
 }

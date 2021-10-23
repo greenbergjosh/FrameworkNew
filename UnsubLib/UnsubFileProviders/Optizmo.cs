@@ -30,7 +30,7 @@ namespace UnsubLib.UnsubFileProviders
                 {
                     rxStr = ge.GetS("");
 
-                    if (rxStr.IsNullOrWhitespace()) return (Regex)null;
+                    if (rxStr.IsNullOrWhitespace()) return null;
 
                     var rx = new Regex(rxStr, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
 
@@ -96,7 +96,7 @@ namespace UnsubLib.UnsubFileProviders
                         {
                             var resGE = Jw.JsonToGenericEntity(res.body);
 
-                            if (String.Equals(resGE?.GetS("error"), "You do not have access to MD5 downloads", StringComparison.CurrentCultureIgnoreCase))
+                            if (string.Equals(resGE?.GetS("error"), "You do not have access to MD5 downloads", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 res = await ProtocolClient.HttpGetAsync(baseUrl.Replace("{format}", "plain"), timeoutSeconds: 300);
 

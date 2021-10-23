@@ -16,7 +16,7 @@ using Jw = Utility.JsonWrapper;
 
 namespace SeleniumPostmaster
 {
-    class Program
+    internal class Program
     {
 
         public static FrameworkWrapper Fw;
@@ -838,12 +838,12 @@ namespace SeleniumPostmaster
                         || (month == "September")))
             {
                 repDate = new DateTime(DateTime.Now.AddYears(-1).Year,
-                    Utility.DateWrapper.MonthFullNameToNumber[month], Int32.Parse(dayNumber));
+                    Utility.DateWrapper.MonthFullNameToNumber[month], int.Parse(dayNumber));
             }
             else
             {
                 repDate = new DateTime(DateTime.Now.Year,
-                    Utility.DateWrapper.MonthFullNameToNumber[month], Int32.Parse(dayNumber));
+                    Utility.DateWrapper.MonthFullNameToNumber[month], int.Parse(dayNumber));
             }
             return repDate;
         }

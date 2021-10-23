@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Utility;
@@ -16,10 +14,7 @@ namespace SignalApiLib.SourceHandlers
         private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
         private readonly string _defaultFailureResponse = Jw.Serialize(new { Result = "Failure" });
 
-        public Wadiya(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public Wadiya(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
         {

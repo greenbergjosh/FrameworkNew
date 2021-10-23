@@ -42,15 +42,9 @@ namespace GenericWindowsService
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::ConfigureServices...{Environment.NewLine}");
         }
 
-        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
-        {
-            File.AppendAllText(Program.LogPath, $@"Unobservered::{DateTime.Now}::{args.Exception.UnwrapForLog()}{Environment.NewLine}");
-        }
+        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args) => File.AppendAllText(Program.LogPath, $@"Unobservered::{DateTime.Now}::{args.Exception.UnwrapForLog()}{Environment.NewLine}");
 
-        private void UnhandledExceptionEventHandler(object sender, UnhandledExceptionEventArgs e)
-        {
-            File.AppendAllText(Program.LogPath, $@"Unhandled::{DateTime.Now}::{((Exception)e.ExceptionObject).UnwrapForLog()}{Environment.NewLine}");
-        }
+        private void UnhandledExceptionEventHandler(object sender, UnhandledExceptionEventArgs e) => File.AppendAllText(Program.LogPath, $@"Unhandled::{DateTime.Now}::{((Exception)e.ExceptionObject).UnwrapForLog()}{Environment.NewLine}");
 
         private void OnShutdown()
         {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace QuickTester
 {
-    class ChannelsTester
+    internal class ChannelsTester
     {
         public static async Task SingleProduceMultipleConsumers()
         {
@@ -504,10 +504,7 @@ namespace QuickTester
             }
         }
 
-        public static IEnumerable<string> channelProducer()
-        {
-            return GetStrings();
-        }
+        public static IEnumerable<string> channelProducer() => GetStrings();
 
         public static async Task channelConsumer(string msg)
         {

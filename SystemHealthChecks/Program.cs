@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.EDW.Logging;
@@ -13,11 +12,11 @@ using Jw = Utility.JsonWrapper;
 
 namespace SystemHealthChecks
 {
-    class Program
+    internal class Program
     {
         private static FrameworkWrapper _fw = null;
 
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             try
             {

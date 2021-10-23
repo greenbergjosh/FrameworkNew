@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ namespace Utility.Entity
     public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
     public delegate (Task<Entity> entity, string query) EntityRetriever(Entity baseEntity, Uri uri);
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
-    public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<object> functionArguments, string query);
+    public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query);
 
     public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 
@@ -21,11 +20,7 @@ namespace Utility.Entity
         private readonly EntityConfig _config;
         private readonly EntityDocument _value;
 
-        public string Query
-        {
-            get { return _value?.Query; }
-            internal set { _value.Query = value; }
-        }
+        public string Query { get; internal set; }
 
         public Entity Root { get; init; }
 
@@ -37,15 +32,11 @@ namespace Utility.Entity
 
         public EntityValueType ValueType => _value?.ValueType ?? EntityValueType.Undefined;
 
-        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null));
+        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
 
+        private Entity(EntityConfig config) => _config = config ?? throw new ArgumentNullException(nameof(config));
 
-        private Entity(EntityConfig config)
-        {
-            _config = config ?? throw new ArgumentNullException(nameof(config));
-        }
-
-        private Entity(EntityDocument value, Entity root, EntityConfig config)
+        private Entity(EntityDocument value, Entity root, EntityConfig config, string query)
         {
             if (value != null)
             {
@@ -60,21 +51,20 @@ namespace Utility.Entity
             _config = config;
 
             Root = root?.Root ?? this;
+            Query = query;
         }
 
         public static Entity Initialize(EntityConfig config) => new(config);
 
-        public Entity Create<T>(T value, string query = null) => Create(EntityDocument.MapValue(value, query));
+        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), this, _config, query);
 
-        public Entity Clone(string query) => Create(Document.Clone(query));
-
-        public Entity Create(EntityDocument entityDocument) => new(entityDocument, this, _config);
+        public Entity Clone(string query) => Create(Document, query);
 
         public async Task<Entity> Parse(string contentType, string content)
         {
             var entityDocument = await _config.Parser(this, contentType, content);
 
-            return new Entity(entityDocument, null, _config);
+            return new Entity(entityDocument, null, _config, "$");
         }
 
         public Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(this, query);

@@ -1,10 +1,10 @@
-﻿using Amazon.Kinesis.ClientLibrary;
-using Amazon.Kinesis.ClientLibrary.Bootstrap;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.Kinesis.ClientLibrary;
+using Amazon.Kinesis.ClientLibrary.Bootstrap;
+using Microsoft.AspNetCore.Http;
 using Utility;
 
 namespace AwsKinesisConsumerDataLib

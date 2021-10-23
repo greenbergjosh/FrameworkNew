@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Utility
 {
     public class QC
     {
-        private bool[] Quotes;
+        private readonly bool[] Quotes;
         public QC(bool[] quotes) => Quotes = quotes;
 
         public bool V(int i) => (Quotes == null || Quotes.Length < i + 1) ? true : Quotes[i];
@@ -35,13 +35,10 @@ namespace Utility
 
         public static A C(params IJ[] js) => new A(js);
 
-        public override string ToString()
-        {
-            return string.Concat("[",
+        public override string ToString() => string.Concat("[",
                 string.Join(",",
                     js.Select(p => p.ToString())),
                 "]");
-        }
     }
 
     public class SL : IJ
@@ -190,7 +187,7 @@ namespace Utility
 
     public class PL : IJ
     {
-        private static Dictionary<Type, JsonToPlAction> jsonActions = new Dictionary<Type, JsonToPlAction>
+        private static readonly Dictionary<Type, JsonToPlAction> jsonActions = new Dictionary<Type, JsonToPlAction>
         {
             { typeof(string), new JsonToPlAction(true) },
             { typeof(DateTime), new JsonToPlAction(true) },
@@ -335,20 +332,14 @@ namespace Utility
 
         public static PL D(IDictionary<string, object> d, bool q = true) => new PL(d, q);
 
-        public static string OM(IEnumerable<PL> pls)
-        {
-            return string.Concat("{",
+        public static string OM(IEnumerable<PL> pls) => string.Concat("{",
                 string.Join(",",
                     pls.SelectMany(pl => pl.ps).Select(p => QC.Q(p.Item1) + ":" + (p.Item3 ? QC.Q(p.Item2) : p.Item2))),
                 "}");
-        }
 
-        public static PL O(IEnumerable<object> os, List<List<string>> names = null, bool[][] quotes = null)
-        {
-            return PL.C(os.Select((o, i) => PL.O(o,
-                (names != null && names.Count > i) ? names[i] : null,
-                (quotes != null && quotes.Length > i) ? quotes[i] : null)));
-        }
+        public static PL O(IEnumerable<object> os, List<List<string>> names = null, bool[][] quotes = null) => PL.C(os.Select((o, i) => PL.O(o,
+                                                                                                                             (names != null && names.Count > i) ? names[i] : null,
+                                                                                                                             (quotes != null && quotes.Length > i) ? quotes[i] : null)));
 
         public static PL O(object o, bool[] quotes) => PL.O(o, null, quotes);
 
@@ -407,13 +398,10 @@ namespace Utility
             return PL.C(ls);
         }
 
-        public override string ToString()
-        {
-            return string.Concat("{",
+        public override string ToString() => string.Concat("{",
                 string.Join(",",
                     ps.Select(p => QC.Q(p.Item1) + ":" + (p.Item3 ? QC.Q(p.Item2) : p.Item2))),
                 "}");
-        }
 
         private class JsonToPlAction
         {

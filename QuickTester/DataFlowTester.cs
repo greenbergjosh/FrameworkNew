@@ -233,13 +233,10 @@ namespace QuickTester
         }
 
         // The lambda in here should be stripped down to the minimum it can be and should maybe work with FW and should use GlobalConfig instead of fname
-        public static object CreateRoslynCompatibleFunction(RoslynWrapper rw, string fname, string[] args)
-        {
-            return
-                Funcify(async (object msg) =>
-                {
-                    try
-                    {
+        public static object CreateRoslynCompatibleFunction(RoslynWrapper rw, string fname, string[] args) => Funcify(async (object msg) =>
+                                                                                                            {
+                                                                                                                try
+                                                                                                                {
                         // Maybe call the LBM and cast its result
                         Console.WriteLine($"{args[0]}: Before delay");
                         //Console.WriteLine("lbm" + lbmId.ToString());
@@ -248,19 +245,18 @@ namespace QuickTester
                         //    new { msg, err = fw.Err }, new StateWrapper());
                         //var lbmResult = await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
                         await Task.Delay(100);
-                        Console.WriteLine($"{args[0]}: After delay");
+                                                                                                                    Console.WriteLine($"{args[0]}: After delay");
                         //return Convert.ChangeType(lbmResult, Type.GetType(destType));
                         //return new Msg { x = 1, HasError = false };
                         //return new Msg((Msg)msg);
                         return (Msg)msg;
                         //return await rw[fname](new { msg }, new StateWrapper());
                     }
-                    catch
-                    {
-                        return new Msg { x = 0, HasError = false };
-                    }
-                });
-        }
+                                                                                                                catch
+                                                                                                                {
+                                                                                                                    return new Msg { x = 0, HasError = false };
+                                                                                                                }
+                                                                                                            });
 
 
         public class DynamicBlock : System.Dynamic.DynamicObject
@@ -375,7 +371,7 @@ namespace QuickTester
         }
 
         public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, object f,
-            int maxParallelism, int boundedCapacity, bool ensureOrdered, List<String> args = null)
+            int maxParallelism, int boundedCapacity, bool ensureOrdered, List<string> args = null)
         {
             try
             {
@@ -433,11 +429,9 @@ namespace QuickTester
             }
         }
 
-        public static Func<T, TResult> Funcify<T, TResult>(Func<T, TResult> f)
-        { return f; }
+        public static Func<T, TResult> Funcify<T, TResult>(Func<T, TResult> f) => f;
 
-        public static Func<T> Actionify<T>(Func<T> f)
-        { return f; }
+        public static Func<T> Actionify<T>(Func<T> f) => f;
 
         public class Msg
         {

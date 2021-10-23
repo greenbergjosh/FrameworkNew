@@ -47,43 +47,40 @@ namespace Utility
         // Probably just a bool argument called forceRecompile
         public ScriptDescriptor CompileAndCache(ScriptDescriptor sd, bool update = false)
         {
-            Lazy<ScriptDescriptor> valueFactory(string __)
-            {
-                return new Lazy<ScriptDescriptor>(() =>
-                {
-                    var dynamicAssemblies = Regex.Matches(sd.Code, @"#r\s+""([A-Za-z][^ \r\n]+)\.dll""\s*\r\n").Select(match => Assembly.Load(match.Groups[1].Value)).ToArray();
+            Lazy<ScriptDescriptor> valueFactory(string __) => new Lazy<ScriptDescriptor>(() =>
+                                                                            {
+                                                                                var dynamicAssemblies = Regex.Matches(sd.Code, @"#r\s+""([A-Za-z][^ \r\n]+)\.dll""\s*\r\n").Select(match => Assembly.Load(match.Groups[1].Value)).ToArray();
 
-                    sd.Code = Regex.Replace(sd.Code, "(#r.+\r\n)", "//$1");
-                    var scriptOptions = ScriptOptions.Default
-                        .AddReferences(
-                            Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
-                            Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
-                            Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
-                            Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
-                            Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
-                            Assembly.GetAssembly(typeof(JsonWrapper)),
-                            Assembly.GetAssembly(typeof(HtmlAgilityPack.HtmlAttribute)),
-                            Assembly.GetAssembly(typeof(TurnerSoftware.SitemapTools.SitemapEntry)),
-                            Assembly.GetAssembly(typeof(SetCookieHeaderValue))
-                        )
-                        .AddReferences(dynamicAssemblies)
-                        .AddImports("System.Dynamic", "System.Xml", "System.Linq");
+                                                                                sd.Code = Regex.Replace(sd.Code, "(#r.+\r\n)", "//$1");
+                                                                                var scriptOptions = ScriptOptions.Default
+                                                                                    .AddReferences(
+                                                                                        Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
+                                                                                        Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
+                                                                                        Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
+                                                                                        Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
+                                                                                        Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
+                                                                                        Assembly.GetAssembly(typeof(JsonWrapper)),
+                                                                                        Assembly.GetAssembly(typeof(HtmlAgilityPack.HtmlAttribute)),
+                                                                                        Assembly.GetAssembly(typeof(TurnerSoftware.SitemapTools.SitemapEntry)),
+                                                                                        Assembly.GetAssembly(typeof(SetCookieHeaderValue))
+                                                                                    )
+                                                                                    .AddReferences(dynamicAssemblies)
+                                                                                    .AddImports("System.Dynamic", "System.Xml", "System.Linq");
 
-                    if (sd.Debug)
-                    {
-                        scriptOptions = scriptOptions
-                            .WithFilePath(GenerateDebugSourceFile(sd))
-                            .WithFileEncoding(System.Text.Encoding.UTF8)
-                            .WithEmitDebugInformation(true);
-                    }
+                                                                                if (sd.Debug)
+                                                                                {
+                                                                                    scriptOptions = scriptOptions
+                                                                                        .WithFilePath(GenerateDebugSourceFile(sd))
+                                                                                        .WithFileEncoding(System.Text.Encoding.UTF8)
+                                                                                        .WithEmitDebugInformation(true);
+                                                                                }
 
-                    var scriptc = CSharpScript.Create<object>(sd.Code, scriptOptions, globalsType: typeof(Globals));
-                    scriptc.Compile();
-                    sd.Script = scriptc.CreateDelegate();
+                                                                                var scriptc = CSharpScript.Create<object>(sd.Code, scriptOptions, globalsType: typeof(Globals));
+                                                                                scriptc.Compile();
+                                                                                sd.Script = scriptc.CreateDelegate();
 
-                    return sd;
-                });
-            }
+                                                                                return sd;
+                                                                            });
 
             return functions.AddOrUpdate(sd.Key, valueFactory, (__, lazy) => update ? valueFactory(__) : lazy).Value;
         }
@@ -113,10 +110,7 @@ namespace Utility
             return RunFunction(sd.Key, parms, state);
         }
 
-        public void ClearCache()
-        {
-            functions.Clear();
-        }
+        public void ClearCache() => functions.Clear();
 
         public Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state)
         {

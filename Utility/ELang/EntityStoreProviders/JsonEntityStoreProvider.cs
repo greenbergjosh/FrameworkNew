@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,12 +12,11 @@ namespace Framework.Core.EntityStoreProviders
 {
     internal class JsonEntityStoreProvider : IEntityStoreProvider
     {
-        private static ConcurrentDictionary<Guid, Entity> _entities = new ConcurrentDictionary<Guid, Entity>();
+        private static readonly ConcurrentDictionary<Guid, Entity> _entities = new ConcurrentDictionary<Guid, Entity>();
 
         public async Task<Entity> GetEntity(Guid entityId)
         {
-            Entity entity;
-            _entities.TryGetValue(entityId, out entity);
+            _entities.TryGetValue(entityId, out Entity entity);
             return await Task.FromResult(entity);
         }
 

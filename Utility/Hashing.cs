@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -58,25 +57,22 @@ namespace Utility
             //return sb.ToString();
         }
 
-        public static string Base64EncodeForUrl(string s)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(s)).Replace('+', '-').Replace('/', '_').Replace('=', '~').Trim();
-        }
+        public static string Base64EncodeForUrl(string s) => Convert.ToBase64String(Encoding.UTF8.GetBytes(s)).Replace('+', '-').Replace('/', '_').Replace('=', '~').Trim();
 
         public static string Base64DecodeFromUrl(string s)
         {
-            if (String.IsNullOrEmpty(s)) return s;
+            if (string.IsNullOrEmpty(s)) return s;
             return Encoding.UTF8.GetString(
                 Convert.FromBase64String(s.Replace('-', '+').Replace('_', '/').Replace('~', '=')));
         }
 
         public static string CalculateMD5Hash(string input)
         {
-            String hash;
+            string hash;
 
             using (var md5 = System.Security.Cryptography.MD5.Create())
             {
-                hash = String.Concat(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input))
+                hash = string.Concat(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input))
                   .Select(x => x.ToString("x2")));
             }
 
@@ -85,24 +81,21 @@ namespace Utility
 
         public static string CalculateSHA512Hash(string input)
         {
-            String hash;
+            string hash;
 
             using (var sha512 = System.Security.Cryptography.SHA512.Create())
             {
-                hash = String.Concat(sha512.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input))
+                hash = string.Concat(sha512.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input))
                   .Select(x => x.ToString("x2")));
             }
 
             return hash;
         }
 
-        public static byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
+        public static byte[] StringToByteArray(string hex) => Enumerable.Range(0, hex.Length)
                              .Where(x => x % 2 == 0)
                              .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                              .ToArray();
-        }
 
         public static string ByteArrayToString(byte[] ba)
         {

@@ -84,11 +84,8 @@ namespace Utility.EDW
 
         public async Task<LoadBalancedWriter.Result> Write(object w) => await Write(w, writeTimeoutSec);
 
-        public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds)
-        {
-            return await Write(w, timeoutSeconds, initiateWalkaway, selector, novalid,
+        public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds) => await Write(w, timeoutSeconds, initiateWalkaway, selector, novalid,
                 failure, unhandled).ConfigureAwait(false);
-        }
 
         public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds,
             InitiateWalkawayDelegate initiateWalkaway,

@@ -12,28 +12,13 @@ namespace Utility.GenericEntity
         public Dictionary<string, object> _state = new Dictionary<string, object>();
         public RoslynWrapper rw;
 
-        public virtual void InitializeEntity(RoslynWrapper rw, object configuration, object data)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual void InitializeEntity(RoslynWrapper rw, object configuration, object data) => throw new NotImplementedException();
 
-        public virtual object this[string path]
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public virtual object this[string path] => throw new NotImplementedException();
 
-        public virtual Dictionary<string, object> State
-        {
-            get
-            {
-                return _state;
-            }
-        }
+        public virtual Dictionary<string, object> State => _state;
 
-        private Dictionary<string, Func<IGenericEntity, Dictionary<string, object>, string, object>> _callbacks =
+        private readonly Dictionary<string, Func<IGenericEntity, Dictionary<string, object>, string, object>> _callbacks =
             new Dictionary<string, Func<IGenericEntity, Dictionary<string, object>, string, object>>();
 
         public void RegisterNamedCallback(string callbackName, Func<IGenericEntity, Dictionary<string, object>, string, object> callback)
@@ -43,8 +28,7 @@ namespace Utility.GenericEntity
 
         public object Cb(string callbackName, string args)
         {
-            Func<IGenericEntity, Dictionary<string, object>, string, object> cf;
-            _callbacks.TryGetValue(callbackName, out cf);
+            _callbacks.TryGetValue(callbackName, out Func<IGenericEntity, Dictionary<string, object>, string, object> cf);
             if (cf != null)
             {
                 return cf(this, _state, args);
@@ -52,47 +36,23 @@ namespace Utility.GenericEntity
             return null;
         }
 
-        public virtual IEnumerable<IGenericEntity> GetL(string path)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual IEnumerable<IGenericEntity> GetL(string path) => throw new NotImplementedException();
 
-        public virtual IEnumerable<string> GetLS(string path, bool quoteStrings = false)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual IEnumerable<string> GetLS(string path, bool quoteStrings = false) => throw new NotImplementedException();
 
-        public virtual IGenericEntity GetE(string path)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual IGenericEntity GetE(string path) => throw new NotImplementedException();
 
-        public virtual IEnumerable<IGenericEntity> GetEs(string path)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual IEnumerable<IGenericEntity> GetEs(string path) => throw new NotImplementedException();
 
-        public virtual IEnumerable<Tuple<string, string>> GetD(string path)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual IEnumerable<Tuple<string, string>> GetD(string path) => throw new NotImplementedException();
 
-        public virtual IEnumerable<(string key, IGenericEntity entity)> GetDe(string path)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual IEnumerable<(string key, IGenericEntity entity)> GetDe(string path) => throw new NotImplementedException();
 
         public abstract bool HasPath(string path);
 
-        public virtual object Get(string path)
-        {
-            return this[path];
-        }
+        public virtual object Get(string path) => this[path];
 
-        public virtual object Run(string fname)
-        {
-            return Get(null, fname);
-        }
+        public virtual object Run(string fname) => Get(null, fname);
 
         public virtual object Get(string path, string fname)
         {
@@ -121,25 +81,13 @@ namespace Utility.GenericEntity
             return null;
         }
 
-        public virtual T Get<T>(string path)
-        {
-            return (T)Get(path);
-        }
+        public virtual T Get<T>(string path) => (T)Get(path);
 
-        public virtual T Run<T>(string fname)
-        {
-            return (T)Run(fname);
-        }
+        public virtual T Run<T>(string fname) => (T)Run(fname);
 
-        public virtual T Get<T>(string path, string fname)
-        {
-            return (T)Get(path, fname);
-        }
+        public virtual T Get<T>(string path, string fname) => (T)Get(path, fname);
 
-        public virtual void Set(string path, object value)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual void Set(string path, object value) => throw new NotImplementedException();
 
         public virtual string GetS(string path, char? quoteChar = null)
         {

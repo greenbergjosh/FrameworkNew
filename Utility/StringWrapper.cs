@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Utility
 {
@@ -25,9 +23,6 @@ namespace Utility
                 s.Substring(idx + 1, s.Length - idx - 1)));
         }
 
-        public static int TrailingInt(string s)
-        {
-            return Int32.Parse(string.Concat(s.ToArray().Reverse().TakeWhile(char.IsNumber).Reverse()));
-        }
+        public static int TrailingInt(string s) => int.Parse(string.Concat(s.ToArray().Reverse().TakeWhile(char.IsNumber).Reverse()));
     }
 }

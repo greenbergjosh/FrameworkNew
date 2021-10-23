@@ -36,11 +36,11 @@ namespace Utility.Entity.QueryLanguage
             {
                 var selector = query[index] switch
                 {
-                    '$' => AddRootNode(query, ref index),
+                    '$' => AddRootNode(entity, query, ref index),
                     '@' => AddLocalNode(ref index),
-                    '.' => AddPropertyOrNestedDescentOrRef(query, ref index),
+                    '.' => AddPropertyOrNestedDescentOrRef(entity, query, ref index),
                     '[' => AddIndex(entity, query, ref index),
-                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRef(query, ref index, true),
+                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRef(entity, query, ref index, true),
                     _ => null
                 };
 
@@ -147,7 +147,7 @@ namespace Utility.Entity.QueryLanguage
             return new LocalNodeSelector();
         }
 
-        private static ISelector AddPropertyOrNestedDescentOrRef(ReadOnlySpan<char> query, ref int index, bool noDot = false)
+        private static ISelector AddPropertyOrNestedDescentOrRef(Entity entity, ReadOnlySpan<char> query, ref int index, bool noDot = false)
         {
             var slice = query[index..];
 
@@ -193,21 +193,17 @@ namespace Utility.Entity.QueryLanguage
                 var functionName = slice[..propertyNameLength].ToString();
                 index++;
                 var current = ',';
-                var functionArguments = new List<(object argument, char? enclosingCharacter)>();
+                var functionArguments = new List<Entity>();
                 while (current == ',')
                 {
                     Helpers.ConsumeWhitespace(query, ref index);
-                    if (Helpers.TryGetInt(query, ref index, out var number))
+                    if (Helpers.TryParseEntityDocument(query, ref index, out var argumentEntityDocument))
                     {
-                        functionArguments.Add((number, null));
-                    }
-                    else if (Helpers.TryGetString(query, ref index, out var text, out var enclosingCharacter))
-                    {
-                        functionArguments.Add((text, enclosingCharacter));
+                        functionArguments.Add(entity.Create(argumentEntityDocument, argumentEntityDocument.ToString()));
                     }
                     else
                     {
-                        return new ErrorSelector($"Functions only support int and string types as arguments near position {index}");
+                        return new ErrorSelector($"Unsupported function argument type near position {index}");
                     }
 
                     current = query[index++];
@@ -222,11 +218,11 @@ namespace Utility.Entity.QueryLanguage
             }
         }
 
-        private static ISelector AddRootNode(ReadOnlySpan<char> query, ref int index)
+        private static ISelector AddRootNode(Entity entity, ReadOnlySpan<char> query, ref int index)
         {
             if (index + 1 < query.Length && IsValidForPropertyName(query[index + 1]))
             {
-                return AddPropertyOrNestedDescentOrRef(query, ref index, true);
+                return AddPropertyOrNestedDescentOrRef(entity, query, ref index, true);
             }
             else
             {

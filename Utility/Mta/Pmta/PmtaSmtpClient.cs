@@ -137,14 +137,11 @@ namespace Utility.Mta.Pmta
             if (Buffer.ResultCode != 250) throw PmtaException("Error sending DATA", Buffer);
         }
 
-        public void Dispose()
-        {
-            Close().GetAwaiter().GetResult();
-        }
+        public void Dispose() => Close().GetAwaiter().GetResult();
 
         private class StreamBuffer
         {
-            private NetworkStream _networkStream;
+            private readonly NetworkStream _networkStream;
             private const int Timeout = 120000;
 
             public StreamBuffer(NetworkStream networkStream, Func<string, Task> smtpTrace, Func<string, PmtaException> pmtaException)

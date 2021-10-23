@@ -11,15 +11,9 @@ namespace UnsubJobServer
     {
         private FrameworkWrapper _fw;
 
-        public void Config(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public void Config(FrameworkWrapper fw) => _fw = fw;
 
-        public void OnStart()
-        {
-            _fw.Log(nameof(OnStart), "Service started").Wait();
-        }
+        public void OnStart() => _fw.Log(nameof(OnStart), "Service started").Wait();
 
         public async Task Run(HttpContext context) => await HandleHttpRequest(context);
 

@@ -6,43 +6,26 @@ namespace Framework.Core
 {
     public static class DictionaryExtensions
     {
-        public static IDictionary<string, object> Get(this IDictionary<string, object> dictionary, string key)
-        {
-            return dictionary.Get<IDictionary<string, object>>(key);
-        }
+        public static IDictionary<string, object> Get(this IDictionary<string, object> dictionary, string key) => dictionary.Get<IDictionary<string, object>>(key);
 
-        public static IDictionary<string, object> Get(this IDictionary<string, object> dictionary, string key, IDictionary<string, object> defaultValue = null)
-        {
-            return dictionary.Get<IDictionary<string, object>>(key, defaultValue);
-        }
+        public static IDictionary<string, object> Get(this IDictionary<string, object> dictionary, string key, IDictionary<string, object> defaultValue = null) => dictionary.Get<IDictionary<string, object>>(key, defaultValue);
 
-        public static IList<IDictionary<string, object>> GetList(this IDictionary<string, object> dictionary, string key, IList<IDictionary<string, object>> defaultValue = null)
-        {
-            return dictionary.Get(key, defaultValue);
-        }
+        public static IList<IDictionary<string, object>> GetList(this IDictionary<string, object> dictionary, string key, IList<IDictionary<string, object>> defaultValue = null) => dictionary.Get(key, defaultValue);
 
-        public static TOutput Get<TOutput>(this IDictionary<string, object> dictionary, string key)
-        {
-            return dictionary.Get<object, TOutput>(key);
-        }
+        public static TOutput Get<TOutput>(this IDictionary<string, object> dictionary, string key) => dictionary.Get<object, TOutput>(key);
 
-        public static TOutput Get<TOutput>(this IDictionary<string, object> dictionary, string key, TOutput defaultValue)
-        {
-            return dictionary.Get<object, TOutput>(key, defaultValue);
-        }
+        public static TOutput Get<TOutput>(this IDictionary<string, object> dictionary, string key, TOutput defaultValue) => dictionary.Get<object, TOutput>(key, defaultValue);
 
         public static TOutput Get<TValue, TOutput>(this IDictionary<string, TValue> dictionary, string key)
         {
-            TOutput value;
-            if (!TryGetValue(dictionary, key, out value))
+            if (!TryGetValue(dictionary, key, out TOutput value))
                 throw new KeyNotFoundException("Key [" + key + "] not found.");
             return value;
         }
 
         public static TOutput Get<TValue, TOutput>(this IDictionary<string, TValue> dictionary, string key, TOutput defaultValue)
         {
-            TOutput value;
-            TryGetValue(dictionary, key, out value, defaultValue);
+            TryGetValue(dictionary, key, out TOutput value, defaultValue);
             return value;
         }
 
@@ -52,8 +35,7 @@ namespace Framework.Core
             if (dictionary == null)
                 return false;
 
-            TValue o;
-            if (dictionary.TryGetValue(key, out o))
+            if (dictionary.TryGetValue(key, out TValue o))
             {
                 value = (TOutput)Get(typeof(TOutput), o);
                 return true;
@@ -64,16 +46,14 @@ namespace Framework.Core
 
         public static TOutput Get<TOutput>(this IReadOnlyDictionary<string, object> dictionary, string key)
         {
-            TOutput value;
-            if (!TryGetValue(dictionary, key, out value))
+            if (!TryGetValue(dictionary, key, out TOutput value))
                 throw new KeyNotFoundException("Key [" + key + "] not found.");
             return value;
         }
 
         public static TOutput Get<TOutput>(this IReadOnlyDictionary<string, object> dictionary, string key, TOutput defaultValue)
         {
-            TOutput value;
-            TryGetValue(dictionary, key, out value, defaultValue);
+            TryGetValue(dictionary, key, out TOutput value, defaultValue);
             return value;
         }
 
@@ -83,8 +63,7 @@ namespace Framework.Core
             if (dictionary == null)
                 return false;
 
-            object o;
-            if (dictionary.TryGetValue(key, out o))
+            if (dictionary.TryGetValue(key, out object o))
             {
                 value = (TOutput)Get(typeof(TOutput), o);
                 return true;

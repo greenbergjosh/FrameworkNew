@@ -27,10 +27,7 @@ namespace EdwRollupLib
 
         private readonly WithEventsMaker<IJobExecutionContext> _withEventsMaker;
 
-        public MaintenanceJob()
-        {
-            _withEventsMaker = new WithEventsMaker<IJobExecutionContext>(DropStartEvent, DropEndEvent, DropErrorEvent);
-        }
+        public MaintenanceJob() => _withEventsMaker = new WithEventsMaker<IJobExecutionContext>(DropStartEvent, DropEndEvent, DropErrorEvent);
 
         public async Task Execute(IJobExecutionContext context)
         {

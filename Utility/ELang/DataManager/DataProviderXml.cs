@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Xml;
 
 namespace DataManager
@@ -17,14 +13,8 @@ namespace DataManager
         {
             if (data is XmlNode) _root = (data as XmlNode);
         }
-       
-        public override object this[string path]
-        {
-            get
-            {
-                return _root.SelectSingleNode(path).InnerText;
-            }
-        }
+
+        public override object this[string path] => _root.SelectSingleNode(path).InnerText;
 
         public override IEnumerable<IGenericEntity> GetL(string path)
         {

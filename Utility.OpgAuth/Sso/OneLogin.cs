@@ -8,10 +8,7 @@ namespace Utility.OpgAuth.Sso
     {
         private IGenericEntity _config;
 
-        public override void Init(FrameworkWrapper fw, IGenericEntity init)
-        {
-            _config = init;
-        }
+        public override void Init(FrameworkWrapper fw, IGenericEntity init) => _config = init;
 
         public override string PlatformType { get; } = "OneLogin";
 

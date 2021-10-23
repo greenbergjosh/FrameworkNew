@@ -11,7 +11,7 @@ using Jw = Utility.JsonWrapper;
 
 namespace SpamhausMonitor
 {
-    class Program
+    internal class Program
     {
 
         private static FrameworkWrapper Fw;
@@ -102,7 +102,7 @@ namespace SpamhausMonitor
             Console.WriteLine($"domain count: {domainResponses.Count}, ip count : {ipResponses.Count}");
         }
 
-        static async Task<bool> CheckDomainListing(BlockingCollection<string> domainResponses, List<string> IgnoreResponseList, IGenericEntity domainGe, IGenericEntity domainServers, string partnerId, string statusJobId)
+        private static async Task<bool> CheckDomainListing(BlockingCollection<string> domainResponses, List<string> IgnoreResponseList, IGenericEntity domainGe, IGenericEntity domainServers, string partnerId, string statusJobId)
         {
             bool listedAnywhere = false;
             var domain = domainGe.GetS("domain");
@@ -135,7 +135,7 @@ namespace SpamhausMonitor
             return listedAnywhere;
         }
 
-        static async Task<bool> CheckDomainIpListing(BlockingCollection<string> ipResponses, List<string> IgnoreResponseList, IGenericEntity domainGe, IGenericEntity ipServers, string partnerId, string statusJobId, string nameServer)
+        private static async Task<bool> CheckDomainIpListing(BlockingCollection<string> ipResponses, List<string> IgnoreResponseList, IGenericEntity domainGe, IGenericEntity ipServers, string partnerId, string statusJobId, string nameServer)
         {
             bool listedAnywhere = false;
 

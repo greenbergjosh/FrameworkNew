@@ -1,16 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -25,21 +22,19 @@ namespace GenericDataService
         public dynamic DataService;
         private bool _dataServiceHasReInit = false;
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-            _ = services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-                    // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio 
-                    // We don't want a "*", because no browser supports that.  The lambda below returns the origin
-                    // domain explicitly, which is what we were doing before the upgrade above.
-                    .SetIsOriginAllowed(x => { return true; })
-                    );
-            })
+        public void ConfigureServices(IServiceCollection services) => _ = services.AddCors(options =>
+                                                                    {
+                                                                        options.AddPolicy("CorsPolicy",
+                                                                            builder => builder
+                                                                            .AllowAnyMethod()
+                                                                            .AllowAnyHeader()
+                                                                            .AllowCredentials()
+                                                                            // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio 
+                                                                            // We don't want a "*", because no browser supports that.  The lambda below returns the origin
+                                                                            // domain explicitly, which is what we were doing before the upgrade above.
+                                                                            .SetIsOriginAllowed(x => { return true; })
+                                                                            );
+                                                                    })
             .Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -47,7 +42,6 @@ namespace GenericDataService
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             })
             .AddDistributedMemoryCache();
-        }
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args) => File.AppendAllText("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
 

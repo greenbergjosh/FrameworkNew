@@ -1,16 +1,16 @@
-﻿using RedLockNet.SERedis;
-using StackExchange.Redis;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
+using RedLockNet.SERedis;
+using StackExchange.Redis;
 
 namespace RedisScheduler
 {
     public static class Consumer
     {
-        static byte[] scriptHash = null;
+        private static byte[] scriptHash = null;
 
         public static void Run(ConnectionMultiplexer mp, IDatabase db, RedLockFactory lockFactory, ReaderWriterLockSlim eventLock)
         {
@@ -39,7 +39,7 @@ namespace RedisScheduler
             });
         }
 
-        static void LoadLuaScript(IDatabase db)
+        private static void LoadLuaScript(IDatabase db)
         {
             using (var stream = typeof(Consumer).Assembly.GetManifestResourceStream(
                 "RedisScheduler.MsgToThread.lua"))
@@ -54,7 +54,7 @@ namespace RedisScheduler
             }
         }
 
-        static bool ReadMessage(IDatabase db, RedLockFactory redlockFactory)
+        private static bool ReadMessage(IDatabase db, RedLockFactory redlockFactory)
         {
             var parts = (string[])db.ScriptEvaluate(scriptHash,  null);
             if (parts == null)
@@ -85,7 +85,7 @@ namespace RedisScheduler
             return true;
         }
 
-        static void RunThread(IDatabase db, RedLockFactory redlockFactory, string id)
+        private static void RunThread(IDatabase db, RedLockFactory redlockFactory, string id)
         {
             var timeout = TimeSpan.FromMinutes(5); // Lock timeout for a threads evaluation. 
                                                    // Need to find a way to extend it for long running task

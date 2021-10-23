@@ -17,154 +17,136 @@ namespace EdwRollupLib
             _dropErrorEvent = dropErrorEvent;
         }
 
-        public Func<T, Task<T>> WithEvents(Func<T, T> dataflowTask, Func<T, string> stepContextGetter)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
+        public Func<T, Task<T>> WithEvents(Func<T, T> dataflowTask, Func<T, string> stepContextGetter) => async (input) =>
+                                                                                                                    {
+                                                                                                                        var start = DateTime.Now;
 
-                await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                        await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
 
-                try
-                {
-                    return dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
-                }
-            };
-        }
+                                                                                                                        try
+                                                                                                                        {
+                                                                                                                            return dataflowTask(input);
+                                                                                                                        }
+                                                                                                                        catch (Exception ex)
+                                                                                                                        {
+                                                                                                                            await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
+                                                                                                                            throw;
+                                                                                                                        }
+                                                                                                                        finally
+                                                                                                                        {
+                                                                                                                            var end = DateTime.Now;
+                                                                                                                            await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                        }
+                                                                                                                    };
 
-        public Func<T, Task<IEnumerable<T>>> WithEvents(Func<T, IEnumerable<T>> dataflowTask, Func<T, string> stepContextGetter)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
+        public Func<T, Task<IEnumerable<T>>> WithEvents(Func<T, IEnumerable<T>> dataflowTask, Func<T, string> stepContextGetter) => async (input) =>
+                                                                                                                                              {
+                                                                                                                                                  var start = DateTime.Now;
 
-                await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                                                  await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
 
-                try
-                {
-                    return dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
-                }
-            };
-        }
+                                                                                                                                                  try
+                                                                                                                                                  {
+                                                                                                                                                      return dataflowTask(input);
+                                                                                                                                                  }
+                                                                                                                                                  catch (Exception ex)
+                                                                                                                                                  {
+                                                                                                                                                      await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
+                                                                                                                                                      throw;
+                                                                                                                                                  }
+                                                                                                                                                  finally
+                                                                                                                                                  {
+                                                                                                                                                      var end = DateTime.Now;
+                                                                                                                                                      await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                                                  }
+                                                                                                                                              };
 
-        public Func<T, Task<T>> WithEvents(Func<T, Task<T>> dataflowTask, Func<T, string> stepContextGetter)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
+        public Func<T, Task<T>> WithEvents(Func<T, Task<T>> dataflowTask, Func<T, string> stepContextGetter) => async (input) =>
+                                                                                                                          {
+                                                                                                                              var start = DateTime.Now;
 
-                await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                              await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
 
-                try
-                {
-                    return await dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
-                }
-            };
-        }
+                                                                                                                              try
+                                                                                                                              {
+                                                                                                                                  return await dataflowTask(input);
+                                                                                                                              }
+                                                                                                                              catch (Exception ex)
+                                                                                                                              {
+                                                                                                                                  await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
+                                                                                                                                  throw;
+                                                                                                                              }
+                                                                                                                              finally
+                                                                                                                              {
+                                                                                                                                  var end = DateTime.Now;
+                                                                                                                                  await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                              }
+                                                                                                                          };
 
-        public Func<T, Task<IEnumerable<T>>> WithEvents(Func<T, Task<IEnumerable<T>>> dataflowTask, Func<T, string> stepContextGetter)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
+        public Func<T, Task<IEnumerable<T>>> WithEvents(Func<T, Task<IEnumerable<T>>> dataflowTask, Func<T, string> stepContextGetter) => async (input) =>
+                                                                                                                                                    {
+                                                                                                                                                        var start = DateTime.Now;
 
-                await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                                                        await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
 
-                try
-                {
-                    return await dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
-                }
-            };
-        }
+                                                                                                                                                        try
+                                                                                                                                                        {
+                                                                                                                                                            return await dataflowTask(input);
+                                                                                                                                                        }
+                                                                                                                                                        catch (Exception ex)
+                                                                                                                                                        {
+                                                                                                                                                            await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
+                                                                                                                                                            throw;
+                                                                                                                                                        }
+                                                                                                                                                        finally
+                                                                                                                                                        {
+                                                                                                                                                            var end = DateTime.Now;
+                                                                                                                                                            await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                                                        }
+                                                                                                                                                    };
 
-        public Func<T, Task> WithEvents(Func<T, Task> dataflowTask, Func<T, string> stepContextGetter)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
+        public Func<T, Task> WithEvents(Func<T, Task> dataflowTask, Func<T, string> stepContextGetter) => async (input) =>
+                                                                                                                    {
+                                                                                                                        var start = DateTime.Now;
 
-                await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                        await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
 
-                try
-                {
-                    await dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
-                }
-            };
-        }
+                                                                                                                        try
+                                                                                                                        {
+                                                                                                                            await dataflowTask(input);
+                                                                                                                        }
+                                                                                                                        catch (Exception ex)
+                                                                                                                        {
+                                                                                                                            await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), true);
+                                                                                                                            throw;
+                                                                                                                        }
+                                                                                                                        finally
+                                                                                                                        {
+                                                                                                                            var end = DateTime.Now;
+                                                                                                                            await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                        }
+                                                                                                                    };
 
-        public Func<T, Task> WithEvents(Action<T> dataflowTask, Func<T, string> stepContextGetter)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
+        public Func<T, Task> WithEvents(Action<T> dataflowTask, Func<T, string> stepContextGetter) => async (input) =>
+                                                                                                                {
+                                                                                                                    var start = DateTime.Now;
 
-                await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                    await _dropStartEvent(input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
 
-                try
-                {
-                    dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), false);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
-                }
-            };
-        }
+                                                                                                                    try
+                                                                                                                    {
+                                                                                                                        dataflowTask(input);
+                                                                                                                    }
+                                                                                                                    catch (Exception ex)
+                                                                                                                    {
+                                                                                                                        await _dropErrorEvent(ex, input, dataflowTask.Method.Name, stepContextGetter?.Invoke(input), false);
+                                                                                                                        throw;
+                                                                                                                    }
+                                                                                                                    finally
+                                                                                                                    {
+                                                                                                                        var end = DateTime.Now;
+                                                                                                                        await _dropEndEvent(input, end - start, dataflowTask.Method.Name, stepContextGetter?.Invoke(input));
+                                                                                                                    }
+                                                                                                                };
     }
 }

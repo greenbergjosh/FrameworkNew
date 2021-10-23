@@ -10,7 +10,7 @@ using Utility.Entity.Implementations;
 
 namespace QuickTester
 {
-    class EntityTest
+    internal class EntityTest
     {
         internal static async Task Run()
         {
@@ -77,7 +77,7 @@ namespace QuickTester
 
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
-            static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<object> functionArguments, string query)
+            static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query)
             {
                 foreach (var entity in entities)
                 {
@@ -89,19 +89,25 @@ namespace QuickTester
                                 var index = 0;
                                 foreach (var child in await entity.Get("@.*"))
                                 {
-                                    yield return entity.Create(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}[{index}].{query}");
+                                    yield return entity.Create(child.Value<string>().Replace(functionArguments[0].Value<string>(), functionArguments[1].Value<string>()), $"{entity.Query}[{index}].{query}");
                                     index++;
                                 }
                             }
                             else
                             {
-                                yield return entity.Create(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}.{query}");
+                                yield return entity.Create(entity.Value<string>().Replace(functionArguments[0].Value<string>(), functionArguments[1].Value<string>()), $"{entity.Query}.{query}");
                             }
                             break;
                         case "repeat":
-                            for (var i = 0; i < (int)functionArguments[0]; i++)
+                            for (var i = 0; i < functionArguments[0].Value<int>(); i++)
                             {
                                 yield return entity.Clone($"{entity.Query}.{query}[{i}]");
+                            }
+                            break;
+                        case "suppress":
+                            if (!functionArguments[0].Value<bool>())
+                            {
+                                yield return entity;
                             }
                             break;
                         default:
@@ -241,8 +247,8 @@ namespace QuickTester
                 "entity://testDocument?$.a.b.c.repeat(4)",
                 "entity://testDocument?$.a.b.d",
                 "entity://testDocument?$.a.b.d.replace(\"e\", \"E\")",
-                "entity://testDocument?$.z.repeat(4)",
-                "entity://testDocument?$.z.replace(\"e\", \"E\")",
+                "entity://testDocument?$.a.b.c.suppress(true)",
+                "entity://testDocument?$.a.b.c.suppress(false)",
             };
 
             foreach (var absoluteQuery in absoluteQueries)
