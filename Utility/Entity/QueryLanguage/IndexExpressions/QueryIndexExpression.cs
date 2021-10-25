@@ -70,7 +70,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             QueryExpressionNode root = null;
             foreach (var (op, node) in followingNodes)
             {
-                if (root == null)
+                if (root is null)
                 {
                     root = new QueryExpressionNode(left, op, node);
                     current.Push(root);

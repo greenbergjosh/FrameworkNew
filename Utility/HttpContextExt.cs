@@ -39,7 +39,7 @@ namespace Utility
 
         public static void SetCookie(this HttpContext ctx, string key, string value, DateTime? expireTime = null)
         {
-            CookieOptions option = new CookieOptions
+            CookieOptions option = new()
             {
                 Path = "/",
                 SameSite = SameSiteMode.None,

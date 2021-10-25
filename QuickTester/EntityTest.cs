@@ -10,6 +10,13 @@ using Utility.Entity.Implementations;
 
 namespace QuickTester
 {
+    class TestClass
+    {
+        public string Field1;
+        public string Property1 { get; set; }
+        public int Property2 { get; set; }
+    }
+
     internal class EntityTest
     {
         internal static async Task Run()
@@ -116,6 +123,8 @@ namespace QuickTester
                 }
             }
 
+            var testClass = new TestClass { Field1 = "Field string", Property1 = "Test string", Property2 = 100 };
+
             var E = Entity.Initialize(new EntityConfig(
                 Parser: (entity, contentType, content) => contentType switch
                 {
@@ -130,6 +139,7 @@ namespace QuickTester
                         "reftestparentdocument" => (await entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
                         "reftestchilddocument" => (await entity.Parse("application/json", refTestChildDocument), UnescapeQueryString(uri)),
                         "reftestchilddocument2" => (await entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
+                        "testclass" => (entity.Create(EntityDocumentObject.Create(testClass)), UnescapeQueryString(uri)),
                         _ => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
                     },
                     "memory" => (entity.Create(uri.Host switch
@@ -211,6 +221,10 @@ namespace QuickTester
                 ("$.a.b.d.length", async (query, entity) => await entity.GetI(query)),
                 ("a.b", async (query, entity) => await entity.GetE(query)),
                 ("$..[?(@.color=='blue')]", async (query, entity) => await entity.GetE(query)),
+                ("entity://testClass", async (query, entity) => (await entity.GetE(query)).Value<TestClass>()),
+                ("entity://testClass?Field1", async (query, entity) => await entity.GetS(query)),
+                ("entity://testClass?Property1", async (query, entity) => await entity.GetS(query)),
+                ("entity://testClass?Property2", async (query, entity) => await entity.GetI(query)),
             };
 
             foreach (var valueQuery in valueQueries)
@@ -249,6 +263,7 @@ namespace QuickTester
                 "entity://testDocument?$.a.b.d.replace(\"e\", \"E\")",
                 "entity://testDocument?$.a.b.c.suppress(true)",
                 "entity://testDocument?$.a.b.c.suppress(false)",
+                "entity://testClass?Property1"
             };
 
             foreach (var absoluteQuery in absoluteQueries)

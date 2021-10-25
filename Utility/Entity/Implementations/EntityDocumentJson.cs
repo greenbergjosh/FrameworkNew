@@ -79,7 +79,7 @@ namespace Utility.Entity.Implementations
                 return true;
             }
 
-            propertyEntityDocument = null;
+            propertyEntityDocument = default;
             return false;
         }
 

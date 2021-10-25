@@ -104,7 +104,7 @@ namespace Utility.Entity
                 return true;
             }
 
-            if (other == null || ValueType != other.ValueType)
+            if (other is null || ValueType != other.ValueType)
             {
                 return false;
             }

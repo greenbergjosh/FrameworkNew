@@ -8,36 +8,36 @@ namespace QuickTester
 {
     internal class ClickhouseQueryGenerator
     {
-        public static string generateClickhouseQuery(IGenericEntity ge)
+        public static string GenerateClickhouseQuery(IGenericEntity ge)
         {
             string q = "SELECT email FROM datasets.email_events_merged WHERE "
-                + generateClickhouseWhere(ge);
+                + GenerateClickhouseWhere(ge);
             return q;
         }
 
-        public static string generateClickhouseWhere(IGenericEntity ge)
+        public static string GenerateClickhouseWhere(IGenericEntity ge)
         {
             string r;
             var op = ge.GetD("").Single().Item1;
-            if (op == "and" || op == "or") r = generateClickhouseNary(op, ge.GetE(op));
-            else if (op == "filter" || op == "!") r = generateClickhouseUnary(op, ge.GetE(op));
+            if (op == "and" || op == "or") r = GenerateClickhouseNary(op, ge.GetE(op));
+            else if (op == "filter" || op == "!") r = GenerateClickhouseUnary(op, ge.GetE(op));
             else if (op == "all")
-                r = generateClickhouseIn(ge.GetS($"{op}[0]/var"), $"[{ge.GetLS($"{op}[1]/in[1]", true).Join(",")}]");
-            else r = generateClickhouseBinary(op, ge.GetS($"{op}[0]/var"), ge.GetS($"{op}[1]", '\''));   // used to pass true to second getS
+                r = GenerateClickhouseIn(ge.GetS($"{op}[0]/var"), $"[{ge.GetLS($"{op}[1]/in[1]", true).Join(",")}]");
+            else r = GenerateClickhouseBinary(op, ge.GetS($"{op}[0]/var"), ge.GetS($"{op}[1]", '\''));   // used to pass true to second getS
             return "(" + r + ")";
         }
 
-        public static string generateClickhouseNary(string op, IGenericEntity ge) => ge.GetL("").Select(x => generateClickhouseWhere(x)).Join(" " + op + " ");
+        public static string GenerateClickhouseNary(string op, IGenericEntity ge) => ge.GetL("").Select(x => GenerateClickhouseWhere(x)).Join(" " + op + " ");
 
-        public static string generateClickhouseUnary(string op, IGenericEntity ge)
+        public static string GenerateClickhouseUnary(string op, IGenericEntity ge)
         {
             string r = "";
-            if (op == "!") r = "NOT " + generateClickhouseWhere(ge);
+            if (op == "!") r = "NOT " + GenerateClickhouseWhere(ge);
             else if (op == "filter")
             {
                 // We materialize the list with ToArray just in case the GenericEntity doesn't preserve order (we iterate vars twice)
                 var vars = ge.GetEs("[0]//var").Select(var => var.GetS("")).Distinct().ToArray();
-                var whereClause = generateClickhouseWhere(ge.GetE("[0]"));
+                var whereClause = GenerateClickhouseWhere(ge.GetE("[0]"));
                 for (var i = 0; i < vars.Length; i++)
                 {
                     whereClause = whereClause.Replace(vars[i], $"x.{i + 1}");
@@ -48,8 +48,8 @@ namespace QuickTester
             return r;
         }
 
-        public static string generateClickhouseIn(string var, string set) => "hasAny(" + var + "," + set + ")";
+        public static string GenerateClickhouseIn(string var, string set) => "hasAny(" + var + "," + set + ")";
 
-        public static string generateClickhouseBinary(string op, string var, string val) => var + op + val;
+        public static string GenerateClickhouseBinary(string op, string var, string val) => var + op + val;
     }
 }

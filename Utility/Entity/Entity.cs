@@ -76,7 +76,7 @@ namespace Utility.Entity
 
             if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
             {
-                if (_config.Retriever == null)
+                if (_config.Retriever is null)
                 {
                     throw new InvalidOperationException($"Absolute queries are not allowed unless a retriever has been provided.");
                 }
@@ -84,7 +84,7 @@ namespace Utility.Entity
                 var result = await _config.Retriever(this, uri);
                 entity = result.entity;
 
-                if (entity == null)
+                if (entity is null)
                 {
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
@@ -93,7 +93,7 @@ namespace Utility.Entity
             }
             else
             {
-                if (_value == null)
+                if (_value is null)
                 {
                     throw new InvalidOperationException("Cannot run a relative query on a null entity");
                 }
@@ -115,7 +115,7 @@ namespace Utility.Entity
 
         public async Task<int> GetI(string query) => (await GetE(query)).Value<int>();
 
-        public T Value<T>() => _value == null ? default : _value.Value<T>();
+        public T Value<T>() => _value is null ? default : _value.Value<T>();
 
         public override string ToString() => $"Query: {Query} Data: {_value}";
 

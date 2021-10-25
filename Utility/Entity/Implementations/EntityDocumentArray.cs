@@ -21,7 +21,7 @@ namespace Utility.Entity.Implementations
         }
     }
 
-    public sealed class EntityDocumentArray<T> : EntityDocumentArray
+    internal sealed class EntityDocumentArray<T> : EntityDocumentArray
     {
         private readonly IEnumerable<T> _array;
 

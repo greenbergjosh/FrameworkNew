@@ -44,7 +44,7 @@ namespace Utility.Entity.QueryLanguage
                     _ => null
                 };
 
-                if (selector == null)
+                if (selector is null)
                 {
                     if (allowTrailingContent)
                     {
