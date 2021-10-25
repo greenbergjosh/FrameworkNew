@@ -4,7 +4,7 @@ using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
 {
-    internal class GreaterThanOperator : IQueryExpressionOperator
+    internal sealed class GreaterThanOperator : IQueryExpressionOperator
     {
         public int OrderOfOperation => 4;
 

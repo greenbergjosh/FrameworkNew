@@ -3,7 +3,7 @@ using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal class PropertySelector : ISelector
+    internal sealed class PropertySelector : ISelector
     {
         private readonly string _name;
 
@@ -19,7 +19,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                 {
                     if (entity.Document.IsObject)
                     {
-                        foreach (var (name, value) in entity.Document.EnumerateObject())
+                        foreach (var (_, value) in entity.Document.EnumerateObject())
                         {
                             yield return value;
                         }
@@ -37,8 +37,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     var (found, propertyEntity) = await entity.Document.TryGetProperty(_name);
                     if (found)
                     {
-                        propertyEntity.Query = $"{entity.Query}.{_name}";
-
                         yield return propertyEntity;
                     }
                 }

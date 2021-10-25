@@ -4,7 +4,7 @@ using Utility.Entity.QueryLanguage.IndexExpressions;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal class IndexSelector : ISelector
+    internal sealed class IndexSelector : ISelector
     {
         private readonly IEnumerable<IIndexExpression> _indexes;
 
@@ -74,7 +74,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
                             var (found, value) = await entity.Document.TryGetProperty(property);
                             if (found)
                             {
-                                value.Query = $"{entity.Query}.{property}";
                                 yield return value;
                             }
                         }

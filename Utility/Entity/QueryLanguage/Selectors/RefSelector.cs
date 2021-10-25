@@ -2,7 +2,7 @@
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal class RefSelector : ISelector
+    internal sealed class RefSelector : ISelector
     {
         public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
         {
@@ -13,8 +13,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     var (found, propertyEntity) = await entity.Document.TryGetProperty("$ref");
                     if (found)
                     {
-                        propertyEntity.Query = $"{entity.Query}.$ref";
-
                         yield return propertyEntity;
                     }
                 }

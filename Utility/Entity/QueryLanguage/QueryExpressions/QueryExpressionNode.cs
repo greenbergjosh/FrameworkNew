@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Utility.Entity.QueryLanguage.QueryExpressions
 {
-    internal class QueryExpressionNode
+    internal sealed class QueryExpressionNode
     {
         private readonly Query _query;
         private readonly QueryExpressionNode _left;
@@ -95,9 +95,14 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
         {
             var asString = ToString();
             if (operationOrder < Operator?.OrderOfOperation)
+            {
                 asString = $"({asString})";
+            }
+
             if (overrideIfSame && operationOrder == Operator?.OrderOfOperation)
+            {
                 asString = $"({asString})";
+            }
 
             return asString;
         }

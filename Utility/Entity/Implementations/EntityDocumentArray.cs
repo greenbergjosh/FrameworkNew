@@ -9,19 +9,19 @@ namespace Utility.Entity.Implementations
     {
         public override EntityValueType ValueType => EntityValueType.Array;
 
-        public static EntityDocumentArray Create(IEnumerable array, string query = null)
+        public static EntityDocumentArray Create(IEnumerable array)
         {
             var enumerableType = array.GetType().GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
             var genericType = enumerableType.GetGenericArguments().Single();
 
-            var constructor = typeof(EntityDocumentArray<>).MakeGenericType(genericType).GetConstructor(new[] { enumerableType, typeof(string) });
+            var constructor = typeof(EntityDocumentArray<>).MakeGenericType(genericType).GetConstructor(new[] { enumerableType });
 
             return (EntityDocumentArray)constructor.Invoke(new object[] { array });
         }
     }
 
-    public class EntityDocumentArray<T> : EntityDocumentArray
+    public sealed class EntityDocumentArray<T> : EntityDocumentArray
     {
         private readonly IEnumerable<T> _array;
 
@@ -38,5 +38,7 @@ namespace Utility.Entity.Implementations
         public override TOut Value<TOut>() => (TOut)_array;
 
         public override string ToString() => _array?.ToString();
+
+        public override int GetHashCode() => _array?.GetHashCode() ?? base.GetHashCode();
     }
 }

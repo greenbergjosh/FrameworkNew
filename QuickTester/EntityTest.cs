@@ -63,12 +63,12 @@ namespace QuickTester
 
             var refTestChildDocument2 = @"[1,2,3,4,5]";
 
-            var threadState = new EntityDocumentObject(new Dictionary<string, object>()
+            var threadState = new EntityDocumentDictionary(new Dictionary<string, object>()
             {
                 ["threadVariable1"] = 20
             });
 
-            var processState = new EntityDocumentObject(new Dictionary<string, object>()
+            var processState = new EntityDocumentDictionary(new Dictionary<string, object>()
             {
                 ["processVariable1"] = "Hello there"
             });
@@ -122,22 +122,22 @@ namespace QuickTester
                     "application/json" => EntityDocumentJson.Parse(content),
                     _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
                 },
-                Retriever: (entity, uri) => uri.Scheme switch
+                Retriever: async (entity, uri) => uri.Scheme switch
                 {
                     "entity" => uri.Host switch
                     {
-                        "testdocument" => (entity.Parse("application/json", testDocument), UnescapeQueryString(uri)),
-                        "reftestparentdocument" => (entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
-                        "reftestchilddocument" => (entity.Parse("application/json", refTestChildDocument), UnescapeQueryString(uri)),
-                        "reftestchilddocument2" => (entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
-                        _ => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
+                        "testdocument" => (await entity.Parse("application/json", testDocument), UnescapeQueryString(uri)),
+                        "reftestparentdocument" => (await entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
+                        "reftestchilddocument" => (await entity.Parse("application/json", refTestChildDocument), UnescapeQueryString(uri)),
+                        "reftestchilddocument2" => (await entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
+                        _ => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
                     },
-                    "memory" => (Task.FromResult(entity.Create(uri.Host switch
+                    "memory" => (entity.Create(uri.Host switch
                     {
                         "thread" => threadState,
                         "process" => processState,
                         _ => throw new Exception($"Unknown memory location {uri.Host}"),
-                    })), UnescapeQueryString(uri)),
+                    }), UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
                 MissingPropertyHandler: (entity, propertyName) =>

@@ -56,7 +56,7 @@ namespace Utility.Entity
             int => new EntityDocumentConstant(value, EntityValueType.Number),
             float => new EntityDocumentConstant(value, EntityValueType.Number),
             decimal => new EntityDocumentConstant(value, EntityValueType.Number),
-            IDictionary dictionary => new EntityDocumentObject(dictionary),
+            IDictionary dictionary => new EntityDocumentDictionary(dictionary),
             IEnumerable array => EntityDocumentArray.Create(array),
             Utility.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
@@ -118,7 +118,7 @@ namespace Utility.Entity
                 EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
                 EntityValueType.String => Value<string>() == other.Value<string>(),
                 EntityValueType.Undefined => false,
-                _ => throw new InvalidOperationException($"Unknown {nameof(ValueType)} {ValueType}")
+                _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")
             };
         }
 

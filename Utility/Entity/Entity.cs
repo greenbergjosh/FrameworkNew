@@ -9,7 +9,7 @@ using Utility.Entity.QueryLanguage.Selectors;
 namespace Utility.Entity
 {
     public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
-    public delegate (Task<Entity> entity, string query) EntityRetriever(Entity baseEntity, Uri uri);
+    public delegate Task<(Entity entity, string query)> EntityRetriever(Entity baseEntity, Uri uri);
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
     public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query);
 
@@ -67,7 +67,7 @@ namespace Utility.Entity
             return new Entity(entityDocument, null, _config, "$");
         }
 
-        public Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(this, query);
+        internal Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(this, query);
 
         public async Task<IEnumerable<Entity>> Evaluate(string query)
         {
@@ -81,8 +81,8 @@ namespace Utility.Entity
                     throw new InvalidOperationException($"Absolute queries are not allowed unless a retriever has been provided.");
                 }
 
-                var result = _config.Retriever(this, uri);
-                entity = await result.entity;
+                var result = await _config.Retriever(this, uri);
+                entity = result.entity;
 
                 if (entity == null)
                 {

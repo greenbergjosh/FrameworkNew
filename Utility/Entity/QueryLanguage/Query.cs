@@ -5,7 +5,7 @@ using Utility.Entity.QueryLanguage.Selectors;
 
 namespace Utility.Entity.QueryLanguage
 {
-    public class Query
+    internal sealed class Query
     {
         public IReadOnlyList<ISelector> Selectors { get; init; }
 
@@ -38,9 +38,9 @@ namespace Utility.Entity.QueryLanguage
                 {
                     '$' => AddRootNode(entity, query, ref index),
                     '@' => AddLocalNode(ref index),
-                    '.' => AddPropertyOrNestedDescentOrRef(entity, query, ref index),
+                    '.' => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index),
                     '[' => AddIndex(entity, query, ref index),
-                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRef(entity, query, ref index, true),
+                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index, true),
                     _ => null
                 };
 
@@ -147,7 +147,7 @@ namespace Utility.Entity.QueryLanguage
             return new LocalNodeSelector();
         }
 
-        private static ISelector AddPropertyOrNestedDescentOrRef(Entity entity, ReadOnlySpan<char> query, ref int index, bool noDot = false)
+        private static ISelector AddPropertyOrNestedDescentOrRefOrFunction(Entity entity, ReadOnlySpan<char> query, ref int index, bool noDot = false)
         {
             var slice = query[index..];
 
@@ -222,7 +222,7 @@ namespace Utility.Entity.QueryLanguage
         {
             if (index + 1 < query.Length && IsValidForPropertyName(query[index + 1]))
             {
-                return AddPropertyOrNestedDescentOrRef(entity, query, ref index, true);
+                return AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index, true);
             }
             else
             {

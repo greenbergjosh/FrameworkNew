@@ -4,7 +4,7 @@ using Utility.Entity.QueryLanguage.QueryExpressions;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ContainerQueryIndexExpression : QueryIndexExpression, IArrayIndexExpression, IObjectIndexExpression
+    internal sealed class ContainerQueryIndexExpression : QueryIndexExpression, IArrayIndexExpression, IObjectIndexExpression
     {
         private readonly QueryExpressionNode _expression;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Utility.Entity.Implementations
 {
-    public class EntityDocumentConstant : EntityDocument
+    public sealed class EntityDocumentConstant : EntityDocument
     {
         private readonly object _value;
         private readonly EntityValueType _valueType;
@@ -45,5 +45,7 @@ namespace Utility.Entity.Implementations
         public override T Value<T>() => (T)_value;
 
         public override string ToString() => _value?.ToString();
+
+        public override int GetHashCode() => _value?.GetHashCode() ?? base.GetHashCode();
     }
 }

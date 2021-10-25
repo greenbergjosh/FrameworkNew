@@ -6,7 +6,7 @@ using Utility.Entity.QueryLanguage.QueryExpressions.Operators;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public abstract class QueryIndexExpression : IIndexExpression
+    internal abstract class QueryIndexExpression : IIndexExpression
     {
         internal static bool TryParseExpression(Entity entity, ReadOnlySpan<char> span, ref int i, out QueryExpressionNode expression)
         {

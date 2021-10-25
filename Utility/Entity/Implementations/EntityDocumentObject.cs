@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Utility.Entity.Implementations
 {
-    public class EntityDocumentObject : EntityDocument
+    public sealed class EntityDocumentDictionary : EntityDocument
     {
         private readonly IDictionary _dictionary;
 
@@ -12,7 +12,7 @@ namespace Utility.Entity.Implementations
 
         public override EntityValueType ValueType => EntityValueType.Object;
 
-        public EntityDocumentObject(IDictionary dictionary) => _dictionary = dictionary;
+        public EntityDocumentDictionary(IDictionary dictionary) => _dictionary = dictionary;
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
@@ -42,5 +42,7 @@ namespace Utility.Entity.Implementations
         public override T Value<T>() => (T)_dictionary;
 
         public override string ToString() => _dictionary?.ToString();
+
+        public override int GetHashCode() => _dictionary?.GetHashCode() ?? base.GetHashCode();
     }
 }

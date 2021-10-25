@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    public class FunctionSelector : ISelector
+    internal sealed class FunctionSelector : ISelector
     {
         private readonly string _functionName;
         private readonly IReadOnlyList<Entity> _functionArguments;

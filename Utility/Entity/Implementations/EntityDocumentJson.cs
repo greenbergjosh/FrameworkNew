@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Utility.Entity.Implementations
 {
-    public class EntityDocumentJson : EntityDocument
+    public sealed class EntityDocumentJson : EntityDocument
     {
         private readonly JsonElement _value;
         private readonly int _length;

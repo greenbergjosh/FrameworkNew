@@ -3,7 +3,7 @@ using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
 {
-    internal class ExistsOperator : IQueryExpressionOperator
+    internal sealed class ExistsOperator : IQueryExpressionOperator
     {
         public int OrderOfOperation => 1;
 

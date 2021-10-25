@@ -2,7 +2,7 @@
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal class NestedDescentSelector : ISelector
+    internal sealed class NestedDescentSelector : ISelector
     {
         public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
         {

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ArraySliceIndexExpression : IArrayIndexExpression
+    internal sealed class ArraySliceIndexExpression : IArrayIndexExpression
     {
         private readonly Range _range;
         private readonly int _step;

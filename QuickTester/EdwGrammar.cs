@@ -135,14 +135,16 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             int matchOrder = -1;
             foreach (Match m in Regex.Matches(productionBody, @"<<.*?>>"))
             {
-                var p = new Production();
-                p.Match = m.Value;
+                var p = new Production
+                {
+                    Match = m.Value
+                };
                 string match = m.Value[2..^2];
 
                 p.SuppressOutput = (match[0] == '!');
                 if (p.SuppressOutput) match = match[1..];
 
-                string ord = new string(match.TakeWhile(char.IsDigit).ToArray());
+                string ord = new(match.TakeWhile(char.IsDigit).ToArray());
                 if (!string.IsNullOrEmpty(ord)) p.MatchOrder = int.Parse(ord);
                 else p.MatchOrder = matchOrder--;
                 match = match[ord.Length..];
@@ -415,11 +417,11 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     "application/json" => EntityDocumentJson.Parse(content),
                     _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
                 },
-                Retriever: (entity, uri) => uri.Scheme switch
+                Retriever: async (entity, uri) => uri.Scheme switch
                 {
-                    "entity" => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
-                    "entityType" => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
-                    "context" => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
+                    "entity" => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
+                    "entityType" => (await GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
+                    "context" => (await ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
                 MissingPropertyHandler: null)
@@ -428,10 +430,10 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
 
             context = new Dictionary<string, Entity>
             {
-                ["sym"] = E.Create(new EntityDocumentObject(symbolTable))
+                ["sym"] = E.Create(new EntityDocumentDictionary(symbolTable))
             };
 
-            ContextEntity = E.Create(new EntityDocumentObject(context));
+            ContextEntity = E.Create(new EntityDocumentDictionary(context));
 
 
             // add_thread_group
@@ -524,7 +526,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
             finally
             {
-                foreach (var (k, v) in ies)
+                foreach (var (_, v) in ies)
                 {
                     v.Dispose();
                 }

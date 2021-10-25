@@ -2,7 +2,7 @@
 
 namespace Utility.Entity.QueryLanguage
 {
-    public class QueryParseException : Exception
+    internal sealed class QueryParseException : Exception
     {
         public int Index { get; init; }
 

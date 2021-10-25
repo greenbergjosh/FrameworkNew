@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ArrayElementIndexExpression : IArrayIndexExpression
+    internal sealed class ArrayElementIndexExpression : IArrayIndexExpression
     {
         private readonly Index _index;
 

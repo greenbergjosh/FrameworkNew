@@ -2,7 +2,7 @@
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    public interface ISelector
+    internal interface ISelector
     {
         IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities);
     }
