@@ -15,6 +15,13 @@ namespace QuickTester
         public string Field1;
         public string Property1 { get; set; }
         public int Property2 { get; set; }
+
+        public TestClass2 TestClass2 { get; set; } = new TestClass2 { Property3 = "Property3!" };
+    }
+
+    class TestClass2
+    {
+        public string Property3 { get; set; }
     }
 
     internal class EntityTest
@@ -263,7 +270,9 @@ namespace QuickTester
                 "entity://testDocument?$.a.b.d.replace(\"e\", \"E\")",
                 "entity://testDocument?$.a.b.c.suppress(true)",
                 "entity://testDocument?$.a.b.c.suppress(false)",
-                "entity://testClass?Property1"
+                "entity://testClass?Property1",
+                "entity://testClass?TestClass2",
+                "entity://testClass?TestClass2.Property3",
             };
 
             foreach (var absoluteQuery in absoluteQueries)

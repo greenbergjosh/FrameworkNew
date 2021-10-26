@@ -60,7 +60,7 @@ namespace Utility.Entity
             IEnumerable array => EntityDocumentArray.Create(array),
             Utility.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
-            _ => throw new Exception($"Type {value.GetType().Name} is not supported")
+            _ => EntityDocumentObject.Create(value),// throw new Exception($"Type {value.GetType().Name} is not supported")
         };
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

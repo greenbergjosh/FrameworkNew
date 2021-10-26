@@ -9,6 +9,15 @@ namespace Utility.Entity.Implementations
     {
         public override EntityValueType ValueType => EntityValueType.Object;
 
+        public static EntityDocument Create(object value)
+        {
+            var valueType = value.GetType();
+
+            var constructor = typeof(EntityDocumentObject<>).MakeGenericType(valueType).GetConstructor(new[] { valueType });
+
+            return (EntityDocument)constructor.Invoke(new object[] { value });
+        }
+
         public static EntityDocumentObject Create<T>(T value) => new EntityDocumentObject<T>(value);
     }
 
@@ -22,8 +31,8 @@ namespace Utility.Entity.Implementations
         public EntityDocumentObject(T value)
         {
             _value = value;
-            _readableProperties = new Dictionary<string, PropertyInfo>(typeof(T).GetProperties().Where(p => p.CanRead && p.GetMethod is not null).Select(p => new KeyValuePair<string, PropertyInfo>(p.Name, p)));
-            _readableFields = new Dictionary<string, FieldInfo>(typeof(T).GetFields().Select(f => new KeyValuePair<string, FieldInfo>(f.Name, f)));
+            _readableProperties = new Dictionary<string, PropertyInfo>(value.GetType().GetProperties().Where(p => p.CanRead && p.GetMethod is not null).Select(p => new KeyValuePair<string, PropertyInfo>(p.Name, p)));
+            _readableFields = new Dictionary<string, FieldInfo>(value.GetType().GetFields().Select(f => new KeyValuePair<string, FieldInfo>(f.Name, f)));
             _length = _readableProperties.Count + _readableFields.Count;
         }
 
