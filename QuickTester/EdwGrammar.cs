@@ -45,13 +45,14 @@ namespace QuickTester
             ["??"] = (p) => ConditionInstruction(p)
         };
 
+        // Maybe loop through pushing rs and tg into scope, instead of using g
+
         public static Dictionary<string, (string body, string symbol)> productions = new()
         {
             ["rlp_std_group_by"] = (@"
 <<!0[]|process_constants|constant=context://g?constants.*>>
   SELECT event_id, event_ts <<??|context://g?thread_group_id[?(@.thread_group_type!=""singleton"")]->multiton_cols>>
     <<{,}[]|event_elements|evt=context://g?event_elements.*|,>>
-    <<{,}[]|event_elements2|evt=context://g?event_elements.*;nvt=context://g?event_elements[1:]|,>>
     <<{,}[]|rs_elements|rs=context://g?rs_elements.*|,>>
     <<{,}[]|derived_elements|der=context://g?derived_elements.*|,>>
   FROM satisfied_set ws JOIN warehouse_report_sequence.""<<context://sym?config_name>>"" rs 
@@ -66,15 +67,26 @@ INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period,
 VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
        <<insert_thread_group_catch_all>>", null),
 
-            ["insert_thread_group_record"] = (@"('<<tg_id>>', '<<tg_name>>', '<<tg_period>>', '<<tg_table_name>>', '<<tg_next_table_name>>')", null),
-            ["insert_thread_group_catch_all"] = (@",( '<<tg_id>>', '<<tg_name>>', '0d', '<<tg_table_name_catch_all>>', null)", null),
+            ["create_tg_table_and_indexes"] = (@"
+CREATE TABLE IF NOT EXISTS <<tg_schema_name>>.<<context://tg_tables>> 
+  (event_id UUID, event_ts timestamptz<<??|(tg_multiton_expr)->tg_multiton_cols>>, rs_config_id UUID, record_create_ts timestamptz DEFAULT now(), expires timestamptz, has_whep boolean, PRIMARY KEY(event_id<<??|(tg_multiton_expr)->tg_multiton_cols2>>));
+CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_config ON <<tg_schema_name>>.<<context://tg_tables>> (rs_config_id, event_id);
+CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_event ON <<tg_schema_name>>.<<context://tg_tables>> (event_id, event_ts);
+<<??|(tg_multiton_expr)->tg_multiton_index>>
+CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_rct ON <<tg_schema_name>>.<<context://tg_tables>> (record_create_ts);
+", null),
+
+            ["insert_thread_group_record"] = (@"('<<tg_id>>', '<<tg_name>>', '<<tg_period>>', '<<tg_schema_name>>.<<tg_table_name>>', '<<tg_schema_name>>.<<tg_next_table_name>>')", null),
+            ["insert_thread_group_catch_all"] = (@",( '<<tg_id>>', '<<tg_name>>', '0d', '<<tg_schema_name>>.<<tg_table_name_catch_all>>', null)", null),
 
             ["tg_id"] = ("<<context://g?id>>", null),
+            ["tg_replaced_id"] = ("<<context://g?id.replace('-', '')>>", null),
             ["tg_name"] = ("<<context://g?name>>", null),
             ["tg_period"] = ("<<context://period?period>>", null),
             ["tg_next_period"] = ("<<context://nextperiod?period>>", null),
             ["tg_prefix"] = (@"<<??|context://g?thread_group_id.thread_group_type[?(@==""singleton"")]->'singleton_'>>", null),
-            ["tg_table_name_base"] = ("<<tg_prefix>>rollup_groups.<<tg_name>>_<<tg_id>>", null),
+            ["tg_schema_name"] = ("<<tg_prefix>>rollup_groups", null),
+            ["tg_table_name_base"] = ("<<tg_name>>_<<tg_replaced_id>>", null),
             ["tg_table_name"] = ("<<tg_table_name_base>>_<<tg_period>>", "<<tg_id>>_tables|tg_<<tg_period>>"),
             ["tg_table_name_catch_all"] = ("<<tg_table_name_base>>_catch_all", "<<tg_id>>_tables|tg_catch_all"),
             ["tg_next_table_name"] = ("<<tg_table_name_base>>_<<tg_next_period>>", null),
@@ -83,8 +95,13 @@ VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
             ["nextperiod"] = (@"{ ""period"": ""catch_all"" }|context://g?rollup_group_periods[1:]", null),
             ["tg_tables"] = ("context://sym?<<tg_id>>_tables.*", ""),
 
-            ["create_tg_tables_and_indexes"] = ("<<[]|create_tg_table_and_index|(tg_tables)|,>>", null),
-            ["create_tg_table_and_index"] = ("<<context://tg_tables>>", null),
+            ["create_tg_tables_and_indexes"] = ("<<[]|create_tg_table_and_indexes|(tg_tables)>>", null),
+            ["tg_multiton_expr"] = (@"context://g?thread_group_type[?(@!=""singleton"")]", null),
+            ["tg_multiton_cols"] = (", rs_id UUID, rs_ts timestamptz ", null),
+            ["tg_multiton_cols2"] = (", rs_id ", null),
+            ["tg_multiton_index"] = ("CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_rs ON <<tg_schema_name>>.<<context://tg_tables>>(rs_id, rs_ts);", null),
+
+            
 
             // end: add_thread_group
 
@@ -95,6 +112,8 @@ VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
             ["event_elements2"] = ("<<context://evt?alias>>:::<<context://nvt?alias>>", null),
 
             ["event_elements"] = ("<<event_element>> \"<<context://evt?alias>>\"", null),
+
+            // add support for {pb} shorthand, likely as <<pb>>
             ["event_element"] = ("(coalesce(event_payload -> 'body' <<context://evt?json_path>>, ''))::<<context://evt?data_type>>", "<<context://evt?alias>>"),
             ["derived_elements"] = ("<<derived_element>> \"<<context://der?alias>>\"", null),
             ["derived_element"] = ("<<context://der?col_value>>::<<context://der?data_type>>", "<<context://der?alias>>"),
@@ -110,7 +129,8 @@ VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
                                             null),
 
 
-
+            //period=(period)
+            // period('period', entity)
 
             ["insert_thread_group_records2"] = (@"
 INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period, table_name, next_table_name)
@@ -308,7 +328,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     {
                         if (defCollection[kvp.Key].Item2 == STRG)
                         {
-                            context[kvp.Key] = E.Create(new EntityDocumentConstant(defCollection[kvp.Key].Item1, EntityValueType.String));
+                            context[kvp.Key] = E.Create(defCollection[kvp.Key].Item1);
                         }
                         else if (defCollection[kvp.Key].Item2 == JSON)
                         {
@@ -317,7 +337,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                         }
                         else if (defCollection[kvp.Key].Item2 == PROD)
                         {
-                            context[kvp.Key] = E.Create(new EntityDocumentConstant(await CallProduction(defCollection[kvp.Key].Item1), EntityValueType.String));
+                            context[kvp.Key] = E.Create(await CallProduction(defCollection[kvp.Key].Item1));
                         }
                         else
                         {
@@ -348,10 +368,13 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                 int arrowIdx = nextCond.IndexOf("->");
                 bool isString = (nextCond[^1] == '\'');
                 string expr = (arrowIdx == -1) ? "" : curStr[0..arrowIdx];
+                string rslvdExpr = expr;
+                if (expr.Length > 1 && expr[0] == '(') 
+                    rslvdExpr = await CallProduction(expr[1..^1]);
                 string rtrn = nextCond[(arrowIdx == -1 ? 0 : expr.Length + 2)..];
                 rtrn = (isString) ? rtrn[1..^1] : rtrn;
                 rtrn = rtrn.Replace("''", "'");
-                bool done = ((arrowIdx == -1) || (await E.Get(expr)).Any());
+                bool done = ((arrowIdx == -1) || (await E.Get(rslvdExpr)).Any());
                 if (done && isString) return rtrn;
                 if (done) return await CallProduction(rtrn);
 
@@ -405,11 +428,45 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
 
         public static async Task<Dictionary<string, string>> GenerateSql()  // Guid g
         {
+            
             Dictionary<string, string> d = new();
 
             var fw = new FrameworkWrapper();
 
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
+
+            static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<object> functionArguments, string query)
+            {
+                foreach (var entity in entities)
+                {
+                    switch (functionName)
+                    {
+                        case "replace":
+                            if (entity.ValueType == EntityValueType.Array)
+                            {
+                                var index = 0;
+                                foreach (var child in await entity.Get("@.*"))
+                                {
+                                    yield return entity.Create(child.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}[{index}].{query}");
+                                    index++;
+                                }
+                            }
+                            else
+                            {
+                                yield return entity.Create(entity.Value<string>().Replace((string)functionArguments[0], (string)functionArguments[1]), $"{entity.Query}.{query}");
+                            }
+                            break;
+                        case "repeat":
+                            for (var i = 0; i < (int)functionArguments[0]; i++)
+                            {
+                                yield return entity.Clone($"{entity.Query}.{query}[{i}]");
+                            }
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Unknown function {functionName}");
+                    }
+                }
+            }
 
             E = Entity.Initialize(new EntityConfig(
                 Parser: (entity, contentType, content) => contentType switch
@@ -424,16 +481,17 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     "context" => (await ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
-                MissingPropertyHandler: null)
+                MissingPropertyHandler: null,
+                FunctionHandler: functionHandler)
             );
 
 
             context = new Dictionary<string, Entity>
             {
-                ["sym"] = E.Create(new EntityDocumentDictionary(symbolTable))
+                ["sym"] = E.Create(symbolTable)
             };
 
-            ContextEntity = E.Create(new EntityDocumentDictionary(context));
+            ContextEntity = E.Create(context);
 
 
             // add_thread_group
