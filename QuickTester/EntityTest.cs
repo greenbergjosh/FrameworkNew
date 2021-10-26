@@ -91,27 +91,66 @@ namespace QuickTester
 
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
+            static bool tryInvokeStringMethod(Entity entity, string functionName, IReadOnlyList<Entity> functionArguments, out object value)
+            {
+                var method = typeof(string).GetMethods().Where(m => m.Name == functionName && m.GetParameters().Length == functionArguments.Count && (functionArguments.Count == 0 || m.GetParameters()[0].ParameterType != typeof(char))).SingleOrDefault();
+                if (method != null)
+                {
+                    var methodParameters = method.GetParameters();
+                    var actualParameters = new object[methodParameters.Length];
+                    var valueMethod = typeof(Entity).GetMethod("Value");
+
+                    for (var i = 0; i < methodParameters.Length; i++)
+                    {
+                        var methodParameter = methodParameters[i];
+
+                        var typedArgumentValueMethod = valueMethod.MakeGenericMethod(methodParameter.ParameterType);
+                        var typedArgument = typedArgumentValueMethod.Invoke(functionArguments[i], null);
+                        actualParameters[i] = typedArgument;
+                    }
+
+                    var entityValue = entity.Value<string>();
+                    value = method.Invoke(entityValue, actualParameters);
+                    return true;
+                }
+
+                value = default;
+                return false;
+            }
+
             static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query)
             {
                 foreach (var entity in entities)
                 {
+                    if (entity.ValueType == EntityValueType.Array)
+                    {
+                        var index = 0;
+                        var yielded = false;
+                        foreach (var child in await entity.Get("@.*"))
+                        {
+                            if (tryInvokeStringMethod(child, functionName, functionArguments, out var value))
+                            {
+                                yield return entity.Create(value, $"{entity.Query}[{index}].{query}");
+                                yielded = true;
+                                index++;
+                            }
+                        }
+                        if (yielded)
+                        {
+                            continue;
+                        }
+                    }
+                    else if (entity.ValueType == EntityValueType.String)
+                    {
+                        if (tryInvokeStringMethod(entity, functionName, functionArguments, out var value))
+                        {
+                            yield return entity.Create(value, $"{entity.Query}.{query}");
+                            continue;
+                        }
+                    }
+
                     switch (functionName)
                     {
-                        case "replace":
-                            if (entity.ValueType == EntityValueType.Array)
-                            {
-                                var index = 0;
-                                foreach (var child in await entity.Get("@.*"))
-                                {
-                                    yield return entity.Create(child.Value<string>().Replace(functionArguments[0].Value<string>(), functionArguments[1].Value<string>()), $"{entity.Query}[{index}].{query}");
-                                    index++;
-                                }
-                            }
-                            else
-                            {
-                                yield return entity.Create(entity.Value<string>().Replace(functionArguments[0].Value<string>(), functionArguments[1].Value<string>()), $"{entity.Query}.{query}");
-                            }
-                            break;
                         case "repeat":
                             for (var i = 0; i < functionArguments[0].Value<int>(); i++)
                             {
@@ -264,15 +303,18 @@ namespace QuickTester
                 "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId",
                 "entity://refTestParentDocument?d",
                 "entity://testDocument?$.a.b.c",
-                "entity://testDocument?$.a.b.c.replace(\"string\", \"COOL STRING\")",
+                "entity://testDocument?$.a.b.c.Replace(\"string\", \"COOL STRING\")",
                 "entity://testDocument?$.a.b.c.repeat(4)",
+                "entity://testDocument?$.a.b.c.Replace(\"string\", \"COOL STRING\").repeat(4)",
                 "entity://testDocument?$.a.b.d",
-                "entity://testDocument?$.a.b.d.replace(\"e\", \"E\")",
+                "entity://testDocument?$.a.b.d.Replace(\"e\", \"E\")",
                 "entity://testDocument?$.a.b.c.suppress(true)",
                 "entity://testDocument?$.a.b.c.suppress(false)",
                 "entity://testClass?Property1",
                 "entity://testClass?TestClass2",
                 "entity://testClass?TestClass2.Property3",
+                "entity://testDocument?$.a.b.c.ToUpper()",
+                "entity://testDocument?$.a.b.d.ToUpper()",
             };
 
             foreach (var absoluteQuery in absoluteQueries)

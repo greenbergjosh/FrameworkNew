@@ -5,19 +5,10 @@ namespace QuickTester
     internal class Program
     {
 
-        private static void Main()
+        private static async Task Main()
         {
-            //f();
-            EdwGrammar.GenerateSql().GetAwaiter().GetResult();
-           // await EntityTest.Run();
-
-        }
-
-        public static  string f()
-        {
-            int y = 0;
-            int x = 1 / y;
-            return "";
+            await EdwGrammar.GenerateSql();
+            await EntityTest.Run();
         }
     }
 }

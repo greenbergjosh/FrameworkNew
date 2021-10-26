@@ -192,21 +192,29 @@ namespace Utility.Entity.QueryLanguage
             {
                 var functionName = slice[..propertyNameLength].ToString();
                 index++;
-                var current = ',';
-                var functionArguments = new List<Entity>();
-                while (current == ',')
-                {
-                    Helpers.ConsumeWhitespace(query, ref index);
-                    if (Helpers.TryParseEntityDocument(query, ref index, out var argumentEntityDocument))
-                    {
-                        functionArguments.Add(entity.Create(argumentEntityDocument, argumentEntityDocument.ToString()));
-                    }
-                    else
-                    {
-                        return new ErrorSelector($"Unsupported function argument type near position {index}");
-                    }
 
-                    current = query[index++];
+                var functionArguments = new List<Entity>();
+                if (query[index] == ')')
+                {
+                    index++;
+                }
+                else
+                {
+                    var current = ',';
+                    while (current == ',')
+                    {
+                        Helpers.ConsumeWhitespace(query, ref index);
+                        if (Helpers.TryParseEntityDocument(query, ref index, out var argumentEntityDocument))
+                        {
+                            functionArguments.Add(entity.Create(argumentEntityDocument, argumentEntityDocument.ToString()));
+                        }
+                        else
+                        {
+                            return new ErrorSelector($"Unsupported function argument type near position {index}");
+                        }
+
+                        current = query[index++];
+                    }
                 }
 
                 return new FunctionSelector(functionName, functionArguments);
