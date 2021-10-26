@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ObjectPropertyIndexExpression : IObjectIndexExpression
+    internal sealed class ObjectPropertyIndexExpression : IObjectIndexExpression
     {
         private readonly string _name;
         private readonly char _quoteChar;

@@ -1,59 +1,45 @@
-﻿using Framework.Core.EntityStoreProviders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Framework.Core.EntityStoreProviders;
 
 namespace Framework.Core
 {
     public sealed class Entity
     {
         #region Private Static Fields
-        private static IEntityStoreProvider _entityStore = new JsonEntityStoreProvider();
-        
+        private static readonly IEntityStoreProvider _entityStore = new JsonEntityStoreProvider();
+
         #endregion
 
         #region Public Static Methods
-        public static async Task<Entity> GetEntity(Guid entityId)
-        {
-            return await _entityStore.GetEntity(entityId);
-        }
+        public static async Task<Entity> GetEntity(Guid entityId) => await _entityStore.GetEntity(entityId);
         #endregion
 
         #region Private Instance Fields
-        private IDictionary<string, object> _data;
+        private readonly IDictionary<string, object> _data;
         #endregion
 
         #region Constructor
-        internal Entity(IDictionary<string, object> data)
-        {
-            _data = data;
-        }
+        internal Entity(IDictionary<string, object> data) => _data = data;
         #endregion
 
         #region Public Instance Methods
-        public IDictionary<string, object> Get(string key)
-        {
-            return Get<IDictionary<string, object>>(key);
-        }
+        public IDictionary<string, object> Get(string key) => Get<IDictionary<string, object>>(key);
 
-        public IDictionary<string, object> Get(string key, IDictionary<string, object> defaultValue = null)
-        {
-            return Get<IDictionary<string, object>>(key, defaultValue);
-        }
+        public IDictionary<string, object> Get(string key, IDictionary<string, object> defaultValue = null) => Get<IDictionary<string, object>>(key, defaultValue);
 
         public TOutput Get<TOutput>(string key)
         {
-            TOutput value;
-            if (!TryGetValue(key, out value))
+            if (!TryGetValue(key, out TOutput value))
                 throw new KeyNotFoundException("Key [" + key + "] not found.");
             return value;
         }
 
         public TOutput Get<TOutput>(string key, TOutput defaultValue)
         {
-            TOutput value;
-            if (!TryGetValue(key, out value))
+            if (!TryGetValue(key, out TOutput value))
             {
                 value = defaultValue;
             }
@@ -66,8 +52,7 @@ namespace Framework.Core
         {
             value = defaultValue;
 
-            object o;
-            if (_data.TryGetValue(key, out o))
+            if (_data.TryGetValue(key, out object o))
             {
                 value = (TOutput)Get(typeof(TOutput), o);
                 return true;

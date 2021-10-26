@@ -7,7 +7,7 @@ namespace Framework.Core.Languages.E
     // This will get moved to dynamic code once it is available
     internal static class BootstrapEvaluatable
     {
-        private static Dictionary<Guid, Guid> _continuationPointers = new Dictionary<Guid, Guid>();
+        private static readonly Dictionary<Guid, Guid> _continuationPointers = new Dictionary<Guid, Guid>();
 
         private static async Task<IDictionary<string, object>> Evaluate(Request request, DictionaryStack parameters)
         {

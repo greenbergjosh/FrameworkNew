@@ -1,9 +1,9 @@
-﻿using DynamicCodeEngine;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using DynamicCodeEngine;
 
 
 
@@ -19,7 +19,7 @@ namespace DataManager
 
         public virtual Dictionary<string, object> State => _state;
 
-        private Dictionary<string, Func<IGenericEntity, Dictionary<string, object>, string, object>> _callbacks =
+        private readonly Dictionary<string, Func<IGenericEntity, Dictionary<string, object>, string, object>> _callbacks =
             new Dictionary<string, Func<IGenericEntity, Dictionary<string, object>, string, object>>();
 
         public void RegisterNamedCallback(string callbackName, Func<IGenericEntity, Dictionary<string, object>, string, object> callback)

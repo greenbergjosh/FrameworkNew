@@ -39,14 +39,8 @@ namespace Utility.Mta.Pmta
             return new MailResult(msg.To, errors);
         }
 
-        public override Task<string> GetStatus(string jobId)
-        {
-            throw new NotImplementedException();
-        }
+        public override Task<string> GetStatus(string jobId) => throw new NotImplementedException();
 
-        public override string ToString()
-        {
-            return Fw.StartupConfiguration.GetS(ConfigRootPath);
-        }
+        public override string ToString() => Fw.StartupConfiguration.GetS(ConfigRootPath);
     }
 }

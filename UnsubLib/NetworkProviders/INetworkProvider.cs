@@ -35,19 +35,16 @@ namespace UnsubLib.NetworkProviders
 
     public static class Factory
     {
-        public static INetworkProvider GetInstance(FrameworkWrapper fw, IGenericEntity network)
+        public static INetworkProvider GetInstance(FrameworkWrapper fw, IGenericEntity network) => (network.GetS("Credentials/NetworkType")) switch
         {
-            return (network.GetS("Credentials/NetworkType")) switch
-            {
-                "Affise" => new Affise(fw),
-                "Amobee" => new Amobee(fw),
-                "Everflow" => new Everflow(fw),
-                "Cake" => new Cake(fw),
-                "SiteMath" => new SiteMath(fw),
-                "Tune" => new Tune(fw),
-                "W4" => new W4(fw),
-                _ => new Other(fw),
-            };
-        }
+            "Affise" => new Affise(fw),
+            "Amobee" => new Amobee(fw),
+            "Everflow" => new Everflow(fw),
+            "Cake" => new Cake(fw),
+            "SiteMath" => new SiteMath(fw),
+            "Tune" => new Tune(fw),
+            "W4" => new W4(fw),
+            _ => new Other(fw),
+        };
     }
 }

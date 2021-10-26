@@ -3,7 +3,7 @@ using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
 {
-    internal class ExistsOperator : IQueryExpressionOperator
+    internal sealed class ExistsOperator : IQueryExpressionOperator
     {
         public int OrderOfOperation => 1;
 
@@ -13,7 +13,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
         {
             var leftEntity = await left.Evaluate(entity);
 
-            return new EntityDocumentConstant(leftEntity.ValueType != EntityValueType.Undefined, EntityValueType.Boolean, ToString());
+            return new EntityDocumentConstant(leftEntity.ValueType != EntityValueType.Undefined, EntityValueType.Boolean);
         }
 
         public string ToString(QueryExpressionNode left, QueryExpressionNode right) => left.ToString();

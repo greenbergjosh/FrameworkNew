@@ -4,14 +4,11 @@ using Utility.Entity.QueryLanguage.QueryExpressions;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ContainerQueryIndexExpression : QueryIndexExpression, IArrayIndexExpression, IObjectIndexExpression
+    internal sealed class ContainerQueryIndexExpression : QueryIndexExpression, IArrayIndexExpression, IObjectIndexExpression
     {
         private readonly QueryExpressionNode _expression;
 
-        private ContainerQueryIndexExpression(QueryExpressionNode expression)
-        {
-            _expression = expression;
-        }
+        private ContainerQueryIndexExpression(QueryExpressionNode expression) => _expression = expression;
 
         public async IAsyncEnumerable<int> GetIndexes(Entity entity)
         {

@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Utility
@@ -52,18 +51,18 @@ namespace Utility
 
         public static bool Contains(this string source, string value, StringComparison comparisonType) => source.IndexOf(value, comparisonType) > -1;
 
-        public static DateTime? ParseDate(this string str) => DateTime.TryParse(str, out var i) ? i : (DateTime?)null;
+        public static DateTime? ParseDate(this string str) => DateTime.TryParse(str, out var i) ? i : null;
 
         public static DateTime? ParseDate(this string str, string format, IFormatProvider provider = null, DateTimeStyles style = DateTimeStyles.AssumeLocal) =>
-            DateTime.TryParseExact(str, format, provider ?? CultureInfo.CurrentCulture, style, out var i) ? i : (DateTime?)null;
+            DateTime.TryParseExact(str, format, provider ?? CultureInfo.CurrentCulture, style, out var i) ? i : null;
 
-        public static long? ParseLong(this string str) => long.TryParse(str, out var i) ? i : (long?)null;
+        public static long? ParseLong(this string str) => long.TryParse(str, out var i) ? i : null;
 
-        public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : (int?)null;
+        public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : null;
 
-        public static Guid? ParseGuid(this string str) => Guid.TryParse(str, out var i) ? i : (Guid?)null;
+        public static Guid? ParseGuid(this string str) => Guid.TryParse(str, out var i) ? i : null;
 
-        public static uint? ParseUInt(this string str) => uint.TryParse(str, out var i) ? i : (uint?)null;
+        public static uint? ParseUInt(this string str) => uint.TryParse(str, out var i) ? i : null;
 
         public static bool? ParseBool(this string str)
         {
@@ -363,20 +362,14 @@ namespace Utility
         /// </summary>
         public static Task<TResult[]> SelectAsync<TSource, TResult>(
             this IEnumerable<TSource> source,
-            Func<TSource, Task<TResult>> selector)
-        {
-            return Task.WhenAll(source.Select(selector));
-        }
+            Func<TSource, Task<TResult>> selector) => Task.WhenAll(source.Select(selector));
 
         /// <summary>
         /// DO NOT USE THIS IF YOU'RE EXPECTING ASYNCHRONOUS YIELDING, that's not possible yet
         /// </summary>
         public static Task<TResult[]> SelectAsync<TSource, TResult>(
             this IEnumerable<TSource> source,
-            Func<TSource, int, Task<TResult>> selector)
-        {
-            return Task.WhenAll(source.Select(selector));
-        }
+            Func<TSource, int, Task<TResult>> selector) => Task.WhenAll(source.Select(selector));
 
         #endregion
 

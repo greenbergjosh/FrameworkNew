@@ -11,7 +11,7 @@ using Jw = Utility.JsonWrapper;
 
 namespace SimpleImportExport
 {
-    class Program
+    internal class Program
     {
         public static FrameworkWrapper _fw;
 

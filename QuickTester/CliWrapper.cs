@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using CliWrap;
 
 
 namespace QuickTester
 {
-    class CliWrapper
+    internal class CliWrapper
     {
-        public async static Task TestCli()
+        public static async Task TestCli()
         {
             try
             {

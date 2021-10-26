@@ -1,15 +1,14 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using CsvHelper.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Utility.GenericEntity;
-using System.Globalization;
 
 namespace Utility
 {
@@ -19,15 +18,9 @@ namespace Utility
 
         public static string Serialize(object value, bool pretty = false) => JsonConvert.SerializeObject(value, pretty ? Formatting.Indented : Formatting.None);
 
-        public static async Task<IGenericEntity> GenericEntityFromFile(string path)
-        {
-            return JsonToGenericEntity(await new FileInfo(path).ReadAllTextAsync());
-        }
+        public static async Task<IGenericEntity> GenericEntityFromFile(string path) => JsonToGenericEntity(await new FileInfo(path).ReadAllTextAsync());
 
-        public static async Task<T> FromFile<T>(string path) where T : JToken
-        {
-            return JToken.Parse(await new FileInfo(path).ReadAllTextAsync()) as T;
-        }
+        public static async Task<T> FromFile<T>(string path) where T : JToken => JToken.Parse(await new FileInfo(path).ReadAllTextAsync()) as T;
 
         public static JToken TryParse(string str)
         {
@@ -190,7 +183,7 @@ namespace Utility
 
         public static string Json(string name, IDictionary<string, string> d, bool wrap)
         {
-            StringBuilder sb = String.IsNullOrEmpty(name)
+            StringBuilder sb = string.IsNullOrEmpty(name)
                 ? new StringBuilder((wrap ? "{" : ""))
                 : new StringBuilder((wrap ? "{" : "") + "\"" + name + "\": {");
             if (d.Count > 0)
@@ -201,7 +194,7 @@ namespace Utility
                 }
                 sb.Remove(sb.Length - 1, 1);
             }
-            sb = String.IsNullOrEmpty(name) ? sb.Append(wrap ? '}' : "") : sb.Append("}" + (wrap ? '}' : ""));
+            sb = string.IsNullOrEmpty(name) ? sb.Append(wrap ? '}' : "") : sb.Append("}" + (wrap ? '}' : ""));
 
             return sb.ToString();
         }
@@ -270,24 +263,12 @@ namespace Utility
     // https://stackoverflow.com/questions/17584701/json-net-serialize-json-string-property-into-json-object
     public class RawJsonConverter : JsonConverter
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteRawValue(value.ToString());
-        }
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => writer.WriteRawValue(value.ToString());
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
-        }
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) => throw new NotImplementedException();
 
-        public override bool CanConvert(Type objectType)
-        {
-            return typeof(string).IsAssignableFrom(objectType);
-        }
+        public override bool CanConvert(Type objectType) => typeof(string).IsAssignableFrom(objectType);
 
-        public override bool CanRead
-        {
-            get { return false; }
-        }
+        public override bool CanRead => false;
     }
 }

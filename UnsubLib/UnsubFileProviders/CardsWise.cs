@@ -12,10 +12,7 @@ namespace UnsubLib.UnsubFileProviders
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(CardsWise)}";
 
-        public CardsWise(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public CardsWise(FrameworkWrapper fw) => _fw = fw;
 
         public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("cardswise.com");
 

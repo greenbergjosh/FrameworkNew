@@ -116,26 +116,17 @@ namespace Utility.EDW.Reporting
             );
         }
 
-        public static string EdwRs(Guid cfgId, object payld)
-        {
-            return JsonWrapper.Json(new
-            { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = JsonWrapper.Json(payld), cfg_id = cfgId },
+        public static string EdwRs(Guid cfgId, object payld) => JsonWrapper.Json(new
+        { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = JsonWrapper.Json(payld), cfg_id = cfgId },
                 new bool[] { true, true, false, true });
-        }
 
-        public static string EdwRs(Guid cfgId, IDictionary<string, string> payld)
-        {
-            return JsonWrapper.Json(new
-            { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = JsonWrapper.Json("", payld, true), cfg_id = cfgId },
+        public static string EdwRs(Guid cfgId, IDictionary<string, string> payld) => JsonWrapper.Json(new
+        { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = JsonWrapper.Json("", payld, true), cfg_id = cfgId },
                 new bool[] { true, true, false, true });
-        }
 
-        public static string EdwRs(Guid cfgId, string payld)
-        {
-            return JsonWrapper.Json(new
-            { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = payld, cfg_id = cfgId },
+        public static string EdwRs(Guid cfgId, string payld) => JsonWrapper.Json(new
+        { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = payld, cfg_id = cfgId },
                 new bool[] { true, true, false, true });
-        }
 
         public static string EdwEvt(object payld, IDictionary<string, string> rsids)
         {

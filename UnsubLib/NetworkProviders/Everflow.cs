@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -27,10 +26,7 @@ namespace UnsubLib.NetworkProviders
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Everflow)}";
 
-        public Everflow(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public Everflow(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
         {

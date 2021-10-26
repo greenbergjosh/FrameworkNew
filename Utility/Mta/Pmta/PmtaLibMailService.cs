@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using port25.pmta.api.submitter;
-using Utility.GenericEntity;
 using Port25Recipient = port25.pmta.api.submitter.Recipient;
 
 namespace Utility.Mta.Pmta
@@ -118,11 +116,8 @@ namespace Utility.Mta.Pmta
             return results;
         }
 
-        public override Task<string> GetStatus(string jobId)
-        {
-            throw new NotImplementedException();
-        }
+        public override Task<string> GetStatus(string jobId) => throw new NotImplementedException();
 
-        private IStatsProvider StartStats() => _enableStatistics ? (IStatsProvider) new StatsProvider() : new NullStatsProvider();
+        private IStatsProvider StartStats() => _enableStatistics ? new StatsProvider() : new NullStatsProvider();
     }
 }

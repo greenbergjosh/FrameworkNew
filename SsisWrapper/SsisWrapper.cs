@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Text;
 using Utility;
 
 namespace SsisWrapper
@@ -77,7 +76,7 @@ namespace SsisWrapper
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
         public static async Task<long> GetRecordCount(string connectionString, string tableName)
         {
-            Int64 count = 0;
+            long count = 0;
 
             using (SqlConnection cn = new SqlConnection(connectionString))
             {
@@ -88,7 +87,7 @@ namespace SsisWrapper
                     FROM sys.dm_db_partition_stats (nolock)
                     WHERE object_id = OBJECT_ID('{tableName}')
                     AND(index_id = 0 or index_id = 1)";
-                count = (Int64)(await cmd.ExecuteScalarAsync());
+                count = (long)(await cmd.ExecuteScalarAsync());
             }
 
             return count;

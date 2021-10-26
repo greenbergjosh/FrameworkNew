@@ -1,54 +1,72 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Utility.Entity.Implementations
 {
-    public class EntityDocumentObject : EntityDocument
+    public abstract class EntityDocumentObject : EntityDocument
     {
-        private readonly IDictionary _dictionary;
-
-        public override int Length => _dictionary.Count;
-
         public override EntityValueType ValueType => EntityValueType.Object;
 
-        public EntityDocumentObject(IDictionary dictionary, string query = null)
+        public static EntityDocumentObject Create<T>(T value) => new EntityDocumentObject<T>(value);
+    }
+
+    internal sealed class EntityDocumentObject<T> : EntityDocumentObject
+    {
+        private readonly T _value;
+        private readonly Dictionary<string, PropertyInfo> _readableProperties;
+        private readonly Dictionary<string, FieldInfo> _readableFields;
+        private readonly int _length;
+
+        public EntityDocumentObject(T value)
         {
-            _dictionary = dictionary;
-            Query = query;
+            _value = value;
+            _readableProperties = new Dictionary<string, PropertyInfo>(typeof(T).GetProperties().Where(p => p.CanRead && p.GetMethod is not null).Select(p => new KeyValuePair<string, PropertyInfo>(p.Name, p)));
+            _readableFields = new Dictionary<string, FieldInfo>(typeof(T).GetFields().Select(f => new KeyValuePair<string, FieldInfo>(f.Name, f)));
+            _length = _readableProperties.Count + _readableFields.Count;
         }
 
-        public override EntityDocument Clone(string query) => new EntityDocumentObject(_dictionary, query);
+        public override int Length => _length;
+
+        public override TOutput Value<TOutput>() => (TOutput)(object)_value;
 
         protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
         protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
         {
-            foreach (var key in _dictionary.Keys)
+            foreach (var (name, propertyInfo) in _readableProperties)
             {
-                var value = _dictionary[key];
-                var entityDocument = MapValue(value);
-                entityDocument.Query = $"{Query}.{key}";
-                yield return (key.ToString(), entityDocument);
+                var propertyValue = propertyInfo.GetMethod.Invoke(_value, null);
+                var propertyEntityDocument = MapValue(propertyValue);
+                yield return (name, propertyEntityDocument);
+            }
+
+            foreach (var (name, fieldInfo) in _readableFields)
+            {
+                var fieldValue = fieldInfo.GetValue(_value);
+                var fieldEntityDocument = MapValue(fieldValue);
+                yield return (name, fieldEntityDocument);
             }
         }
 
         protected override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
         {
-            if (_dictionary.Contains(name))
+            if (_readableProperties.TryGetValue(name, out var propertyInfo))
             {
-                var value = _dictionary[name];
-                propertyEntityDocument = MapValue(value);
-                propertyEntityDocument.Query = $"{Query}.{name}";
+                var propertyValue = propertyInfo.GetMethod.Invoke(_value, null);
+                propertyEntityDocument = MapValue(propertyValue);
+                return true;
+            }
+            else if (_readableFields.TryGetValue(name, out var fieldInfo))
+            {
+                var fieldValue = fieldInfo.GetValue(_value);
+                propertyEntityDocument = MapValue(fieldValue);
                 return true;
             }
 
-            propertyEntityDocument = null;
+            propertyEntityDocument = default;
             return false;
         }
-
-        public override T Value<T>() => (T)_dictionary;
-
-        public override string ToString() => _dictionary?.ToString();
     }
 }

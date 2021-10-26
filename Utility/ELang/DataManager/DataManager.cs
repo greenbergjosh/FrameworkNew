@@ -76,7 +76,7 @@ namespace DataManager
     public class DataManager : GenericEntityBase
     {
         private IGenericEntity _configuration;
-        private Dictionary<string, IDataLifespan> _lifespans = new Dictionary<string, IDataLifespan>();
+        private readonly Dictionary<string, IDataLifespan> _lifespans = new Dictionary<string, IDataLifespan>();
 
         public DataManager() { }
 

@@ -14,9 +14,9 @@
 //
 
 using System;
-using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 
@@ -45,17 +45,14 @@ namespace Amazon.Kinesis.ClientLibrary
         /// </summary>
         /// <param name="retries">Number of retries to perform before giving up.</param>
         /// <param name="delay">Delay between each retry.</param>
-        public static CheckpointErrorHandler Create(int retries, TimeSpan delay)
-        {
-            return (seq, err, checkpointer) =>
-            {
-                if (retries > 0)
-                {
-                    Thread.Sleep(delay);
-                    checkpointer.Checkpoint(seq, Create(retries - 1, delay));
-                }
-            };
-        }
+        public static CheckpointErrorHandler Create(int retries, TimeSpan delay) => (seq, err, checkpointer) =>
+                                                                                              {
+                                                                                                  if (retries > 0)
+                                                                                                  {
+                                                                                                      Thread.Sleep(delay);
+                                                                                                      checkpointer.Checkpoint(seq, Create(retries - 1, delay));
+                                                                                                  }
+                                                                                              };
     }
 
     /// <summary>
@@ -68,25 +65,13 @@ namespace Amazon.Kinesis.ClientLibrary
         /// Create an instance of KclProcess that uses the given IRecordProcessor to process records.
         /// </summary>
         /// <param name="recordProcessor">IRecordProcessor used to process records.</param>
-        public static KclProcess Create(IRecordProcessor recordProcessor)
-        {
-            return Create(recordProcessor, new IoHandler());
-        }
+        public static KclProcess Create(IRecordProcessor recordProcessor) => Create(recordProcessor, new IoHandler());
 
-        public static KclProcess Create(IShardRecordProcessor recordProcessor)
-        {
-            return Create(recordProcessor, new IoHandler());
-        }
+        public static KclProcess Create(IShardRecordProcessor recordProcessor) => Create(recordProcessor, new IoHandler());
 
-        internal static KclProcess Create(IRecordProcessor recordProcessor, IoHandler ioHandler)
-        {
-            return new DefaultKclProcess(new ShardRecordProcessorToRecordProcessor(recordProcessor), ioHandler);
-        }
+        internal static KclProcess Create(IRecordProcessor recordProcessor, IoHandler ioHandler) => new DefaultKclProcess(new ShardRecordProcessorToRecordProcessor(recordProcessor), ioHandler);
 
-        internal static KclProcess Create(IShardRecordProcessor recordProcessor, IoHandler ioHandler)
-        {
-            return new DefaultKclProcess(recordProcessor, ioHandler);
-        }
+        internal static KclProcess Create(IShardRecordProcessor recordProcessor, IoHandler ioHandler) => new DefaultKclProcess(recordProcessor, ioHandler);
 
         /// <summary>
         /// Starts the KclProcess. Once this method is called, the KclProcess instance will continuously communicate with
@@ -102,30 +87,15 @@ namespace Amazon.Kinesis.ClientLibrary
     {
         private IRecordProcessor RecordProcessor { get; set; }
 
-        internal ShardRecordProcessorToRecordProcessor(IRecordProcessor recordProcessor)
-        {
-            RecordProcessor = recordProcessor;
-        }
+        internal ShardRecordProcessorToRecordProcessor(IRecordProcessor recordProcessor) => RecordProcessor = recordProcessor;
 
-        public void Initialize(InitializationInput input)
-        {
-            RecordProcessor.Initialize(input);
-        }
+        public void Initialize(InitializationInput input) => RecordProcessor.Initialize(input);
 
-        public void ProcessRecords(ProcessRecordsInput input)
-        {
-            RecordProcessor.ProcessRecords(input);
-        }
+        public void ProcessRecords(ProcessRecordsInput input) => RecordProcessor.ProcessRecords(input);
 
-        public void LeaseLost(LeaseLossInput leaseLossInput)
-        {
-            RecordProcessor.Shutdown(new DefaultShutdownInput(ShutdownReason.ZOMBIE, null));
-        }
+        public void LeaseLost(LeaseLossInput leaseLossInput) => RecordProcessor.Shutdown(new DefaultShutdownInput(ShutdownReason.ZOMBIE, null));
 
-        public void ShardEnded(ShardEndedInput shardEndedInput)
-        {
-            RecordProcessor.Shutdown(new DefaultShutdownInput(ShutdownReason.TERMINATE, shardEndedInput.Checkpointer));
-        }
+        public void ShardEnded(ShardEndedInput shardEndedInput) => RecordProcessor.Shutdown(new DefaultShutdownInput(ShutdownReason.TERMINATE, shardEndedInput.Checkpointer));
 
         public void ShutdownRequested(ShutdownRequestedInput shutdownRequestedInput)
         {
@@ -151,18 +121,18 @@ namespace Amazon.Kinesis.ClientLibrary
     [DataContract]
     internal class DefaultRecord : Record
     {
-        [DataMember(Name = "sequenceNumber")] private string _sequenceNumber;
+        [DataMember(Name = "sequenceNumber")] private readonly string _sequenceNumber;
 
         [DataMember(Name = "subSequenceNumber")]
-        private long? _subSequenceNumber;
+        private readonly long? _subSequenceNumber;
 
         [DataMember(Name = "data")] private string _base64;
         private byte[] _data;
 
-        [DataMember(Name = "partitionKey")] private string _partitionKey;
+        [DataMember(Name = "partitionKey")] private readonly string _partitionKey;
 
         [DataMember(Name = "approximateArrivalTimestamp")]
-        private double _approximateArrivalTimestamp;
+        private readonly double _approximateArrivalTimestamp;
 
         public override string PartitionKey => _partitionKey;
 
@@ -247,20 +217,14 @@ namespace Amazon.Kinesis.ClientLibrary
     {
         public Checkpointer Checkpointer { get; }
 
-        public DefaultShardEndedInput(Checkpointer checkpointer)
-        {
-            Checkpointer = checkpointer;
-        }
+        public DefaultShardEndedInput(Checkpointer checkpointer) => Checkpointer = checkpointer;
     }
 
     internal class DefaultShutdownRequestedInput : ShutdownRequestedInput
     {
         public Checkpointer Checkpointer { get; }
 
-        public DefaultShutdownRequestedInput(Checkpointer checkpointer)
-        {
-            Checkpointer = checkpointer;
-        }
+        public DefaultShutdownRequestedInput(Checkpointer checkpointer) => Checkpointer = checkpointer;
     }
 
     internal class IoHandler : IDisposable
@@ -314,10 +278,7 @@ namespace Amazon.Kinesis.ClientLibrary
         {
             private readonly DefaultKclProcess _kclProcess;
 
-            public InternalCheckpointer(DefaultKclProcess kclProcess)
-            {
-                _kclProcess = kclProcess;
-            }
+            public InternalCheckpointer(DefaultKclProcess kclProcess) => _kclProcess = kclProcess;
 
             internal override void Checkpoint(string sequenceNumber, CheckpointErrorHandler errorHandler = null)
             {

@@ -1,10 +1,10 @@
-﻿using Framework.Core;
-using Npgsql;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Framework.Core;
+using Npgsql;
 
 namespace DataLayer.PostgreSQL
 {

@@ -7,7 +7,7 @@
 
 namespace RedisScheduler
 {
-    static class Constants
+    internal static class Constants
     {
         public const string Consumer = "consumer";
         public const string Producer = "producer";

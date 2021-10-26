@@ -21,14 +21,8 @@ namespace Amazon.Kinesis.ClientLibrary
     {
         public const string ACTION = "leaseLost";
 
-        public LeaseLostAction()
-        {
-            Type = ACTION;
-        }
-        
-        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer)
-        {
-            processor.LeaseLost(new DefaultLeaseLostInput());
-        }
+        public LeaseLostAction() => Type = ACTION;
+
+        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer) => processor.LeaseLost(new DefaultLeaseLostInput());
     }
 }

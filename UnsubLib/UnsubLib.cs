@@ -87,17 +87,17 @@ namespace UnsubLib
             FileCacheFtpUser = config.GetS("Config/FileCacheFtpUser");
             FileCacheFtpPassword = config.GetS("Config/FileCacheFtpPassword");
             ManualFilePath = config.GetS("Config/ManualFilePath");
-            WorkingFileCacheSize = Int64.Parse(config.GetS("Config/WorkingFileCacheSize"));
-            SearchFileCacheSize = Int64.Parse(config.GetS("Config/SearchFileCacheSize"));
+            WorkingFileCacheSize = long.Parse(config.GetS("Config/WorkingFileCacheSize"));
+            SearchFileCacheSize = long.Parse(config.GetS("Config/SearchFileCacheSize"));
             UnsubServerUri = config.GetS("Config/UnsubServerUri");
             UnsubJobServerUri = config.GetS("Config/UnsubJobServerUri");
             CallLocalLoadUnsubFiles = config.GetB("Config/CallLocalLoadUnsubFiles");
             UseLocalNetworkFile = config.GetB("Config/UseLocalNetworkFile");
             LocalNetworkFilePath = config.GetS("Config/LocalNetworkFilePath");
             // for diffs and loads
-            MaxParallelism = Int32.Parse(config.GetS("Config/MaxParallelism"));
+            MaxParallelism = int.Parse(config.GetS("Config/MaxParallelism"));
             // for downloads and uploads
-            MaxConnections = Int32.Parse(config.GetS("Config/MaxConnections"));
+            MaxConnections = int.Parse(config.GetS("Config/MaxConnections"));
             SeleniumChromeDriverPath = config.GetS("Config/SeleniumChromeDriverPath");
             FileCacheFtpServerPath = config.GetS("Config/FileCacheFtpServerPath");
             SortBufferSize = config.GetS("Config/SortBufferSize");
@@ -797,7 +797,7 @@ namespace UnsubLib
         {
             var networkName = network.GetS("Name");
             var networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
-            var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
+            var parallelism = int.Parse(network.GetS("Credentials/Parallelism"));
 
             parallelism = MaxParallelism < parallelism ? MaxParallelism : parallelism;
 
@@ -2127,7 +2127,7 @@ namespace UnsubLib
         {
             IDictionary<string, IEnumerable<Guid>> dr = null;
             var networkName = network.GetS("Name");
-            var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
+            var parallelism = int.Parse(network.GetS("Credentials/Parallelism"));
             var uri = new Uri(unsubUrl.url);
             var authString = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 

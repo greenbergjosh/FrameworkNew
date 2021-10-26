@@ -1,4 +1,5 @@
-namespace Utility.Mta {
+namespace Utility.Mta
+{
     public class Sender
     {
         public Sender() { }

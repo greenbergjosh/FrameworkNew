@@ -19,17 +19,14 @@ namespace Utility.EDW.Logging
             Message = message;
         }
 
-        public override string ToString()
+        public override string ToString() => JsonWrapper.Json(new
         {
-            return JsonWrapper.Json(new
-            {
-                s = Severity,
-                p = Process,
-                m = Method,
-                d = Descriptor,
-                g = Message
-            });
-        }
+            s = Severity,
+            p = Process,
+            m = Method,
+            d = Descriptor,
+            g = Message
+        });
 
     }
 
@@ -52,10 +49,7 @@ namespace Utility.EDW.Logging
 
     public class EmailAlertPayload
     {
-        public EmailAlertPayload(IEnumerable<EmailAlertPayloadItem> alerts)
-        {
-            Alerts = alerts;
-        }
+        public EmailAlertPayload(IEnumerable<EmailAlertPayloadItem> alerts) => Alerts = alerts;
 
         public IEnumerable<EmailAlertPayloadItem> Alerts { get; }
     }

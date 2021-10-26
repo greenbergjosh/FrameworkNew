@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal class ErrorSelector : ISelector
+    internal sealed class ErrorSelector : ISelector
     {
         public string Message { get; init; }
 

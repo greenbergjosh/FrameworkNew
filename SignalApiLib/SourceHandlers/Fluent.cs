@@ -140,7 +140,7 @@ namespace SignalApiLib.SourceHandlers
         }
 
         // ToDo: move to config
-        private Dictionary<string, string[]> mutations = new Dictionary<string, string[]>
+        private readonly Dictionary<string, string[]> mutations = new Dictionary<string, string[]>
         {
             {"fn", new[]{"FirstName","Firstname"} },
             {"ln", new[]{ "LastName", "Lastname" } },

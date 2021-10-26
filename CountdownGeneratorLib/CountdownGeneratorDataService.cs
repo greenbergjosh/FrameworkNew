@@ -1,8 +1,8 @@
-﻿using ImageMagick;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using ImageMagick;
+using Microsoft.AspNetCore.Http;
 using Utility;
 
 namespace CountdownGeneratorLib
@@ -27,37 +27,34 @@ namespace CountdownGeneratorLib
                 requestFromPost = await context.GetRawBodyStringAsync();
 
                 string imageName = context.Request.Query["i"];
-                int dx = Int32.TryParse(context.Request.Query["dx"], out dx) == false ? 0 : dx;
-                int dy = Int32.TryParse(context.Request.Query["dy"], out dy) == false ? 0 : dy;
+                int dx = int.TryParse(context.Request.Query["dx"], out dx) == false ? 0 : dx;
+                int dy = int.TryParse(context.Request.Query["dy"], out dy) == false ? 0 : dy;
                 string dv = context.Request.Query["dv"];
-                int hx = Int32.TryParse(context.Request.Query["hx"], out hx) == false ? 0 : hx;
-                int hy = Int32.TryParse(context.Request.Query["hy"], out hy) == false ? 0 : hy;
+                int hx = int.TryParse(context.Request.Query["hx"], out hx) == false ? 0 : hx;
+                int hy = int.TryParse(context.Request.Query["hy"], out hy) == false ? 0 : hy;
                 string hv = context.Request.Query["hv"];
-                int mx = Int32.TryParse(context.Request.Query["mx"], out mx) == false ? 0 : mx;
-                int my = Int32.TryParse(context.Request.Query["my"], out my) == false ? 0 : my;
+                int mx = int.TryParse(context.Request.Query["mx"], out mx) == false ? 0 : mx;
+                int my = int.TryParse(context.Request.Query["my"], out my) == false ? 0 : my;
                 string mv = context.Request.Query["mv"];
-                int sx = Int32.TryParse(context.Request.Query["sx"], out sx) == false ? 0 : sx;
-                int sy = Int32.TryParse(context.Request.Query["sy"], out sy) == false ? 0 : sy;
-                string fnt = String.IsNullOrEmpty(context.Request.Query["f"].ToString()) 
+                int sx = int.TryParse(context.Request.Query["sx"], out sx) == false ? 0 : sx;
+                int sy = int.TryParse(context.Request.Query["sy"], out sy) == false ? 0 : sy;
+                string fnt = string.IsNullOrEmpty(context.Request.Query["f"].ToString()) 
                     ? "Arial" : context.Request.Query["f"].ToString();
-                byte fr = byte.TryParse(context.Request.Query["fr"], out fr) == false ? (byte)0 : (byte)fr;
-                byte fg = byte.TryParse(context.Request.Query["fg"], out fg) == false ? (byte)0 : (byte)fg;
-                byte fb = byte.TryParse(context.Request.Query["fb"], out fb) == false ? (byte)0 : (byte)fb;
-                FontStyleType fst;
-                if (!Enum.TryParse<FontStyleType>(context.Request.Query["fst"], out fst))
+                byte fr = byte.TryParse(context.Request.Query["fr"], out fr) == false ? (byte)0 : fr;
+                byte fg = byte.TryParse(context.Request.Query["fg"], out fg) == false ? (byte)0 : fg;
+                byte fb = byte.TryParse(context.Request.Query["fb"], out fb) == false ? (byte)0 : fb;
+                if (!Enum.TryParse<FontStyleType>(context.Request.Query["fst"], out FontStyleType fst))
                     fst = FontStyleType.Normal;
-                FontWeight fw;
-                if (!Enum.TryParse<FontWeight>(context.Request.Query["fw"], out fw))
+                if (!Enum.TryParse<FontWeight>(context.Request.Query["fw"], out FontWeight fw))
                     fw = FontWeight.Normal;
-                FontStretch fs;
-                if (!Enum.TryParse<FontStretch>(context.Request.Query["fs"], out fs))
+                if (!Enum.TryParse<FontStretch>(context.Request.Query["fs"], out FontStretch fs))
                     fs = FontStretch.Normal;
-                int p = Int32.TryParse(context.Request.Query["p"], out p) == false ? 10 : p;
-                int sz = Int32.TryParse(context.Request.Query["sz"], out sz) == false ? 50 : sz;
-                int dp = Int32.TryParse(context.Request.Query["dp"], out dp) == false ? 16 : dp;
+                int p = int.TryParse(context.Request.Query["p"], out p) == false ? 10 : p;
+                int sz = int.TryParse(context.Request.Query["sz"], out sz) == false ? 50 : sz;
+                int dp = int.TryParse(context.Request.Query["dp"], out dp) == false ? 16 : dp;
 
                 //i=teavana&dx=-160&dy=10&dv=10&hx=-55&hy=10&hv=11&mx=50&my=10&mv=12&sx=155&sy=10&fr=32&fg=141&fb=151
-                if (!String.IsNullOrEmpty(imageName))
+                if (!string.IsNullOrEmpty(imageName))
                 {
                     string imgFileName = this.WorkingDirectory + "\\" + imageName + ".gif";
                     MagickImageCollection collection = new MagickImageCollection();

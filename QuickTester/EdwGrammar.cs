@@ -27,16 +27,13 @@ namespace Utility.Entity
 
 namespace QuickTester
 {
-    class EdwGrammar
+    internal class EdwGrammar
     {
         public static Dictionary<string, Entity> context = new();
         public static Entity ContextEntity = null;
         public static Entity E = null;
 
-        public static Entity GetScope(string name)
-        {
-            return context[name];
-        }
+        public static Entity GetScope(string name) => context[name];
 
         // Ed change to <string, Entity>
         public static Dictionary<string, object> symbolTable = new();
@@ -158,15 +155,17 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             int matchOrder = -1;
             foreach (Match m in Regex.Matches(productionBody, @"<<.*?>>"))
             {
-                var p = new Production();
-                p.Match = m.Value;
+                var p = new Production
+                {
+                    Match = m.Value
+                };
                 string match = m.Value[2..^2];
 
                 p.SuppressOutput = (match[0] == '!');
                 if (p.SuppressOutput) match = match[1..];
 
-                string ord = new string(match.TakeWhile(char.IsDigit).ToArray());
-                if (!String.IsNullOrEmpty(ord)) p.MatchOrder = Int32.Parse(ord);
+                string ord = new(match.TakeWhile(char.IsDigit).ToArray());
+                if (!string.IsNullOrEmpty(ord)) p.MatchOrder = int.Parse(ord);
                 else p.MatchOrder = matchOrder--;
                 match = match[ord.Length..];
 
@@ -205,10 +204,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
         }
 
-        public static async Task<string> CallProduction(string productionName)
-        {
-            return await CallProduction(productions[productionName].body, productions[productionName].symbol);
-        }
+        public static async Task<string> CallProduction(string productionName) => await CallProduction(productions[productionName].body, productions[productionName].symbol);
 
         public static async Task<string> CallProduction(string instruction, string symbol)
         {
@@ -249,7 +245,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     sym = sym.Replace(sp.Match, sp.SuppressOutput ? "" : res);
                 }
 
-                if (!String.IsNullOrWhiteSpace(coll))
+                if (!string.IsNullOrWhiteSpace(coll))
                 {
                     if (!symbolTable.ContainsKey(coll)) symbolTable[coll] = new Dictionary<string, string>();
                     ((Dictionary<string, string>)symbolTable[coll])[sym] = instruction;
@@ -403,10 +399,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
         }
 
-        public static async Task<string> ProductionInstruction(Production p)
-        {
-            return await CallProduction(p.InstructionBody);
-        }
+        public static async Task<string> ProductionInstruction(Production p) => await CallProduction(p.InstructionBody);
 
         private static async Task<Entity> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
         {
@@ -481,11 +474,11 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     "application/json" => EntityDocumentJson.Parse(content),
                     _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
                 },
-                Retriever: (entity, uri) => uri.Scheme switch
+                Retriever: async (entity, uri) => uri.Scheme switch
                 {
-                    "entity" => (GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
-                    "entityType" => (GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
-                    "context" => (ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
+                    "entity" => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
+                    "entityType" => (await GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
+                    "context" => (await ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
                 MissingPropertyHandler: null,
@@ -591,7 +584,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
             finally
             {
-                foreach (var (k, v) in ies)
+                foreach (var (_, v) in ies)
                 {
                     v.Dispose();
                 }

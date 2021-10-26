@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 using Utility;
 
 namespace SignalApiLib

@@ -11,7 +11,7 @@ using Jw = Utility.JsonWrapper;
 
 namespace ErrorSiloAlerts
 {
-    class Program
+    internal class Program
     {
         private static FrameworkWrapper fw = null;
 

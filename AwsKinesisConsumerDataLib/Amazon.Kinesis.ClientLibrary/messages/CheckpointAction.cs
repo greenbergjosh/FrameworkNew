@@ -36,9 +36,6 @@ namespace Amazon.Kinesis.ClientLibrary
             SequenceNumber = sequenceNumber;
         }
 
-        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer)
-        {
-            throw new  NotSupportedException("CheckpointAction should never be dispatched, but handled in line");
-        }
+        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer) => throw new NotSupportedException("CheckpointAction should never be dispatched, but handled in line");
     }
 }

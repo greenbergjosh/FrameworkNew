@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.QueryExpressions
 {
-    internal class QueryExpressionNode
+    internal sealed class QueryExpressionNode
     {
         private readonly Query _query;
         private readonly QueryExpressionNode _left;
@@ -53,7 +50,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
                 return default;
             }
 
-            var value = entity.Create(await Operator.Evaluate(_left, _right, entity));
+            var value = entity.Create(await Operator.Evaluate(_left, _right, entity), Operator.ToString());
             if (OutputType != QueryExpressionType.InstanceDependent)
             {
                 _value = value;
@@ -84,9 +81,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
                 return true;
             }
 
-            if (TryParseEntityDocument(query, ref index, out var entityDocument))
+            if (Helpers.TryParseEntityDocument(query, ref index, out var entityDocument))
             {
-                node = new QueryExpressionNode(entity.Create(entityDocument));
+                node = new QueryExpressionNode(entity.Create(entityDocument, "@"));
                 return true;
             }
 
@@ -98,9 +95,14 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
         {
             var asString = ToString();
             if (operationOrder < Operator?.OrderOfOperation)
+            {
                 asString = $"({asString})";
+            }
+
             if (overrideIfSame && operationOrder == Operator?.OrderOfOperation)
+            {
                 asString = $"({asString})";
+            }
 
             return asString;
         }
@@ -130,135 +132,17 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
             return Operator?.GetOutputType(_left!, _right!) ?? GetValueType();
         }
 
-        private QueryExpressionType GetValueType()
+        private QueryExpressionType GetValueType() => _value.ValueType switch
         {
-            return _value.ValueType switch
-            {
-                EntityValueType.Array => QueryExpressionType.Array,
-                EntityValueType.Boolean => QueryExpressionType.Boolean,
-                EntityValueType.Null => QueryExpressionType.Null,
-                EntityValueType.Number => QueryExpressionType.Number,
-                EntityValueType.Object => QueryExpressionType.Object,
-                EntityValueType.String => QueryExpressionType.String,
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
-
-        public override string ToString() => Operator?.ToString(_left!, _right!) ?? _value?.ToString() ?? _query!.ToString();
-
-        private static readonly HashSet<char> _numberCharacters = new()
-        {
-            '0',
-            '1',
-            '2',
-            '3',
-            '4',
-            '5',
-            '6',
-            '7',
-            '8',
-            '9',
-            'e',
-            '.',
-            '-'
+            EntityValueType.Array => QueryExpressionType.Array,
+            EntityValueType.Boolean => QueryExpressionType.Boolean,
+            EntityValueType.Null => QueryExpressionType.Null,
+            EntityValueType.Number => QueryExpressionType.Number,
+            EntityValueType.Object => QueryExpressionType.Object,
+            EntityValueType.String => QueryExpressionType.String,
+            _ => throw new ArgumentOutOfRangeException()
         };
 
-        private static bool TryParseEntityDocument(ReadOnlySpan<char> query, ref int index, out EntityDocument entityDocument)
-        {
-            try
-            {
-                int end = index;
-                char endChar;
-                switch (query[index])
-                {
-                    case 'f':
-                        end += 5;
-                        break;
-                    case 't':
-                    case 'n':
-                        end += 4;
-                        break;
-                    case '.':
-                    case '-':
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                        end = index;
-                        var allowDash = false;
-                        while (end < query.Length && _numberCharacters.Contains(query[end]))
-                        {
-                            if (!allowDash && query[end] == '-') break;
-                            allowDash = query[end] == 'e';
-                            end++;
-                        }
-                        break;
-                    case '\'':
-                    case '"':
-                        end = index + 1;
-                        endChar = query[index];
-                        while (end < query.Length && query[end] != endChar)
-                        {
-                            if (query[end] == '\\')
-                            {
-                                end++;
-                                if (end >= query.Length) break;
-                            }
-                            end++;
-                        }
-
-                        end++;
-                        break;
-                    case '{':
-                    case '[':
-                        end = index + 1;
-                        endChar = query[index] == '{' ? '}' : ']';
-                        var inString = false;
-                        while (end < query.Length)
-                        {
-                            var escaped = false;
-                            if (query[end] == '\\')
-                            {
-                                escaped = true;
-                                end++;
-                                if (end >= query.Length) break;
-                            }
-                            if (!escaped && query[end] == '"')
-                            {
-                                inString = !inString;
-                            }
-                            else if (!inString && query[end] == endChar) break;
-
-                            end++;
-                        }
-
-                        end++;
-                        break;
-                    default:
-                        entityDocument = default;
-                        return false;
-                }
-
-                var block = query[index..end];
-                if (block[0] == '\'' && block[^1] == '\'')
-                    block = $"\"{block[1..^1].ToString()}\"".AsSpan();
-                using var doc = JsonDocument.Parse(block.ToString());
-                entityDocument = new EntityDocumentJson(doc.RootElement.Clone());
-                index = end;
-                return true;
-            }
-            catch
-            {
-                entityDocument = default;
-                return false;
-            }
-        }
-
+        public override string ToString() => Operator?.ToString(_left!, _right!) ?? _value?.ToString() ?? _query!.ToString();
     }
 }

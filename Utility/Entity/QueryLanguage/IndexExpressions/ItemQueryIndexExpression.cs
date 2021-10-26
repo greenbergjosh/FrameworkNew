@@ -6,7 +6,7 @@ using Utility.Entity.QueryLanguage.QueryExpressions;
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public class ItemQueryIndexExpression : QueryIndexExpression, IArrayIndexExpression, IObjectIndexExpression
+    internal sealed class ItemQueryIndexExpression : QueryIndexExpression, IArrayIndexExpression, IObjectIndexExpression
     {
         private readonly QueryExpressionNode _expression;
 

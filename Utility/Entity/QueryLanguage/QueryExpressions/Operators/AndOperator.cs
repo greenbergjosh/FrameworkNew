@@ -3,7 +3,7 @@ using Utility.Entity.Implementations;
 
 namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
 {
-    internal class AndOperator : IQueryExpressionOperator
+    internal sealed class AndOperator : IQueryExpressionOperator
     {
         public int OrderOfOperation => 5;
 
@@ -36,7 +36,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                 return default;
             }
 
-            return new EntityDocumentConstant(leftEntity.Value<bool>() && rightEntity.Value<bool>(), EntityValueType.Boolean, ToString());
+            return new EntityDocumentConstant(leftEntity.Value<bool>() && rightEntity.Value<bool>(), EntityValueType.Boolean);
         }
 
         public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}&&{right.MaybeAddParentheses(OrderOfOperation)}";

@@ -16,13 +16,7 @@ namespace Utility.GenericEntity
 
         public override bool HasPath(string path) => _root.SelectSingleNode(path) != null;
 
-        public override object this[string path]
-        {
-            get
-            {
-                return _root.SelectSingleNode(path).InnerText;
-            }
-        }
+        public override object this[string path] => _root.SelectSingleNode(path).InnerText;
 
         public override IEnumerable<IGenericEntity> GetL(string path)
         {

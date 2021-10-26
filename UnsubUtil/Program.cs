@@ -4,9 +4,9 @@ using Utility;
 
 namespace UnsubUtil
 {
-    class Program
+    internal class Program
     {
-        static async System.Threading.Tasks.Task Main(string[] args)
+        private static async System.Threading.Tasks.Task Main(string[] args)
         {
             var fileName = args[0];
             var fi = new FileInfo(Path.Combine("./", fileName));

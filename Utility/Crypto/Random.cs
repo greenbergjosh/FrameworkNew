@@ -26,35 +26,32 @@ namespace Utility.Crypto
         // DO NOT USE DIRECTLY, use RNG()
         private static RNGCryptoServiceProvider _rng;
 
-        public static RNGCryptoServiceProvider RNG()
-        {
-            return _rng ?? (_rng = new RNGCryptoServiceProvider());
-        }
+        public static RNGCryptoServiceProvider RNG() => _rng ?? (_rng = new RNGCryptoServiceProvider());
 
         #region Statics
 
         // ReSharper disable BuiltInTypeReferenceStyle
-        private static Dictionary<Type, NumericTypeMap> NumericTypes = new Dictionary<Type, NumericTypeMap>
+        private static readonly Dictionary<Type, NumericTypeMap> NumericTypes = new Dictionary<Type, NumericTypeMap>
         {
-            {typeof(Int64), new NumericTypeMap(8, b => BitConverter.ToInt64(b, 0))},
-            {typeof(Int32), new NumericTypeMap(4, b => BitConverter.ToInt32(b, 0))},
-            {typeof(Int16), new NumericTypeMap(2, b => BitConverter.ToInt16(b, 0))},
-            {typeof(Byte), new NumericTypeMap(1, b => b[0])},
+            {typeof(long), new NumericTypeMap(8, b => BitConverter.ToInt64(b, 0))},
+            {typeof(int), new NumericTypeMap(4, b => BitConverter.ToInt32(b, 0))},
+            {typeof(short), new NumericTypeMap(2, b => BitConverter.ToInt16(b, 0))},
+            {typeof(byte), new NumericTypeMap(1, b => b[0])},
             {
-                typeof(SByte), new NumericTypeMap(1, ba =>
+                typeof(sbyte), new NumericTypeMap(1, ba =>
                 {
                     var b = ba[0];
 
                     return sbyte.MaxValue - Convert.ToSByte(byte.MaxValue - b);
                 })
             },
-            {typeof(Boolean), new NumericTypeMap(1, b => b[0] > 127)},
-            {typeof(UInt64), new NumericTypeMap(8, b => BitConverter.ToUInt64(b, 0))},
-            {typeof(UInt32), new NumericTypeMap(4, b => BitConverter.ToUInt32(b, 0))},
-            {typeof(UInt16), new NumericTypeMap(2, b => BitConverter.ToUInt16(b, 0))},
+            {typeof(bool), new NumericTypeMap(1, b => b[0] > 127)},
+            {typeof(ulong), new NumericTypeMap(8, b => BitConverter.ToUInt64(b, 0))},
+            {typeof(uint), new NumericTypeMap(4, b => BitConverter.ToUInt32(b, 0))},
+            {typeof(ushort), new NumericTypeMap(2, b => BitConverter.ToUInt16(b, 0))},
 
-            {typeof(Single), new NumericTypeMap(4, b => BitConverter.ToSingle(b, 0))},
-            {typeof(Double), new NumericTypeMap(8, b => BitConverter.ToDouble(b, 0))}
+            {typeof(float), new NumericTypeMap(4, b => BitConverter.ToSingle(b, 0))},
+            {typeof(double), new NumericTypeMap(8, b => BitConverter.ToDouble(b, 0))}
         };
         // ReSharper restore BuiltInTypeReferenceStyle
 
@@ -220,10 +217,7 @@ namespace Utility.Crypto
             return Convert.ToInt16((randomInt % (max - min)) + min);
         }
 
-        private static int ConvertUIntToIntRange(uint i)
-        {
-            return int.MaxValue - Convert.ToInt32(uint.MaxValue - i);
-        }
+        private static int ConvertUIntToIntRange(uint i) => int.MaxValue - Convert.ToInt32(uint.MaxValue - i);
 
         private static uint ConvertIntToUIntRange(int i)
         {
@@ -235,25 +229,13 @@ namespace Utility.Crypto
 
         private readonly char[] _characterList;
 
-        public Random()
-        {
-            _characterList = _defaultCharacterList;
-        }
+        public Random() => _characterList = _defaultCharacterList;
 
-        public Random(string chars)
-        {
-            _characterList = chars.ToCharArray();
-        }
+        public Random(string chars) => _characterList = chars.ToCharArray();
 
-        public Random(Func<char, bool> charSelector)
-        {
-            _characterList = _defaultCharacterList.Where(charSelector).ToArray();
-        }
+        public Random(Func<char, bool> charSelector) => _characterList = _defaultCharacterList.Where(charSelector).ToArray();
 
-        public Random(char[] chars)
-        {
-            _characterList = chars;
-        }
+        public Random(char[] chars) => _characterList = chars;
 
         public string GenerateString(int minLength, int maxLength) => GenerateRandomString(minLength, maxLength, _characterList);
 

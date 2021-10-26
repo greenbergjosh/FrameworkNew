@@ -2,7 +2,7 @@
 
 namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
-    public interface IObjectIndexExpression : IIndexExpression
+    internal interface IObjectIndexExpression : IIndexExpression
     {
         IAsyncEnumerable<string> GetProperties(Entity entity);
     }

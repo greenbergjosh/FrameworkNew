@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -16,10 +15,7 @@ namespace UnsubLib.NetworkProviders
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Amobee)}";
 
-        public Amobee(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public Amobee(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
         {

@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Loader;
-using System.Reflection;
-using Microsoft.Extensions.DependencyModel;
-using Microsoft.Extensions.DependencyModel.Resolution;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Loader;
+using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.DependencyModel.Resolution;
 
 namespace Utility
 {
@@ -94,10 +94,7 @@ namespace Utility
 
         private Assembly OnResolving(AssemblyLoadContext context, AssemblyName name)
         {
-            bool NamesMatch(RuntimeLibrary runtime)
-            {
-                return string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase);
-            }
+            bool NamesMatch(RuntimeLibrary runtime) => string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase);
 
             var library =
                 dependencyContext.RuntimeLibraries.FirstOrDefault(NamesMatch);

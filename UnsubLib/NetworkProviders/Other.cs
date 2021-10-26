@@ -15,10 +15,7 @@ namespace UnsubLib.NetworkProviders
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Other)}";
 
-        public Other(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public Other(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
         {

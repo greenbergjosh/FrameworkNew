@@ -18,7 +18,7 @@ namespace Utility
             try
             {
                 string s = context.Request.Query[name];
-                if (String.IsNullOrEmpty(s))
+                if (string.IsNullOrEmpty(s))
                 {
                     if (s == null && throwIfNotFound) throw new Exception(name + " not found in querystring.");
                     return defVal;
@@ -33,19 +33,13 @@ namespace Utility
         }
 
         public static string Get(this HttpContext context, string name, string defVal,
-            bool throwIfNotFound = true, bool throwExc = true)
-        {
-            return Get(context, name, defVal, x => x, throwIfNotFound, throwExc);
-        }
+            bool throwIfNotFound = true, bool throwExc = true) => Get(context, name, defVal, x => x, throwIfNotFound, throwExc);
 
-        public static void SetCookie(this HttpContext ctx, string key, string value, int expiresInMinsFromNow)
-        {
-            SetCookie(ctx, key, value, DateTime.UtcNow + TimeSpan.FromMinutes(expiresInMinsFromNow));
-        }
+        public static void SetCookie(this HttpContext ctx, string key, string value, int expiresInMinsFromNow) => SetCookie(ctx, key, value, DateTime.UtcNow + TimeSpan.FromMinutes(expiresInMinsFromNow));
 
         public static void SetCookie(this HttpContext ctx, string key, string value, DateTime? expireTime = null)
         {
-            CookieOptions option = new CookieOptions
+            CookieOptions option = new()
             {
                 Path = "/",
                 SameSite = SameSiteMode.None,
@@ -60,22 +54,13 @@ namespace Utility
             ctx.Response.Cookies.Append(key, value, option);
         }
 
-        public static void DeleteCookie(this HttpContext ctx, string key)
-        {
-            ctx.Response.Cookies.Delete(key);
-        }
+        public static void DeleteCookie(this HttpContext ctx, string key) => ctx.Response.Cookies.Delete(key);
 
-        public static string Ip(this HttpContext ctx)
-        {
-            return ctx.Connection.RemoteIpAddress?.ToString() ?? "";
-        }
+        public static string Ip(this HttpContext ctx) => ctx.Connection.RemoteIpAddress?.ToString() ?? "";
 
-        public static string UserAgent(this HttpContext ctx)
-        {
-            return (!StringValues.IsNullOrEmpty(ctx.Request.Headers["User-Agent"])) ?
+        public static string UserAgent(this HttpContext ctx) => (!StringValues.IsNullOrEmpty(ctx.Request.Headers["User-Agent"])) ?
                 ctx.Request.Headers["User-Agent"].ToString() :
                 "";
-        }
 
         // Slightly modified versions of:
         // https://weblog.west-wind.com/posts/2017/Sep/14/Accepting-Raw-Request-Body-Content-in-ASPNET-Core-API-Controllers
@@ -181,7 +166,7 @@ namespace Utility
             var remoteAddress = connection.RemoteIpAddress.ToString();
 
             // if unknown, assume not local
-            if (String.IsNullOrEmpty(remoteAddress))
+            if (string.IsNullOrEmpty(remoteAddress))
                 return false;
 
             // check if localhost

@@ -1,12 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 using Utility.GenericEntity;
 
 namespace Utility
@@ -134,10 +133,9 @@ namespace Utility
             try
             {
                 string ret = null;
-                string sp = null;
                 var connSprocs = StoredProcedures[conName];
 
-                connSprocs.TryGetValue(method, out sp);
+                connSprocs.TryGetValue(method, out string sp);
                 if (sp == null) return "";
                 ret = await ExecuteSql(args, payload, sp, Connections[conName].ConnStr, timeout);
 

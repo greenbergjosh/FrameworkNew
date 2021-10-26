@@ -20,15 +20,9 @@ namespace SignalApiLib.SourceHandlers
             _cfg = cfg;
         }
 
-        public bool CanHandle(string sourceStr)
-        {
-            return !sourceStr.IsNullOrWhitespace() && !_cfg.GetS(sourceStr.ToLower()).IsNullOrWhitespace();
-        }
+        public bool CanHandle(string sourceStr) => !sourceStr.IsNullOrWhitespace() && !_cfg.GetS(sourceStr.ToLower()).IsNullOrWhitespace();
 
-        public Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<string> HandleRequest(string requestFromPost, HttpContext ctx) => throw new NotImplementedException();
 
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx, string sourceStr)
         {

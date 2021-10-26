@@ -14,10 +14,7 @@ namespace UnsubLib.NetworkProviders
         private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(SiteMath)}";
 
-        public SiteMath(FrameworkWrapper fw)
-        {
-            _fw = fw;
-        }
+        public SiteMath(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
         {

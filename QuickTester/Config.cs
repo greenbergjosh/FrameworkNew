@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Utility.GenericEntity;
 
 namespace QuickTester
 {
-    class Config
+    internal class Config
     {
-        static string testJson = @"
+        private static readonly string testJson = @"
 {
    ""terms"":[
       {

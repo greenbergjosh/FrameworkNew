@@ -25,18 +25,12 @@ namespace Amazon.Kinesis.ClientLibrary
         public const string ACTION = "processRecords";
         
         [DataMember(Name = "records")]
-        private List<DefaultRecord> _actualRecords;
+        private readonly List<DefaultRecord> _actualRecords;
 
         [DataMember(Name = "millisBehindLatest")]
         public long? MillisBehindLatest { get; set; }
 
-        public List<Record> Records
-        {
-            get
-            {
-                return _actualRecords.Select(x => x as Record).ToList();
-            }
-        }
+        public List<Record> Records => _actualRecords.Select(x => x as Record).ToList();
 
         public ProcessRecordsAction(params DefaultRecord[] records)
         {
@@ -44,9 +38,6 @@ namespace Amazon.Kinesis.ClientLibrary
             _actualRecords = records.ToList();
         }
 
-        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer)
-        {
-            processor.ProcessRecords(new DefaultProcessRecordsInput(this, checkpointer));
-        }
+        public override void Dispatch(IShardRecordProcessor processor, Checkpointer checkpointer) => processor.ProcessRecords(new DefaultProcessRecordsInput(this, checkpointer));
     }
 }

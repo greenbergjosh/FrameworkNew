@@ -11,8 +11,6 @@ namespace Utility.Entity
     {
         public Entity Entity { get; internal set; }
 
-        public string Query { get; internal set; } = "$";
-
         public abstract EntityValueType ValueType { get; }
 
         public bool IsArray => ValueType == EntityValueType.Array;
@@ -28,9 +26,9 @@ namespace Utility.Entity
                 throw new InvalidOperationException($"Entity of type {ValueType} is not an array");
             }
 
-            foreach (var item in EnumerateArrayCore())
+            foreach (var (item, index) in EnumerateArrayCore().Select((item, index) => (item, index)))
             {
-                yield return Entity.Create(item);
+                yield return Entity.Create(item, $"{Entity.Query}[{index}]");
             }
         }
 
@@ -45,29 +43,25 @@ namespace Utility.Entity
 
             foreach (var (name, value) in EnumerateObjectCore())
             {
-                yield return (name, Entity.Create(value));
+                yield return (name, Entity.Create(value, $"{Entity.Query}.{name}"));
             }
         }
 
         protected abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
-        public static EntityDocument MapValue(object value, string query = null) => value switch
+        public static EntityDocument MapValue(object value) => value switch
         {
-            null => new EntityDocumentConstant(null, EntityValueType.Null, query),
-            string => new EntityDocumentConstant(value, EntityValueType.String, query),
-            int => new EntityDocumentConstant(value, EntityValueType.Number, query),
-            float => new EntityDocumentConstant(value, EntityValueType.Number, query),
-            decimal => new EntityDocumentConstant(value, EntityValueType.Number, query),
-            IDictionary dictionary => new EntityDocumentObject(dictionary, query),
-            IEnumerable array => EntityDocumentArray.Create(array, query),
+            null => new EntityDocumentConstant(null, EntityValueType.Null),
+            string => new EntityDocumentConstant(value, EntityValueType.String),
+            int => new EntityDocumentConstant(value, EntityValueType.Number),
+            float => new EntityDocumentConstant(value, EntityValueType.Number),
+            decimal => new EntityDocumentConstant(value, EntityValueType.Number),
+            IDictionary dictionary => new EntityDocumentDictionary(dictionary),
+            IEnumerable array => EntityDocumentArray.Create(array),
             Utility.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
             _ => throw new Exception($"Type {value.GetType().Name} is not supported")
         };
-
-        protected EntityDocument MapValue(object value) => MapValue(value, Query);
-
-        public abstract EntityDocument Clone(string query);
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public virtual async IAsyncEnumerable<Entity> ProcessReference()
@@ -80,14 +74,14 @@ namespace Utility.Entity
         {
             if (TryGetPropertyCore(name, out var document))
             {
-                return (true, Entity.Create(document));
+                return (true, Entity.Create(document, $"{Entity.Query}.{name}"));
             }
             else if (Entity.MissingPropertyHandler != null)
             {
-                var foundEntity = await Entity.MissingPropertyHandler(Entity, name);
-                if (foundEntity != null)
+                var foundEntityDocument = await Entity.MissingPropertyHandler(Entity, name);
+                if (foundEntityDocument != null)
                 {
-                    return (true, Entity.Create(foundEntity));
+                    return (true, Entity.Create(foundEntityDocument, $"{Entity.Query}.{name}"));
                 }
             }
 
@@ -110,7 +104,7 @@ namespace Utility.Entity
                 return true;
             }
 
-            if (other == null || ValueType != other.ValueType)
+            if (other is null || ValueType != other.ValueType)
             {
                 return false;
             }
@@ -124,14 +118,11 @@ namespace Utility.Entity
                 EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
                 EntityValueType.String => Value<string>() == other.Value<string>(),
                 EntityValueType.Undefined => false,
-                _ => throw new InvalidOperationException($"Unknown {nameof(ValueType)} {ValueType}")
+                _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")
             };
         }
 
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as EntityDocument);
-        }
+        public override bool Equals(object obj) => Equals(obj as EntityDocument);
 
         public override int GetHashCode() => base.GetHashCode();
     }

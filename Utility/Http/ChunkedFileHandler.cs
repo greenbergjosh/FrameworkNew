@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 
 namespace Utility.Http
@@ -30,13 +28,10 @@ namespace Utility.Http
 
     public class IDistributedCacheChunkStorageProvider : IChunkStorageProvider
     {
-        private IDistributedCache _cache;
+        private readonly IDistributedCache _cache;
         private const string _cacheKeyPrefix = "ChunkStorage-";
 
-        public IDistributedCacheChunkStorageProvider(IDistributedCache cache)
-        {
-            _cache = cache;
-        }
+        public IDistributedCacheChunkStorageProvider(IDistributedCache cache) => _cache = cache;
 
         Task IChunkStorageProvider.Cancel(string key)
         {
@@ -91,12 +86,9 @@ namespace Utility.Http
 
     public class ChunkedFileHandler
     {
-        private IChunkStorageProvider _storage;
+        private readonly IChunkStorageProvider _storage;
 
-        public ChunkedFileHandler(IChunkStorageProvider storageProvider)
-        {
-            _storage = storageProvider;
-        }
+        public ChunkedFileHandler(IChunkStorageProvider storageProvider) => _storage = storageProvider;
 
         /// <summary>
         /// Processes a single chunk of a file.

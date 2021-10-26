@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace QuickTester
 {
@@ -102,10 +100,7 @@ namespace QuickTester
         /// <summary>
         /// Returns a collection of descendant elements.
         /// </summary>
-        public static IEnumerable<ILinqToTree<T>> Descendants<T, K>(this ILinqToTree<T> adapter)
-        {
-            return adapter.Descendants().Where(i => i.Item is K);
-        }
+        public static IEnumerable<ILinqToTree<T>> Descendants<T, K>(this ILinqToTree<T> adapter) => adapter.Descendants().Where(i => i.Item is K);
 
 
         #endregion
@@ -131,51 +126,32 @@ namespace QuickTester
         /// <summary>
         /// Returns a collection of descendant elements.
         /// </summary>
-        public static IEnumerable<ILinqToTree<T>> Descendants<T>(this IEnumerable<ILinqToTree<T>> items)
-        {
-
-            return items.DrillDown(i => i.Descendants());
-        }
+        public static IEnumerable<ILinqToTree<T>> Descendants<T>(this IEnumerable<ILinqToTree<T>> items) => items.DrillDown(i => i.Descendants());
 
         /// <summary>
         /// Returns a collection containing this element and all descendant elements.
         /// </summary>
-        public static IEnumerable<ILinqToTree<T>> DescendantsAndSelf<T>(this IEnumerable<ILinqToTree<T>> items)
-        {
-            return items.DrillDown(i => i.DescendantsAndSelf());
-        }
+        public static IEnumerable<ILinqToTree<T>> DescendantsAndSelf<T>(this IEnumerable<ILinqToTree<T>> items) => items.DrillDown(i => i.DescendantsAndSelf());
 
         /// <summary>
         /// Returns a collection of ancestor elements.
         /// </summary>
-        public static IEnumerable<ILinqToTree<T>> Ancestors<T>(this IEnumerable<ILinqToTree<T>> items)
-        {
-            return items.DrillDown(i => i.Ancestors());
-        }
+        public static IEnumerable<ILinqToTree<T>> Ancestors<T>(this IEnumerable<ILinqToTree<T>> items) => items.DrillDown(i => i.Ancestors());
 
         /// <summary>
         /// Returns a collection containing this element and all ancestor elements.
         /// </summary>
-        public static IEnumerable<ILinqToTree<T>> AncestorsAndSelf<T>(this IEnumerable<ILinqToTree<T>> items)
-        {
-            return items.DrillDown(i => i.AncestorsAndSelf());
-        }
+        public static IEnumerable<ILinqToTree<T>> AncestorsAndSelf<T>(this IEnumerable<ILinqToTree<T>> items) => items.DrillDown(i => i.AncestorsAndSelf());
 
         /// <summary>
         /// Returns a collection of child elements.
         /// </summary>
-        public static IEnumerable<ILinqToTree<T>> Elements<T>(this IEnumerable<ILinqToTree<T>> items)
-        {
-            return items.DrillDown(i => i.Elements());
-        }
+        public static IEnumerable<ILinqToTree<T>> Elements<T>(this IEnumerable<ILinqToTree<T>> items) => items.DrillDown(i => i.Elements());
 
         /// <summary>
         /// Returns a collection containing this element and all child elements.
         /// </summary>
-        public static IEnumerable<ILinqToTree<T>> ElementsAndSelf<T>(this IEnumerable<ILinqToTree<T>> items)
-        {
-            return items.DrillDown(i => i.ElementsAndSelf());
-        }
+        public static IEnumerable<ILinqToTree<T>> ElementsAndSelf<T>(this IEnumerable<ILinqToTree<T>> items) => items.DrillDown(i => i.ElementsAndSelf());
 
     }
     public interface ILinqToTree<T>
@@ -326,10 +302,7 @@ namespace QuickTester
         /// <summary>
         /// Returns a collection of descendant elements which match the given type.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> Descendants<T>(this DirectoryInfo item)
-        {
-            return item.Descendants().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+        public static IEnumerable<DirectoryInfo> Descendants<T>(this DirectoryInfo item) => item.Descendants().Where(i => i is T).Cast<DirectoryInfo>();
 
 
 
@@ -337,62 +310,41 @@ namespace QuickTester
         /// Returns a collection of the sibling elements before this node, in document order
         /// which match the given type.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> ElementsBeforeSelf<T>(this DirectoryInfo item)
-        {
-            return item.ElementsBeforeSelf().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+        public static IEnumerable<DirectoryInfo> ElementsBeforeSelf<T>(this DirectoryInfo item) => item.ElementsBeforeSelf().Where(i => i is T).Cast<DirectoryInfo>();
 
         /// <summary>
         /// Returns a collection of the after elements after this node, in document order
         /// which match the given type.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> ElementsAfterSelf<T>(this DirectoryInfo item)
-        {
-            return item.ElementsAfterSelf().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+        public static IEnumerable<DirectoryInfo> ElementsAfterSelf<T>(this DirectoryInfo item) => item.ElementsAfterSelf().Where(i => i is T).Cast<DirectoryInfo>();
 
         /// <summary>
         /// Returns a collection containing this element and all descendant elements
         /// which match the given type.
         /// </summary>
-	    public static IEnumerable<DirectoryInfo> DescendantsAndSelf<T>(this DirectoryInfo item)
-        {
-            return item.DescendantsAndSelf().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+	    public static IEnumerable<DirectoryInfo> DescendantsAndSelf<T>(this DirectoryInfo item) => item.DescendantsAndSelf().Where(i => i is T).Cast<DirectoryInfo>();
 
         /// <summary>
         /// Returns a collection of ancestor elements which match the given type.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> Ancestors<T>(this DirectoryInfo item)
-        {
-            return item.Ancestors().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+        public static IEnumerable<DirectoryInfo> Ancestors<T>(this DirectoryInfo item) => item.Ancestors().Where(i => i is T).Cast<DirectoryInfo>();
 
         /// <summary>
         /// Returns a collection containing this element and all ancestor elements
         /// which match the given type.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> AncestorsAndSelf<T>(this DirectoryInfo item)
-        {
-            return item.AncestorsAndSelf().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+        public static IEnumerable<DirectoryInfo> AncestorsAndSelf<T>(this DirectoryInfo item) => item.AncestorsAndSelf().Where(i => i is T).Cast<DirectoryInfo>();
 
         /// <summary>
         /// Returns a collection of child elements which match the given type.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> Elements<T>(this DirectoryInfo item)
-        {
-            return item.Elements().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+        public static IEnumerable<DirectoryInfo> Elements<T>(this DirectoryInfo item) => item.Elements().Where(i => i is T).Cast<DirectoryInfo>();
 
         /// <summary>
         /// Returns a collection containing this element and all child elements.
         /// which match the given type.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> ElementsAndSelf<T>(this DirectoryInfo item)
-        {
-            return item.ElementsAndSelf().Where(i => i is T).Cast<DirectoryInfo>();
-        }
+        public static IEnumerable<DirectoryInfo> ElementsAndSelf<T>(this DirectoryInfo item) => item.ElementsAndSelf().Where(i => i is T).Cast<DirectoryInfo>();
     }
 
     public static class EnumerableTreeExtensions
@@ -419,50 +371,32 @@ namespace QuickTester
         /// <summary>
         /// Returns a collection of descendant elements.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> Descendants(this IEnumerable<DirectoryInfo> items)
-        {
-            return items.DrillDown(i => i.Descendants());
-        }
+        public static IEnumerable<DirectoryInfo> Descendants(this IEnumerable<DirectoryInfo> items) => items.DrillDown(i => i.Descendants());
 
         /// <summary>
         /// Returns a collection containing this element and all descendant elements.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> DescendantsAndSelf(this IEnumerable<DirectoryInfo> items)
-        {
-            return items.DrillDown(i => i.DescendantsAndSelf());
-        }
+        public static IEnumerable<DirectoryInfo> DescendantsAndSelf(this IEnumerable<DirectoryInfo> items) => items.DrillDown(i => i.DescendantsAndSelf());
 
         /// <summary>
         /// Returns a collection of ancestor elements.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> Ancestors(this IEnumerable<DirectoryInfo> items)
-        {
-            return items.DrillDown(i => i.Ancestors());
-        }
+        public static IEnumerable<DirectoryInfo> Ancestors(this IEnumerable<DirectoryInfo> items) => items.DrillDown(i => i.Ancestors());
 
         /// <summary>
         /// Returns a collection containing this element and all ancestor elements.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> AncestorsAndSelf(this IEnumerable<DirectoryInfo> items)
-        {
-            return items.DrillDown(i => i.AncestorsAndSelf());
-        }
+        public static IEnumerable<DirectoryInfo> AncestorsAndSelf(this IEnumerable<DirectoryInfo> items) => items.DrillDown(i => i.AncestorsAndSelf());
 
         /// <summary>
         /// Returns a collection of child elements.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> Elements(this IEnumerable<DirectoryInfo> items)
-        {
-            return items.DrillDown(i => i.Elements());
-        }
+        public static IEnumerable<DirectoryInfo> Elements(this IEnumerable<DirectoryInfo> items) => items.DrillDown(i => i.Elements());
 
         /// <summary>
         /// Returns a collection containing this element and all child elements.
         /// </summary>
-        public static IEnumerable<DirectoryInfo> ElementsAndSelf(this IEnumerable<DirectoryInfo> items)
-        {
-            return items.DrillDown(i => i.ElementsAndSelf());
-        }
+        public static IEnumerable<DirectoryInfo> ElementsAndSelf(this IEnumerable<DirectoryInfo> items) => items.DrillDown(i => i.ElementsAndSelf());
 
     }
     public static class DirectoryInfoExtensions
@@ -472,24 +406,18 @@ namespace QuickTester
         /// </summary>
         /// <param name="dir"></param>
         /// <returns></returns>
-        public static IEnumerable<FileInfo> Files(this DirectoryInfo dir)
-        {
-            return dir.GetFiles().AsEnumerable();
-        }
+        public static IEnumerable<FileInfo> Files(this DirectoryInfo dir) => dir.GetFiles().AsEnumerable();
     }
 
     /// <summary>
     /// Adapts a DirectoryInfo to provide methods required for generate
     /// a Linq To Tree API
     /// </summary>
-    class FileSystemTreeAdapter : ILinqTree<DirectoryInfo>
+    internal class FileSystemTreeAdapter : ILinqTree<DirectoryInfo>
     {
-        private DirectoryInfo _dir;
+        private readonly DirectoryInfo _dir;
 
-        public FileSystemTreeAdapter(DirectoryInfo dir)
-        {
-            _dir = dir;
-        }
+        public FileSystemTreeAdapter(DirectoryInfo dir) => _dir = dir;
 
         public IEnumerable<DirectoryInfo> Children()
         {
@@ -512,16 +440,11 @@ namespace QuickTester
             }
         }
 
-        public DirectoryInfo Parent
-        {
-            get
-            {
-                return _dir.Parent;
-            }
-        }
+        public DirectoryInfo Parent => _dir.Parent;
 
     }
-    class LinqToFilesystem
+
+    internal class LinqToFilesystem
     {
         public static void Test()
         {

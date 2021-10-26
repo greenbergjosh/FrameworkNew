@@ -29,17 +29,15 @@ namespace GenericApi
         private Dictionary<string, IGenericEntity> _lbms;
         private Guid _rsConfigId;
 
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddCors(options =>
-                {
-                    options.AddPolicy("CorsPolicy", builder =>
-                        builder.AllowAnyMethod().
-                                AllowAnyHeader().
-                                AllowCredentials().
-                                SetIsOriginAllowed(x => true)
-                    );
-                }
+        public void ConfigureServices(IServiceCollection services) => services.AddCors(options =>
+                                                                        {
+                                                                            options.AddPolicy("CorsPolicy", builder =>
+                                                                                builder.AllowAnyMethod().
+                                                                                        AllowAnyHeader().
+                                                                                        AllowCredentials().
+                                                                                        SetIsOriginAllowed(x => true)
+                                                                            );
+                                                                        }
             ).Configure<CookiePolicyOptions>(options =>
             {
                 options.CheckConsentNeeded = _ => false;
@@ -48,7 +46,6 @@ namespace GenericApi
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             }).AddHttpContextAccessor();
-        }
 
         public void UnobservedTaskExceptionEventHandler(object sender, UnobservedTaskExceptionEventArgs args)
         {

@@ -8,11 +8,11 @@ namespace Framework.Core
     public class DictionaryStack : IDictionary<string, object>
     {
         #region Fields
-        private Stack<IDictionary<string, object>> _data = new Stack<IDictionary<string, object>>();
+        private readonly Stack<IDictionary<string, object>> _data = new Stack<IDictionary<string, object>>();
         #endregion
 
         #region Properties
-        private IDictionary<string, object> Current { get { return _data.Peek(); } }
+        private IDictionary<string, object> Current => _data.Peek();
         #endregion
 
         #region Constructors
@@ -20,18 +20,12 @@ namespace Framework.Core
         {
         }
 
-        public DictionaryStack(IDictionary<string, object> values)
-        {
-            Push(values);
-        }
+        public DictionaryStack(IDictionary<string, object> values) => Push(values);
         #endregion
 
         #region Public Methods
-        public override string ToString()
-        {
-            return Print(this, "", new List<object>());
-        }   
-        
+        public override string ToString() => Print(this, "", new List<object>());
+
         public string Print(DictionaryStack ds, string spaces, List<object> done)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -98,10 +92,7 @@ namespace Framework.Core
             return sb.ToString();
         }
 
-        internal void Push()
-        {
-            _data.Push(new Dictionary<string, object>());
-        }
+        internal void Push() => _data.Push(new Dictionary<string, object>());
 
         internal void Push(IDictionary<string, object> values)
         {
@@ -109,10 +100,7 @@ namespace Framework.Core
                 _data.Push(values ?? new Dictionary<string, object>());
         }
 
-        internal void Pop()
-        {
-            _data.Pop();
-        }
+        internal void Pop() => _data.Pop();
         #endregion
 
         #region IDictionary<string, object> Implemenation
@@ -126,16 +114,10 @@ namespace Framework.Core
                 }
                 return null;
             }
-            set
-            {
-                Current[key] = value;
-            }
+            set => Current[key] = value;
         }
 
-        public void Add(string key, object value)
-        {
-            Current.Add(key, value);
-        }
+        public void Add(string key, object value) => Current.Add(key, value);
 
         public bool ContainsKey(string key)
         {
@@ -146,15 +128,9 @@ namespace Framework.Core
             return false;
         }
 
-        public ICollection<string> Keys
-        {
-            get { return _data.SelectMany(d => d.Keys).Distinct().ToList(); }
-        }
+        public ICollection<string> Keys => _data.SelectMany(d => d.Keys).Distinct().ToList();
 
-        public bool Remove(string key)
-        {
-            throw new NotImplementedException();
-        }
+        public bool Remove(string key) => throw new NotImplementedException();
 
         public bool TryGetValue(string key, out object value)
         {
@@ -167,20 +143,11 @@ namespace Framework.Core
             return false;
         }
 
-        public ICollection<object> Values
-        {
-            get { return _data.SelectMany(d => d.Values).Distinct().ToList(); }
-        }
+        public ICollection<object> Values => _data.SelectMany(d => d.Values).Distinct().ToList();
 
-        public void Add(KeyValuePair<string, object> item)
-        {
-            Current.Add(item);
-        }
+        public void Add(KeyValuePair<string, object> item) => Current.Add(item);
 
-        public void Clear()
-        {
-            throw new NotImplementedException();
-        }
+        public void Clear() => throw new NotImplementedException();
 
         public bool Contains(KeyValuePair<string, object> item)
         {
@@ -191,25 +158,13 @@ namespace Framework.Core
             return false;
         }
 
-        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
+        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) => throw new NotImplementedException();
 
-        public int Count
-        {
-            get { return _data.SelectMany(d => d.Keys).Distinct().Count(); }
-        }
+        public int Count => _data.SelectMany(d => d.Keys).Distinct().Count();
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
-        public bool Remove(KeyValuePair<string, object> item)
-        {
-            throw new NotImplementedException();
-        }
+        public bool Remove(KeyValuePair<string, object> item) => throw new NotImplementedException();
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
@@ -220,10 +175,7 @@ namespace Framework.Core
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         #endregion
     }
 }

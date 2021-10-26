@@ -40,15 +40,9 @@ namespace Utility.Crypto
 
         public byte[] Decrypt(byte[] encryptedDataBytes) => _decryptor.TransformFinalBlock(encryptedDataBytes, 0, encryptedDataBytes.Length);
 
-        public string Base64Encode(byte[] bytes)
-        {
-            return Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_').Replace('=', '~').Trim();
-        }
+        public string Base64Encode(byte[] bytes) => Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_').Replace('=', '~').Trim();
 
-        public byte[] Base64Decode(string data)
-        {
-            return Convert.FromBase64String(data.Replace('-', '+').Replace('_', '/').Replace('~', '='));
-        }
+        public byte[] Base64Decode(string data) => Convert.FromBase64String(data.Replace('-', '+').Replace('_', '/').Replace('~', '='));
 
         public virtual void Dispose()
         {

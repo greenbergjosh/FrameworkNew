@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.EDW.Queueing;
 
@@ -15,7 +13,7 @@ namespace SignalApiLib.ExportProviders
     public class Console : IPostingQueueProvider
     {
         private const string PostingQueueKey = "WebPost";
-        private Dictionary<string, string> _sourceMap = new Dictionary<string, string>
+        private readonly Dictionary<string, string> _sourceMap = new Dictionary<string, string>
         {
             { "fluent", "1d6b7dd9-6d97-44b8-a795-9d0e5e72a01f" }
         };

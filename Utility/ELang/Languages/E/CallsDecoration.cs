@@ -11,10 +11,7 @@ namespace Framework.Core.Languages.E
     {
         public delegate Task<object> EvaluateDelegate(params object[] args);
 
-        private static async Task<IDictionary<string, object>> Evaluate(Request request, DictionaryStack parameters)
-        {
-            return await CreateCalls(request, parameters);
-        }
+        private static async Task<IDictionary<string, object>> Evaluate(Request request, DictionaryStack parameters) => await CreateCalls(request, parameters);
 
         private static async Task<IDictionary<string, object>> CreateCalls(Request request, DictionaryStack parameters)
         {

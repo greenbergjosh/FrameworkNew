@@ -7,10 +7,7 @@ namespace Utility.GenericEntity
     {
         public readonly IDictionary<string, object> _root;
 
-        public GenericEntityDictionary(IDictionary<string, object> data)
-        {
-            _root = data;
-        }
+        public GenericEntityDictionary(IDictionary<string, object> data) => _root = data;
 
         public override object this[string path]
         {
