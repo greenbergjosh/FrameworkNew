@@ -117,6 +117,26 @@ namespace Utility.Entity
 
         public T Value<T>() => _value is null ? default : _value.Value<T>();
 
+        public bool TryGetValue<T>(out T value)
+        {
+            if (_value is null)
+            {
+                value = default;
+                return false;
+            }
+
+            try
+            {
+                value = _value.Value<T>();
+                return true;
+            }
+            catch (InvalidCastException)
+            {
+                value = default;
+                return false;
+            }
+        }
+
         public override string ToString() => $"Query: {Query} Data: {_value}";
 
         private static async Task<IEnumerable<Entity>> Evaluate(Entity rootEntity, Query query)
