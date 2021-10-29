@@ -19,6 +19,7 @@ export function getMergedData(
   rootData: UserInterfaceProps["data"]
   localData: UserInterfaceProps["data"]
 } {
+  debugger
   // Assumption: if [0] is a string, then [0] is the key property of a single KVPTuple
   const isSingleKVPTuple = isString(kvpTuples[0])
   if (isSingleKVPTuple) {

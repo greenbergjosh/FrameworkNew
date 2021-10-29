@@ -1,10 +1,10 @@
-// import "./lib/why-did-you-render"  // <-- Enable to trace unnecessary rendering
+import "./lib/why-did-you-render" // <-- Enable to trace unnecessary rendering
 import "./styles/index.scss"
 import getRegistry from "./services/registrySingleton"
 import { UserInterfaceContextManager } from "./globalTypes/UserInterfaceContextManager"
 import { JSONRecord } from "./globalTypes/JSONTypes"
 import { TSEnum } from "./@types/ts-enum"
-import { BaseInterfaceComponentProps, GetValue } from "./components/BaseInterfaceComponent/types"
+import { BaseInterfaceComponentProps, GetValue, SetValue } from "./components/BaseInterfaceComponent/types"
 import { LBMFunctionType } from "./lib/parseLBM"
 import { EventPayloadType } from "./components/withEvents/types"
 import { ImportFactory, RegisterableComponent } from "./services/ComponentRegistry"
@@ -22,14 +22,14 @@ export * from "./globalTypes"
 export type { UserInterfaceContextManager }
 export type { JSONRecord }
 export type { TSEnum }
-export type { BaseInterfaceComponentProps, GetValue }
+export type { BaseInterfaceComponentProps, GetValue, SetValue }
 export type { LBMFunctionType }
 export type { EventPayloadType }
 export type { ImportFactory, RegisterableComponent }
 export { JSONEditorProps } from "./components/JSONEditor/types"
 export { AbstractBaseInterfaceComponentType, KVPTuple } from "./components/BaseInterfaceComponent/types"
 export { DraggedItemProps, DroppableTargetProps, Droppable } from "./components/DragAndDrop"
-export { ComponentRendererProps } from "./components/ComponentRenderer/types"
+export { ComponentRendererProps } from "./components/RenderComponents/types"
 
 /**
  * Contexts
@@ -43,17 +43,17 @@ export { ComponentRendererModeContext } from "./contexts/ComponentRendererModeCo
  * Components
  */
 export { BaseInterfaceComponent } from "./components/BaseInterfaceComponent/BaseInterfaceComponent"
-export { RenderInterfaceComponent } from "./components/ComponentRenderer/components/RenderInterfaceComponent"
+export { RenderComponent as RenderInterfaceComponent } from "./components/RenderComponents/RenderComponent/RenderComponent"
 export { Undraggable } from "./components/DragAndDrop/Undraggable"
 export { Draggable } from "./components/DragAndDrop/Draggable"
-export { ComponentRenderer } from "./components/ComponentRenderer/ComponentRenderer"
+export { RenderComponents as ComponentRenderer } from "./components/RenderComponents/RenderComponents"
 export { ConfirmableDeleteButton } from "./components/ConfirmableDeleteButton"
 export { baseManageForm } from "./components/BaseInterfaceComponent/base-manage-form"
 export { getDefaultsFromComponentDefinitions } from "./components/BaseInterfaceComponent/componentDefinitionUtils"
 export { JSONEditor } from "./components/JSONEditor/JSONEditor"
 export { getMergedData } from "./components/BaseInterfaceComponent/getMergedData"
 export { EventBus } from "./components/withEvents/EventBus"
-export { EditPanelWrapper } from "./components/ComponentModifiers/EditPanelWrapper"
+export { EditPanelWrapper } from "./components/RenderComponents/ComponentDecorators/withEditPanel/EditPanelWrapper"
 
 /**
  * Services
@@ -69,8 +69,10 @@ export { cheapHash } from "./lib/json"
 export { deepDiff } from "./lib/deepDiff"
 export { evalExpression } from "./lib/evalExpression"
 export { Right } from "./lib/Either"
+export { usePrevious } from "./lib/usePrevious"
 export { sanitizeText } from "./lib/sanitizeText"
 export * from "./lib/Option"
 export * from "./lib/formatNumber"
 export * from "./lib/valueFormatter"
 export * from "./lib/getValue"
+export { ComponentModifierProps } from "components/RenderComponents/types"

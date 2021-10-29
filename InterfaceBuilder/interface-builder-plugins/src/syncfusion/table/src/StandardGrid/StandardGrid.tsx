@@ -35,6 +35,8 @@ import { getCustomAggregateFunctionKey } from "./aggregates/getAggregateRows"
 import { AggregateSafe } from "./utils/AggregateSafe"
 import styles from "./styles.scss"
 import classNames from "classnames"
+import { every, isEqual } from "lodash/fp"
+import { deepDiff } from "@opg/interface-builder"
 
 let grid: GridComponent | null = null
 
@@ -440,6 +442,38 @@ const StandardGrid = (
   )
 }
 
+function propsAreEqual(prevProps: StandardGridComponentProps, nextProps: StandardGridComponentProps): boolean {
+  debugger
+  /*
+   * NOTE: these will trigger a re-render because of different objects that are equal by value:
+   *  props.actionBegin:parent-hook-useCallback-deps
+   *  props.actionBegin
+   *  props.columns
+   *  props.contextData
+   *  props.data
+   *  props.filterSettings
+   *  props.groupSettings
+   *  props.pageSettings
+   */
+  const isPropsEqual = every(Boolean, [
+    isEqual(prevProps.actionBegin, nextProps.actionBegin),
+    isEqual(prevProps.columns, nextProps.columns),
+    isEqual(prevProps.contextData, nextProps.contextData),
+    isEqual(prevProps.data, nextProps.data),
+    isEqual(prevProps.filterSettings, nextProps.filterSettings),
+    isEqual(prevProps.groupSettings, nextProps.groupSettings),
+    isEqual(prevProps.pageSettings, nextProps.pageSettings),
+  ])
+  const runDeepDiff = () =>
+    deepDiff(prevProps, nextProps, (k) =>
+      ["actionBegin", "columns", "contextData", "data", "filterSettings", "groupSettings", "pageSettings"].includes(k)
+    )
+  debugger
+  return isPropsEqual && !runDeepDiff()
+}
+
+// export default React.forwardRef(React.memo(StandardGrid, propsAreEqual))
+// export default React.memo(StandardGrid, propsAreEqual)
 export default React.forwardRef(StandardGrid)
 
 function handleAddRow(arg: any) {

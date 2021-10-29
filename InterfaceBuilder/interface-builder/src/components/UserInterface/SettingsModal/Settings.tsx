@@ -1,15 +1,6 @@
 import React from "react"
-import { RenderComponents } from "../RenderComponents"
-import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
-
-export interface ManageComponentFormProps {
-  componentDefinition: ComponentDefinition
-  manageForm: ComponentDefinition | ComponentDefinition[]
-  onChangeDefinition: (componentDefinition: ComponentDefinition) => void
-  layoutDefinition: LayoutDefinition
-  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  onChangeRootData: UserInterfaceProps["onChangeRootData"]
-}
+import { RenderComponents } from "../../RenderComponents"
+import { ManageComponentFormProps } from "components/UserInterface/types"
 
 export const Settings = ({
   componentDefinition,

@@ -1,0 +1,37 @@
+@import "../../../styles/colors";
+
+/*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+:global {
+  :local(.errorCollapse) {
+    border-color: $ib-red;
+    background-color: $ib-blocked-light;
+    margin-top: 3px;
+    margin-bottom: 3px;
+
+    &.ant-collapse > .ant-collapse-item {
+      border-bottom-color: $ib-red;
+    }
+
+    &.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+      color: $ib-red;
+      font-size: 0.9em;
+      border-color: $ib-blocked;
+      line-height: normal;
+      padding: 8px 12px 8px 36px;
+    }
+
+    .ant-collapse-content {
+      code {
+        font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+        display: block;
+        font-size: 0.8em;
+        color: $ib-red;
+        margin-bottom: 15px;
+      }
+    }
+  }
+}

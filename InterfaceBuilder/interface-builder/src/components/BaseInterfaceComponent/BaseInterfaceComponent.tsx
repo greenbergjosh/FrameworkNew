@@ -90,6 +90,7 @@ export abstract class BaseInterfaceComponent<
    * @param kvpTuples
    */
   setValue: SetValue = (kvpTuples) => {
+    debugger
     const { isLocalDataDirty, isRootDataDirty, localData, rootData } = getMergedData(
       kvpTuples,
       this.props.userInterfaceData || {},
