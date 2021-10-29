@@ -11,8 +11,8 @@ import autoprefixer from "autoprefixer"
 export default {
   input: "src/index.ts",
   output: {
-    // file: pkg.main,
-    dir: "dist",
+    file: pkg.main,
+    // dir: "dist",
     format: "esm",
     name: "main",
     sourcemap: true,

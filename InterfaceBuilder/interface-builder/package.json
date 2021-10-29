@@ -10,7 +10,7 @@
   },
   "homepage": "https://github.com/onpointglobal/interface-builder#readme",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/interface-builder/src/index.d.ts",
   "files": [
     "dist"
   ],
@@ -84,6 +84,7 @@
     "@types/uuid": "8.3.1",
     "@typescript-eslint/eslint-plugin": "4.29.3",
     "@typescript-eslint/parser": "4.29.3",
+    "@welldone-software/why-did-you-render": "6.2.1",
     "antd": "3.26.20",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",

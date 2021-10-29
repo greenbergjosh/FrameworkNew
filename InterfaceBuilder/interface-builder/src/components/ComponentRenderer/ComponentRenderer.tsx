@@ -16,6 +16,7 @@ export const ComponentRenderer = React.memo(
   ({
     componentLimit,
     components,
+    getComponents,
     data,
     getRootUserInterfaceData,
     onChangeRootData,
@@ -30,14 +31,12 @@ export const ComponentRenderer = React.memo(
   }: ComponentRendererProps): JSX.Element => {
     const contextMode = React.useContext(ComponentRendererModeContext)
     const mode = propMode || contextMode
-    const handleChangeSchema = React.useCallback(
-      (index: number) => (newComponentDefinition: ComponentDefinition) => {
-        if (mode === "edit") {
-          onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
-        }
-      },
-      [components, mode, onChangeSchema]
-    )
+    const handleChangeSchema = (index: number) => (newComponentDefinition: ComponentDefinition) => {
+      if (mode === "edit" && getComponents) {
+        const cmps = getComponents()
+        onChangeSchema && onChangeSchema(set(index, newComponentDefinition, cmps))
+      }
+    }
 
     const content = components.map((componentDefinition, index) => {
       return (

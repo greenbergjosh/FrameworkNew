@@ -66,7 +66,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
   //   this.props.onChangeRootData && this.props.onChangeRootData(newData)
 
   render(): JSX.Element {
-    const { components, contextManager, data, mode, onChangeData, submit } = this.props
+    const { components, getComponents, contextManager, data, mode, onChangeData, submit } = this.props
     const { error, fullscreen, itemToAdd, itemToEdit } = this.state
 
     if (error) {
@@ -76,6 +76,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     const content = (
       <ComponentRenderer
         components={components}
+        getComponents={getComponents}
         data={data}
         getRootUserInterfaceData={this.getRootUserInterfaceData}
         onChangeRootData={this.props.onChangeRootData /*this.onChangeRootData*/}
