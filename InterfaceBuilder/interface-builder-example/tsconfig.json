@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "incremental": true,
+    "target": "es6",
+    "module": "ESNext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -13,7 +15,6 @@
     "downlevelIteration": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -22,6 +23,6 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*"
   ]
 }

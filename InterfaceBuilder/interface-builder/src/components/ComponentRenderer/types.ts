@@ -30,7 +30,7 @@ export interface ComponentModifierProps {
 export interface ComponentRendererProps {
   componentLimit?: number
   components: ComponentDefinition[]
-  getComponents?: () => ComponentDefinition[]
+  getComponents?: () => ComponentDefinition[] // See CHN-551 workaround
   data: UserInterfaceProps["data"]
   dragDropDisabled?: boolean
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]

@@ -76,7 +76,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     const content = (
       <ComponentRenderer
         components={components}
-        getComponents={getComponents}
+        getComponents={getComponents} // See CHN-551 Workaround
         data={data}
         getRootUserInterfaceData={this.getRootUserInterfaceData}
         onChangeRootData={this.props.onChangeRootData /*this.onChangeRootData*/}
