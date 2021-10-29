@@ -9,7 +9,7 @@ interface IUserInterfaceProps {
   mode: "display" | "edit" | "preview"
   onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
-  getComponents: () => ComponentDefinition[]
+  getComponents?: () => ComponentDefinition[]
   submit?: () => void
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   onChangeRootData: (newData: UserInterfaceProps["data"]) => void
