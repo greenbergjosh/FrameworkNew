@@ -16,6 +16,7 @@ export const ComponentRenderer = React.memo(
   ({
     componentLimit,
     components,
+    getComponents, // See CHN-551 Workaround
     data,
     getRootUserInterfaceData,
     onChangeRootData,
@@ -30,14 +31,16 @@ export const ComponentRenderer = React.memo(
   }: ComponentRendererProps): JSX.Element => {
     const contextMode = React.useContext(ComponentRendererModeContext)
     const mode = propMode || contextMode
-    const handleChangeSchema = React.useCallback(
-      (index: number) => (newComponentDefinition: ComponentDefinition) => {
-        if (mode === "edit") {
-          onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
-        }
-      },
-      [components, mode, onChangeSchema]
-    )
+    const handleChangeSchema = (index: number) => (newComponentDefinition: ComponentDefinition) => {
+      if (mode === "edit" && getComponents) {
+        // See CHN-551 Workaround
+        // We use getComponents instead of accessing props.components
+        // because the current parent is an outdated version of UserInterface
+        // which has the initial version of props.components
+        const cmps = getComponents()
+        onChangeSchema && onChangeSchema(set(index, newComponentDefinition, cmps))
+      }
+    }
 
     const content = components.map((componentDefinition, index) => {
       return (

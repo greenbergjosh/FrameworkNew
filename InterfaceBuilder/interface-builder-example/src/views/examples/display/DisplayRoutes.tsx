@@ -1,11 +1,12 @@
+import React from "react"
 import { Route } from "react-router-dom"
 import TextExample from "./text"
 import RepeaterExample from "./repeater"
 import ContainerExample from "./container"
 import TableExample from "./table"
+import PivotTableExample from "./pivot-table"
 import TreeExample from "./tree"
 import ModalExample from "./modal"
-import React from "react"
 
 export const DisplayRoutes = (props: { path: string }): JSX.Element => {
   const sectionPath = `${props.path}/display`
@@ -25,6 +26,9 @@ export const DisplayRoutes = (props: { path: string }): JSX.Element => {
       </Route>
       <Route path={`${sectionPath}/table`}>
         <TableExample />
+      </Route>
+      <Route path={`${sectionPath}/pivot-table`}>
+        <PivotTableExample />
       </Route>
       <Route path={`${sectionPath}/tree`}>
         <TreeExample />

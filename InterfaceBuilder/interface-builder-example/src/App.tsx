@@ -72,6 +72,7 @@ import Thermometer from "@opg/interface-builder-plugins/lib/nivo/thermometer"
 import IBRoute from "@opg/interface-builder-plugins/lib/reach-router/route"
 import IBRouter from "@opg/interface-builder-plugins/lib/reach-router/router"
 // import Table from "@opg/interface-builder-plugins/lib/syncfusion/table"
+import PivotTable from "@opg/interface-builder-plugins/lib/syncfusion/pivot-table"
 import tableLayoutDefinition from "@opg/interface-builder-plugins/lib/syncfusion/table/layoutDefinition"
 
 /*
@@ -157,6 +158,7 @@ registry.register({
       )) as unknown as ImportFactory,
     layoutDefinition: tableLayoutDefinition,
   },
+  "pivot-table": PivotTable,
 })
 
 /* IB Overrides */

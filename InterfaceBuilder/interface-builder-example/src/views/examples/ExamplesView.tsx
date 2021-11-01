@@ -1,5 +1,5 @@
-import { Layout, Menu } from "antd"
 import React from "react"
+import { Layout, Menu } from "antd"
 import { Route, Switch, useLocation, useRouteMatch } from "react-router-dom"
 import { ExamplesIntroView } from "./ExamplesIntroView"
 import { ChartMenu } from "./chart/ChartMenu"
@@ -21,6 +21,7 @@ import TextExample from "./display/text"
 import RepeaterExample from "./display/repeater"
 import ContainerExample from "./display/container"
 import TableExample from "./display/table"
+import PivotTableExample from "./display/pivot-table"
 import DataInjectorExample from "./special/data-injector"
 import DataBindingExample from "./framework/data-binding"
 import TextTokensExample from "./framework/text-tokens"
@@ -107,6 +108,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/display/table`}>
             <TableExample />
+          </Route>
+          <Route path={`${path}/display/pivot-table`}>
+            <PivotTableExample />
           </Route>
           <Route path={`${path}/display/tree`}>
             <TreeExample />
