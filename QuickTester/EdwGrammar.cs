@@ -462,6 +462,12 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                                 yield return entity.Clone($"{entity.Query}.{query}[{i}]");
                             }
                             break;
+                        case "suppress":
+                            if (!functionArguments[0].Value<bool>())
+                            {
+                                yield return entity;
+                            }
+                            break;
                         default:
                             throw new InvalidOperationException($"Unknown function {functionName}");
                     }
