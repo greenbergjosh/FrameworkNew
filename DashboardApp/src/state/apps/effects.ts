@@ -64,8 +64,10 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
         .stringify(querystring, { arrayFormat: "comma", skipNull: true, skipEmptyString: true })
         .replaceAll("%20", "+")
       const fullQuery = `?${query}`
-      const newurl = `${location.protocol}//${location.host}${location.pathname}${fullQuery}`
-      window.history.pushState({ path: newurl }, "", newurl)
+      if (fullQuery !== "?") {
+        const newurl = `${location.protocol}//${location.host}${location.pathname}${fullQuery}`
+        window.history.pushState({ path: newurl }, "", newurl)
+      }
     },
 
     async loadAppConfigs() {
