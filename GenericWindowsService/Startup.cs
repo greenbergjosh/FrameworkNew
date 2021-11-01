@@ -17,7 +17,7 @@ namespace GenericWindowsService
     public class Startup
     {
 
-        public void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services)
         {
             _ = services.AddCors(options =>
             {
@@ -49,7 +49,7 @@ namespace GenericWindowsService
         private void OnShutdown()
         {
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::OnShutdown()" + Environment.NewLine);
-            if (Program.HasOnStop) Program.Service.OnStop();
+            Program.Service.OnStop();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,11 +72,9 @@ namespace GenericWindowsService
 
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Setting static files path..." + Environment.NewLine);
 
-                var wwwrootPath = Program.Fw.StartupConfiguration.GetS("Config/PhysicalFileProviderPath");
-
-                if (!wwwrootPath.IsNullOrWhitespace())
+                if (!Program.WwwRootPath.IsNullOrWhitespace())
                 {
-                    app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(wwwrootPath) });
+                    app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(Program.WwwRootPath) });
                 }
                 else
                 {
@@ -100,13 +98,16 @@ namespace GenericWindowsService
                     {
                         if (context.Request.Query["m"] == "config")
                         {
-                            await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                            await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.ToString(), Encoding.UTF8);
                         }
                         else if (await HealthCheckHandler.Handle(context, Program.Fw))
                         {
                             return;
                         }
-                        else await Program.Service.HandleHttpRequest(context);
+                        else
+                        {
+                            await Program.Service.ProcessRequest(context);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -114,12 +115,9 @@ namespace GenericWindowsService
                     }
                 });
 
-                if (Program.HasOnStart)
-                {
-                    File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Starting service..." + Environment.NewLine);
+                File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Starting service..." + Environment.NewLine);
 
-                    Program.Service.OnStart();
-                }
+                Program.Service.OnStart();
             }
             catch (Exception e)
             {

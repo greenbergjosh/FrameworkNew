@@ -50,7 +50,7 @@ namespace Utility
         //    }
         //}
 
-        private static readonly ReaderWriterLockSlim ReadWriteLock = new ReaderWriterLockSlim();
+        private static readonly ReaderWriterLockSlim ReadWriteLock = new();
 
         //https://johandorper.com/log/
         // I'm pretty sure the way this is implemented it puts a lock on all file writing used by this method regardless if it's different files
@@ -61,12 +61,10 @@ namespace Utility
             try
             {
                 // Append text to the file
-                using (StreamWriter sw = File.AppendText(path))
-                {
-                    // Yes, there is an async version of this, it did not end well
-                    sw.WriteLine(text);
-                    sw.Close();
-                }
+                using StreamWriter sw = File.AppendText(path);
+                // Yes, there is an async version of this, it did not end well
+                sw.WriteLine(text);
+                sw.Close();
             }
             finally
             {
@@ -77,10 +75,8 @@ namespace Utility
 
         public static async Task<string> ReadFileTextAsync(string path)
         {
-            using (var fs = File.OpenText(path))
-            {
-                return await fs.ReadToEndAsync();
-            }
+            using var fs = File.OpenText(path);
+            return await fs.ReadToEndAsync();
         }
 
         public static async Task<string[]> ReadLines(string path, int limit)
@@ -90,7 +86,7 @@ namespace Utility
             {
                 var buffer = new char[limit];
                 var len = await sr.ReadAsync(buffer, 0, limit);
-                string theText = new string(buffer, 0, len);
+                string theText = new(buffer, 0, len);
 
                 lines = theText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             }
@@ -108,7 +104,7 @@ namespace Utility
                 else if (ps[i].Contains(' ')) quotedPath.Append("\"" + ps[i] + "\"\\");
                 else quotedPath.Append(ps[i] + "\\");
             }
-            quotedPath.Append(ps[ps.Length - 1]);
+            quotedPath.Append(ps[^1]);
 
             return quotedPath.ToString();
         }

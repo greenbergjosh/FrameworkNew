@@ -262,7 +262,7 @@ namespace QuickTester
 
             var valueQueries = new (string query, Func<string, Entity, Task<object>> getter)[]
             {
-                ("$.a.b.c", async (query, entity) => await entity.GetS(query)),
+                ("$.a.b.c5555", async (query, entity) => await entity.GetS(query)),
                 ("$.a.b.e", async (query, entity) => await entity.GetI(query)),
                 ("$.a.b.d.length", async (query, entity) => await entity.GetI(query)),
                 ("a.b", async (query, entity) => await entity.GetE(query)),

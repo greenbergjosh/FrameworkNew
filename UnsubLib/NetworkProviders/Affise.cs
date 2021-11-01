@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace UnsubLib.NetworkProviders
 {
@@ -18,13 +17,13 @@ namespace UnsubLib.NetworkProviders
 
         public Affise(FrameworkWrapper fw) => _fw = fw;
 
-        public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
+        public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = network.GetS("Name");
-            var networkId = network.GetS("Id");
+            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("Id");
 
-            var apiUrl = network.GetS("Credentials/NetworkApiUrl");
-            var apiKey = network.GetS("Credentials/NetworkApiKey");
+            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
+            var apiKey = await network.GetS("Credentials.NetworkApiKey");
 
             var requestHeaders = new[] { ("Accept", "application/json"), ("API-Key", apiKey) };
 
@@ -43,20 +42,20 @@ namespace UnsubLib.NetworkProviders
                     return null;
                 }
 
-                JObject campaigns;
+                Entity campaigns;
                 try
                 {
-                    campaigns = JObject.Parse(result.body);
+                    campaigns = await network.Parse("application/json", result.body);
                     await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
                 }
-                catch (JsonReaderException)
+                catch (Exception ex)
                 {
-                    await _fw.Error(_logMethod, $"Campaign response from {networkName} was invalid json.\r\nResponse:\r\n{result.body}");
+                    await _fw.Error(_logMethod, $"Campaign response from {networkName} was invalid json.\r\nResponse:\r\n{result.body}\r\nException:{ex}");
                     return null;
                 }
 
                 var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
-                    JsonConvert.SerializeObject(new
+                    JsonSerializer.Serialize(new
                     {
                         NetworkId = networkId,
                         PayloadType = "json",
@@ -68,9 +67,9 @@ namespace UnsubLib.NetworkProviders
                     campaigns.ToString()
                 );
 
-                if (res == null || res.GetS("result") == "failed")
+                if (res == null || await res.GetS("result") == "failed")
                 {
-                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{campaigns}");
+                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{campaigns}");
                     return null;
                 }
 
@@ -87,12 +86,12 @@ namespace UnsubLib.NetworkProviders
             }
         }
 
-        public async Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
+        public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = network.GetS("Name");
-            var networkId = network.GetS("Id");
-            var apiUrl = network.GetS("Credentials/NetworkApiUrl");
-            var apiKey = network.GetS("Credentials/NetworkApiKey");
+            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("Id");
+            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
+            var apiKey = await network.GetS("Credentials.NetworkApiKey");
 
             var requestHeaders = new[] { ("Accept", "application/json"), ("API-Key", apiKey) };
 
@@ -110,31 +109,31 @@ namespace UnsubLib.NetworkProviders
                     return null;
                 }
 
-                JObject offer;
+                Entity offer;
                 try
                 {
-                    offer = JObject.Parse(result.body);
+                    offer = await network.Parse("application/json", result.body);
                 }
-                catch (JsonReaderException)
+                catch (Exception ex)
                 {
-                    await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} was invalid json.\r\nResponse:\r\n{result.body}");
+                    await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} was invalid json.\r\nResponse:\r\n{result.body}\r\nException:{ex}");
                     return null;
                 }
 
-                if (offer["status"].Value<int>() != 1)
+                if (await offer.GetI("status") != 1)
                 {
                     await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} was invalid.\r\nResponse:\r\n{result.body}");
                     return null;
                 }
 
-                var description = offer["offers"][0]["description_lang"]["en"].Value<string>();
+                var description = await offer.GetS("offers[0].description_lang.en");
                 if (string.IsNullOrWhiteSpace(description))
                 {
                     await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} missing or empty description.\r\nResponse:\r\n{result.body}");
                     return null;
                 }
 
-                var urlMatchRegex = network.GetS("Credentials/SuppressionDownloadLinkRegex");
+                var urlMatchRegex = await network.GetS("Credentials.SuppressionDownloadLinkRegex");
 
                 var match = Regex.Match(description, urlMatchRegex);
                 if (!match.Success)

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Quartz;
 using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace EdwRollupLib
 {
@@ -19,7 +18,7 @@ namespace EdwRollupLib
     {
         public static FrameworkWrapper FrameworkWrapper { get; set; }
 
-        public IGenericEntity ThreadGroup { get; set; }
+        public Entity ThreadGroup { get; set; }
         public string Period { get; set; }
         public string TriggerFrequency { get; set; }
         public Guid EdwConfigId { get; set; }
@@ -41,9 +40,9 @@ namespace EdwRollupLib
 
             if (exclusiveQueueNextId != exclusiveQueueCurrentRunningId)
             {
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
 #endif
                 return;
             }
@@ -51,9 +50,9 @@ namespace EdwRollupLib
             _rsId = Guid.NewGuid();
             _rsTs = DateTime.UtcNow;
 
-            var threadGroupId = Guid.Parse(ThreadGroup.GetS("Id"));
+            var threadGroupId = Guid.Parse(await ThreadGroup.GetS("Id"));
 
-            var parameters = new Parameters(EdwConfigId, threadGroupId, ThreadGroup.GetS("Name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
+            var parameters = new Parameters(EdwConfigId, threadGroupId, await ThreadGroup.GetS("Name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
 
             try
             {
@@ -70,7 +69,7 @@ namespace EdwRollupLib
 
             try
             {
-                var startBlock = PrepareDataflow(context.CancellationToken);
+                var startBlock = await PrepareDataflow(context.CancellationToken);
 
                 await startBlock.SendAsync(parameters);
 
@@ -79,18 +78,18 @@ namespace EdwRollupLib
                 var end = DateTime.Now;
                 await DropEndEvent(parameters, end - start, "ThreadGroupProcess", null);
 
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} Complete");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Complete");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} Complete");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} Complete");
 #endif
             }
             catch (Exception ex)
             {
                 await DropErrorEvent(ex, parameters, "ThreadGroupProcess", null, false);
 
-                await FrameworkWrapper.Error($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} Error: {ex}");
+                await FrameworkWrapper.Error($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Error: {ex}");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} Error: {ex}");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} Error: {ex}");
 #endif
             }
         }
@@ -100,21 +99,21 @@ namespace EdwRollupLib
         {
             var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup());
 
-            if (prepareThreadGroupResult.GetS("status") != "ok")
+            if (await prepareThreadGroupResult.GetS("status") != "ok")
             {
-                var description = prepareThreadGroupResult.GetS("description");
+                var description = await prepareThreadGroupResult.GetS("description");
                 throw new Exception(description);
             }
 
-            var sessionId = prepareThreadGroupResult.GetS("session_id");
-            var workingSetTableName = prepareThreadGroupResult.GetS("working_set_table_name");
+            var sessionId = await prepareThreadGroupResult.GetS("session_id");
+            var workingSetTableName = await prepareThreadGroupResult.GetS("working_set_table_name");
 
             var threadGroupParameters = parameters with { SessionId = sessionId, WorkingSetTableName = workingSetTableName };
 
-            var message = prepareThreadGroupResult.GetS("message");
+            var message = await prepareThreadGroupResult.GetS("message");
             if (!string.IsNullOrWhiteSpace(message))
             {
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{ThreadGroup.GetS("Name")} {Period}: {message}");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{await ThreadGroup.GetS("Name")} {Period}: {message}");
 #if DEBUG
                 Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period}: {message}");
 #endif
@@ -123,10 +122,10 @@ namespace EdwRollupLib
 
             var reportSequences = new List<Parameters>();
 
-            var rsConfigIds = prepareThreadGroupResult.GetL("rs_config_ids").Select(i => Guid.Parse(i.GetS("")));
+            var rsConfigIds = (await prepareThreadGroupResult.GetL<string>("rs_config_ids")).Select(i => Guid.Parse(i));
             if (!rsConfigIds.Any())
             {
-                throw new Exception($"No rs_config_ids, response: {prepareThreadGroupResult.GetS("")}");
+                throw new Exception($"No rs_config_ids, response: {await prepareThreadGroupResult.GetS("")}");
             }
 
             foreach (var rsConfigId in rsConfigIds)
@@ -138,24 +137,24 @@ namespace EdwRollupLib
             return reportSequences;
         }
 
-        private async Task<IEnumerable<Parameters>> ProcessReportSequence(Parameters parameters)
+        private static async Task<IEnumerable<Parameters>> ProcessReportSequence(Parameters parameters)
         {
             var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs());
 
-            if (!string.IsNullOrWhiteSpace(processRsResult.GetS("message")))
+            if (!string.IsNullOrWhiteSpace(await processRsResult.GetS("message")))
             {
-                throw new Exception(processRsResult.GetS("message"));
+                throw new Exception(await processRsResult.GetS("message"));
             }
 
             var rollups = new List<Parameters>();
 
-            var allRollupArgs = processRsResult.GetL("args").ToList();
+            var allRollupArgs = (await processRsResult.GetL("args")).ToList();
 
             if (allRollupArgs.Any())
             {
                 foreach (var rollupArgs in allRollupArgs)
                 {
-                    var rollupParameters = parameters with { RollupArgs = rollupArgs, RollupName = rollupArgs.GetS("rollup_name"), RollupCount = allRollupArgs.Count };
+                    var rollupParameters = parameters with { RollupArgs = rollupArgs, RollupName = await rollupArgs.GetS("rollup_name"), RollupCount = allRollupArgs.Count };
                     rollups.Add(rollupParameters);
                 }
             }
@@ -173,7 +172,7 @@ namespace EdwRollupLib
             {
                 var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup());
 
-                var status = rollupResult.GetS("status");
+                var status = await rollupResult.GetS("status");
                 if (status == "deadlock detected")
                 {
                     continue;
@@ -208,9 +207,9 @@ namespace EdwRollupLib
             if (!string.IsNullOrWhiteSpace(parameters.WorkingSetTableName))
             {
                 var cleanupResult = await Data.CallFn("edw", "cleanup", parameters.Cleanup());
-                if (cleanupResult.GetS("status") != "ok")
+                if (await cleanupResult.GetS("status") != "ok")
                 {
-                    var error = cleanupResult.GetS("error");
+                    var error = await cleanupResult.GetS("error");
                     throw new Exception(error);
                 }
             }
@@ -219,9 +218,9 @@ namespace EdwRollupLib
         }
         #endregion
 
-        private record Parameters(Guid EdwConfigId, Guid ThreadGroupId, string ThreadGroupName, string Period, string TriggerFrequency, string DebugLevel, string SessionId = default, string WorkingSetTableName = default, Guid RsConfigId = default, string RollupName = default, int RollupCount = default, IGenericEntity RollupArgs = default)
+        private record Parameters(Guid EdwConfigId, Guid ThreadGroupId, string ThreadGroupName, string Period, string TriggerFrequency, string DebugLevel, string SessionId = default, string WorkingSetTableName = default, Guid RsConfigId = default, string RollupName = default, int RollupCount = default, Entity RollupArgs = default)
         {
-            public string PrepareThreadGroup() => JsonConvert.SerializeObject(new
+            public string PrepareThreadGroup() => JsonSerializer.Serialize(new
             {
                 edw_config_id = EdwConfigId,
                 thread_group_id = ThreadGroupId,
@@ -232,7 +231,7 @@ namespace EdwRollupLib
                 session_id = SessionId
             });
 
-            public string ProcessRs() => JsonConvert.SerializeObject(new
+            public string ProcessRs() => JsonSerializer.Serialize(new
             {
                 thread_group_name = ThreadGroupName,
                 period = Period,
@@ -242,9 +241,9 @@ namespace EdwRollupLib
                 trigger_frequency = TriggerFrequency
             });
 
-            public string ProcessRollup() => RollupArgs.GetS("");
+            public string ProcessRollup() => RollupArgs.ToString();
 
-            public string Cleanup() => JsonConvert.SerializeObject(new
+            public string Cleanup() => JsonSerializer.Serialize(new
             {
                 thread_group_name = ThreadGroupName,
                 period = Period,
@@ -254,27 +253,27 @@ namespace EdwRollupLib
         }
 
         #region Helper Methods
-        private Task DropEvent(object payload)
+        private async Task DropEvent(object payload)
         {
             var edwBulkEvent = new EdwBulkEvent();
 
             edwBulkEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid rsId, DateTime rsTs)> { [RsConfigId] = (_rsId, _rsTs) }, payload);
 
 #if DEBUG
-            Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")}_{Period} {JsonConvert.SerializeObject(payload)}");
+            Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")}_{Period} {JsonSerializer.Serialize(payload)}");
 #endif
 
-            return FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
+            await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
         }
 
         private async Task DropReportingSequence()
         {
             var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = ThreadGroup.GetS("Name"), period = Period }, RsConfigId);
+            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = await ThreadGroup.GetS("Name"), period = Period }, RsConfigId);
 
             await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
 
-            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{ThreadGroup.GetS("Name")} {Period} Start");
+            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Start");
 #if DEBUG
             Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} Start");
 #endif
@@ -291,10 +290,10 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = JToken.Parse(input?.RollupArgs?.GetS("") ?? "null")
+                rollupArgs = input?.RollupArgs.ToString() ?? "null"
             };
 
-            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonConvert.SerializeObject(payload));
+            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -310,10 +309,10 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = JToken.Parse(input?.RollupArgs?.GetS("") ?? "null")
+                rollupArgs = input?.RollupArgs.ToString() ?? "null"
             };
 
-            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonConvert.SerializeObject(payload));
+            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -328,11 +327,11 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = JToken.Parse(input?.RollupArgs?.GetS("") ?? "null"),
+                rollupArgs = input?.RollupArgs.ToString() ?? "null",
                 message = ex.ToString()
             };
 
-            await FrameworkWrapper.Error($"{nameof(RollupJob)}.{step}", JsonConvert.SerializeObject(payload));
+            await FrameworkWrapper.Error($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
 
             if (alert)
@@ -343,19 +342,19 @@ namespace EdwRollupLib
             _complete.SetException(ex);
         }
 
-        private ITargetBlock<Parameters> PrepareDataflow(CancellationToken cancellationToken)
+        private async Task<ITargetBlock<Parameters>> PrepareDataflow(CancellationToken cancellationToken)
         {
-            var degreesOfParallelism = int.Parse(FrameworkWrapper.StartupConfiguration.GetS("Config/Parallelism") ?? "16");
+            var degreesOfParallelism = int.Parse(await FrameworkWrapper.StartupConfiguration.GetS("Config.Parallelism") ?? "16");
 
             var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = degreesOfParallelism, EnsureOrdered = false, BoundedCapacity = -1, CancellationToken = cancellationToken };
 
             var withEventsMaker = new WithEventsMaker<Parameters>(DropStartEvent, DropEndEvent, DropErrorEvent);
 
-            var prepareThreadGroup = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PrepareThreadGroup, p => p?.RollupName), options);
-            var processReportSequence = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessReportSequence, p => p?.RollupName), options);
-            var processRollup = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessRollup, p => p?.RollupName), options);
-            var waitForAllRollups = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(WaitForAllRollups, p => p?.RollupName), options);
-            var cleanup = new ActionBlock<Parameters>(withEventsMaker.WithEvents(Cleanup, p => p?.RollupName), options);
+            var prepareThreadGroup = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PrepareThreadGroup, p => Task.FromResult(p?.RollupName)), options);
+            var processReportSequence = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessReportSequence, p => Task.FromResult(p?.RollupName)), options);
+            var processRollup = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ProcessRollup, p => Task.FromResult(p?.RollupName)), options);
+            var waitForAllRollups = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(WaitForAllRollups, p => Task.FromResult(p?.RollupName)), options);
+            var cleanup = new ActionBlock<Parameters>(withEventsMaker.WithEvents(Cleanup, p => Task.FromResult(p?.RollupName)), options);
 
             prepareThreadGroup.LinkTo(cleanup, parameters => parameters.RsConfigId == default);
             prepareThreadGroup.LinkTo(processReportSequence);
@@ -386,7 +385,7 @@ namespace EdwRollupLib
             AddField("RollupName", input?.RollupName);
             AddField("Error", ex.Message);
 
-            await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+            await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
             {
                 text
             }), "application/json");

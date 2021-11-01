@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Utility;
 
 namespace QueueProcessorLib
@@ -41,31 +41,23 @@ namespace QueueProcessorLib
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    batch = await Config.ItemGetter(Config.BatchSize);
+                    var batchCount = 0;
 
-                    var shouldSleep = false;
-
-                    if (batch != null && batch.Any())
+                    await foreach (var queueItem in Config.ItemGetter(Config.BatchSize))
                     {
-                        foreach (var queueItem in batch)
+                        if (Config.DiscriminatorsInRetry.Contains(queueItem.Discriminator))
                         {
-                            if (Config.DiscriminatorsInRetry.Contains(queueItem.Discriminator))
-                            {
-                                await Config.SendToRetryQueue(queueItem);
-                            }
-                            else
-                            {
-                                Config.Queue.Add(queueItem, cancellationToken);
-                            }
+                            await Config.SendToRetryQueue(queueItem);
                         }
+                        else
+                        {
+                            Config.Queue.Add(queueItem, cancellationToken);
+                        }
+                        batchCount++;
+                    }
 
-                        // Sleep if the batch wasn't a full batch or we're above our low watermark
-                        shouldSleep = batch.Count() < Config.BatchSize || Config.Queue.Count >= Config.LowWatermark;
-                    }
-                    else
-                    {
-                        shouldSleep = true;
-                    }
+                    // Sleep if the batch wasn't a full batch or we're above our low watermark
+                    var shouldSleep = batchCount < Config.BatchSize || Config.Queue.Count >= Config.LowWatermark;
 
                     if (shouldSleep && !cancellationToken.IsCancellationRequested)
                     {
@@ -81,7 +73,7 @@ namespace QueueProcessorLib
             }
             catch (Exception ex)
             {
-                await _fw.Error(LogMethod, $"Exception occurred, producer halting.{Environment.NewLine}Last Batch:{(batch != null ? JsonConvert.SerializeObject(batch.Select(qi => (qi.Id, qi.Discriminator))) : "None")}{Environment.NewLine}Exception: {ex}");
+                await _fw.Error(LogMethod, $"Exception occurred, producer halting.{Environment.NewLine}Last Batch:{(batch != null ? JsonSerializer.Serialize(batch.Select(qi => (qi.Id, qi.Discriminator))) : "None")}{Environment.NewLine}Exception: {ex}");
                 _started = false;
             }
 

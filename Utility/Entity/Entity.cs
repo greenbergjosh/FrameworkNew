@@ -32,6 +32,10 @@ namespace Utility.Entity
 
         public EntityValueType ValueType => _value?.ValueType ?? EntityValueType.Undefined;
 
+        public bool IsArray => _value?.IsArray ?? false;
+
+        public bool IsObject => _value?.IsObject ?? false;
+
         public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
 
         private Entity(EntityConfig config) => _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -105,17 +109,60 @@ namespace Utility.Entity
             return await Evaluate(entity, parsedQuery);
         }
 
-        public async Task<Entity> GetE(string query) => (await Evaluate(query)).FirstOrDefault();
+        public async Task<Entity> GetE(string query) => (await Evaluate(query)).SingleOrDefault();
 
         public async Task<bool> GetB(string query) => (await GetE(query)).Value<bool>();
+
+        public Task<bool> GetB(string query, bool defaultValue) => GetWithDefault(query, defaultValue);
 
         public Task<IEnumerable<Entity>> Get(string query) => Evaluate(query);
 
         public async Task<string> GetS(string query) => (await GetE(query)).Value<string>();
 
+        public Task<string> GetS(string query, string defaultValue) => GetWithDefault(query, defaultValue);
+
+        public async Task<(bool found, string value)> TryGetS(string query)
+        {
+            var result = (await Get(query)).FirstOrDefault();
+            if (result != null && result.ValueType == EntityValueType.String)
+            {
+                return (true, result.Value<string>());
+            }
+
+            return (false, default);
+        }
+
+        public Task<IEnumerable<Entity>> GetL(string query) => Get($"{query}.*");
+
+        public async Task<IEnumerable<T>> GetL<T>(string query) => (await Get($"{query}.*")).Select(entity => entity.Value<T>());
+
         public async Task<int> GetI(string query) => (await GetE(query)).Value<int>();
 
-        public T Value<T>() => _value is null ? default : _value.Value<T>();
+        public Task<int> GetI(string query, int defaultValue) => GetWithDefault(query, defaultValue);
+
+        public Task<Dictionary<string, Entity>> GetD(string query) => GetD<Entity>(query);
+
+        public async Task<Dictionary<string, TValue>> GetD<TValue>(string query)
+        {
+            var entity = await GetE(query);
+
+            return new Dictionary<string, TValue>(entity.Document.EnumerateObject().Select(item => new KeyValuePair<string, TValue>(item.name, item.value.Value<TValue>())));
+        }
+
+        private async Task<T> GetWithDefault<T>(string query, T defaultValue)
+        {
+            var result = (await Get(query)).ToList();
+            if (result.Count == 1)
+            {
+                return result[0].Value<T>();
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+        public T Value<T>() => _value is null ? default : typeof(T) == typeof(Entity) ? (T)(object)Create(_value) : _value.Value<T>();
 
         public bool TryGetValue<T>(out T value)
         {
@@ -137,7 +184,7 @@ namespace Utility.Entity
             }
         }
 
-        public override string ToString() => $"Query: {Query} Data: {_value}";
+        public override string ToString() => _value?.ToString();
 
         private static async Task<IEnumerable<Entity>> Evaluate(Entity rootEntity, Query query)
         {

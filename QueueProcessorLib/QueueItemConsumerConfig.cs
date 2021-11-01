@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Utility;
 
 namespace QueueProcessorLib
@@ -20,17 +20,27 @@ namespace QueueProcessorLib
         public int DrainInterval { get; }
         public int DrainSleepInterval { get; }
 
-        public QueueItemConsumerConfig(FrameworkWrapper fw, string name, BlockingCollection<QueueItem> queue, Func<string, QueueItem, Task<bool>> queueItemProcessor, Func<QueueItem, Task> sendToRetryQueue)
+        private QueueItemConsumerConfig(string name, BlockingCollection<QueueItem> queue, Func<string, QueueItem, Task<bool>> queueItemProcessor, Func<QueueItem, Task> sendToRetryQueue, int itemsInFlightMaxCount, int sleepInterval, int drainInterval, int drainSleepInterval)
         {
             Name = name;
             Queue = queue;
             QueueItemProcessor = queueItemProcessor;
             SendToRetryQueue = sendToRetryQueue;
 
-            ItemsInFlightMaxCount = int.Parse(fw.StartupConfiguration.GetS("Config/QueueProcessor/QueueItemConsumer/ItemsInFlightMaxCount").IfNullOrWhitespace("50"));
-            SleepInterval = int.Parse(fw.StartupConfiguration.GetS("Config/QueueProcessor/QueueItemConsumer/SleepInterval").IfNullOrWhitespace("1000"));
-            DrainInterval = int.Parse(fw.StartupConfiguration.GetS("Config/QueueProcessor/QueueItemConsumer/DrainInterval").IfNullOrWhitespace("60000"));
-            DrainSleepInterval = int.Parse(fw.StartupConfiguration.GetS("Config/QueueProcessor/QueueItemConsumer/DrainSleepInterval").IfNullOrWhitespace("1000"));
+            ItemsInFlightMaxCount = itemsInFlightMaxCount;
+            SleepInterval = sleepInterval;
+            DrainInterval = drainInterval;
+            DrainSleepInterval = drainSleepInterval;
+        }
+
+        public static async Task<QueueItemConsumerConfig> Create(FrameworkWrapper fw, string name, BlockingCollection<QueueItem> queue, Func<string, QueueItem, Task<bool>> queueItemProcessor, Func<QueueItem, Task> sendToRetryQueue)
+        {
+            var itemsInFlightMaxCount = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemConsumer.ItemsInFlightMaxCount")).IfNullOrWhitespace("50"));
+            var sleepInterval = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemConsumer.SleepInterval")).IfNullOrWhitespace("1000"));
+            var drainInterval = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemConsumer.DrainInterval")).IfNullOrWhitespace("60000"));
+            var drainSleepInterval = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemConsumer.DrainSleepInterval")).IfNullOrWhitespace("1000"));
+
+            return new QueueItemConsumerConfig(name, queue, queueItemProcessor, sendToRetryQueue, itemsInFlightMaxCount, sleepInterval, drainInterval, drainSleepInterval);
         }
     }
 }

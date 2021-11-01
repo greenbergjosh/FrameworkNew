@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
-using Utility.GenericEntity;
 
 namespace Utility
 {
@@ -73,15 +72,6 @@ namespace Utility
             return await reader.ReadToEndAsync();
         }
 
-        public static async Task<IGenericEntity> GetGenericEntityAsync(this HttpContext ctx, Encoding encoding = null)
-        {
-            if (encoding == null)
-                encoding = Encoding.UTF8;
-
-            using var reader = new HttpRequestStreamReader(ctx.Request.Body, encoding);
-            return await JsonWrapper.JsonToGenericEntityAsync(reader);
-        }
-
         public static async Task<byte[]> GetRawBodyBytesAsync(this HttpContext ctx)
         {
             using var ms = new MemoryStream(2048);
@@ -103,7 +93,7 @@ namespace Utility
             await ctx.Response.WriteAsync(response, enc ?? Encoding.UTF8);
         }
 
-        public static void AddCorsAccessForOriginHost(this HttpContext ctx, IGenericEntity ge)
+        public static async Task AddCorsAccessForOriginHost(this HttpContext ctx, Entity.Entity entity)
         {
             // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio
             // .netcore 2.2 makes this process more explicit (domains should be specified), so let's just echo the
@@ -111,9 +101,10 @@ namespace Utility
 
             // Nothing to do if we don't have an "Origin:" header or if our config is missing
             // the "allow-origin" directive
-            if (!ctx.Request.Headers.TryGetValue("Origin", out StringValues originHost) ||
-                ge.GetS("allow-origin") == null
-                ) return;
+            if (!ctx.Request.Headers.TryGetValue("Origin", out StringValues originHost) || await entity.GetS("allow-origin") == null)
+            {
+                return;
+            }
 
             // "allow-origin": [ "*" ]
             //
@@ -126,35 +117,35 @@ namespace Utility
             // the the request's "Origin:" header into the response via the
             // "Access-Control-Allow-Origin:" header if the "Origin:" request
             // header matches a URL in the list.
-            if (ge.GetS("allow-origin[0]") == "*")
+            if (await entity.GetS("allow-origin[0]") == "*")
             {
                 ctx.Response.Headers.Add("Access-Control-Allow-Origin", originHost);
             }
-            else if (ge.GetL("allow-origin").Select(x => x.GetS("") == originHost).Count() == 1)
+            else if ((await entity.GetL<string>("allow-origin")).Any(allowed => allowed == originHost))
             {
                 ctx.Response.Headers.Add("Access-Control-Allow-Origin", originHost);
             }
             // "allow-headers": [ "origin", "x-requested-with", "access-control-request-headers", "content-type", "access-control-request-method", "accept" ],
             //
             // Comma-separates a list of values into the "Access-Control-Allow-Headers" response header
-            if (ge.GetS("allow-headers") != null)
+            if ((await entity.GetL("allow-headers")).Any())
             {
-                ctx.Response.Headers.Add("Access-Control-Allow-Headers", string.Join(",", ge.GetL("allow-headers").Select(x => x.GetS(""))));
+                ctx.Response.Headers.Add("Access-Control-Allow-Headers", string.Join(",", await entity.GetL<string>("allow-headers.*")));
             }
             // "allow-methods": [ "PUT", "POST", "GET", "PATCH", "HEAD" ],
             //
             // Comma-separates a list of values into the "Access-Control-Allow-Methods" response header
-            if (ge.GetS("allow-methods") != null)
+            if ((await entity.GetL("allow-methods")).Any())
             {
-                ctx.Response.Headers.Add("Access-Control-Allow-Methods", string.Join(",", ge.GetL("allow-methods").Select(x => x.GetS(""))));
+                ctx.Response.Headers.Add("Access-Control-Allow-Methods", string.Join(",", await entity.GetL<string>("allow-methods")));
             }
 
             // "allow-credentials": "true"
             //
             // Sets the "Access-Control-Allow-Credentials" response value to a bool to indicate cross-site cookie policy
-            if (ge.GetS("allow-credentials") != null)
+            if (await entity.GetS("allow-credentials") != null)
             {
-                ctx.Response.Headers.Add("Access-Control-Allow-Credentials", ge.GetS("allow-credentials"));
+                ctx.Response.Headers.Add("Access-Control-Allow-Credentials", await entity.GetS("allow-credentials"));
             }
         }
 

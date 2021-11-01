@@ -66,7 +66,10 @@ namespace Utility
 
         public static bool? ParseBool(this string str)
         {
-            if (str.IsNullOrWhitespace()) return null;
+            if (str.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
             if (!bool.TryParse(str, out var i))
             {
@@ -297,7 +300,7 @@ namespace Utility
             }
         }
 
-        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key) where TKey : struct => key != null && d.ContainsKey(key.Value) ? d[key.Value] : default(TValue);
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key) where TKey : struct => key != null && d.ContainsKey(key.Value) ? d[key.Value] : default;
 
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key, TValue defaultValue) where TKey : struct => key != null && d.ContainsKey(key.Value) ? d[key.Value] : defaultValue;
 
@@ -344,10 +347,8 @@ namespace Utility
 
         public static async Task<string> ReadAllTextAsync(this FileInfo fi)
         {
-            using (var fr = fi.OpenText())
-            {
-                return await fr.ReadToEndAsync();
-            }
+            using var fr = fi.OpenText();
+            return await fr.ReadToEndAsync();
         }
 
         #endregion

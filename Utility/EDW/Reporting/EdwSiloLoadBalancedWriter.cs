@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Utility.GenericEntity;
 
 namespace Utility.EDW.Reporting
 {
@@ -25,21 +24,29 @@ namespace Utility.EDW.Reporting
                 selector, novalid, invalid, unhandled)
         { }
 
-        public static Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
+        public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
-            return Task.FromResult(endpoints);
+            foreach (var silo in await config.Get("Config.EdwSilos"))
+            {
+                endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
+            }
+
+            return endpoints;
         }
 
-        public static Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
+        public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
-            return Task.FromResult(endpoints);
+            foreach (var silo in await config.Get("Config.EdwSilos"))
+            {
+                endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
+            }
+
+            return endpoints;
         }
 
-        public static Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds)
+        public static Task InitiateWalkaway(object w, string errorFilePath)
         {
             FileSystem.WriteLineToFileThreadSafe(errorFilePath, DateTime.Now + "::" + w.ToString());
             return Task.CompletedTask;
@@ -53,7 +60,7 @@ namespace Utility.EDW.Reporting
             else return 60;
         }
 
-        public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen)
+        public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, IReadOnlyList<IEndpoint> alreadyChosen)
         {
             IEndpoint chosen = null;
 
@@ -92,27 +99,29 @@ namespace Utility.EDW.Reporting
             return Task.CompletedTask;
         }
 
-        public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
+        public static async Task<EdwSiloLoadBalancedWriter> InitializeEdwSiloLoadBalancedWriter(Entity.Entity config)
         {
-            var siloConns = config.GetL("Config/EdwSilos");
+            var siloConns = await config.Get("Config.EdwSilos");
 
-            if (!siloConns.Any()) return null;
+            if (!siloConns.Any())
+            {
+                return null;
+            }
 
-            var writeTimeoutSeconds = config.GetS("Config/EdwWriteTimeout").ParseInt() ?? 0;
-            var dataFilePath = Path.GetFullPath(config.GetS("Config/EdwDataFilePath"));
-            var errorFilePath = Path.GetFullPath(config.GetS("Config/EdwErrorFilePath"));
+            var writeTimeoutSeconds = (await config.GetS("Config.EdwWriteTimeout")).ParseInt() ?? 0;
+            var dataFilePath = Path.GetFullPath(await config.GetS("Config.EdwDataFilePath"));
+            var errorFilePath = Path.GetFullPath(await config.GetS("Config.EdwErrorFilePath"));
 
             return new EdwSiloLoadBalancedWriter(60,
                 writeTimeoutSeconds,
-                async () => await EdwSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
-                async () => await EdwSiloLoadBalancedWriter.PollEndpoints(config).ConfigureAwait(false),
-                async (object w, int timeoutSeconds) => await EdwSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
-                (int previousValue) => EdwSiloLoadBalancedWriter.NextWalkawayValue(previousValue),
-                (ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen) =>
-                    EdwSiloLoadBalancedWriter.Selector(endpoints, alreadyChosen),
-                async (object w) => await EdwSiloLoadBalancedWriter.NoValid(w, dataFilePath, errorFilePath).ConfigureAwait(false),
-                async (object w) => await EdwSiloLoadBalancedWriter.Failure(w, errorFilePath).ConfigureAwait(false),
-                async (object w, Exception ex) => await EdwSiloLoadBalancedWriter.Unhandled(w, errorFilePath, ex).ConfigureAwait(false)
+                async () => await InitializeEndpoints(config).ConfigureAwait(false),
+                async () => await PollEndpoints(config).ConfigureAwait(false),
+                async (object w, int timeoutSeconds) => await InitiateWalkaway(w, errorFilePath).ConfigureAwait(false),
+                NextWalkawayValue,
+                Selector,
+                async (object w) => await NoValid(w, dataFilePath, errorFilePath).ConfigureAwait(false),
+                async (object w) => await Failure(w, errorFilePath).ConfigureAwait(false),
+                async (object w, Exception ex) => await Unhandled(w, errorFilePath, ex).ConfigureAwait(false)
             );
         }
 

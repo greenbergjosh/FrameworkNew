@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 using Utility;
+using Utility.Entity;
 
 namespace SignalApiLib
 {
@@ -11,9 +12,14 @@ namespace SignalApiLib
     {
         private static readonly PropertyInfo[] Props = typeof(SourceData).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.PropertyType == typeof(string)).ToArray();
 
-        public SourceData(JObject s, Dictionary<string, string[]> mutationConfig)
+        private SourceData()
         {
-            // ToDo: use DynamicMutations
+        }
+
+        public static async Task<SourceData> Create(Entity s, Dictionary<string, string[]> mutationConfig)
+        {
+            var sourceData = new SourceData();
+
             var propsUsed = new List<string>();
 
             foreach (var pi in Props)
@@ -21,36 +27,57 @@ namespace SignalApiLib
                 string[] jprops = null;
 
                 // THIS IF ELSE ORDER IS IMPORTANT!!!!! If property needs to explicitly not be mutated then set config value to null and this if order will enforce that
-                if (mutationConfig.ContainsKey(pi.Name)) jprops = mutationConfig[pi.Name];
-                else if (s.ContainsKey(pi.Name)) jprops = new[] { pi.Name };
-
-                if (jprops?.Any() == true)
+                if (mutationConfig.ContainsKey(pi.Name))
                 {
-                    var jprop = jprops.First(s.ContainsKey);
+                    jprops = mutationConfig[pi.Name];
+                }
+                else
+                {
+                    var (found, _) = await s.TryGetS(pi.Name);
+                    if (found)
+                    {
+                        jprops = new[] { pi.Name };
+                    }
+                }
 
-                    if (!jprop.IsNullOrWhitespace())
+                foreach (var jprop in jprops)
+                {
+                    var (found, value) = await s.TryGetS(jprop);
+                    if (found)
                     {
                         propsUsed.Add(jprop);
-                        pi.SetValue(this, s[jprop].Value<string>());
+                        pi.SetValue(sourceData, value);
+                        break;
                     }
                 }
             }
 
-            o = new JObject();
-
-            foreach (var p in s.Properties())
+            var extraData = new Dictionary<string, Entity>();
+            foreach (var kvp in await s.GetD<Entity>("@"))
             {
-                if (!propsUsed.Contains(p.Name)) o[p.Name] = p.Value;
+                if (!propsUsed.Contains(kvp.Key))
+                {
+                    extraData[kvp.Key] = kvp.Value;
+                }
             }
 
-            if (!o.Properties().Any()) o = null;
+            if (extraData.Count > 0)
+            {
+                sourceData.o = s.Create(extraData);
+            }
 
-            if (@ref.IsNullOrWhitespace()) @ref = Guid.NewGuid().ToString();
+            if (sourceData.@ref.IsNullOrWhitespace())
+            {
+                sourceData.@ref = Guid.NewGuid().ToString();
+            }
+
+            return sourceData;
         }
 
         // ReSharper disable InconsistentNaming
-        public string @ref { get; } = Guid.NewGuid().ToString();
-        
+#pragma warning disable IDE1006 // Naming Styles
+        public string @ref { get; private set; } = Guid.NewGuid().ToString();
+
         // Email
         public string em { get; set; }
 
@@ -79,8 +106,8 @@ namespace SignalApiLib
         public string daq { get; set; }
 
         // Other data
-        public JObject o { get; set; }
+        public Entity o { get; set; }
         // ReSharper restore InconsistentNaming
-
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

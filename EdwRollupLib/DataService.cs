@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
@@ -14,27 +14,19 @@ using Utility.DataLayer;
 
 namespace EdwRollupLib
 {
-    public partial class DataService
+    public partial class DataService : IGenericWindowsService
     {
         private static FrameworkWrapper _fw;
         private IScheduler _scheduler;
         private readonly Random _random = new();
         private readonly Guid _edwConfigId = Guid.Parse("af89426b-d7e9-4f89-b67c-4e57d2335cb3");
 
-        public void Config(FrameworkWrapper fw)
+        public Task Config(FrameworkWrapper fw)
         {
-            try
-            {
-                _fw = fw;
-                fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
-                RollupJob.FrameworkWrapper = fw;
-                MaintenanceJob.FrameworkWrapper = fw;
-            }
-            catch (Exception ex)
-            {
-                _fw?.Error(nameof(Config), ex.UnwrapForLog());
-                throw;
-            }
+            _fw = fw;
+            RollupJob.FrameworkWrapper = fw;
+            MaintenanceJob.FrameworkWrapper = fw;
+            return Task.CompletedTask;
         }
 
         public void OnStart()
@@ -75,16 +67,16 @@ namespace EdwRollupLib
 
             var rsConfigId = _fw.StartupConfiguration.GetS("Config/RsConfigId");
 
-            var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonWrapper.Json(new
+            var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonSerializer.Serialize(new
             {
                 ConfigType = "EDW.ThreadGroup"
             }), "");
 
-            foreach (var threadGroup in threadGroups.GetL(""))
+            foreach (var threadGroup in await threadGroups.GetL("@"))
             {
-                var threadGroupName = threadGroup.GetS("Name");
+                var threadGroupName = await threadGroup.GetS("Name");
 
-                if (threadGroup.GetB("Config/paused"))
+                if (await threadGroup.GetB("Config.paused"))
                 {
                     await _fw.Log("EdwRollupService.InitScheduler", $"{threadGroupName} is paused.");
 #if DEBUG
@@ -100,10 +92,10 @@ namespace EdwRollupLib
                     ["RsConfigId"] = rsConfigId
                 };
 
-                foreach (var rollupGroupPeriod in threadGroup.GetL("Config/rollup_group_periods"))
+                foreach (var rollupGroupPeriod in await threadGroup.GetL("Config.rollup_group_periods"))
                 {
-                    var period = rollupGroupPeriod.GetS("period");
-                    var rollupFrequency = rollupGroupPeriod.GetS("rollup_frequency") ?? period;
+                    var period = await rollupGroupPeriod.GetS("period");
+                    var rollupFrequency = await rollupGroupPeriod.GetS("rollup_frequency") ?? period;
 
                     var jobDetail = JobBuilder.Create<RollupJob>()
                         .WithIdentity($"{threadGroupName}_{period}", "RollupJob")
@@ -130,22 +122,22 @@ namespace EdwRollupLib
                 }
             }
 
-            var maintenanceTasks = await Data.CallFn("config", "SelectConfigBody", JsonWrapper.Json(new
+            var maintenanceTasks = await Data.CallFn("config", "SelectConfigBody", JsonSerializer.Serialize(new
             {
                 ConfigType = "EDW.MaintenanceTask"
             }), "");
 
-            foreach (var maintenanceTask in maintenanceTasks.GetL(""))
+            foreach (var maintenanceTask in await maintenanceTasks.GetL("@"))
             {
-                var enabled = maintenanceTask.GetB("Config/enabled");
+                var enabled = await maintenanceTask.GetB("Config.enabled");
                 if (!enabled)
                 {
                     continue;
                 }
 
-                var name = maintenanceTask.GetS("Name");
-                var cronExpression = maintenanceTask.GetS("Config/cron_expression");
-                var exclusive = maintenanceTask.GetB("Config/exclusive");
+                var name = await maintenanceTask.GetS("Name");
+                var cronExpression = await maintenanceTask.GetS("Config.cron_expression");
+                var exclusive = await maintenanceTask.GetB("Config.exclusive");
 
                 IDictionary<string, object> parameters = new Dictionary<string, object>
                 {
@@ -206,11 +198,14 @@ namespace EdwRollupLib
         private async Task ShutdownScheduler()
         {
             if (_scheduler != null)
+            {
                 await _scheduler.Shutdown(true);
+            }
+
             _scheduler = null;
         }
 
-        public async Task HandleHttpRequest(HttpContext context)
+        public async Task ProcessRequest(HttpContext context)
         {
             try
             {
@@ -277,7 +272,7 @@ namespace EdwRollupLib
                     var activeJobs = (await _scheduler.GetCurrentlyExecutingJobs()).Select(jec => jec.JobDetail);
                     if (activeJobs.Contains(jobDetail))
                     {
-                        await context.WriteFailureRespAsync(JsonConvert.SerializeObject(new { result = "failure", message = "Job is already running." }));
+                        await context.WriteFailureRespAsync(JsonSerializer.Serialize(new { result = "failure", message = "Job is already running." }));
                     }
                     else
                     {
@@ -305,11 +300,11 @@ namespace EdwRollupLib
                             current = next.Value;
                         }
 
-                        await context.WriteSuccessRespAsync(JsonConvert.SerializeObject(new { result = "success", trigger_times = next5 }));
+                        await context.WriteSuccessRespAsync(JsonSerializer.Serialize(new { result = "success", trigger_times = next5 }));
                     }
                     catch (FormatException fex)
                     {
-                        await context.WriteFailureRespAsync(JsonConvert.SerializeObject(new { result = "failure", message = fex.Message }));
+                        await context.WriteFailureRespAsync(JsonSerializer.Serialize(new { result = "failure", message = fex.Message }));
                     }
                 }
                 else
@@ -318,13 +313,13 @@ namespace EdwRollupLib
             catch (Exception e)
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                var message = $@"Caught exception processing request: {e.Message} : {e.UnwrapForLog()}";
-                await _fw.Error(nameof(HandleHttpRequest), message);
+                var message = $"Caught exception processing request: {e.Message} : {e.UnwrapForLog()}";
+                await _fw.Error(nameof(ProcessRequest), message);
                 throw;
             }
         }
 
-        private readonly string _defaultResponse = JsonConvert.SerializeObject(new { result = "success" });
+        private readonly string _defaultResponse = JsonSerializer.Serialize(new { result = "success" });
 
         private async Task GetStatus(HttpContext context)
         {
@@ -379,8 +374,10 @@ namespace EdwRollupLib
                 ["jobs"] = jobs
             };
             context.Response.ContentType = "application/json";
-            var json = JsonWrapper.Serialize(result);
+            var json = JsonSerializer.Serialize(result);
             await context.Response.WriteAsync(json);
         }
+
+        public Task Reinitialize() => Task.CompletedTask;
     }
 }

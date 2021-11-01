@@ -19,7 +19,6 @@ using HtmlAgilityPack;
 using Renci.SshNet;
 using Renci.SshNet.Async;
 using TurnerSoftware.SitemapTools;
-using Utility.GenericEntity;
 using Fs = Utility.FileSystem;
 
 namespace Utility
@@ -716,16 +715,12 @@ namespace Utility
             return files;
         }
 
-        public static async Task<IGenericEntity> HttpPostAsyncGe(IGenericEntity ge)
+        public static async Task<Entity.Entity> HttpPostAsyncGe(Entity.Entity entity)
         {
-            var parms = new Dictionary<string, string>();
-            foreach (var di in ge.GetD("parms"))
-            {
-                parms.Add(di.Item1, di.Item2);
-            }
+            var parms = await entity.GetD<string>("parms");
 
-            var resp = await HttpPostAsync(ge.GetS("uri"), parms, !string.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60, ge.GetS("mediaType") ?? "");
-            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { result = resp }));
+            var resp = await HttpPostAsync(await entity.GetS("uri"), parms, !string.IsNullOrEmpty(await entity.GetS("timeout")) ? double.Parse(await entity.GetS("timeout")) : 60, await entity.GetS("mediaType") ?? "");
+            return entity.Create(new { result = await entity.Parse("application/json", resp) });
         }
 
         public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms, double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5, IEnumerable<(string key, string value)> headers = null, bool doThrow = false)
@@ -793,10 +788,10 @@ namespace Utility
             return await response.Content.ReadAsStringAsync();
         }
 
-        public static async Task<IGenericEntity> HttpGetAsync(IGenericEntity ge)
+        public static async Task<Entity.Entity> HttpGetAsync(Entity.Entity entity)
         {
-            var (success, body) = await HttpGetAsync(ge.GetS("uri"), null, !string.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60);
-            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { success, result = body }));
+            var (success, body) = await HttpGetAsync(await entity.GetS("uri"), null, !string.IsNullOrEmpty(await entity.GetS("timeout")) ? double.Parse(await entity.GetS("timeout")) : 60);
+            return entity.Create(new { success, result = await entity.Parse("application/json", body) });
         }
 
         public static async Task<(bool success, string body)> HttpGetAsync(string path, IEnumerable<(string key, string value)> headers = null, double timeoutSeconds = 60)

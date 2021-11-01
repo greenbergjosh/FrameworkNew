@@ -2,12 +2,12 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -19,22 +19,18 @@ namespace GenericDataService
 {
     public class Startup
     {
-        public dynamic DataService;
-        private bool _dataServiceHasReInit = false;
+        public IGenericDataService DataService;
 
         public void ConfigureServices(IServiceCollection services) => _ = services.AddCors(options =>
-                                                                    {
-                                                                        options.AddPolicy("CorsPolicy",
-                                                                            builder => builder
-                                                                            .AllowAnyMethod()
-                                                                            .AllowAnyHeader()
-                                                                            .AllowCredentials()
-                                                                            // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio 
-                                                                            // We don't want a "*", because no browser supports that.  The lambda below returns the origin
-                                                                            // domain explicitly, which is what we were doing before the upgrade above.
-                                                                            .SetIsOriginAllowed(x => { return true; })
-                                                                            );
-                                                                    })
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .SetIsOriginAllowed(x => { return true; })
+                    );
+            })
             .Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -43,7 +39,7 @@ namespace GenericDataService
             })
             .AddDistributedMemoryCache();
 
-        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args) => File.AppendAllText("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
+        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args) => FileSystem.WriteLineToFileThreadSafe("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -52,39 +48,15 @@ namespace GenericDataService
                 app.UseDeveloperExceptionPage();
             }
 
-            FrameworkWrapper fw = null;
-
-            try
-            {
-                fw = new FrameworkWrapper
-                {
-                    Cache = app.ApplicationServices.GetService<IDistributedCache>()
-                };
-
-                using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
-                {
-                    DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
-                }
-
-                if (DataService == null) throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
-
-                DataService.Config(fw);
-            }
-            catch (Exception ex)
-            {
-                File.AppendAllText("DataService.log", $@"Config::{DateTime.Now}::{ex}{Environment.NewLine}");
-                throw;
-            }
-
-            _dataServiceHasReInit = ((object)DataService).GetType().GetMethods().Where(m => m.IsPublic).Any(m => m.Name == "ReInitialize");
-
-            var wwwrootPath = fw.StartupConfiguration.GetS("Config/PhysicalFileProviderPath");
+            DataService = Program.DataService;
+            var fw = Program.FrameworkWrapper;
+            var wwwrootPath = Program.WwwRootPath;
 
             if (!wwwrootPath.IsNullOrWhitespace())
             {
-                #if DEBUG
-	            wwwrootPath = Path.GetFullPath(wwwrootPath);
-                #endif
+#if DEBUG
+                wwwrootPath = Path.GetFullPath(wwwrootPath);
+#endif
                 app.UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = new PhysicalFileProvider(wwwrootPath)
@@ -101,8 +73,6 @@ namespace GenericDataService
 
             TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
 
-            HealthCheckHandler.Initialize(fw).GetAwaiter().GetResult();
-
             var chunkHandler = new ChunkedFileHandler(new IDistributedCacheChunkStorageProvider(fw.Cache));
 
             app.Run(async (context) =>
@@ -117,7 +87,7 @@ namespace GenericDataService
 
                     if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
-                        await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                        await context.WriteSuccessRespAsync(fw.StartupConfiguration.ToString(), Encoding.UTF8);
                         return;
                     }
 
@@ -137,12 +107,12 @@ namespace GenericDataService
                         {
                             try
                             {
-                                if (_dataServiceHasReInit) DataService.ReInitialize();
-                                await context.WriteSuccessRespAsync(JsonWrapper.Serialize(new { result = "success" }), Encoding.UTF8);
+                                await DataService.Reinitialize();
+                                await context.WriteSuccessRespAsync(JsonSerializer.Serialize(new { result = "success" }), Encoding.UTF8);
                             }
                             catch (Exception e)
                             {
-                                await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { result = "failed", error = $"Dataservice reinit failed: {e.UnwrapForLog()}" }), Encoding.UTF8);
+                                await context.WriteFailureRespAsync(JsonSerializer.Serialize(new { result = "failed", error = $"Dataservice reinit failed: {e.UnwrapForLog()}" }), Encoding.UTF8);
                             }
                         }
                         else
@@ -150,7 +120,7 @@ namespace GenericDataService
                             var traceLog = Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ??
                                            $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
 
-                            await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { result = "failed", traceLog }), Encoding.UTF8);
+                            await context.WriteFailureRespAsync(JsonSerializer.Serialize(new { result = "failed", traceLog }), Encoding.UTF8);
                         }
 
                         return;
@@ -179,7 +149,7 @@ namespace GenericDataService
                         }
                     }
 
-                    await this.DataService.Run(context);
+                    await DataService.ProcessRequest(context);
                 }
                 catch (Exception ex)
                 {

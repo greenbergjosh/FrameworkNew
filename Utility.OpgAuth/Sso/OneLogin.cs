@@ -1,25 +1,28 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Utility.GenericEntity;
 
 namespace Utility.OpgAuth.Sso
 {
     public class OneLogin : Platform
     {
-        private IGenericEntity _config;
+        private Entity.Entity _config;
 
-        public override void Init(FrameworkWrapper fw, IGenericEntity init) => _config = init;
+        public override Task Init(FrameworkWrapper fw, Entity.Entity init)
+        {
+            _config = init;
+            return Task.CompletedTask;
+        }
 
         public override string PlatformType { get; } = "OneLogin";
 
-        public override async Task<UserDetails> GetUserDetails(IGenericEntity authData)
+        public override async Task<UserDetails> GetUserDetails(Entity.Entity authData)
         {
             try
             {
-                var token = authData.GetS("accessToken");
+                var token = await authData .GetS("accessToken");
 
-                var baseUrl = new Uri(_config.GetS("baseUrl"));
-                var userDetailsPath = _config.GetS("userDetailsPath");
+                var baseUrl = new Uri(await _config.GetS("baseUrl"));
+                var userDetailsPath = await _config.GetS("userDetailsPath");
 
                 var url = new Uri(baseUrl, userDetailsPath).ToString();
 
@@ -29,22 +32,22 @@ namespace Utility.OpgAuth.Sso
                         ("Authorization", "Bearer " + token)
                     });
 
-                var ge = new GenericEntityJson();
-                ge.InitializeEntity(null, null, JsonWrapper.TryParse(body));
+
+                var ge = await authData.Parse("application/json", body);
 
                 if (!success)
                 {
-                    var error = ge.GetS("error");
-                    var description = ge.GetS("error_description");
-                    var message = $"{error}.\n{description}\nPayload: {authData.GetS("")}\n\nResponse: {body}";
+                    var error = await ge.GetS("error");
+                    var description = await ge.GetS("error_description");
+                    var message = $"{error}.\n{description}\nPayload: {authData}\n\nResponse: {body}";
                     throw new AuthException(message);
                 }
 
-                var subject = ge.GetS("sub");
-                var name = ge.GetS("name");
-                var email = ge.GetS("email");
+                var subject = await ge.GetS("sub");
+                var name = await ge.GetS("name");
+                var email = await ge.GetS("email");
 
-                var user = new UserDetails(subject, name, email, string.Empty, string.Empty, token, authData.GetS(""));
+                var user = new UserDetails(subject, name, email, string.Empty, string.Empty, token, authData.ToString());
 
                 return user;
             }
@@ -54,7 +57,7 @@ namespace Utility.OpgAuth.Sso
             }
             catch (Exception e)
             {
-                throw new AuthException($"Unhandled exception validating OneLogin user details.\nPayload: {authData.GetS("")}", e);
+                throw new AuthException($"Unhandled exception validating OneLogin user details.\nPayload: {authData}", e);
             }
         }
     }

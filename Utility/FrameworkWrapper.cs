@@ -11,91 +11,120 @@ using Utility.DataLayer;
 using Utility.EDW.Logging;
 using Utility.EDW.Queueing;
 using Utility.EDW.Reporting;
-using Utility.GenericEntity;
+using Utility.Entity.Implementations;
 
 namespace Utility
 {
     public class FrameworkWrapper
     {
-        public string[] ConfigurationKeys;
-        public ConfigEntityRepo Entities;
-        public RoslynWrapper RoslynWrapper;
-        public IGenericEntity StartupConfiguration;
-        public EdwSiloLoadBalancedWriter EdwWriter;
-        public PostingQueueSiloLoadBalancedWriter PostingQueueWriter;
-        public ErrorSiloLoadBalancedWriter ErrorWriter;
-        public ErrorDelegate Err;
-
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
 
-        public bool TraceLogging = true;
-        public bool TraceToConsole = false;
-        public IDistributedCache Cache;
+        public string[] ConfigurationKeys { get; private set; }
+        public ConfigEntityRepo Entities { get; private set; }
+        public RoslynWrapper RoslynWrapper { get; private set; }
+        public Entity.Entity StartupConfiguration { get; private set; }
+        public EdwSiloLoadBalancedWriter EdwWriter { get; private set; }
+        public PostingQueueSiloLoadBalancedWriter PostingQueueWriter { get; private set; }
+        public ErrorSiloLoadBalancedWriter ErrorWriter { get; private set; }
+        public ErrorDelegate Err { get; private set; }
+        public bool TraceLogging { get; set; } = true;
+        public bool TraceToConsole { get; private set; } = false;
+        public IDistributedCache Cache { get; private set; }
+        public Entity.Entity Entity { get; private set; }
 
-        public FrameworkWrapper(string[] commandLineArgs = null)
+        public static async Task<FrameworkWrapper> Create(string[] commandLineArgs = null, IDistributedCache cache = null)
         {
             try
             {
+                var fw = new FrameworkWrapper
+                {
+                    Cache = cache
+                };
+
                 var configuration = new ConfigurationBuilder()
                             .SetBasePath(Directory.GetCurrentDirectory())
                             .AddJsonFile("appsettings.json")
                             .Build();
 
-                ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
+                fw.ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
 
-                if (!ConfigurationKeys.Any())
+                if (!fw.ConfigurationKeys.Any())
                 {
-                    ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
+                    fw.ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
                 }
 
-                StartupConfiguration = Data.Initialize(
+                static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
+
+                fw.Entity = Utility.Entity.Entity.Initialize(new Entity.EntityConfig
+                (
+                    Parser: (entity, contentType, content) => contentType switch
+                    {
+                        "application/json" => EntityDocumentJson.Parse(content),
+                        _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
+                    },
+                    Retriever: async (entity, uri) => uri.Scheme switch
+                    {
+                        "config" => (await fw.Entities.GetEntity(Guid.Parse(uri.Host)), UnescapeQueryString(uri)),
+                        _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
+                    }
+                ));
+
+                fw.StartupConfiguration = await Data.Initialize(
+                    fw.Entity,
                     configuration.GetValue<string>("ConnectionString:ConnectionString"),
                     configuration.GetValue<string>("ConnectionString:DataLayerType"),
-                    ConfigurationKeys,
+                    fw.ConfigurationKeys,
                     configuration.GetValue<string>("ConnectionString:DataLayer:SelectConfigFunction"),
-                    commandLineArgs)
-                    .GetAwaiter().GetResult();
+                    commandLineArgs);
 
-                Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
+                fw.Entities = new ConfigEntityRepo(fw.Entity, Data.GlobalConfigConnName);
                 var scripts = new List<ScriptDescriptor>();
-                var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
+                var scriptsPath = await fw.StartupConfiguration.GetS("Config.RoslynScriptsPath");
 
                 // Yes, GetB can be used to pull a boolean, but that defaults to false
-                TraceLogging = StartupConfiguration.GetS("Config/EnableTraceLogging").ParseBool() ?? true;
-                TraceToConsole = StartupConfiguration.GetB("Config/TraceToConsole") || Debugger.IsAttached;
+                fw.TraceLogging = (await fw.StartupConfiguration.GetS("Config.EnableTraceLogging")).ParseBool() ?? true;
+                fw.TraceToConsole = (await fw.StartupConfiguration.GetB("Config.TraceToConsole")) || Debugger.IsAttached;
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
-                    RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                    fw.RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
                 }
 
-                EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(StartupConfiguration);
-                PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(StartupConfiguration);
-                ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(StartupConfiguration);
-                var appName = StartupConfiguration.GetS("Config/ErrorLogAppName") ?? ConfigurationKeys.Join("::");
+                fw.EdwWriter = await EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(fw.StartupConfiguration);
+                fw.PostingQueueWriter = await PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(fw.StartupConfiguration);
+                fw.ErrorWriter = await ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(fw.StartupConfiguration);
 
-                Err =
+                var appName = (await fw.StartupConfiguration.GetS("Config.ErrorLogAppName")) ?? fw.ConfigurationKeys.Join("::");
+
+                fw.Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
 #if DEBUG
                         Debug.WriteLine($"{DateTime.Now}: {method} {descriptor} {message}");
 #endif
 
-                        if (TraceToConsole) Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{severity}\t{descriptor}\t{method}\t{message}");
+                        if (fw.TraceToConsole) Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{severity}\t{descriptor}\t{method}\t{message}");
 
-                        if (!TraceLogging && descriptor == ErrorDescriptor.Trace)
+                        if (!fw.TraceLogging && descriptor == ErrorDescriptor.Trace)
                         {
                             return;
                         }
 
-                        await ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
+                        await fw.ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
                     };
+
+                return fw;
             }
             catch (Exception ex)
             {
                 File.AppendAllText($"FrameworkStartupError-{DateTime.Now:yyyyMMddHHmmss}", $@"{DateTime.Now}::{ex.UnwrapForLog()}" + Environment.NewLine);
                 throw;
             }
+
+        }
+
+        private FrameworkWrapper()
+        {
         }
 
         public async Task<bool> ReInitialize()
@@ -108,7 +137,7 @@ namespace Utility
 
                 RoslynWrapper.ClearCache();
 
-                Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
+                Entities = new ConfigEntityRepo(Entity, Data.GlobalConfigConnName);
 
                 return true;
             }
@@ -130,26 +159,26 @@ namespace Utility
 
         public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, LogMethodPrefix + method, ErrorDescriptor.EmailAlert, JsonConvert.SerializeObject(payload));
 
-        public async Task<T> EvaluateEntity<T>(Guid entityId, IGenericEntity parameters = null)
+        public async Task<T> EvaluateEntity<T>(Guid entityId, Entity.Entity parameters = null)
         {
             var evaluatableId = entityId;
 
             var entity = await Entities.GetEntity(entityId);
             var evaluatableEntity = entity;
 
-            var stackedParameters = new GenericEntityStack();
+            var stackedParameters = new EntityDocumentStack();
 
-            var implementation = entity.GetS("Config/Evaluate/EntityId");
+            var implementation = await entity.GetS("Config.Evaluate.EntityId");
             if (!string.IsNullOrWhiteSpace(implementation))
             {
                 evaluatableId = Guid.Parse(implementation);
                 evaluatableEntity = await Entities.GetEntity(evaluatableId);
-                stackedParameters.Push(entity.GetE("Config/Evaluate/ActualParameters"));
+                stackedParameters.Push(await entity.GetE("Config.Evaluate.ActualParameters"));
             }
 
-            if (evaluatableEntity.GetS("Type") != "LBM.CS")
+            if (await evaluatableEntity.GetS("Type") != "LBM.CS")
             {
-                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, {entityId} has type {evaluatableEntity.GetS("Type")}");
+                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, {entityId} has type {await evaluatableEntity.GetS("Type")}");
             }
 
             if (parameters != null)
@@ -160,15 +189,15 @@ namespace Utility
             var evaluationParameters = new
             {
                 fw = this,
-                parameters = stackedParameters
+                parameters = parameters.Create(stackedParameters)
             };
 
             var (debug, debugDir) = RoslynWrapper.GetDefaultDebugValues();
-            var result = await RoslynWrapper.Evaluate(evaluatableId.ToString(), evaluatableEntity.GetS("Config"), evaluationParameters, new StateWrapper(), debug, debugDir);
+            var result = await RoslynWrapper.Evaluate(evaluatableId.ToString(), await evaluatableEntity.GetS("Config"), evaluationParameters, new StateWrapper(), debug, debugDir);
 
             return (T)result;
         }
 
-        public Task EvaluateEntity(Guid entityId, IGenericEntity parameters = null) => EvaluateEntity<object>(entityId, parameters);
+        public Task EvaluateEntity(Guid entityId, Entity.Entity parameters = null) => EvaluateEntity<object>(entityId, parameters);
     }
 }

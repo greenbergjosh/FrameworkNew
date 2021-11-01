@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ELang\**" />
+    <EmbeddedResource Remove="ELang\**" />
+    <None Remove="ELang\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.7.3.12" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.3.5" />
     <PackageReference Include="CsvHelper" Version="27.1.1" />
@@ -31,16 +37,6 @@
     <PackageReference Include="System.Reactive" Version="5.0.0" />
     <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
     <PackageReference Include="TurnerSoftware.SitemapTools" Version="0.6.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mta\Pmta\libs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="port25.pmta.api.submitter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>Mta\Pmta\libs\port25.pmta.api.submitter.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Quartz;
 using Utility;
 using Utility.EDW.Reporting;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace EdwRollupLib
 {
@@ -19,7 +19,7 @@ namespace EdwRollupLib
         public static FrameworkWrapper FrameworkWrapper { get; set; }
         public string Name { get; set; }
         public bool Exclusive { get; set; }
-        public IGenericEntity Entity { get; set; }
+        public Entity Entity { get; set; }
         public Guid RsConfigId { get; set; }
 
         private Guid _rsId;
@@ -99,7 +99,7 @@ namespace EdwRollupLib
 
         private async Task RunImplementation(IJobExecutionContext context)
         {
-            var implementationLbmId = Guid.Parse(Entity.GetS("Config/implementationLbmId"));
+            var implementationLbmId = Guid.Parse(await Entity.GetS("Config.implementationLbmId"));
 
             var lbm = await FrameworkWrapper.Entities.GetEntity(implementationLbmId);
             if (lbm == null)
@@ -107,16 +107,16 @@ namespace EdwRollupLib
                 throw new InvalidOperationException($"No LBM with Id: {implementationLbmId}");
             }
 
-            if (lbm.GetS("Type") != "LBM.CS")
+            if (await lbm.GetS("Type") != "LBM.CS")
             {
-                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, LBM {implementationLbmId} has type {lbm.GetS("Type")}");
+                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, LBM {implementationLbmId} has type {await lbm.GetS("Type")}");
             }
 
-            var lbmParameters = Entity.GetE("Config/implementationParameters");
+            var lbmParameters = await Entity.GetE("Config.implementationParameters");
             var lbmContext = new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs), lbmParameters);
 
             var (debug, debugDir) = FrameworkWrapper.RoslynWrapper.GetDefaultDebugValues();
-            await FrameworkWrapper.RoslynWrapper.Evaluate(implementationLbmId.ToString(), lbm.GetS("Config"), lbmContext, null, debug, debugDir);
+            await FrameworkWrapper.RoslynWrapper.Evaluate(implementationLbmId.ToString(), await lbm.GetS("Config"), lbmContext, null, debug, debugDir);
         }
 
         private async Task AcquireExclusive(IJobExecutionContext context)
@@ -207,7 +207,7 @@ namespace EdwRollupLib
             edwBulkEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid rsId, DateTime rsTs)> { [RsConfigId] = (_rsId, _rsTs) }, payload);
 
 #if DEBUG
-            Console.WriteLine($"{DateTime.Now}: {Name} {JsonConvert.SerializeObject(payload)}");
+            Console.WriteLine($"{DateTime.Now}: {Name} {JsonSerializer.Serialize(payload)}");
 #endif
 
             return FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
@@ -222,7 +222,7 @@ namespace EdwRollupLib
                 eventType = "Start"
             };
 
-            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -236,7 +236,7 @@ namespace EdwRollupLib
                 elapsed = elapsed.TotalSeconds
             };
 
-            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -264,7 +264,7 @@ namespace EdwRollupLib
                     message = e.Message
                 };
 
-                await FrameworkWrapper.Error($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+                await FrameworkWrapper.Error($"{nameof(MaintenanceJob)}.{step}", JsonSerializer.Serialize(payload));
                 await DropEvent(payload);
 
                 if (alert)
@@ -282,7 +282,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+                    await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");
@@ -300,7 +300,7 @@ namespace EdwRollupLib
                 context
             };
 
-            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -315,7 +315,7 @@ namespace EdwRollupLib
                 context
             };
 
-            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -344,7 +344,7 @@ namespace EdwRollupLib
                     message = e.Message
                 };
 
-                await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+                await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonSerializer.Serialize(payload));
                 await DropEvent(payload);
 
                 if (alert)
@@ -362,7 +362,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+                    await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");
@@ -371,6 +371,6 @@ namespace EdwRollupLib
         }
         #endregion
 
-        private record LbmParameters(IJobExecutionContext Context, FrameworkWrapper FrameworkWrapper, WithEventsMaker<object> WithEventsMaker, (Guid rsConfigId, Guid rsId, DateTime rsTs) ReportingSequence, IGenericEntity Parameters);
+        private record LbmParameters(IJobExecutionContext Context, FrameworkWrapper FrameworkWrapper, WithEventsMaker<object> WithEventsMaker, (Guid rsConfigId, Guid rsId, DateTime rsTs) ReportingSequence, Entity Parameters);
     }
 }

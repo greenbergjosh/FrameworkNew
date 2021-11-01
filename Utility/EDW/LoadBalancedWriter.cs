@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,9 +19,9 @@ namespace Utility.EDW
             RemoveEndpoint
         }
 
-        public delegate Task<List<IEndpoint>> InitializeEndpointsDelegate();
+        public delegate Task<IReadOnlyList<IEndpoint>> InitializeEndpointsDelegate();
 
-        public delegate Task<List<IEndpoint>> PollEndpointsDelegate();
+        public delegate Task<IReadOnlyList<IEndpoint>> PollEndpointsDelegate();
 
         public delegate Task InitiateWalkawayDelegate(object w, int timeoutSeconds);
 
@@ -30,7 +31,7 @@ namespace Utility.EDW
 
         public delegate Task UnhandledExceptionDelegate(object w, Exception ex);
 
-        public delegate IEndpoint SelectEndpointDelegate(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen);
+        public delegate IEndpoint SelectEndpointDelegate(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, IReadOnlyList<IEndpoint> alreadyChosen);
 
         public delegate int NextWalkawayValueDelegate(int previousValue);
 
@@ -181,7 +182,7 @@ namespace Utility.EDW
                     }
                     foreach (var key in endpoints.Keys)
                     {
-                        if (!newEndpoints.Contains(key))
+                        if (!newEndpoints.Any(endpoint => endpoint == key))
                         {
                             endpoints.TryRemove(key, out var t);
                         }

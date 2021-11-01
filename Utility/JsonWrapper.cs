@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Utility.GenericEntity;
 
 namespace Utility
 {
@@ -17,8 +16,6 @@ namespace Utility
         public const string Empty = "{}";
 
         public static string Serialize(object value, bool pretty = false) => JsonConvert.SerializeObject(value, pretty ? Formatting.Indented : Formatting.None);
-
-        public static async Task<IGenericEntity> GenericEntityFromFile(string path) => JsonToGenericEntity(await new FileInfo(path).ReadAllTextAsync());
 
         public static async Task<T> FromFile<T>(string path) where T : JToken => JToken.Parse(await new FileInfo(path).ReadAllTextAsync()) as T;
 
@@ -56,36 +53,6 @@ namespace Utility
             {
                 return null;
             }
-        }
-
-        public static IGenericEntity ToGenericEntity(object obj, RoslynWrapper rw = null, object config = null)
-        {
-            if (obj is string s) return JsonToGenericEntity(s, rw, config);
-
-            var gp = new GenericEntityJson();
-
-            gp.InitializeEntity(rw, config, obj);
-            return gp;
-        }
-
-        public static IGenericEntity JsonToGenericEntity(string json, RoslynWrapper rw = null, object config = null)
-        {
-            var gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(json);
-
-            gp.InitializeEntity(rw, config, gpstate);
-            return gp;
-        }
-
-        public static async Task<IGenericEntity> JsonToGenericEntityAsync(TextReader textReader, RoslynWrapper rw = null, object config = null)
-        {
-            using var jsonReader = new JsonTextReader(textReader);
-            var gpstate = await JObject.LoadAsync(jsonReader);
-            // process JSON
-            //var gpstate = JsonConvert.DeserializeObject(json);
-            var gp = new GenericEntityJson();
-            gp.InitializeEntity(rw, config, gpstate);
-            return gp;
         }
 
         public static (string path, string propName) GetPropertyPathParts(string fullPath)

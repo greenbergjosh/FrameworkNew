@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace UnsubLib.UnsubFileProviders
 {
     internal class DirectLink : IUnsubLocationProvider
     {
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => true;
+        public Task<bool> CanHandle(Entity network, string unsubRelationshipId, Uri uri) => Task.FromResult(true);
 
-        public Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri) => Task.FromResult((uri.ToString(), (IDictionary<string, string>)null));
+        public Task<(string url, IDictionary<string, string> postData)> GetFileUrl(Entity network, string unsubRelationshipId, Uri uri) => Task.FromResult((uri.ToString(), (IDictionary<string, string>)null));
     }
 }

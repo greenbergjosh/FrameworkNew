@@ -16,17 +16,24 @@ namespace QueueProcessorLib
         private Task _producerTask;
         private Task _consumerTask;
 
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         private readonly string _logMethod;
 
-        public QueueRunner(FrameworkWrapper fw, string name, Func<int, Task<IEnumerable<QueueItem>>> itemGetter, Func<string, QueueItem, Task<bool>> itemProcessor, HashSet<string> discriminatorsInRetry, Func<QueueItem, Task> sendToRetryQueue, Func<IEnumerable<long>, Task> sendToRestartQueue)
+        private QueueRunner(FrameworkWrapper fw, string name, QueueItemProducerConfig producerConfig, QueueItemConsumerConfig consumerConfig)
         {
-            _fw = fw;
-
             _logMethod = $"{name} QueueRunner";
 
-            var producerConfig = new QueueItemProducerConfig(
+            _fw = fw;
+
+            _producer = new QueueItemProducer(fw, producerConfig);
+            _consumer = new QueueItemConsumer(fw, consumerConfig);
+
+        }
+
+        public static async Task<QueueRunner> Create(FrameworkWrapper fw, string name, Func<int, IAsyncEnumerable<QueueItem>> itemGetter, Func<string, QueueItem, Task<bool>> itemProcessor, HashSet<string> discriminatorsInRetry, Func<QueueItem, Task> sendToRetryQueue, Func<IEnumerable<long>, Task> sendToRestartQueue)
+        {
+            var producerConfig = await QueueItemProducerConfig.Create(
                 fw,
                 name,
                 itemGetter,
@@ -35,9 +42,7 @@ namespace QueueProcessorLib
                 sendToRestartQueue
             );
 
-            _producer = new QueueItemProducer(fw, producerConfig);
-
-            var consumerConfig = new QueueItemConsumerConfig(
+            var consumerConfig = await QueueItemConsumerConfig.Create(
                 fw,
                 name,
                 producerConfig.Queue,
@@ -45,7 +50,7 @@ namespace QueueProcessorLib
                 sendToRetryQueue
             );
 
-            _consumer = new QueueItemConsumer(fw, consumerConfig);
+            return new QueueRunner(fw, name, producerConfig, consumerConfig);
         }
 
         public async Task Start()

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml;
 using Utility;
 using Utility.DataLayer;
-using Utility.GenericEntity;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity;
 
 namespace UnsubLib.NetworkProviders
 {
@@ -17,12 +17,12 @@ namespace UnsubLib.NetworkProviders
 
         public Other(FrameworkWrapper fw) => _fw = fw;
 
-        public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
+        public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = network.GetS("Name");
-            var apiKey = network.GetS("Credentials/NetworkApiKey");
-            var networkId = network.GetS("Id");
-            var apiUrl = network.GetS("Credentials/NetworkApiUrl");
+            var networkName = await network.GetS("Name");
+            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var networkId = await network.GetS("Id");
+            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
             string campaignXml = null;
 
             try
@@ -35,8 +35,6 @@ namespace UnsubLib.NetworkProviders
 
                 await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
                 campaignXml = await ProtocolClient.HttpPostAsync(apiUrl, parms);
-
-                // PLEASE WAIT A FEW MINUTES BEFORE NEXT API CALL
 
                 var xml = new XmlDocument();
 
@@ -52,7 +50,7 @@ namespace UnsubLib.NetworkProviders
                 }
 
                 var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
-                    Jw.Json(new
+                    JsonSerializer.Serialize(new
                     {
                         NetworkId = networkId,
                         PayloadType = "xml",
@@ -63,9 +61,9 @@ namespace UnsubLib.NetworkProviders
                     }),
                     campaignXml);
 
-                if (res == null || res.GetS("result") == "failed")
+                if (res == null || await res.GetS("result") == "failed")
                 {
-                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{campaignXml ?? "null"}");
+                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{campaignXml ?? "null"}");
                     return null;
                 }
 
@@ -82,12 +80,12 @@ namespace UnsubLib.NetworkProviders
             }
         }
 
-        public async Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
+        public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = network.GetS("Name");
-            var apiKey = network.GetS("Credentials/NetworkApiKey");
-            var apiUrl = network.GetS("Credentials/NetworkApiUrl");
-            var parallelism = network.GetS("Credentials/Parallelism").ParseInt() ?? 5;
+            var networkName = await network.GetS("Name");
+            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
+            var parallelism = await network.GetI("Credentials.Parallelism", 5);
 
             IDictionary<string, string> parms = new Dictionary<string, string>()
                 {

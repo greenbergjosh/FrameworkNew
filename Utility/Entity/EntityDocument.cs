@@ -32,7 +32,7 @@ namespace Utility.Entity
             }
         }
 
-        protected abstract IEnumerable<EntityDocument> EnumerateArrayCore();
+        protected internal abstract IEnumerable<EntityDocument> EnumerateArrayCore();
 
         public IEnumerable<(string name, Entity value)> EnumerateObject()
         {
@@ -47,7 +47,7 @@ namespace Utility.Entity
             }
         }
 
-        protected abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
+        protected internal abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
         public static EntityDocument MapValue(object value) => value switch
         {
@@ -88,7 +88,7 @@ namespace Utility.Entity
             return (false, default);
         }
 
-        protected abstract bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument);
+        protected internal abstract bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument);
 
         public abstract T Value<T>();
 

@@ -11,7 +11,6 @@
             Raw = raw;
             Id = id;
             LoginToken = loginToken;
-
         }
 
 
