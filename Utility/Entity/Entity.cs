@@ -9,7 +9,7 @@ using Utility.Entity.QueryLanguage.Selectors;
 namespace Utility.Entity
 {
     public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
-    public delegate Task<(Entity entity, string query)> EntityRetriever(Entity baseEntity, Uri uri);
+    public delegate Task<(IEnumerable<Entity> entities, string query)> EntityRetriever(Entity baseEntity, Uri uri);
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
     public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query);
 
@@ -67,11 +67,11 @@ namespace Utility.Entity
             return new Entity(entityDocument, null, _config, "$");
         }
 
-        internal Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(this, query);
+        internal Task<IEnumerable<Entity>> Evaluate(Query query) => Evaluate(new[] { this }, query);
 
         public async Task<IEnumerable<Entity>> Evaluate(string query)
         {
-            Entity entity;
+            IEnumerable<Entity> entities;
             Query parsedQuery;
 
             if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
@@ -82,9 +82,9 @@ namespace Utility.Entity
                 }
 
                 var result = await _config.Retriever(this, uri);
-                entity = result.entity;
+                entities = result.entities;
 
-                if (entity is null)
+                if (entities is null || !entities.Any())
                 {
                     throw new InvalidOperationException("Absolute query did not return an entity");
                 }
@@ -98,11 +98,11 @@ namespace Utility.Entity
                     throw new InvalidOperationException("Cannot run a relative query on a null entity");
                 }
 
-                entity = this;
+                entities = new[] { this };
                 parsedQuery = QueryLanguage.Query.Parse(this, query);
             }
 
-            return await Evaluate(entity, parsedQuery);
+            return await Evaluate(entities, parsedQuery);
         }
 
         public async Task<Entity> GetE(string query) => (await Evaluate(query)).FirstOrDefault();
@@ -139,9 +139,9 @@ namespace Utility.Entity
 
         public override string ToString() => $"Query: {Query} Data: {_value}";
 
-        private static async Task<IEnumerable<Entity>> Evaluate(Entity rootEntity, Query query)
+        private static async Task<IEnumerable<Entity>> Evaluate(IEnumerable<Entity> rootEntities, Query query)
         {
-            IEnumerable<Entity> current = new[] { rootEntity };
+            IEnumerable<Entity> current = rootEntities;
 
             for (var i = 0; i < query.Selectors.Count && current.Any(); i++)
             {
@@ -161,7 +161,15 @@ namespace Utility.Entity
                         }
                     }
 
-                    if (!hadReference)
+                    var hadEvaluatable = false;
+                    await foreach (var evaluatableChild in child.Document.ProcessEvaluatable())
+                    {
+                        evaluatableChild.Query = evaluatableChild.Query.Replace("$", child.Query);
+                        next.Add(evaluatableChild);
+                        hadEvaluatable = true;
+                    }
+
+                    if (!hadReference && !hadEvaluatable)
                     {
                         next.Add(child);
                     }

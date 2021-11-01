@@ -7,6 +7,7 @@ using Utility;
 using Utility.DataLayer;
 using Utility.Entity;
 using Utility.Entity.Implementations;
+using Utility.Evaluatable;
 
 //namespace Utility.Entity
 //{
@@ -48,97 +49,119 @@ namespace QuickTester
 
         // Maybe loop through pushing rs and tg into scope, instead of using g
 
-        public static Dictionary<string, (string body, string symbol)> productions = new()
+        public static Dictionary<string, Entity> productions;
+
+        public class ProductionDescription : IEvaluatable
         {
-            ["rlp_std_group_by"] = (@"
+            public string Body { get; }
+            public string Symbol { get; }
+
+            public ProductionDescription(string body, string symbol)
+            {
+                Body = body;
+                Symbol = symbol;
+            }
+
+            public async IAsyncEnumerable<Entity> Evaluate(Entity entity)
+            {
+                yield return await CallProduction(Body, Symbol);
+            }
+        }
+
+        public static void CreateProductions()
+        {
+            productions = new()
+            {
+                ["rlp_std_group_by"] = E.Create(new ProductionDescription(@"
 <<!0[]|process_constants|constant=context://g?constants.*>>
   SELECT event_id, event_ts <<??|context://g?thread_group_id[?(@.thread_group_type!=""singleton"")]->multiton_cols>>
     <<{,}[]|event_elements|evt=context://g?event_elements.*|,>>
     <<{,}[]|rs_elements|rs=context://g?rs_elements.*|,>>
     <<{,}[]|derived_elements|der=context://g?derived_elements.*|,>>
-  FROM satisfied_set ws JOIN warehouse_report_sequence.""<<context://sym?config_name>>"" rs 
-    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)", null),
+  FROM satisfied_set ws JOIN warehouse_report_sequence.""<<g|context://sym?config_name>>"" rs 
+    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)", null)),
 
-            // add_thread_group
-            //  .replace('-', '') for the id
-            ["delete_thread_group_records"] = (@"DELETE FROM edw.thread_group_periods WHERE thread_group_id = <<tg_id>>", null),
+                // add_thread_group
+                //  .replace('-', '') for the id
+                ["delete_thread_group_records"] = E.Create(new ProductionDescription(@"DELETE FROM edw.thread_group_periods WHERE thread_group_id = <<tg_id>>", null)),
 
-            ["insert_thread_group_records"] = (@"
+                ["insert_thread_group_records"] = E.Create(new ProductionDescription(@"
 INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period, table_name, next_table_name)
 VALUES <<[]|insert_thread_group_record|(period);(nextperiod)|,>>
-       <<insert_thread_group_catch_all>>", null),
+       <<insert_thread_group_catch_all>>", null)),
 
-            ["create_tg_table_and_indexes"] = (@"
-CREATE TABLE IF NOT EXISTS <<tg_schema_name>>.<<context://tg_tables>> 
+                ["create_tg_table_and_indexes"] = E.Create(new ProductionDescription(@"
+CREATE TABLE IF NOT EXISTS <<tg_schema_name>>.<<g|context://tg_tables>> 
   (event_id UUID, event_ts timestamptz<<??|(tg_multiton_expr)->tg_multiton_cols>>, rs_config_id UUID, record_create_ts timestamptz DEFAULT now(), expires timestamptz, has_whep boolean, PRIMARY KEY(event_id<<??|(tg_multiton_expr)->tg_multiton_cols2>>));
-CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_config ON <<tg_schema_name>>.<<context://tg_tables>> (rs_config_id, event_id);
-CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_event ON <<tg_schema_name>>.<<context://tg_tables>> (event_id, event_ts);
+CREATE INDEX IF NOT EXISTS ix_<<g|context://tg_tables>>_config ON <<tg_schema_name>>.<<g|context://tg_tables>> (rs_config_id, event_id);
+CREATE INDEX IF NOT EXISTS ix_<<g|context://tg_tables>>_event ON <<tg_schema_name>>.<<g|context://tg_tables>> (event_id, event_ts);
 <<??|(tg_multiton_expr)->tg_multiton_index>>
-CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_rct ON <<tg_schema_name>>.<<context://tg_tables>> (record_create_ts);
-", null),
+CREATE INDEX IF NOT EXISTS ix_<<g|context://tg_tables>>_rct ON <<tg_schema_name>>.<<g|context://tg_tables>> (record_create_ts);
+", null)),
 
-            ["insert_thread_group_record"] = (@"('<<tg_id>>', '<<tg_name>>', '<<tg_period>>', '<<tg_schema_name>>.<<tg_table_name>>', '<<tg_schema_name>>.<<tg_next_table_name>>')", null),
-            ["insert_thread_group_catch_all"] = (@",( '<<tg_id>>', '<<tg_name>>', '0d', '<<tg_schema_name>>.<<tg_table_name_catch_all>>', null)", null),
+                ["insert_thread_group_record"] = E.Create(new ProductionDescription(@"('<<tg_id>>', '<<tg_name>>', '<<tg_period>>', '<<tg_schema_name>>.<<tg_table_name>>', '<<tg_schema_name>>.<<tg_next_table_name>>')", null)),
+                ["insert_thread_group_catch_all"] = E.Create(new ProductionDescription(@",( '<<tg_id>>', '<<tg_name>>', '0d', '<<tg_schema_name>>.<<tg_table_name_catch_all>>', null)", null)),
 
-            ["tg_id"] = ("<<context://g?id>>", null),
-            ["tg_replaced_id"] = ("<<context://g?id.replace('-', '')>>", null),
-            ["tg_name"] = ("<<context://g?name>>", null),
-            ["tg_period"] = ("<<context://period?period>>", null),
-            ["tg_next_period"] = ("<<context://nextperiod?period>>", null),
-            ["tg_prefix"] = (@"<<??|context://g?thread_group_id.thread_group_type[?(@==""singleton"")]->'singleton_'>>", null),
-            ["tg_schema_name"] = ("<<tg_prefix>>rollup_groups", null),
-            ["tg_table_name_base"] = ("<<tg_name>>_<<tg_replaced_id>>", null),
-            ["tg_table_name"] = ("<<tg_table_name_base>>_<<tg_period>>", "<<tg_id>>_tables|tg_<<tg_period>>"),
-            ["tg_table_name_catch_all"] = ("<<tg_table_name_base>>_catch_all", "<<tg_id>>_tables|tg_catch_all"),
-            ["tg_next_table_name"] = ("<<tg_table_name_base>>_<<tg_next_period>>", null),
+                ["tg_id"] = E.Create(new ProductionDescription("<<g|context://g?id>>", null)),
+                ["tg_replaced_id"] = E.Create(new ProductionDescription("<<g|context://g?id.replace('-', '')>>", null)),
+                ["tg_name"] = E.Create(new ProductionDescription("<<g|context://g?name>>", null)),
+                ["tg_period"] = E.Create(new ProductionDescription("<<g|context://period?period>>", null)),
+                ["tg_next_period"] = E.Create(new ProductionDescription("<<g|context://nextperiod?period>>", null)),
+                ["tg_prefix"] = E.Create(new ProductionDescription(@"<<??|context://g?thread_group_id.thread_group_type[?(@==""singleton"")]->'singleton_'>>", null)),
+                ["tg_schema_name"] = E.Create(new ProductionDescription("<<tg_prefix>>rollup_groups", null)),
+                ["tg_table_name_base"] = E.Create(new ProductionDescription("<<tg_name>>_<<tg_replaced_id>>", null)),
+                ["tg_table_name"] = E.Create(new ProductionDescription("<<tg_table_name_base>>_<<tg_period>>", "<<tg_id>>_tables|tg_<<tg_period>>")),
+                ["tg_table_name_catch_all"] = E.Create(new ProductionDescription("<<tg_table_name_base>>_catch_all", "<<tg_id>>_tables|tg_catch_all")),
+                ["tg_next_table_name"] = E.Create(new ProductionDescription("<<tg_table_name_base>>_<<tg_next_period>>", null)),
 
-            ["period"] = ("context://g?rollup_group_periods[0:]", null),
-            ["nextperiod"] = (@"{ ""period"": ""catch_all"" }|context://g?rollup_group_periods[1:]", null),
-            ["tg_tables"] = ("context://sym?<<tg_id>>_tables.*", ""),
+                ["period"] = E.Create(new ProductionDescription("context://g?rollup_group_periods[0:]", null)),
+                ["nextperiod"] = E.Create(new ProductionDescription(@"{ ""period"": ""catch_all"" }|context://g?rollup_group_periods[1:]", null)),
+                ["tg_tables"] = E.Create(new ProductionDescription("context://sym?<<tg_id>>_tables.*", "")),
 
-            ["create_tg_tables_and_indexes"] = ("<<[]|create_tg_table_and_indexes|(tg_tables)>>", null),
-            ["tg_multiton_expr"] = (@"context://g?thread_group_type[?(@!=""singleton"")]", null),
-            ["tg_multiton_cols"] = (", rs_id UUID, rs_ts timestamptz ", null),
-            ["tg_multiton_cols2"] = (", rs_id ", null),
-            ["tg_multiton_index"] = ("CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_rs ON <<tg_schema_name>>.<<context://tg_tables>>(rs_id, rs_ts);", null),
+                ["create_tg_tables_and_indexes"] = E.Create(new ProductionDescription("<<[]|create_tg_table_and_indexes|(tg_tables)>>", null)),
+                ["tg_multiton_expr"] = E.Create(new ProductionDescription(@"context://g?thread_group_type[?(@!=""singleton"")]", null)),
+                ["tg_multiton_cols"] = E.Create(new ProductionDescription(", rs_id UUID, rs_ts timestamptz ", null)),
+                ["tg_multiton_cols2"] = E.Create(new ProductionDescription(", rs_id ", null)),
+                ["tg_multiton_index"] = E.Create(new ProductionDescription("CREATE INDEX IF NOT EXISTS ix_<<g|context://tg_tables>>_rs ON <<tg_schema_name>>.<<g|context://tg_tables>>(rs_id, rs_ts);", null)),
 
 
 
-            // end: add_thread_group
+                // end: add_thread_group
 
-            ["process_constants"] = ("'<<context://constant?value>>'::<<context://constant?data_type>>", "<<context://constant?name>>"),
+                ["process_constants"] = E.Create(new ProductionDescription("'<<g|context://constant?value>>'::<<g|context://constant?data_type>>", "<<g|context://constant?name>>")),
 
-            ["multiton_cols"] = (", rs.id rs_id, rs.ts rs_ts ", null),
+                ["multiton_cols"] = E.Create(new ProductionDescription(", rs.id rs_id, rs.ts rs_ts ", null)),
 
-            ["event_elements2"] = ("<<context://evt?alias>>:::<<context://nvt?alias>>", null),
+                ["event_elements2"] = E.Create(new ProductionDescription("<<g|context://evt?alias>>:::<<g|context://nvt?alias>>", null)),
 
-            ["event_elements"] = ("<<event_element>> \"<<context://evt?alias>>\"", null),
+                ["event_elements"] = E.Create(new ProductionDescription("<<event_element>> \"<<g|context://evt?alias>>\"", null)),
 
-            // add support for {pb} shorthand, likely as <<pb>>
-            ["event_element"] = ("(coalesce(event_payload -> 'body' <<context://evt?json_path>>, ''))::<<context://evt?data_type>>", "<<context://evt?alias>>"),
-            ["derived_elements"] = ("<<derived_element>> \"<<context://der?alias>>\"", null),
-            ["derived_element"] = ("<<context://der?col_value>>::<<context://der?data_type>>", "<<context://der?alias>>"),
-            ["rs_elements"] = ("<<rs_element>> \"<<context://rs?alias>>\"", null),
-            ["rs_element"] = ("rs.<<context://rs?alias>>", "<<context://rs?alias>>"),
+                // add support for {pb} shorthand, likely as <<pb>>
+                ["event_element"] = E.Create(new ProductionDescription("(coalesce(event_payload -> 'body' <<g|context://evt?json_path>>, ''))::<<g|context://evt?data_type>>", "<<g|context://evt?alias>>")),
+                ["derived_elements"] = E.Create(new ProductionDescription("<<derived_element>> \"<<g|context://der?alias>>\"", null)),
+                ["derived_element"] = E.Create(new ProductionDescription("<<g|context://der?col_value>>::<<g|context://der?data_type>>", "<<g|context://der?alias>>")),
+                ["rs_elements"] = E.Create(new ProductionDescription("<<rs_element>> \"<<g|context://rs?alias>>\"", null)),
+                ["rs_element"] = E.Create(new ProductionDescription("rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
 
-            ["union"] = ("<<[]|union_select|tbl=context://g?names| UNION >>", null),
-            ["union_select"] = ("SELECT id, ts FROM warehouse_report_sequence.\"<<tbl://>>\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>' ", null),
-            ["long_term_union"] = ("<<[]|long_term_union_select|tbl=context://g?names| UNION >>", null),
-            ["long_term_union_select"] = (@"SELECT id, ts FROM warehouse_report_sequence.""<<context://tbl?$>>"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'
+                ["union"] = E.Create(new ProductionDescription("<<[]|union_select|tbl=context://g?names| UNION >>", null)),
+                ["union_select"] = E.Create(new ProductionDescription("SELECT id, ts FROM warehouse_report_sequence.\"<<tbl://>>\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>' ", null)),
+                ["long_term_union"] = E.Create(new ProductionDescription("<<[]|long_term_union_select|tbl=context://g?names| UNION >>", null)),
+                ["long_term_union_select"] = E.Create(new ProductionDescription(@"SELECT id, ts FROM warehouse_report_sequence.""<<g|context://tbl?$>>"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'
                                             UNION
-                                            SELECT id, ts FROM warehouse_report_sequence.""<<context://tbl?$>>_long_term"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>",
-                                            null),
+                                            SELECT id, ts FROM warehouse_report_sequence.""<<g|context://tbl?$>>_long_term"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>",
+                                              null)),
 
 
-            //period=(period)
-            // period('period', entity)
+                //period=(period)
+                // period('period', entity)
 
-            ["insert_thread_group_records2"] = (@"
+                ["insert_thread_group_records2"] = E.Create(new ProductionDescription(@"
 INSERT INTO edw.thread_group_periods(thread_group_id, thread_group_name, period, table_name, next_table_name)
 VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0:];nextperiod/{""period"": ""catch_all""}=context://g?rollup_group_periods[1:]|,>>
 <<insert_thread_group_catch_all>>
-", null),
-        };
+", null)),
+            };
+        }
 
         public class Production
         {
@@ -192,7 +215,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             else if (m == '\'') { t.TokenType = TokenType.STRG; mc = '\''; }
             else { t.TokenType = TokenType.NDEF; return t; }
 
-            if (m == '\'') 
+            if (m == '\'')
             {
                 int i = 1;
                 while (true)
@@ -204,14 +227,14 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                             t.Body += '\'';
                             i += 2;
                         }
-                        else break;                        
+                        else break;
                     }
                     else
                     {
                         t.Body += s[i++];
-                    }                    
+                    }
                 }
-                t.Match = s[0..(i+1)];
+                t.Match = s[0..(i + 1)];
             }
             else
             {
@@ -224,7 +247,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     t.Body += s[i++];
                 }
                 t.Match = m + t.Body + mc;
-                if (m != '(') t.Body = m + t.Body + mc;             
+                if (m != '(') t.Body = m + t.Body + mc;
             }
 
             if (t.TokenType == TokenType.PROD)
@@ -240,7 +263,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     if (prod[npLength] == '=')
                     {
                         t.SharedName = np;
-                        t.ProdName = new(prod[(npLength+1)..].TakeWhile(x => x != '(').ToArray());
+                        t.ProdName = new(prod[(npLength + 1)..].TakeWhile(x => x != '(').ToArray());
                         int prodNameLength = t.ProdName.Length;
                         t.ProdName = t.ProdName.Trim();
                         if ((prodNameLength + 1 + npLength) == prod.Length) done = true;
@@ -267,7 +290,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                             args = args[(argNameLength + innerToken.Match.Length + 1)..];
                         }
                         t.Args = argsTokens;
-                    } 
+                    }
                 }
             }
 
@@ -325,7 +348,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
         }
 
-        public static async Task<Entity> CallProduction(string productionName) => await CallProduction(productions[productionName].body, productions[productionName].symbol);
+        public static async Task<Entity> CallProduction(string productionName) => await CallProduction(await productions[productionName].GetS("Body"), await productions[productionName].GetS("Symbol"));
 
         public static async Task<Entity> CallProduction(string body, string symbol)
         {
@@ -394,7 +417,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             // a production that evaluates to a literal token will produce a value each time it is called
             // whether an enumerable child restarts, produces a default, or produces empty values on iterations past it's end is up to the child
             // EnumerateProductionDictionary(prodnames, dominance, repetition-count)
-            
+
             string[] parts = p.InstructionBody.Split('|');
             var productionName = GetToken(parts[0]).Body;
 
@@ -417,7 +440,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                     scopeName = scopeName[1..];
                 }
                 string sRepeatCount = "";
-                while (scopeName[0] >='1' && scopeName[0] <= '9')
+                while (scopeName[0] >= '1' && scopeName[0] <= '9')
                 {
                     sRepeatCount += scopeName[0];
                     scopeName = scopeName[1..];
@@ -441,8 +464,8 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             }
 
             Token joinToken = parts.Length > 2 ? GetToken(parts[2]) : new Token();
-            string joinString = (joinToken.TokenType == TokenType.PROD) 
-                ? (await CallProduction(joinToken.Body)).Value<string>() 
+            string joinString = (joinToken.TokenType == TokenType.PROD)
+                ? (await CallProduction(joinToken.Body)).Value<string>()
                 : joinToken.Body;
 
             List<Entity> rets = new();
@@ -465,14 +488,14 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             //    foreach (var kvp in scp) context.Remove(kvp.Key);
             //}
 
-            return E.Create(string.Join(joinString, rets.Select(x=>x.Value<string>())));
+            return E.Create(string.Join(joinString, rets.Select(x => x.Value<string>())));
         }
 
         public static async Task<Entity> EvaluateToken(Token t)
         {
             if (t.TokenType == TokenType.STRG)
             {
-               return E.Create(t.Body);
+                return E.Create(t.Body);
             }
             else if (t.TokenType == TokenType.JSON)
             {
@@ -487,7 +510,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             {
                 return Entity.Undefined;
             }
-        } 
+        }
 
         public static async Task<Entity> ConditionInstruction(Production p)
         {
@@ -534,7 +557,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
         public static async Task<Entity> GetterInstruction(Production p)
         {
             // <<{instruction_header}|{path}|{token-default}>>
-            string [] parts = p.InstructionBody.Split("|");
+            string[] parts = p.InstructionBody.Split("|");
 
             Entity value;
             string nsn = parts[0].Split("://")[0];
@@ -552,36 +575,39 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                 else value = await CallProduction(s, null);
             }
 
-            //if (value != Entity.Undefined) return value;
-
-            Token t = null;
+            Token defaultValue = null;
             if (parts.Length > 1)
             {
-                t = GetToken(parts[1]);
-                //return await EvaluateToken(t);
+                defaultValue = GetToken(parts[1]);
             }
 
-            var d = new Dictionary<string, Entity>() { ["value"] = value, ["def"] = E.Create(t) };
-            return E.Create(d);
+            if (value.ValueType == EntityValueType.Undefined || value.ValueType == EntityValueType.Null)
+            {
+                return E.Create(defaultValue);
+            }
+            else
+            {
+                return value;
+            }
         }
 
         //public static async Task<Entity> VariableInstruction(Production p)
         //{
-            
+
         //}
 
         public static async Task<Entity> ProductionInstruction(Production p) => await CallProduction(p.InstructionBody);
 
-        private static async Task<Entity> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
+        private static async Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
         {
             var id = Guid.Parse(entityId);
             var entity = await fw.Entities.GetEntity(id);
             entity.Set("/Config/$id", id);
             entity.Set("/Config/$name", entity.GetS("/Name"));
-            return await root.Parse("application/json", entity.GetS("/Config"));
+            return new[] { await root.Parse("application/json", entity.GetS("/Config")) };
         }
 
-        private static async Task<Entity> GetEntityType(Entity root, string entityType)
+        private static async Task<IEnumerable<Entity>> GetEntityType(Entity root, string entityType)
         {
             var entities = await Data.CallFn("config", "SelectConfigsByType", new { type = entityType });
 
@@ -593,7 +619,7 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                 var convertedEntity = await root.Parse("application/json", entity.GetS(""));
                 convertedEntities.Add(convertedEntity);
             }
-            return root.Create(EntityDocumentArray.Create(convertedEntities));
+            return convertedEntities;
         }
 
 
@@ -655,17 +681,19 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
                 {
                     "entity" => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
                     "entityType" => (await GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
-                    "context" => (await ContextEntity.GetE(uri.Host), UnescapeQueryString(uri)),
+                    "context" => (new[] { await ContextEntity.GetE(uri.Host) }, UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
                 MissingPropertyHandler: null,
                 FunctionHandler: functionHandler)
             );
 
+            CreateProductions();
 
             context = new Dictionary<string, Entity>
             {
-                ["sym"] = E.Create(symbolTable)
+                ["sym"] = E.Create(symbolTable),
+                ["productions"] = E.Create(productions),
             };
 
             ContextEntity = E.Create(context);
@@ -694,7 +722,8 @@ VALUES <<[]|insert_thread_group_record|period=context://g?rollup_group_periods[0
             t.Add("(sname=prod(a=(sname2=prod2),b={bob:tom}))def");
             t.Add("(sname=prod(a=(sname2=prod2()),b={bob:tom}))def");
             t.Add("(sname=prod(a=(sname2=prod2()),b=(prod3(a='blah',b='ma'))))def");
-            foreach (var ti in t) {
+            foreach (var ti in t)
+            {
                 var tk = GetToken(ti);
             }
 

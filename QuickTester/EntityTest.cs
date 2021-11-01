@@ -181,19 +181,19 @@ namespace QuickTester
                 {
                     "entity" => uri.Host switch
                     {
-                        "testdocument" => (await entity.Parse("application/json", testDocument), UnescapeQueryString(uri)),
-                        "reftestparentdocument" => (await entity.Parse("application/json", refTestParentDocument), UnescapeQueryString(uri)),
-                        "reftestchilddocument" => (await entity.Parse("application/json", refTestChildDocument), UnescapeQueryString(uri)),
-                        "reftestchilddocument2" => (await entity.Parse("application/json", refTestChildDocument2), UnescapeQueryString(uri)),
-                        "testclass" => (entity.Create(EntityDocumentObject.Create(testClass)), UnescapeQueryString(uri)),
-                        _ => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri))
+                        "testdocument" => (new[] { await entity.Parse("application/json", testDocument) }, UnescapeQueryString(uri)),
+                        "reftestparentdocument" => (new[] { await entity.Parse("application/json", refTestParentDocument) }, UnescapeQueryString(uri)),
+                        "reftestchilddocument" => (new[] { await entity.Parse("application/json", refTestChildDocument) }, UnescapeQueryString(uri)),
+                        "reftestchilddocument2" => (new[] { await entity.Parse("application/json", refTestChildDocument2) }, UnescapeQueryString(uri)),
+                        "testclass" => (new[] { entity.Create(EntityDocumentObject.Create(testClass)) }, UnescapeQueryString(uri)),
+                        _ => (new[] { await GetEntity(fw, entity, uri.Host) }, UnescapeQueryString(uri))
                     },
-                    "memory" => (entity.Create(uri.Host switch
+                    "memory" => (new[] {entity.Create(uri.Host switch
                     {
                         "thread" => threadState,
                         "process" => processState,
                         _ => throw new Exception($"Unknown memory location {uri.Host}"),
-                    }), UnescapeQueryString(uri)),
+                    })}, UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
                 MissingPropertyHandler: (entity, propertyName) =>

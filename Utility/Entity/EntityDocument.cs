@@ -70,6 +70,13 @@ namespace Utility.Entity
             yield break;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public virtual async IAsyncEnumerable<Entity> ProcessEvaluatable()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            yield break;
+        }
+
         public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name)
         {
             if (TryGetPropertyCore(name, out var document))
