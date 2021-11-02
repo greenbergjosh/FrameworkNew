@@ -41,9 +41,9 @@ namespace Utility.Entity.Implementations
 
         public override TOutput Value<TOutput>() => (TOutput)(object)_value;
 
-        protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
+        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
-        protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
         {
             foreach (var (name, propertyInfo) in _readableProperties)
             {
@@ -60,7 +60,7 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        protected override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
         {
             if (_readableProperties.TryGetValue(name, out var propertyInfo))
             {
@@ -89,5 +89,7 @@ namespace Utility.Entity.Implementations
                 }
             }
         }
+
+        public override string ToString() => _value?.ToString();
     }
 }

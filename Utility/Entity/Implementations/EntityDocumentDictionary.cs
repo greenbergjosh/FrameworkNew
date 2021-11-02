@@ -14,9 +14,9 @@ namespace Utility.Entity.Implementations
 
         public EntityDocumentDictionary(IDictionary dictionary) => _dictionary = dictionary;
 
-        protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
+        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
-        protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
         {
             foreach (var key in _dictionary.Keys)
             {
@@ -26,7 +26,7 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        protected override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
         {
             if (_dictionary.Contains(name))
             {

@@ -56,9 +56,9 @@ namespace Utility.Entity.Implementations
         public static Task<EntityDocument> Parse(string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement));
 
         #region EntityDocument Implementation
-        protected override IEnumerable<EntityDocument> EnumerateArrayCore() => _value.EnumerateArray().Select(item => new EntityDocumentJson(item));
+        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => _value.EnumerateArray().Select(item => new EntityDocumentJson(item));
 
-        protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value)));
+        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value)));
 
         public override async IAsyncEnumerable<Entity> ProcessReference()
         {
@@ -71,7 +71,7 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        protected override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
         {
             if (_value.TryGetProperty(name, out var value))
             {

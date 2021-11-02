@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "skipClean skipQueuedCampaigns n:\"Everflow-Andy\" refreshCampaigns"
+      "commandLineArgs": "skipClean skipQueuedCampaigns n:\"Synergy - Andy\" c:848"
     }
   }
 }

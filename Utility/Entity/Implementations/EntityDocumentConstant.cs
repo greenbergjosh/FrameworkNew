@@ -36,11 +36,11 @@ namespace Utility.Entity.Implementations
             _valueType = valueType;
         }
 
-        protected override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
+        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
-        protected override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
+        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
 
-        protected override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument) => throw new NotImplementedException();
+        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument) => throw new NotImplementedException();
 
         public override T Value<T>() => (T)_value;
 
