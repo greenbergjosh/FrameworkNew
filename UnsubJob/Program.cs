@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnsubLib;
 using UnsubLib.NetworkProviders;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace UnsubJob
 {
@@ -16,13 +16,13 @@ namespace UnsubJob
         public static async Task Main(string[] args)
         {
 
-            Fw = new FrameworkWrapper();
+            Fw = await FrameworkWrapper.Create();
 
             await Fw.Log(nameof(Main), "Starting...");
 
-            var unsub = new UnsubLib.UnsubLib(Fw);
+            var unsub = await UnsubLib.UnsubLib.Create(Fw);
 
-            IEnumerable<IGenericEntity> networks = null;
+            IEnumerable<Entity> networks = null;
 
             try
             {
@@ -58,23 +58,26 @@ namespace UnsubJob
 
             var skipQueuedCheck = args.Any(a => string.Equals(a, "skipQueuedCheck", StringComparison.CurrentCultureIgnoreCase));
 
-            if (singleNetworkName != null) networkCampaignId = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a[2..]).FirstOrDefault();
+            if (singleNetworkName != null)
+            {
+                networkCampaignId = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a[2..]).FirstOrDefault();
+            }
 
             try
             {
                 var res = await unsub.GetNetworks(singleNetworkName);
 
-                networks = res?.GetL("");
+                networks = await res.GetL();
 
                 if (networks == null)
                 {
-                    await Fw.Error(nameof(Main), $"GetNetworks DB call failed. Response: {res?.GetS("")}");
+                    await Fw.Error(nameof(Main), $"GetNetworks DB call failed. Response: {res}");
                     return;
                 }
 
                 if (!networks.Any())
                 {
-                    await Fw.Error(nameof(Main), $"Network(s) not found {args.Join(" ")}  Response: {res?.GetS("")}");
+                    await Fw.Error(nameof(Main), $"Network(s) not found {args.Join(" ")}  Response: {res}");
                     return;
                 }
             }
@@ -117,6 +120,7 @@ namespace UnsubJob
                 {
 
                 }
+
                 return;
             }
 
@@ -126,7 +130,7 @@ namespace UnsubJob
 
             foreach (var network in networks)
             {
-                var name = network.GetS("Name");
+                var name = await network.GetS("Name");
 
                 await Fw.Log(nameof(Main), $"Starting({name})...");
 
@@ -143,8 +147,8 @@ namespace UnsubJob
                     try
                     {
                         await Fw.Log(nameof(Main), $"Starting GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
-                        var networkProvider = Factory.GetInstance(Fw, network);
-                        await unsub.GetCampaignsScheduledJobs(network, networkProvider, skipQueuedCheck);
+                        var networkProvider = await Factory.GetInstance(Fw, network);
+                        _ = await unsub.GetCampaignsScheduledJobs(network, networkProvider, skipQueuedCheck);
                         await Fw.Log(nameof(Main), $"Completed GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
                     }
                     catch (HaltingException e)
@@ -157,10 +161,11 @@ namespace UnsubJob
                     {
                         await Fw.Error(nameof(Main), $"GetCampaignsScheduledJobs failed({name}): {exScheduledUnsub}");
                     }
+
                     continue;
                 }
 
-                var unsubMethod = network.GetS("Credentials/UnsubMethod");
+                var unsubMethod = await network.GetS("Credentials.UnsubMethod");
 
                 if (unsubMethod == "ScheduledUnsubJob")
                 {
@@ -184,7 +189,7 @@ namespace UnsubJob
                         }
                     }
 
-                    if (network.GetS("Credentials/IgnoreManualDirectory").ParseBool() != false)
+                    if ((await network.GetS("Credentials.IgnoreManualDirectory")).ParseBool() != false)
                     {
                         try
                         {

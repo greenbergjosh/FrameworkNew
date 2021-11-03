@@ -15,7 +15,7 @@ namespace Utility.EDW.Reporting
             CheckedDetail
         }
 
-        private readonly Dictionary<EdwType, List<object>> _rsTypes = new Dictionary<EdwType, List<object>>()
+        private readonly Dictionary<EdwType, List<object>> _rsTypes = new()
         {
             { EdwType.Event, new List<object>() },
             { EdwType.Immediate, new List<object>() },

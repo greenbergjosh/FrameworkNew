@@ -116,7 +116,7 @@ namespace SignalApiLib.SourceHandlers
 
                 System.Diagnostics.Debug.WriteLine(consoleEvent.ToString());
 
-                await _fw.EdwWriter.Write(consoleEvent);
+                _ = await _fw.EdwWriter.Write(consoleEvent);
             }
             catch (Exception e)
             {
@@ -175,7 +175,7 @@ namespace SignalApiLib.SourceHandlers
 
                 System.Diagnostics.Debug.WriteLine(consoleEvent.ToString());
 
-                await _fw.EdwWriter.Write(consoleEvent);
+                _ = await _fw.EdwWriter.Write(consoleEvent);
             }
             catch (Exception e)
             {

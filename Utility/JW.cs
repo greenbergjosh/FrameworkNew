@@ -12,7 +12,7 @@ namespace Utility
         private readonly bool[] Quotes;
         public QC(bool[] quotes) => Quotes = quotes;
 
-        public bool V(int i) => (Quotes == null || Quotes.Length < i + 1) ? true : Quotes[i];
+        public bool V(int i) => Quotes == null || Quotes.Length < i + 1 || Quotes[i];
 
         public static string Q(object x) => x != null ? JsonConvert.ToString(x.ToString()) : "null";
     }
@@ -21,19 +21,19 @@ namespace Utility
 
     public class A : IJ
     {
-        public List<IJ> js = new List<IJ>();
+        public List<IJ> js = new();
 
         public A() { }
 
-        public static A C() => new A();
+        public static A C() => new();
 
         public A(IEnumerable<IJ> js) => this.js.AddRange(js);
 
-        public static A C(IEnumerable<IJ> js) => new A(js);
+        public static A C(IEnumerable<IJ> js) => new(js);
 
         public A(params IJ[] js) => this.js.AddRange(js);
 
-        public static A C(params IJ[] js) => new A(js);
+        public static A C(params IJ[] js) => new(js);
 
         public override string ToString() => string.Concat("[",
                 string.Join(",",
@@ -43,11 +43,11 @@ namespace Utility
 
     public class SL : IJ
     {
-        public List<Tuple<string, bool>> ls = new List<Tuple<string, bool>>();
+        public List<Tuple<string, bool>> ls = new();
 
         public SL() { }
 
-        public static SL C() => new SL();
+        public static SL C() => new();
 
         public SL(SL sl)
         {
@@ -59,7 +59,7 @@ namespace Utility
 
         public SL(params SL[] sls) => ls.AddRange(sls.SelectMany(x => x.ls));
 
-        public static SL C(params SL[] sls) => new SL(sls);
+        public static SL C(params SL[] sls) => new(sls);
 
         public SL(IEnumerable<SL> sls)
         {
@@ -69,7 +69,7 @@ namespace Utility
             }
         }
 
-        public static SL C(IEnumerable<SL> sls) => new SL(sls);
+        public static SL C(IEnumerable<SL> sls) => new(sls);
 
         public SL(List<Tuple<string, bool>> sls)
         {
@@ -79,11 +79,11 @@ namespace Utility
             }
         }
 
-        public static SL C(List<Tuple<string, bool>> sls) => new SL(sls);
+        public static SL C(List<Tuple<string, bool>> sls) => new(sls);
 
         public SL(string n, bool q = true) => ls.Add(new Tuple<string, bool>(n, q));
 
-        public static SL C(string n, bool q = true) => new SL(n, q);
+        public static SL C(string n, bool q = true) => new(n, q);
 
         public SL Add(params SL[] sls)
         {
@@ -93,16 +93,23 @@ namespace Utility
 
         public SL Add(IEnumerable<SL> sls)
         {
-            if (sls != null) this.ls.AddRange(sls.SelectMany(x => x.ls));
+            if (sls != null)
+            {
+                ls.AddRange(sls.SelectMany(x => x.ls));
+            }
+
             return this;
         }
 
         public SL(IEnumerable<object> l, bool q = true)
         {
-            if (l != null) ls.AddRange(l.Select(x => new Tuple<string, bool>(x.ToString(), q)));
+            if (l != null)
+            {
+                ls.AddRange(l.Select(x => new Tuple<string, bool>(x.ToString(), q)));
+            }
         }
 
-        public static SL C(IEnumerable<object> l, bool q = true) => new SL(l, q);
+        public static SL C(IEnumerable<object> l, bool q = true) => new(l, q);
 
         public SL(List<object> os, List<string> names)
         {
@@ -121,7 +128,7 @@ namespace Utility
             }
         }
 
-        public static SL C(List<object> os, List<string> names) => new SL(os, names);
+        public static SL C(List<object> os, List<string> names) => new(os, names);
 
         public static SL AO<T>(IList<T> os, List<string> names = null, bool[] quotes = null)
         {
@@ -149,36 +156,24 @@ namespace Utility
 
                             ls.Add(PL.OM(fields.Select((x, i) => PL.C(x.Item1, x.Item2, qc.V(i)))));
                         }
-
-                    }
-                }
-                else if (typeof(T).ToString().Contains("AnonymousType"))
-                {
-                    if (names != null && names.Count > 0)
-                    {
-                        ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
-                            o.GetType().GetProperty(x).GetValue(o).ToString(), qc.V(i))))).ToList();
-                    }
-                    else
-                    {
-                        ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
-                            o.GetType().GetProperty("Item" + (i + 1)).GetValue(o).ToString(), qc.V(i))))).ToList();
                     }
                 }
                 else
                 {
-                    if (names != null && names.Count > 0)
-                    {
-                        ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
-                            o.GetType().GetField(x).GetValue(o).ToString(), qc.V(i))))).ToList();
-                    }
-                    else
-                    {
-                        ls = os.Select(o => PL.OM(o.GetType().GetFields()
-                            .Select((pi, i) => PL.C(pi.Name, pi.GetValue(o).ToString(), qc.V(i))))).ToList();
-                    }
+                    ls = typeof(T).ToString().Contains("AnonymousType")
+                        ? names != null && names.Count > 0
+                                            ? os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
+                                                o.GetType().GetProperty(x).GetValue(o).ToString(), qc.V(i))))).ToList()
+                                            : os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
+                                                o.GetType().GetProperty("Item" + (i + 1)).GetValue(o).ToString(), qc.V(i))))).ToList()
+                        : names != null && names.Count > 0
+                                            ? os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
+                                                o.GetType().GetField(x).GetValue(o).ToString(), qc.V(i))))).ToList()
+                                            : os.Select(o => PL.OM(o.GetType().GetFields()
+                                                .Select((pi, i) => PL.C(pi.Name, pi.GetValue(o).ToString(), qc.V(i))))).ToList();
                 }
             }
+
             return SL.C(ls, false);
         }
 
@@ -187,7 +182,7 @@ namespace Utility
 
     public class PL : IJ
     {
-        private static readonly Dictionary<Type, JsonToPlAction> jsonActions = new Dictionary<Type, JsonToPlAction>
+        private static readonly Dictionary<Type, JsonToPlAction> jsonActions = new()
         {
             { typeof(string), new JsonToPlAction(true) },
             { typeof(DateTime), new JsonToPlAction(true) },
@@ -196,11 +191,11 @@ namespace Utility
             { typeof(bool), new JsonToPlAction(false, o => (bool) o ? "true" : "false") }
         };
 
-        public List<Tuple<string, string, bool>> ps = new List<Tuple<string, string, bool>>();
+        public List<Tuple<string, string, bool>> ps = new();
 
         public PL() { }
 
-        public static PL C() => new PL();
+        public static PL C() => new();
 
         public PL(PL pl)
         {
@@ -212,7 +207,7 @@ namespace Utility
 
         public PL(params PL[] pls) => ps.AddRange(pls.SelectMany(x => x.ps));
 
-        public static PL C(params PL[] pls) => new PL(pls);
+        public static PL C(params PL[] pls) => new(pls);
 
         public PL(IEnumerable<PL> pls)
         {
@@ -222,7 +217,7 @@ namespace Utility
             }
         }
 
-        public static PL C(IEnumerable<PL> pls) => new PL(pls);
+        public static PL C(IEnumerable<PL> pls) => new(pls);
 
         public PL(List<Tuple<string, string, bool>> lps)
         {
@@ -232,7 +227,7 @@ namespace Utility
             }
         }
 
-        public static PL C(List<Tuple<string, string, bool>> lps) => new PL(lps);
+        public static PL C(List<Tuple<string, string, bool>> lps) => new(lps);
 
         public PL(string n, string v, bool q = true) => ps.Add(new Tuple<string, string, bool>(n, v, q));
 
@@ -240,9 +235,8 @@ namespace Utility
         {
             var des = JsonConvert.DeserializeObject(json);
 
-            if (des is JObject)
+            if (des is JObject jobj)
             {
-                var jobj = (JObject)des;
                 var pl = new PL();
 
                 foreach (var p in jobj.Properties())
@@ -254,32 +248,36 @@ namespace Utility
                             var t = val.Value.GetType();
                             var a = jsonActions.GetValueOrDefault(t);
 
-                            if (a != null) pl.Add(PL.N(p.Name, a.Mutate(val.Value), a.Quote));
-                            else throw new NotImplementedException();
+                            _ = a != null ? pl.Add(PL.N(p.Name, a.Mutate(val.Value), a.Quote)) : throw new NotImplementedException();
                         }
                     }
-                    else if (p.Value is JToken) pl.Add(PL.N(p.Name, p.Value.ToString()));
-                    else throw new NotImplementedException();
+                    else
+                    {
+                        _ = p.Value is JToken ? pl.Add(PL.N(p.Name, p.Value.ToString())) : throw new NotImplementedException();
+                    }
                 }
 
                 return pl;
             }
-            else throw new NotImplementedException();
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        public static PL C(string n, string v, bool q = true) => new PL(n, v, q);
+        public static PL C(string n, string v, bool q = true) => new(n, v, q);
 
-        public static PL C(string n, int v) => new PL(n, v.ToString(), false);
+        public static PL C(string n, int v) => new(n, v.ToString(), false);
 
-        public static PL C(string n, short v) => new PL(n, v.ToString(), false);
+        public static PL C(string n, short v) => new(n, v.ToString(), false);
 
-        public static PL C(string n, long v) => new PL(n, v.ToString(), false);
+        public static PL C(string n, long v) => new(n, v.ToString(), false);
 
-        public static PL C(string n, bool v) => new PL(n, v.ToString(), false);
+        public static PL C(string n, bool v) => new(n, v.ToString(), false);
 
-        public static PL C(string n, decimal v) => new PL(n, v.ToString(), false);
+        public static PL C(string n, decimal v) => new(n, v.ToString(), false);
 
-        public static PL C(string n, double v) => new PL(n, v.ToString(), false);
+        public static PL C(string n, double v) => new(n, v.ToString(), false);
 
         public PL Add(params PL[] pls)
         {
@@ -289,7 +287,11 @@ namespace Utility
 
         public PL Add(IEnumerable<PL> pls)
         {
-            if (pls != null) this.ps.AddRange(pls.SelectMany(x => x.ps));
+            if (pls != null)
+            {
+                ps.AddRange(pls.SelectMany(x => x.ps));
+            }
+
             return this;
         }
 
@@ -297,40 +299,71 @@ namespace Utility
 
         public PL Add(string name, bool addEmpty, IEnumerable<PL> pls)
         {
-            if (pls != null && pls.Any()) { Add(PL.N(name, A.C(pls.Select(pl => PL.C(pl))))); }
-            else if (addEmpty) { Add(PL.N(name, A.C())); }
+            if (pls != null && pls.Any())
+            {
+                _ = Add(PL.N(name, A.C(pls.Select(pl => PL.C(pl)))));
+            }
+            else if (addEmpty)
+            {
+                _ = Add(PL.N(name, A.C()));
+            }
+
             return this;
         }
 
-        public static PL N(string k, string v, bool q = false) => new PL(new Dictionary<string, object>() { { k, v } }, q);
+        public static PL N(string k, string v, bool q = false) => new(new Dictionary<string, object>() { { k, v } }, q);
 
         public static PL N(string name, PL pl, bool addEmpty = false)
         {
-            if (pl.ps != null && pl.ps.Count > 0) return PL.C(name, PL.C(pl).ToString(), false);
-            else if (addEmpty) return PL.N(name, "{}", false);
+            if (pl.ps != null && pl.ps.Count > 0)
+            {
+                return PL.C(name, PL.C(pl).ToString(), false);
+            }
+            else if (addEmpty)
+            {
+                return PL.N(name, "{}", false);
+            }
+
             return PL.C();
         }
 
         public static PL N(string name, SL sl, bool addEmpty = false)
         {
-            if (sl.ls != null && sl.ls.Count > 0) return PL.C(name, A.C(sl).ToString(), false);
-            else if (addEmpty) return PL.N(name, "[]", false);
+            if (sl.ls != null && sl.ls.Count > 0)
+            {
+                return PL.C(name, A.C(sl).ToString(), false);
+            }
+            else if (addEmpty)
+            {
+                return PL.N(name, "[]", false);
+            }
+
             return PL.C();
         }
 
         public static PL N(string name, A a, bool addEmpty = false)
         {
-            if (a.js != null && a.js.Count > 0) return PL.C(name, a.ToString(), false);
-            else if (addEmpty) return PL.N(name, "[]", false);
+            if (a.js != null && a.js.Count > 0)
+            {
+                return PL.C(name, a.ToString(), false);
+            }
+            else if (addEmpty)
+            {
+                return PL.N(name, "[]", false);
+            }
+
             return PL.C();
         }
 
         public PL(IDictionary<string, object> d, bool q = true)
         {
-            if (d != null && d.Count > 0) ps.AddRange(d.Select(x => new Tuple<string, string, bool>(x.Key, x.Value.ToString(), q)));
+            if (d != null && d.Count > 0)
+            {
+                ps.AddRange(d.Select(x => new Tuple<string, string, bool>(x.Key, x.Value.ToString(), q)));
+            }
         }
 
-        public static PL D(IDictionary<string, object> d, bool q = true) => new PL(d, q);
+        public static PL D(IDictionary<string, object> d, bool q = true) => new(d, q);
 
         public static string OM(IEnumerable<PL> pls) => string.Concat("{",
                 string.Join(",",
@@ -345,7 +378,10 @@ namespace Utility
 
         public static PL O(object o, List<string> names = null, bool[] quotes = null)
         {
-            if (o is IDictionary<string, object>) throw new Exception("Use PL.D for IDictionary<>");
+            if (o is IDictionary<string, object>)
+            {
+                throw new Exception("Use PL.D for IDictionary<>");
+            }
 
             var qc = new QC(quotes);
             var ls = new List<Tuple<string, string, bool>>();
@@ -370,31 +406,20 @@ namespace Utility
                         }
                     }
                 }
-                else if (o.GetType().ToString().Contains("AnonymousType"))
-                {
-                    if (names != null && names.Count > 0)
-                    {
-                        ls = o.GetType().GetProperties().Select((pi, i) =>
-                            new Tuple<string, string, bool>(names[i], pi.GetValue(o)?.ToString(), qc.V(i))).ToList();
-                    }
-                    else
-                    {
-                        ls = o.GetType().GetProperties().Select((pi, i) =>
-                            new Tuple<string, string, bool>(pi.Name, pi.GetValue(o)?.ToString(), qc.V(i))).ToList();
-                    }
-                }
                 else
                 {
-                    if (names != null && names.Count > 0)
-                    {
-                        ls = names.Select((n, i) => new Tuple<string, string, bool>(n, o.GetType().GetField(n).GetValue(o)?.ToString(), qc.V(i))).ToList();
-                    }
-                    else
-                    {
-                        ls = o.GetType().GetFields().Select((pi, i) => new Tuple<string, string, bool>(pi.Name, pi.GetValue(o)?.ToString(), qc.V(i))).ToList();
-                    }
+                    ls = o.GetType().ToString().Contains("AnonymousType")
+                        ? names != null && names.Count > 0
+                                            ? o.GetType().GetProperties().Select((pi, i) =>
+                                                new Tuple<string, string, bool>(names[i], pi.GetValue(o)?.ToString(), qc.V(i))).ToList()
+                                            : o.GetType().GetProperties().Select((pi, i) =>
+                                                new Tuple<string, string, bool>(pi.Name, pi.GetValue(o)?.ToString(), qc.V(i))).ToList()
+                        : names != null && names.Count > 0
+                                            ? names.Select((n, i) => new Tuple<string, string, bool>(n, o.GetType().GetField(n).GetValue(o)?.ToString(), qc.V(i))).ToList()
+                                            : o.GetType().GetFields().Select((pi, i) => new Tuple<string, string, bool>(pi.Name, pi.GetValue(o)?.ToString(), qc.V(i))).ToList();
                 }
             }
+
             return PL.C(ls);
         }
 
@@ -416,6 +441,5 @@ namespace Utility
             public bool Quote { get; }
             public Func<object, string> Mutate { get; } = o => o.ToString();
         }
-
     }
 }

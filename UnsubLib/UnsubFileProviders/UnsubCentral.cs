@@ -21,7 +21,7 @@ namespace UnsubLib.UnsubFileProviders
             {
                 var qs = HttpUtility.ParseQueryString(uri.Query);
 
-                return Task.FromResult(qs["key"] != null && qs["s"] != null || qs["keyID"] != null);
+                return Task.FromResult((qs["key"] != null && qs["s"] != null) || qs["keyID"] != null);
             }
 
             return Task.FromResult(false);

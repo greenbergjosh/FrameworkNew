@@ -18,6 +18,7 @@ namespace Utility.EDW.Queueing
         }
 
         // ReSharper disable InconsistentNaming
+#pragma warning disable IDE1006 // Naming Styles
         public string first_name { get; set; }
         public string last_name { get; set; }
         public string zip_code { get; set; }
@@ -28,7 +29,7 @@ namespace Utility.EDW.Queueing
         public string domain_id { get; set; }
         public bool isFinal { get; set; } = true;
         public string user_ip { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
         // ReSharper restore InconsistentNaming
-
     }
 }

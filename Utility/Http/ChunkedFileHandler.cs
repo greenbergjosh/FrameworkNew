@@ -52,7 +52,7 @@ namespace Utility.Http
 
             var buffer = new byte[chunk.Length];
 
-            await chunk.ReadAsync(buffer);
+            _ = await chunk.ReadAsync(buffer);
 
             chunks[chunkIndex] = buffer;
 
@@ -67,19 +67,20 @@ namespace Utility.Http
             return null;
         }
 
-        private string BuildKey(string key) => $"{_cacheKeyPrefix}{key}";
+        private static string BuildKey(string key) => $"{_cacheKeyPrefix}{key}";
 
-        private Stream Complete(IDictionary<int, byte[]> chunks)
+        private static Stream Complete(IDictionary<int, byte[]> chunks)
         {
             var result = new byte[chunks.Sum(chunk => chunk.Value.Length)];
 
-            int offset = 0;
-            for (int i = 0; i < chunks.Count; i++)
+            var offset = 0;
+            for (var i = 0; i < chunks.Count; i++)
             {
                 var chunk = chunks[i];
                 chunk.CopyTo(result, offset);
                 offset += chunk.Length;
             }
+
             return new MemoryStream(result);
         }
     }

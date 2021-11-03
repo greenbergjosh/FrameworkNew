@@ -31,6 +31,7 @@ namespace QueueProcessorLib
             {
                 throw new InvalidOperationException($"{Config.Name} consumer is already started.");
             }
+
             _started = true;
 
             try
@@ -47,7 +48,7 @@ namespace QueueProcessorLib
                     if (!cancellationToken.IsCancellationRequested)
                     {
                         var queueItem = Config.Queue.Take(cancellationToken);
-                        _itemsInFlight.TryAdd(queueItem, queueItem);
+                        _ = _itemsInFlight.TryAdd(queueItem, queueItem);
 
                         _ = Task.Run(async () => await Process(queueItem), cancellationToken);
                     }
@@ -90,7 +91,7 @@ namespace QueueProcessorLib
             }
             finally
             {
-                _itemsInFlight.TryRemove(queueItem, out var _);
+                _ = _itemsInFlight.TryRemove(queueItem, out _);
             }
         }
     }

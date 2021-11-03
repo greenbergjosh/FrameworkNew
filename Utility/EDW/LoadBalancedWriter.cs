@@ -69,7 +69,7 @@ namespace Utility.EDW
             endpoints = new ConcurrentDictionary<IEndpoint, Tuple<bool, int>>();
             foreach (var p in ps)
             {
-                endpoints.TryAdd(p, new Tuple<bool, int>(true, 0));
+                _ = endpoints.TryAdd(p, new Tuple<bool, int>(true, 0));
             }
 
             this.initializeEndpoints = initializeEndpoints;
@@ -118,6 +118,7 @@ namespace Utility.EDW
                         await novalid(w).ConfigureAwait(false);
                         break;
                     }
+
                     alreadyChosen.Add(p);
                     writeError = await p.Write(w, secondaryWrite, timeoutSeconds).ConfigureAwait(false);
                     if (writeError == LoadBalancedWriter.Result.Success)
@@ -158,10 +159,11 @@ namespace Utility.EDW
                 Observable.Interval(TimeSpan.FromSeconds(endpointPollingInterval));
 
             var source = new CancellationTokenSource();
-            Action action = (async () => await PollEndpointsCallback().ConfigureAwait(false));
+            async void action() => await PollEndpointsCallback().ConfigureAwait(false);
             observable.Subscribe(x =>
             {
-                var task = new Task(action); task.Start();
+                var task = new Task(action);
+                task.Start();
             }, source.Token);
         }
 
@@ -180,11 +182,12 @@ namespace Utility.EDW
                             endpoints[key] = new Tuple<bool, int>(true, 0);
                         }
                     }
+
                     foreach (var key in endpoints.Keys)
                     {
                         if (!newEndpoints.Any(endpoint => endpoint == key))
                         {
-                            endpoints.TryRemove(key, out var t);
+                            _ = endpoints.TryRemove(key, out var t);
                         }
                     }
                 }
@@ -205,7 +208,7 @@ namespace Utility.EDW
             {
                 if (walkaway == false)
                 {
-                    endpoints.TryRemove(p, out t);
+                    _ = endpoints.TryRemove(p, out t);
                     return;
                 }
 
@@ -215,7 +218,7 @@ namespace Utility.EDW
 
                     if (nextTimeout == 0)
                     {
-                        endpoints.TryRemove(p, out t);
+                        _ = endpoints.TryRemove(p, out t);
                     }
                     else
                     {
@@ -228,17 +231,17 @@ namespace Utility.EDW
                             }
 
                             endpoints[p] = new Tuple<bool, int>(false, nextTimeout);
-                            var _ = Task.Run(async () =>
-                            {
-                                await Task.Delay(nextTimeout * 1000).ConfigureAwait(false);
-                                try
-                                {
-                                    await AuditEndpoint(p).ConfigureAwait(false);
-                                }
-                                catch
-                                {
-                                }
-                            });
+                            _ = Task.Run(async () =>
+                           {
+                               await Task.Delay(nextTimeout * 1000).ConfigureAwait(false);
+                               try
+                               {
+                                   await AuditEndpoint(p).ConfigureAwait(false);
+                               }
+                               catch
+                               {
+                               }
+                           });
                         }
                         finally
                         {

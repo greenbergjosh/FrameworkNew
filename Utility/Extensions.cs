@@ -75,18 +75,11 @@ namespace Utility
             {
                 str = str.ToLower();
 
-                if (str == "1" || str == "true" || str == "t" || str == "y" || str == "yes")
-                {
-                    return true;
-                }
-
-                if (str == "0" || str == "false" || str == "f" || str == "n" || str == "no")
-                {
-                    return false;
-                }
-
-                return null;
+                return str is "1" or "true" or "t" or "y" or "yes"
+                    ? true
+                    : str is "0" or "false" or "f" or "n" or "no" ? false : null;
             }
+
             return i;
         }
 
@@ -104,7 +97,7 @@ namespace Utility
                 str = "http://" + str;
             }
 
-            Uri.TryCreate(str, UriKind.Absolute, out var u);
+            _ = Uri.TryCreate(str, UriKind.Absolute, out var u);
 
             return u;
         }
@@ -147,18 +140,18 @@ namespace Utility
         {
             var result = new StringBuilder();
             var stack = ex.StackTrace;
-            result.AppendLine(ex.Message);
+            _ = result.AppendLine(ex.Message);
 
             while (ex.InnerException != null)
             {
                 ex = ex.InnerException;
-                result.AppendLine("\t" + ex.Message);
+                _ = result.AppendLine("\t" + ex.Message);
                 stack = ex.StackTrace;
             }
 
             if (outputStack && stack != null)
             {
-                result.AppendLine(stack.Replace("   ", "\t"));
+                _ = result.AppendLine(stack.Replace("   ", "\t"));
             }
 
             return result.ToString();
@@ -173,18 +166,18 @@ namespace Utility
                 var ex = aggEx.InnerExceptions[i];
                 var stack = ex.StackTrace;
 
-                result.AppendLine($"[{i}] : {ex.Message}");
+                _ = result.AppendLine($"[{i}] : {ex.Message}");
 
                 while (ex.InnerException != null)
                 {
                     ex = ex.InnerException;
-                    result.AppendLine("\t" + ex.Message);
+                    _ = result.AppendLine("\t" + ex.Message);
                     stack = ex.StackTrace;
                 }
 
                 if (outputStack)
                 {
-                    result.AppendLine(stack.Replace("   ", "\t"));
+                    _ = result.AppendLine(stack.Replace("   ", "\t"));
                 }
             }
 
@@ -203,12 +196,7 @@ namespace Utility
         {
             var grp = col.GroupBy(keySelector);
 
-            if (takeLast)
-            {
-                return grp.Select(g => g.Last());
-            }
-
-            return grp.Select(g => g.First());
+            return takeLast ? grp.Select(g => g.Last()) : grp.Select(g => g.First());
         }
 
         public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<T> initialSet, params IEnumerable<T>[] sets)
@@ -240,23 +228,11 @@ namespace Utility
         public static IEnumerable<TResult> Batch<TSource, TResult>(this IEnumerable<TSource> source, int size,
             Func<IEnumerable<TSource>, TResult> resultSelector)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            if (size <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(size));
-            }
-
-            if (resultSelector == null)
-            {
-                throw new ArgumentNullException(nameof(resultSelector));
-            }
-
-            return _();
-
+            return source == null
+                ? throw new ArgumentNullException(nameof(source))
+                : size <= 0
+                ? throw new ArgumentOutOfRangeException(nameof(size))
+                : resultSelector == null ? throw new ArgumentNullException(nameof(resultSelector)) : _();
             IEnumerable<TResult> _()
             {
                 TSource[] bucket = null;

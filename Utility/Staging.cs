@@ -14,9 +14,10 @@ namespace Utility
                 schemaName = schema,
                 tablePrefix = prefix,
                 tableName = name,
-                columns = columns
+                columns
             });
-            var result = await Data.CallFn(Conn, "createStagingTableIfDoesntExist", args);
+
+            _ = await Data.CallFn(Conn, "createStagingTableIfDoesntExist", args);
         }
 
         public static async Task<long> InsertInStagingTable(string name, object values, string prefix = null, string schema = null)
@@ -27,6 +28,7 @@ namespace Utility
                 tablePrefix = prefix,
                 tableName = name.ToLowerInvariant()
             });
+
             var payload = JsonWrapper.Serialize(values);
             var result = await Data.CallFn(Conn, "insertInStagingTable", args, payload);
             return long.Parse(result.Get("id").ToString());

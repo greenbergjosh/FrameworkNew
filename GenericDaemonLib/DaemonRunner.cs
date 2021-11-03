@@ -45,10 +45,7 @@ namespace GenericDaemonLib
                 await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Starting daemon: {daemonName}...");
                 try
                 {
-                    _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, parameters).ContinueWith(async t =>
-                    {
-                        await _fw.Error($"{nameof(DaemonRunner)}.RunDaemon", $"Error running daemon ${daemonName}: {t.Exception}");
-                    }, TaskContinuationOptions.OnlyOnFaulted));
+                    _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, parameters).ContinueWith(async t => await _fw.Error($"{nameof(DaemonRunner)}.RunDaemon", $"Error running daemon ${daemonName}: {t.Exception}"), TaskContinuationOptions.OnlyOnFaulted));
                     await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Started daemon: {daemonName}...");
                 }
                 catch (Exception ex)
@@ -66,7 +63,7 @@ namespace GenericDaemonLib
 
             _cancellationTokenSource.Cancel();
 
-            Task.WaitAll(_workerTasks.ToArray(), 60000);
+            _ = Task.WaitAll(_workerTasks.ToArray(), 60000);
 
             _ = _fw.Log($"{ nameof(DaemonRunner)}.OnStop", "Stopped");
         }

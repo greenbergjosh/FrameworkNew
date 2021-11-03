@@ -37,14 +37,7 @@ namespace GenericApi
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                }).ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.AddDebug();
-                }).UseNLog();
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>()).ConfigureLogging(logging => _ = logging.ClearProviders().AddDebug()).UseNLog();
 
         public static async Task LoadLbms()
         {
@@ -66,7 +59,7 @@ namespace GenericApi
                 }
 
                 var (debug, debugDir) = FrameworkWrapper.RoslynWrapper.GetDefaultDebugValues();
-                FrameworkWrapper.RoslynWrapper.CompileAndCache(new ScriptDescriptor(id, id.ToString(), await lbm.GetS("Config"), debug, debugDir), true);
+                _ = FrameworkWrapper.RoslynWrapper.CompileAndCache(new ScriptDescriptor(id, id.ToString(), await lbm.GetS("Config"), debug, debugDir), true);
 
                 lbms.Add(name, config);
             }

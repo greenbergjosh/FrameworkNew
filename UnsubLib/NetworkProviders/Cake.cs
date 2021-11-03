@@ -71,7 +71,10 @@ namespace UnsubLib.NetworkProviders
 
                 return res;
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting campaigns from {networkName}: {url}", e);
@@ -111,7 +114,10 @@ namespace UnsubLib.NetworkProviders
 
                 return dlUrl.IsNullOrWhitespace() ? null : new Uri(dlUrl);
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting unsub from {networkName}: {url}", e);
@@ -131,7 +137,10 @@ namespace UnsubLib.NetworkProviders
 
             var url = INetworkProvider.BuildUrl(baseUrl, path, qs);
 
-            if (unsubRelationshipId != null) url = url.Replace("{unsubRelationshipId}", unsubRelationshipId);
+            if (unsubRelationshipId != null)
+            {
+                url = url.Replace("{unsubRelationshipId}", unsubRelationshipId);
+            }
 
             return url;
         }

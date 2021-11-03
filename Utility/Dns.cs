@@ -15,7 +15,7 @@ namespace Utility
 
         public static string ReverseIp(string ip)
         {
-            string[] octets = ip.Trim().Split('.');
+            var octets = ip.Trim().Split('.');
             Array.Reverse(octets);
             return string.Join(".", octets);
         }
@@ -23,7 +23,9 @@ namespace Utility
         public static async Task<string> LookupIp(string name, string dnsHost = DefaultDnsHost)
         {
             var response = await _lookupClient.QueryServerAsync(new[] { IPAddress.Parse(dnsHost) }, name, QueryType.A);
-            var result = (ARecord)response.Answers.FirstOrDefault();
+#pragma warning disable CA1826 // Do not use Enumerable methods on indexable collections
+            var result = response.Answers.FirstOrDefault() as ARecord;
+#pragma warning restore CA1826 // Do not use Enumerable methods on indexable collections
 
             return result?.Address.ToString() ?? "";
         }
@@ -38,7 +40,9 @@ namespace Utility
         public static async Task<string> ReverseLookupIp(string ip, string dnsHost = DefaultDnsHost)
         {
             var response = await _lookupClient.QueryServerReverseAsync(new[] { IPAddress.Parse(dnsHost) }, IPAddress.Parse(ip));
-            var result = (PtrRecord)response.Answers.FirstOrDefault();
+#pragma warning disable CA1826 // Do not use Enumerable methods on indexable collections
+            var result = response.Answers.FirstOrDefault() as PtrRecord;
+#pragma warning restore CA1826 // Do not use Enumerable methods on indexable collections
 
             return result?.DomainName ?? "";
         }

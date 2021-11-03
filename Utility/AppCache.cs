@@ -26,7 +26,9 @@ namespace Utility
             };
 
             for (var i = 0; i < keys.Length; i++)
+            {
                 rawArgs["x" + (i + 1)] = keys[i];
+            }
 
             var args = JsonSerializer.Serialize(rawArgs);
 
@@ -43,10 +45,14 @@ namespace Utility
             };
 
             if (expires.HasValue)
+            {
                 rawArgs["expires"] = expires.Value.ToString("yyyy-MM-dd");
+            }
 
             for (var i = 0; i < keys.Length; i++)
+            {
                 rawArgs["x" + (i + 1)] = keys[i];
+            }
 
             var args = JsonSerializer.Serialize(rawArgs);
 

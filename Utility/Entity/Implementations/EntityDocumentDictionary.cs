@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Utility.Entity.Implementations
 {
@@ -41,7 +42,7 @@ namespace Utility.Entity.Implementations
 
         public override T Value<T>() => (T)_dictionary;
 
-        public override string ToString() => _dictionary?.ToString();
+        public override string ToString() => JsonSerializer.Serialize(_dictionary);
 
         public override int GetHashCode() => _dictionary?.GetHashCode() ?? base.GetHashCode();
     }

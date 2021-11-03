@@ -192,14 +192,7 @@ namespace EdwRollupLib
         {
             var completeCount = Interlocked.Increment(ref _completeRollupCount);
 
-            if (completeCount == parameters.RollupCount)
-            {
-                return parameters with { RollupArgs = null, RollupName = null };
-            }
-            else
-            {
-                return null;
-            }
+            return completeCount == parameters.RollupCount ? (parameters with { RollupArgs = null, RollupName = null }) : null;
         }
 
         private async Task Cleanup(Parameters parameters)
@@ -356,13 +349,13 @@ namespace EdwRollupLib
             var waitForAllRollups = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(WaitForAllRollups, p => Task.FromResult(p?.RollupName)), options);
             var cleanup = new ActionBlock<Parameters>(withEventsMaker.WithEvents(Cleanup, p => Task.FromResult(p?.RollupName)), options);
 
-            prepareThreadGroup.LinkTo(cleanup, parameters => parameters.RsConfigId == default);
-            prepareThreadGroup.LinkTo(processReportSequence);
-            processReportSequence.LinkTo(cleanup, output => output.RollupCount == 0);
-            processReportSequence.LinkTo(processRollup);
-            processRollup.LinkTo(waitForAllRollups);
-            waitForAllRollups.LinkTo(DataflowBlock.NullTarget<Parameters>(), output => output == default);
-            waitForAllRollups.LinkTo(cleanup);
+            _ = prepareThreadGroup.LinkTo(cleanup, parameters => parameters.RsConfigId == default);
+            _ = prepareThreadGroup.LinkTo(processReportSequence);
+            _ = processReportSequence.LinkTo(cleanup, output => output.RollupCount == 0);
+            _ = processReportSequence.LinkTo(processRollup);
+            _ = processRollup.LinkTo(waitForAllRollups);
+            _ = waitForAllRollups.LinkTo(DataflowBlock.NullTarget<Parameters>(), output => output == default);
+            _ = waitForAllRollups.LinkTo(cleanup);
 
             return prepareThreadGroup;
         }
@@ -385,7 +378,7 @@ namespace EdwRollupLib
             AddField("RollupName", input?.RollupName);
             AddField("Error", ex.Message);
 
-            await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+            _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
             {
                 text
             }), "application/json");

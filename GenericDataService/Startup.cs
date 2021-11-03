@@ -21,16 +21,13 @@ namespace GenericDataService
     {
         public IGenericDataService DataService;
 
-        public void ConfigureServices(IServiceCollection services) => _ = services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
+        public void ConfigureServices(IServiceCollection services) => _ = services.AddCors(options => options.AddPolicy("CorsPolicy",
                     builder => builder
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
-                    .SetIsOriginAllowed(x => { return true; })
-                    );
-            })
+                    .SetIsOriginAllowed(x => true)
+                    ))
             .Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -62,7 +59,10 @@ namespace GenericDataService
                     FileProvider = new PhysicalFileProvider(wwwrootPath)
                 });
             }
-            else app.UseStaticFiles();
+            else
+            {
+                app.UseStaticFiles();
+            }
 
             app.UseCors("CorsPolicy");
 

@@ -49,6 +49,7 @@ namespace Utility.Crypto
             _encryptor.Dispose();
             _decryptor.Dispose();
             ((IDisposable) _algorithm).Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

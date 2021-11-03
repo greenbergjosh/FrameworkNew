@@ -27,29 +27,24 @@ namespace GenericApi
         private ILogger<Startup> _logger;
         private Guid _rsConfigId;
 
-        public void ConfigureServices(IServiceCollection services) => services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy", builder =>
-                    builder.AllowAnyMethod().
-                            AllowAnyHeader().
-                            AllowCredentials().
-                            SetIsOriginAllowed(x => true)
-                );
-            }).Configure<CookiePolicyOptions>(options =>
+        public void ConfigureServices(IServiceCollection services) => services.AddCors(options => options.AddPolicy("CorsPolicy", builder =>
+    builder.AllowAnyMethod().
+            AllowAnyHeader().
+            AllowCredentials().
+            SetIsOriginAllowed(x => true)
+                )).Configure<CookiePolicyOptions>(options =>
             {
                 options.CheckConsentNeeded = _ => false;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
-            }).Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            }).AddHttpContextAccessor();
+            }).Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto).AddHttpContextAccessor();
 
         public void UnobservedTaskExceptionEventHandler(object sender, UnobservedTaskExceptionEventArgs args)
         {
             if (_fw != null)
             {
-                _fw.Error("UnobservedTaskException", $"{args.Exception}");
+                _ = _fw.Error("UnobservedTaskException", $"{args.Exception}");
             }
+
             if (_logger != null)
             {
                 _logger.LogError("UnobservedTaskException: {exception}", args.Exception);
@@ -64,7 +59,7 @@ namespace GenericApi
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                _ = app.UseDeveloperExceptionPage();
             }
 
             _logger = app.ApplicationServices.GetService<ILogger<Startup>>();
@@ -105,6 +100,7 @@ namespace GenericApi
                         var traceLog = Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ?? $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
                         await context.WriteFailureRespAsync(JsonSerializer.Serialize(new { result = "failed", traceLog }));
                     }
+
                     return;
                 }
                 else if (await HealthCheckHandler.Handle(context, _fw))
@@ -127,7 +123,7 @@ namespace GenericApi
                 }
                 catch (JsonException ex)
                 {
-                    await DropEvent(requestRsId, requestRsTimestamp, new
+                    _ = await DropEvent(requestRsId, requestRsTimestamp, new
                     {
                         et = "MalformedBody",
                         ex.Message,
@@ -147,7 +143,7 @@ namespace GenericApi
                     Body = request ?? (object)requestBody
                 }, _rsConfigId);
 
-                await DropEvent(requestRsId, requestRsTimestamp, new
+                _ = await DropEvent(requestRsId, requestRsTimestamp, new
                 {
                     et = "RequestReceived",
                     RemoteIpAddress = context.Connection.RemoteIpAddress.ToString(),
@@ -170,14 +166,14 @@ namespace GenericApi
 
                 var identity = await request.GetS("i");
 
-                foreach (var kvp in await request.GetD<Entity>("@"))
+                foreach (var kvp in await request.GetD<Entity>(""))
                 {
                     if (kvp.Key == "i")
                     {
                         continue;
                     }
 
-                    await DropEvent(requestRsId, requestRsTimestamp, new
+                    _ = await DropEvent(requestRsId, requestRsTimestamp, new
                     {
                         et = "RequestMethodReceived",
                         Method = kvp.Key,
@@ -192,7 +188,7 @@ namespace GenericApi
                         {
                             if (!await Auth.HasPermission(identity, kvp.Key.Replace(":", ".")))
                             {
-                                await DropEvent(requestRsId, requestRsTimestamp, new
+                                _ = await DropEvent(requestRsId, requestRsTimestamp, new
                                 {
                                     et = "RequestMethodUnauthorized",
                                     Method = kvp.Key,
@@ -267,20 +263,15 @@ namespace GenericApi
                         }
 
                         var r = (await result?.Get("r")).FirstOrDefault();
-                        if (r != null)
-                        {
-                            results[kvp.Key] = result;
-                        }
-                        else
-                        {
-                            results[kvp.Key] = new
+                        results[kvp.Key] = r != null
+                            ? result
+                            : (object)(new
                             {
                                 r = 0,
                                 result
-                            };
-                        }
+                            });
 
-                        await DropEvent(requestRsId, requestRsTimestamp, new
+                        _ = await DropEvent(requestRsId, requestRsTimestamp, new
                         {
                             et = "RequestMethodProcessed",
                             Method = kvp.Key,
@@ -290,7 +281,7 @@ namespace GenericApi
                     }
                     catch (Exception ex)
                     {
-                        await DropEvent(requestRsId, requestRsTimestamp, new
+                        _ = await DropEvent(requestRsId, requestRsTimestamp, new
                         {
                             et = "RequestMethodError",
                             Method = kvp.Key,
@@ -307,7 +298,7 @@ namespace GenericApi
                     }
                 }
 
-                await DropEvent(requestRsId, requestRsTimestamp, new
+                _ = await DropEvent(requestRsId, requestRsTimestamp, new
                 {
                     et = "RequestProcessed"
                 });
@@ -343,7 +334,7 @@ namespace GenericApi
 
                 edwEvent.AddEvent(eventId, eventTimestamp, eventRsIds, eventBody);
 
-                await _fw.EdwWriter.Write(edwEvent);
+                _ = await _fw.EdwWriter.Write(edwEvent);
 
                 return (eventId, eventTimestamp);
             }

@@ -63,7 +63,10 @@ namespace UnsubLib.NetworkProviders
 
                 return res;
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting campaigns from {networkName}: {url}", e);
@@ -73,7 +76,6 @@ namespace UnsubLib.NetworkProviders
                 await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::{responseBody ?? "null"}::{e}");
                 throw new Exception($"Failed to get {networkName} campaigns", e);
             }
-
         }
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId) => new Uri(await network.GetS("Credentials.GlobalSuppressionUrl"));

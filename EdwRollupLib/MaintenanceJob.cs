@@ -116,7 +116,7 @@ namespace EdwRollupLib
             var lbmContext = new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs), lbmParameters);
 
             var (debug, debugDir) = FrameworkWrapper.RoslynWrapper.GetDefaultDebugValues();
-            await FrameworkWrapper.RoslynWrapper.Evaluate(implementationLbmId.ToString(), await lbm.GetS("Config"), lbmContext, null, debug, debugDir);
+            _ = await FrameworkWrapper.RoslynWrapper.Evaluate(implementationLbmId.ToString(), await lbm.GetS("Config"), lbmContext, null, debug, debugDir);
         }
 
         private async Task AcquireExclusive(IJobExecutionContext context)
@@ -145,6 +145,7 @@ namespace EdwRollupLib
                             Console.WriteLine($"{DateTime.Now}: {Name} Waiting for other exclusive jobs to finish executing. QueueId: {queueId}, CurrentlyRunningQueueId: {currentRunningId}");
 #endif
                         }
+
                         lastCurrentRunningId = currentRunningId;
 
                         await Task.Delay(1000);
@@ -173,6 +174,7 @@ namespace EdwRollupLib
                             Console.WriteLine($"{DateTime.Now}: {Name} Waiting for {currentRunningNonExclusiveJobs} other jobs to finish executing.");
 #endif
                         }
+
                         lastRunningNonExclusiveJobs = currentRunningNonExclusiveJobs;
                         await Task.Delay(1000);
                         currentRunningNonExclusiveJobs = (await context.Scheduler.GetCurrentlyExecutingJobs()).Count(runningContext => runningContext.JobDetail.Key.Group != ExclusiveJobGroup);
@@ -244,7 +246,7 @@ namespace EdwRollupLib
         {
             if (ex is AggregateException aggregateException)
             {
-                foreach (Exception e in aggregateException.InnerExceptions)
+                foreach (var e in aggregateException.InnerExceptions)
                 {
                     await ProcessException(e);
                 }
@@ -282,7 +284,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");
@@ -323,7 +325,7 @@ namespace EdwRollupLib
         {
             if (ex is AggregateException aggregateException)
             {
-                foreach (Exception e in aggregateException.InnerExceptions)
+                foreach (var e in aggregateException.InnerExceptions)
                 {
                     await ProcessException(e);
                 }
@@ -362,7 +364,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");

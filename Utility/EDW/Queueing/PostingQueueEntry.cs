@@ -10,7 +10,6 @@ namespace Utility.EDW.Queueing
         [JsonConverter(typeof(RawJsonConverter))]
         public string Payload;
 
-
         public PostingQueueEntry(string postingType, DateTime postingDate, string payload)
         {
             PostType = postingType;

@@ -29,7 +29,7 @@ namespace Utility
             DefaultDebugDir = defaultDebugDir;
             foreach (var sd in initialScripts)
             {
-                CompileAndCache(sd);
+                _ = CompileAndCache(sd);
             }
         }
 
@@ -40,6 +40,7 @@ namespace Utility
                 result = this[binder.Name];
                 return true;
             }
+
             return base.TryGetMember(binder, out result);
         }
 
@@ -76,7 +77,7 @@ namespace Utility
                                                                                 }
 
                                                                                 var scriptc = CSharpScript.Create<object>(sd.Code, scriptOptions, globalsType: typeof(Globals));
-                                                                                scriptc.Compile();
+                                                                                _ = scriptc.Compile();
                                                                                 sd.Script = scriptc.CreateDelegate();
 
                                                                                 return sd;
@@ -93,6 +94,7 @@ namespace Utility
                 srcFile = (sd.DebugDir ?? DefaultDebugDir) + "\\" + sd.Key + ".csx";
                 File.WriteAllText(srcFile, sd.Code);
             }
+
             return srcFile;
         }
 
@@ -150,13 +152,13 @@ namespace Utility
             var parameters = methodInfo.GetParameters();
             var parametersArray = new object[3];
             parametersArray[0] = fname;
-            return ((object parms, StateWrapper sw) =>
+            return (object parms, StateWrapper sw) =>
             {
                 parametersArray[1] = parms;
                 parametersArray[2] = sw;
                 var r = (Task<object>)methodInfo.Invoke(this, parametersArray);
                 return r;
-            });
+            };
         }
 
         public async Task<object> RunFunction(string fname, object parms, StateWrapper state)
@@ -165,7 +167,7 @@ namespace Utility
                                           : new Globals { f = this, s = state };
             globals.st.Push(StackFrame.CreateStackFrame(parms));
             var result = await functions[fname].Value.Script(globals);
-            globals.st.Pop();
+            _ = globals.st.Pop();
             return result;
         }
     }

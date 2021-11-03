@@ -17,17 +17,29 @@ namespace Utility
             var dict = HttpUtility.ParseQueryString(query);
             foreach (var key in dict.AllKeys)
             {
-                if (key == null) continue; // possible in a query string e.g. &=foo&bar=baz
-                if (  dict[key].Contains(",")) keyList.Add(key, dict[key].Split(",").ToList());
-                if (! dict[key].Contains(",")) keyVal.Add(key, dict[key]);
+                if (key == null)
+                {
+                    continue; // possible in a query string e.g. &=foo&bar=baz
+                }
+
+                if (  dict[key].Contains(","))
+                {
+                    keyList.Add(key, dict[key].Split(",").ToList());
+                }
+
+                if (! dict[key].Contains(","))
+                {
+                    keyVal.Add(key, dict[key]);
+                }
             }
+
             return (keyList, keyVal);
         }
 
         public static string ParseQueryStringToJson(string query)
         {
             var keysCollections = ParseQueryStringToDicts(query);
-            JObject keyValObjMerged = JObject.FromObject(keysCollections.keyList);
+            var keyValObjMerged = JObject.FromObject(keysCollections.keyList);
             keyValObjMerged.Merge(JObject.FromObject(keysCollections.keyVal));
             return JsonConvert.SerializeObject(keyValObjMerged);
         }
@@ -43,6 +55,7 @@ namespace Utility
             {
                 parseErrAction(nameof(ParseQueryStringToJsonOrLog), $"Error parsing query string: '{query??""}' : {e.UnwrapForLog()}");
             }
+
             return outputJson;
         }
     }

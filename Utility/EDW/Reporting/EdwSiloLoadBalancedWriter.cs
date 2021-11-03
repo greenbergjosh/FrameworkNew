@@ -27,7 +27,7 @@ namespace Utility.EDW.Reporting
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.Get("Config.EdwSilos"))
+            foreach (var silo in await config.GetL("Config.EdwSilos"))
             {
                 endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
@@ -38,7 +38,7 @@ namespace Utility.EDW.Reporting
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.Get("Config.EdwSilos"))
+            foreach (var silo in await config.GetL("Config.EdwSilos"))
             {
                 endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
@@ -52,13 +52,7 @@ namespace Utility.EDW.Reporting
             return Task.CompletedTask;
         }
 
-        public static int NextWalkawayValue(int previousValue)
-        {
-            if (previousValue == 0) return 1;
-            else if (previousValue == 1) return 5;
-            else if (previousValue == 5) return 60;
-            else return 60;
-        }
+        public static int NextWalkawayValue(int previousValue) => previousValue == 0 ? 1 : previousValue == 1 ? 5 : previousValue == 5 ? 60 : 60;
 
         public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, IReadOnlyList<IEndpoint> alreadyChosen)
         {
@@ -74,6 +68,7 @@ namespace Utility.EDW.Reporting
                     chosen = current;
                     break;
                 }
+
                 i = (i + 1) % es.Count;
             }
 
@@ -108,7 +103,7 @@ namespace Utility.EDW.Reporting
                 return null;
             }
 
-            var writeTimeoutSeconds = (await config.GetS("Config.EdwWriteTimeout")).ParseInt() ?? 0;
+            var writeTimeoutSeconds = await config.GetI("Config.EdwWriteTimeout", 0);
             var dataFilePath = Path.GetFullPath(await config.GetS("Config.EdwDataFilePath"));
             var errorFilePath = Path.GetFullPath(await config.GetS("Config.EdwErrorFilePath"));
 
@@ -160,9 +155,10 @@ namespace Utility.EDW.Reporting
             if (rsids != null && rsids.Count > 0)
             {
                 var rsid = JsonWrapper.Json("rsid", rsids, false);
-                pyld.Remove(pyld.Length - 1, 1);
-                pyld.Append(rsid + "}");
+                _ = pyld.Remove(pyld.Length - 1, 1);
+                _ = pyld.Append(rsid + "}");
             }
+
             return JsonWrapper.Json(new
             { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = pyld },
                 new bool[] { true, true, false });
@@ -171,12 +167,32 @@ namespace Utility.EDW.Reporting
         public static string EdwBulk(List<string> Im, List<string> Ck, List<string> Cd, List<string> Evt)
         {
             var sb = new StringBuilder("{");
-            if (Im != null && Im.Count > 0) sb.Append(JsonWrapper.Json("IM", Im, false, false) + ",");
-            if (Ck != null && Ck.Count > 0) sb.Append(JsonWrapper.Json("CK", Ck, false, false) + ",");
-            if (Cd != null && Cd.Count > 0) sb.Append(JsonWrapper.Json("CD", Cd, false, false) + ",");
-            if (Evt != null && Evt.Count > 0) sb.Append(JsonWrapper.Json("E", Evt, false, false) + ",");
-            if (sb.Length > 1) sb.Remove(sb.Length - 1, 1);
-            sb.Append('}');
+            if (Im != null && Im.Count > 0)
+            {
+                _ = sb.Append(JsonWrapper.Json("IM", Im, false, false) + ",");
+            }
+
+            if (Ck != null && Ck.Count > 0)
+            {
+                _ = sb.Append(JsonWrapper.Json("CK", Ck, false, false) + ",");
+            }
+
+            if (Cd != null && Cd.Count > 0)
+            {
+                _ = sb.Append(JsonWrapper.Json("CD", Cd, false, false) + ",");
+            }
+
+            if (Evt != null && Evt.Count > 0)
+            {
+                _ = sb.Append(JsonWrapper.Json("E", Evt, false, false) + ",");
+            }
+
+            if (sb.Length > 1)
+            {
+                _ = sb.Remove(sb.Length - 1, 1);
+            }
+
+            _ = sb.Append('}');
             return sb.ToString();
         }
 

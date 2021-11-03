@@ -57,7 +57,10 @@ namespace Utility
 
         public static (string path, string propName) GetPropertyPathParts(string fullPath)
         {
-            if (fullPath.IsNullOrWhitespace()) return (null, null);
+            if (fullPath.IsNullOrWhitespace())
+            {
+                return (null, null);
+            }
 
             var parts = fullPath.Split('.', StringSplitOptions.RemoveEmptyEntries);
 
@@ -73,22 +76,21 @@ namespace Utility
 
             var t = o.GetType();
             StringBuilder sb = new("{");
-            int i = 0;
-            foreach (PropertyInfo pi in t.GetProperties())
+            var i = 0;
+            foreach (var pi in t.GetProperties())
             {
                 var val = pi.GetValue(o);
-                if (val == null)
-                {
-                    sb.Append("\"" + pi.Name + "\": null,");
-                }
-                else if ((quote.Length <= i) || (quote.Length > i && quote[i]))
-                    sb.Append("\"" + pi.Name + "\": \"" + val.ToString() + "\",");
-                else
-                    sb.Append("\"" + pi.Name + "\": " + val.ToString() + ",");
+                _ = val == null
+                    ? sb.Append("\"" + pi.Name + "\": null,")
+                    : (quote.Length <= i) || (quote.Length > i && quote[i])
+                        ? sb.Append("\"" + pi.Name + "\": \"" + val.ToString() + "\",")
+                        : sb.Append("\"" + pi.Name + "\": " + val.ToString() + ",");
+
                 i++;
             }
-            sb.Remove(sb.Length - 1, 1);
-            sb.Append('}');
+
+            _ = sb.Remove(sb.Length - 1, 1);
+            _ = sb.Append('}');
             return sb.ToString();
         }
 
@@ -102,26 +104,30 @@ namespace Utility
         //        new bool[] { true, false, true });
         public static string JsonTuple<T>(List<T> o, List<string> names, params bool[] quote)
         {
-            if (o == null || o.Count == 0) return "[]";
+            if (o == null || o.Count == 0)
+            {
+                return "[]";
+            }
 
             StringBuilder sb = new("[");
             foreach (var le in o)
             {
                 var t = le.GetType();
-                sb.Append('{');
-                for (int i = 0; i < names.Count; i++)
+                _ = sb.Append('{');
+                for (var i = 0; i < names.Count; i++)
                 {
-                    string pv = t.GetProperty("Item" + (i + 1).ToString()).GetValue(le).ToString();
-                    if ((quote.Length <= i) || (quote.Length > i && quote[i]))
-                        sb.Append("\"" + names[i] + "\": \"" + pv + "\",");
-                    else
-                        sb.Append("\"" + names[i] + "\": " + pv + ",");
+                    var pv = t.GetProperty("Item" + (i + 1).ToString()).GetValue(le).ToString();
+                    _ = (quote.Length <= i) || (quote.Length > i && quote[i])
+                        ? sb.Append("\"" + names[i] + "\": \"" + pv + "\",")
+                        : sb.Append("\"" + names[i] + "\": " + pv + ",");
                 }
-                sb.Remove(sb.Length - 1, 1);
-                sb.Append("},");
+
+                _ = sb.Remove(sb.Length - 1, 1);
+                _ = sb.Append("},");
             }
-            sb.Remove(sb.Length - 1, 1);
-            sb.Append(']');
+
+            _ = sb.Remove(sb.Length - 1, 1);
+            _ = sb.Append(']');
 
             return sb.ToString();
         }
@@ -131,18 +137,19 @@ namespace Utility
             StringBuilder sb = new("");
             if (d.Count > 0)
             {
-                sb.Append('[');
+                _ = sb.Append('[');
                 foreach (var e in d)
                 {
-                    sb.Append("{\"" + keyName + "\": \"" + e.Key + "\",");
-                    sb.Append("\"" + valName + "\": \"" + e.Value + "\"},");
+                    _ = sb.Append("{\"" + keyName + "\": \"" + e.Key + "\",");
+                    _ = sb.Append("\"" + valName + "\": \"" + e.Value + "\"},");
                 }
-                sb.Remove(sb.Length - 1, 1);
-                sb.Append(']');
+
+                _ = sb.Remove(sb.Length - 1, 1);
+                _ = sb.Append(']');
             }
             else
             {
-                sb.Append("[]");
+                _ = sb.Append("[]");
             }
 
             return sb.ToString();
@@ -150,17 +157,19 @@ namespace Utility
 
         public static string Json(string name, IDictionary<string, string> d, bool wrap)
         {
-            StringBuilder sb = string.IsNullOrEmpty(name)
-                ? new StringBuilder((wrap ? "{" : ""))
+            var sb = string.IsNullOrEmpty(name)
+                ? new StringBuilder(wrap ? "{" : "")
                 : new StringBuilder((wrap ? "{" : "") + "\"" + name + "\": {");
             if (d.Count > 0)
             {
                 foreach (var e in d)
                 {
-                    sb.Append("\"" + e.Key + "\": \"" + e.Value + "\",");
+                    _ = sb.Append("\"" + e.Key + "\": \"" + e.Value + "\",");
                 }
-                sb.Remove(sb.Length - 1, 1);
+
+                _ = sb.Remove(sb.Length - 1, 1);
             }
+
             sb = string.IsNullOrEmpty(name) ? sb.Append(wrap ? '}' : "") : sb.Append("}" + (wrap ? '}' : ""));
 
             return sb.ToString();
@@ -169,30 +178,37 @@ namespace Utility
         public static string Json(string keyName, List<string> data, bool wrap = true, bool quote = true)
         {
             if (data == null || data.Count == 0)
+            {
                 return (wrap ? '{' : "") + "\"" + keyName + "\": " + "[]" + (wrap ? '}' : "");
+            }
 
             StringBuilder sb = new((wrap ? '{' : "") + "\"" + keyName + "\": ");
-            sb.Append('[');
+            _ = sb.Append('[');
             foreach (var e in data)
             {
                 sb = quote ? sb.Append("\"" + data + "\",") : sb.Append(data + ",");
             }
-            sb.Remove(sb.Length - 1, 1);
-            sb.Append("]" + (wrap ? '}' : ""));
+
+            _ = sb.Remove(sb.Length - 1, 1);
+            _ = sb.Append("]" + (wrap ? '}' : ""));
             return sb.ToString();
         }
 
         public static string Json(List<string> data, bool quote = true)
         {
-            if (data == null || data.Count == 0) return "[]";
+            if (data == null || data.Count == 0)
+            {
+                return "[]";
+            }
 
             StringBuilder sb = new("[");
             foreach (var e in data)
             {
                 sb = quote ? sb.Append("\"" + e + "\",") : sb.Append(e + ",");
             }
-            sb.Remove(sb.Length - 1, 1);
-            sb.Append(']');
+
+            _ = sb.Remove(sb.Length - 1, 1);
+            _ = sb.Append(']');
             return sb.ToString();
         }
 
@@ -216,7 +232,9 @@ namespace Utility
                     for (var i = 0; i < names.Count; i++)
                     {
                         if (csvReader.TryGetField(i, out string value))
+                        {
                             jObject.Add(names[i], value);
+                        }
                     }
 
                     jArray.Add(jObject);

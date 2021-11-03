@@ -17,16 +17,17 @@ namespace Utility
             try
             {
                 string s = context.Request.Query[name];
-                if (string.IsNullOrEmpty(s))
-                {
-                    if (s == null && throwIfNotFound) throw new Exception(name + " not found in querystring.");
-                    return defVal;
-                }
-                else return trans(s);
+                return string.IsNullOrEmpty(s)
+                    ? s == null && throwIfNotFound ? throw new Exception(name + " not found in querystring.") : defVal
+                    : trans(s);
             }
             catch
             {
-                if (throwExc) throw;
+                if (throwExc)
+                {
+                    throw;
+                }
+
                 return defVal;
             }
         }
@@ -45,10 +46,7 @@ namespace Utility
                 HttpOnly = false
             };
 
-            if (expireTime.HasValue)
-                option.Expires = expireTime.Value;
-            else
-                option.Expires = DateTime.Now.AddMilliseconds(10);
+            option.Expires = expireTime.HasValue ? expireTime.Value : (DateTimeOffset?)DateTime.Now.AddMilliseconds(10);
 
             ctx.Response.Cookies.Append(key, value, option);
         }
@@ -66,7 +64,9 @@ namespace Utility
         public static async Task<string> GetRawBodyStringAsync(this HttpContext ctx, Encoding encoding = null)
         {
             if (encoding == null)
+            {
                 encoding = Encoding.UTF8;
+            }
 
             using var reader = new StreamReader(ctx.Request.Body, encoding);
             return await reader.ReadToEndAsync();
@@ -101,7 +101,7 @@ namespace Utility
 
             // Nothing to do if we don't have an "Origin:" header or if our config is missing
             // the "allow-origin" directive
-            if (!ctx.Request.Headers.TryGetValue("Origin", out StringValues originHost) || await entity.GetS("allow-origin") == null)
+            if (!ctx.Request.Headers.TryGetValue("Origin", out var originHost) || await entity.GetS("allow-origin") == null)
             {
                 return;
             }
@@ -158,17 +158,18 @@ namespace Utility
 
             // if unknown, assume not local
             if (string.IsNullOrEmpty(remoteAddress))
+            {
                 return false;
+            }
 
             // check if localhost
-            if (remoteAddress == "127.0.0.1" || remoteAddress == "::1")
+            if (remoteAddress is "127.0.0.1" or "::1")
+            {
                 return true;
+            }
 
             // compare with local address
-            if (remoteAddress == connection.LocalIpAddress.ToString())
-                return true;
-
-            return false;
+            return remoteAddress == connection.LocalIpAddress.ToString();
         }
     }
 }

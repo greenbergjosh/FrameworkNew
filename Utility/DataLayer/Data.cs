@@ -40,8 +40,8 @@ namespace Utility.DataLayer
                 _configConn = new Connection(GlobalConfigConnName, DataLayerClientFactory.DataStoreInstance(dataLayerType), connStr);
                 _commandLineArgs = commandLineArgs;
 
-                _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
-                Connections.AddOrUpdate(GlobalConfigConnName, _configConn, (key, current) => current);
+                _ = _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
+                _ = Connections.AddOrUpdate(GlobalConfigConnName, _configConn, (key, current) => current);
 
                 TraceLog(nameof(Initialize), $"{nameof(_configConn)}\r\n{JsonSerializer.Serialize(_configConn)}");
 
@@ -83,16 +83,22 @@ namespace Utility.DataLayer
         private static async Task<Entity.Entity> GetConfigRecordValue(string id, Connection configConn, string configFunc)
         {
             var confStr = await configConn.Client.CallStoredFunction(JsonSerializer.Serialize(new { InstanceId = id }), "{}", configFunc, configConn.ConnStr);
-            var c = await _entity.Parse("application/json", confStr);
+            var entity = await _entity.Parse("application/json", confStr);
 
-            return await c.GetE("Config");
+            return entity.Create(new
+            {
+                Id = await entity.GetS("Id"),
+                Name = await entity.GetS("Name"),
+                Type = await entity.GetS("Type"),
+                Config = await _entity.Parse("application/json", await entity.GetS("Config"))
+            });
         }
 
         private static async Task AddConnectionStrings(Entity.Entity connectionStrings, bool merge)
         {
             if (connectionStrings != null && connectionStrings.IsObject)
             {
-                foreach (var o in await connectionStrings.GetD<string>("@"))
+                foreach (var o in await connectionStrings.GetD<string>())
                 {
                     if (Connections.ContainsKey(o.Key) && Connections[o.Key].Id == o.Value && !merge)
                     {
@@ -106,21 +112,15 @@ namespace Utility.DataLayer
 
                     var conf = await GetConfigRecordValue(o.Value, _configConn, _configFunction);
 
-                    var dataLayerType = await conf.GetS("DataLayerType");
-                    var connectionString = await conf.GetS("ConnectionString");
+                    var dataLayerType = await conf.GetS("Config.DataLayerType");
+                    var connectionString = await conf.GetS("Config.ConnectionString");
                     var conn = Connections.GetOrAdd(o.Key, s => new Connection(o.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType), connectionString));
 
-                    foreach (var sp in await conf.GetD<string>("DataLayer"))
+                    foreach (var sp in await conf.GetD<string>("Config.DataLayer"))
                     {
-                        conn.Functions.AddOrUpdate(sp.Key, sp.Value, (key, current) =>
-                        {
-                            if (current != sp.Value && !merge)
-                            {
-                                throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Key}, with existing value: {current}, new value: {sp.Value}");
-                            }
-
-                            return sp.Value;
-                        });
+                        _ = conn.Functions.AddOrUpdate(sp.Key, sp.Value, (key, current) => current != sp.Value && !merge
+                                  ? throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Key}, with existing value: {current}, new value: {sp.Value}")
+                                  : sp.Value);
                     }
                 }
             }
@@ -152,7 +152,7 @@ namespace Utility.DataLayer
 
                 TraceLog(nameof(GetConfigs), $"Loading config {key}");
 
-                loaded.Add(key);
+                _ = loaded.Add(key);
 
                 try
                 {
@@ -208,12 +208,9 @@ namespace Utility.DataLayer
                 var conn = Connections.GetValueOrDefault(conName);
                 var sp = conn?.Functions.GetValueOrDefault(method);
 
-                if (sp.IsNullOrWhitespace())
-                {
-                    return Task.FromResult<List<Dictionary<string, object>>>(null);
-                }
-
-                return conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
+                return sp.IsNullOrWhitespace()
+                    ? Task.FromResult<List<Dictionary<string, object>>>(null)
+                    : conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
             }
             catch (Exception e)
             {
@@ -247,12 +244,9 @@ namespace Utility.DataLayer
 
                 var sp = conn.Functions.GetValueOrDefault(method);
 
-                if (sp.IsNullOrWhitespace())
-                {
-                    return Task.FromResult<string>(null);
-                }
-
-                return conn.Client.CallStoredFunction(args, payload, sp, conn.ConnStr, timeout);
+                return sp.IsNullOrWhitespace()
+                    ? Task.FromResult<string>(null)
+                    : conn.Client.CallStoredFunction(args, payload, sp, conn.ConnStr, timeout);
             }
             catch (Exception e)
             {

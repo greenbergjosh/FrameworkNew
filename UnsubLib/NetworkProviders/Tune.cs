@@ -76,7 +76,10 @@ namespace UnsubLib.NetworkProviders
 
                 return enriched;
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting campaigns from {networkName}: {url}", e);
@@ -113,7 +116,7 @@ namespace UnsubLib.NetworkProviders
         {
             var enriched = new List<Entity>();
 
-            foreach (var campaign in await campaigns.GetL("@"))
+            foreach (var campaign in await campaigns.GetL(""))
             {
                 var offerId = await campaign.GetS("NetworkCampaignId");
                 if (!tuneCampaigns.TryGetValue(offerId, out var tuneCampaign))
@@ -128,7 +131,7 @@ namespace UnsubLib.NetworkProviders
                     continue;
                 }
 
-                var serialized = await campaign.GetD<Entity>("@");
+                var serialized = await campaign.GetD<Entity>("");
 
                 serialized["UnsubFileDownloadUri"] = campaigns.Create(unsubFileDownloadUri);
 

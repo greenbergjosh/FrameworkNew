@@ -124,8 +124,6 @@
 //                ["tg_multiton_cols2"] = E.Create(new ProductionDescription(", rs_id ", null)),
 //                ["tg_multiton_index"] = E.Create(new ProductionDescription("CREATE INDEX IF NOT EXISTS ix_<<g|context://tg_tables>>_rs ON <<tg_schema_name>>.<<g|context://tg_tables>>(rs_id, rs_ts);", null)),
 
-
-
 //                // end: add_thread_group
 
 //                ["process_constants"] = E.Create(new ProductionDescription("'<<g|context://constant?value>>'::<<g|context://constant?data_type>>", "<<g|context://constant?name>>")),
@@ -150,7 +148,6 @@
 //                                            UNION
 //                                            SELECT id, ts FROM warehouse_report_sequence.""<<g|context://tbl?$>>_long_term"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>",
 //                                              null)),
-
 
 //                //period=(period)
 //                // period('period', entity)
@@ -622,7 +619,6 @@
 //            return convertedEntities;
 //        }
 
-
 //        public static async Task<Dictionary<string, string>> GenerateSql()  // Guid g
 //        {
 
@@ -735,13 +731,9 @@
 
 //            // end add_thread_group
 
-
-
 //            string s = await E.GetS("entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId");
 
 //            Entity e = await E.GetE("entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
-
-
 
 //            context["g"] = e;  // "g", Entity(g)
 //            // context://g?path    g.Get(path).Value<bool>()
@@ -754,7 +746,6 @@
 //            //Production p = new Production();
 //            //p.InstructionBody = @"context://g?thread_group_id.thread_group_type[?(@!=""multiton"")]->'multiton_cols';context://g?thread_group_id.thread_group_type[?(@!=""multiton"")]->multiton_cols;bob";
 //            //await ConditionInstruction(p);
-
 
 //            foreach (Entity rlp in await e.Get("rollups.*"))
 //            {
@@ -783,7 +774,6 @@
 //        //            yield return (previous, previous = it.Current);
 //        //    }
 //        //}
-
 
 //        public static IEnumerable<Dictionary<string, Entity>> EnumerateParallel(Dictionary<string, IEnumerable<Entity>> es)
 //        {

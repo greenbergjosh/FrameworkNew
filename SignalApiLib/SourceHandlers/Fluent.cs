@@ -71,9 +71,8 @@ namespace SignalApiLib.SourceHandlers
                 }
                 else if (token.IsArray)
                 {
-                    var mutations = (await token.GetL<Entity>("@")).Select(async p => await Mutate(p));
-                    await Task.WhenAll(mutations);
-                    payloads = mutations.Select(m => m.Result);
+                    var mutations = await (await token.GetL<Entity>("")).Select(async p => await Mutate(p));
+                    payloads = mutations;
                 }
                 else
                 {

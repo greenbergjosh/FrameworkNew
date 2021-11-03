@@ -26,7 +26,7 @@ namespace Utility.EDW.Logging
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.Get("Config.ErrSilos"))
+            foreach (var silo in await config.GetL("Config.ErrSilos"))
             {
                 endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
@@ -37,7 +37,7 @@ namespace Utility.EDW.Logging
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.Get("Config.ErrSilos"))
+            foreach (var silo in await config.GetL("Config.ErrSilos"))
             {
                 endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
@@ -45,19 +45,13 @@ namespace Utility.EDW.Logging
             return endpoints;
         }
 
-        public static Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds)
+        public static Task InitiateWalkaway(object w, string errorFilePath)
         {
             FileSystem.WriteLineToFileThreadSafe(errorFilePath, DateTime.Now + "::" + w);
             return Task.CompletedTask;
         }
 
-        public static int NextWalkawayValue(int previousValue)
-        {
-            if (previousValue == 0) return 1;
-            else if (previousValue == 1) return 5;
-            else if (previousValue == 5) return 60;
-            else return 0;
-        }
+        public static int NextWalkawayValue(int previousValue) => previousValue == 0 ? 1 : previousValue == 1 ? 5 : previousValue == 5 ? 60 : 0;
 
         public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, IReadOnlyList<IEndpoint> alreadyChosen)
         {
@@ -67,7 +61,10 @@ namespace Utility.EDW.Logging
             for (int i = rnd.Next(0, es.Count), k = 0; k < es.Count; k++)
             {
                 e = es[i];
-                if (!alreadyChosen.Contains(e) && endpoints[e].Item1) break;
+                if (!alreadyChosen.Contains(e) && endpoints[e].Item1)
+                {
+                    break;
+                }
 
                 i = (i + 1) % es.Count;
             }
@@ -95,15 +92,15 @@ namespace Utility.EDW.Logging
 
         public static async Task<ErrorSiloLoadBalancedWriter> InitializeErrorSiloLoadBalancedWriter(Entity.Entity config)
         {
-            var writeTimeoutSeconds = (await config.GetS("Config.ErrorWriteTimeout")).ParseInt() ?? 0;
-            var path = await config.GetS("Config.ErrorFilePath");
+            var writeTimeoutSeconds = await config.GetI("Config.ErrorWriteTimeout", 0);
+            var path = await config.GetS("Config.ErrorFilePath", null);
             var errorFilePath = path.IsNullOrWhitespace() ? null : Path.GetFullPath(path);
 
             return new ErrorSiloLoadBalancedWriter(60,
                 writeTimeoutSeconds,
                 async () => await InitializeEndpoints(config).ConfigureAwait(false),
                 async () => await PollEndpoints(config).ConfigureAwait(false),
-                async (object w, int timeoutSeconds) => await InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
+                async (object w, int timeoutSeconds) => await InitiateWalkaway(w, errorFilePath).ConfigureAwait(false),
                 NextWalkawayValue,
                 Selector,
                 async (object w) => await NoValid(w, errorFilePath).ConfigureAwait(false),

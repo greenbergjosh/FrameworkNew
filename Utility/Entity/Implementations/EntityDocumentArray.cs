@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace Utility.Entity.Implementations
 {
@@ -37,7 +38,7 @@ namespace Utility.Entity.Implementations
 
         public override TOut Value<TOut>() => (TOut)_array;
 
-        public override string ToString() => _array?.ToString();
+        public override string ToString() => JsonSerializer.Serialize(_array);
 
         public override int GetHashCode() => _array?.GetHashCode() ?? base.GetHashCode();
     }

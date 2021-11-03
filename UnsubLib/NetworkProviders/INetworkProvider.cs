@@ -16,12 +16,21 @@ namespace UnsubLib.NetworkProviders
         {
             var url = $"{baseUrl}";
 
-            if (!baseUrl.EndsWith("/") && !path.StartsWith("/")) url += "/";
+            if (!baseUrl.EndsWith("/") && !path.StartsWith("/"))
+            {
+                url += "/";
+            }
 
             url += path;
 
-            if (!url.Contains("?")) url += "?";
-            else url += "&";
+            if (!url.Contains("?"))
+            {
+                url += "?";
+            }
+            else
+            {
+                url += "&";
+            }
 
             if (qs?.Any() == true)
             {

@@ -30,6 +30,7 @@ namespace Utility.EDW.Queueing
             {
                 endpoints.Add(new PostingQueueSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
+
             return endpoints;
         }
 
@@ -40,18 +41,13 @@ namespace Utility.EDW.Queueing
             {
                 endpoints.Add(new PostingQueueSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
+
             return endpoints;
         }
 
-        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds) => await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
+        public static async Task InitiateWalkaway(object w, string errorFilePath) => await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
 
-        public static int NextWalkawayValue(int previousValue)
-        {
-            if (previousValue == 0) return 1;
-            else if (previousValue == 1) return 5;
-            else if (previousValue == 5) return 60;
-            else return 0;
-        }
+        public static int NextWalkawayValue(int previousValue) => previousValue == 0 ? 1 : previousValue == 1 ? 5 : previousValue == 5 ? 60 : 0;
 
         public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, IReadOnlyList<IEndpoint> alreadyChosen)
         {
@@ -61,9 +57,14 @@ namespace Utility.EDW.Queueing
             for (int i = rnd.Next(0, es.Count), k = 0; k < es.Count; k++)
             {
                 e = es[i];
-                if (!alreadyChosen.Contains(e) && endpoints[e].Item1) break;
+                if (!alreadyChosen.Contains(e) && endpoints[e].Item1)
+                {
+                    break;
+                }
+
                 i = (i + 1) % es.Count;
             }
+
             return e;
         }
 
@@ -79,14 +80,14 @@ namespace Utility.EDW.Queueing
 
         public static async Task<PostingQueueSiloLoadBalancedWriter> InitializePostingQueueSiloLoadBalancedWriter(Entity.Entity config)
         {
-            var writeTimeoutSeconds = (await config.GetS("Config.PostingQueueWriteTimeout")).ParseInt() ?? 0;
-            var dataFilePath = await config.GetS("Config.PostingQueueDataFilePath");
-            var errorFilePath = await config.GetS("Config.PostingQueueErrorFilePath");
+            var writeTimeoutSeconds = await config.GetI("Config.PostingQueueWriteTimeout", 0);
+            var dataFilePath = await config.GetS("Config.PostingQueueDataFilePath", null);
+            var errorFilePath = await config.GetS("Config.PostingQueueErrorFilePath", null);
 
             return new PostingQueueSiloLoadBalancedWriter(60, writeTimeoutSeconds,
                 async () => await InitializeEndpoints(config).ConfigureAwait(false),
                 async () => await PollEndpoints(config).ConfigureAwait(false),
-                async (object w, int timeoutSeconds) => await InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
+                async (object w, int timeoutSeconds) => await InitiateWalkaway(w, errorFilePath).ConfigureAwait(false),
                 NextWalkawayValue,
                 Selector,
                 async (object w) => await NoValid(w, dataFilePath, errorFilePath).ConfigureAwait(false),

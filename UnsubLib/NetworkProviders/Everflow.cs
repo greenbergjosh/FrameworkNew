@@ -107,7 +107,10 @@ namespace UnsubLib.NetworkProviders
                     }
                 }
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting campaigns from {networkName}: {url}", e);
@@ -161,7 +164,10 @@ namespace UnsubLib.NetworkProviders
                 await _fw.Error(_logMethod, $"Failed to get unsub for {networkName}: {url}::{respBody ?? "null"}");
                 return null;
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting unsub from {networkName}: {url}", e);

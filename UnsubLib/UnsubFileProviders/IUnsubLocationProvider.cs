@@ -11,5 +11,4 @@ namespace UnsubLib.UnsubFileProviders
         Task<bool> CanHandle(Entity network, string unsubRelationshipId, Uri uri);
         Task<(string url, IDictionary<string, string> postData)> GetFileUrl(Entity network, string unsubRelationshipId, Uri uri);
     }
-
 }

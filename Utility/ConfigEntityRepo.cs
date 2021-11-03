@@ -32,7 +32,10 @@ namespace Utility
 
         public async Task<Entity.Entity> GetEntity(string type, string name)
         {
-            if (type.IsNullOrWhitespace() || name.IsNullOrWhitespace()) return null;
+            if (type.IsNullOrWhitespace() || name.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
             if (!_entityIds.TryGetValue($"{type}:{name}", out var id) || _entities.TryGetValue(id, out var result))
             {
@@ -62,8 +65,8 @@ namespace Utility
                 return null;
             }
 
-            _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
-            _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
+            _ = _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
+            _ = _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
 
             return entity;
         }

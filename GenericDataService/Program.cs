@@ -48,10 +48,7 @@ namespace GenericDataService
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseKestrel(options =>
-                {
-                    options.Limits.MinRequestBodyDataRate = new MinDataRate(240, TimeSpan.FromSeconds(30));
-                })
+                .UseKestrel(options => options.Limits.MinRequestBodyDataRate = new MinDataRate(240, TimeSpan.FromSeconds(30)))
                 .UseIIS()
                 .UseStartup<Startup>();
     }

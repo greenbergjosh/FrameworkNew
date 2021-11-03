@@ -43,34 +43,30 @@ namespace Utility.Crypto
                 aes.GenerateIV();
                 iv = aes.IV;
 
-                using (var encrypter = aes.CreateEncryptor(cryptKeyBytes, iv))
-                using (var cipherStream = new MemoryStream())
+                using var encrypter = aes.CreateEncryptor(cryptKeyBytes, iv);
+                using var cipherStream = new MemoryStream();
+                using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
+                using (var binaryWriter = new BinaryWriter(cryptoStream))
                 {
-                    using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
-                    using (var binaryWriter = new BinaryWriter(cryptoStream))
-                    {
-                        binaryWriter.Write(Encoding.Unicode.GetBytes(message));
-                    }
-
-                    cipherText = cipherStream.ToArray();
+                    binaryWriter.Write(Encoding.Unicode.GetBytes(message));
                 }
+
+                cipherText = cipherStream.ToArray();
             }
 
-            using (var hmac = new HMACSHA256(authKeyBytes))
-            using (var encryptedStream = new MemoryStream())
+            using var hmac = new HMACSHA256(authKeyBytes);
+            using var encryptedStream = new MemoryStream();
+            using (var binaryWriter = new BinaryWriter(encryptedStream))
             {
-                using (var binaryWriter = new BinaryWriter(encryptedStream))
-                {
-                    binaryWriter.Write(iv);
-                    binaryWriter.Write(cipherText);
-                    binaryWriter.Flush();
+                binaryWriter.Write(iv);
+                binaryWriter.Write(cipherText);
+                binaryWriter.Flush();
 
-                    var tag = hmac.ComputeHash(encryptedStream.ToArray());
-                    binaryWriter.Write(tag);
-                }
-
-                return Convert.ToBase64String(encryptedStream.ToArray());
+                var tag = hmac.ComputeHash(encryptedStream.ToArray());
+                binaryWriter.Write(tag);
             }
+
+            return Convert.ToBase64String(encryptedStream.ToArray());
         }
 
         public static string SimpleDecrypt(string encrypted, string cryptKey, string authKey)
@@ -97,61 +93,55 @@ namespace Utility.Crypto
 
             var encryptedMessage = Convert.FromBase64String(encrypted);
 
-            using (var hmac = new HMACSHA256(authKeyBytes))
+            using var hmac = new HMACSHA256(authKeyBytes);
+            var sentTag = new byte[hmac.HashSize / 8];
+
+            var calcTag = hmac.ComputeHash(encryptedMessage, 0, encryptedMessage.Length - sentTag.Length);
+            var ivLength = blockBitSize / 8;
+
+            //if message length is to small just return null
+            if (encryptedMessage.Length < sentTag.Length + ivLength)
             {
-                var sentTag = new byte[hmac.HashSize / 8];
-
-                var calcTag = hmac.ComputeHash(encryptedMessage, 0, encryptedMessage.Length - sentTag.Length);
-                var ivLength = (blockBitSize / 8);
-
-                //if message length is to small just return null
-                if (encryptedMessage.Length < sentTag.Length + ivLength)
-                {
-                    return null;
-                }
-
-                Array.Copy(encryptedMessage, encryptedMessage.Length - sentTag.Length, sentTag, 0, sentTag.Length);
-
-                //Compare Tag with constant time comparison
-                var compare = 0;
-                for (var i = 0; i < sentTag.Length; i++)
-                {
-                    compare |= sentTag[i] ^ calcTag[i];
-                }
-
-                //if message doesn't authenticate return null
-                if (compare != 0)
-                {
-                    return null;
-                }
-
-                using (var aes = Aes.Create())
-                {
-                    aes.KeySize = keyBitSize;
-                    aes.BlockSize = blockBitSize;
-                    aes.Padding = PaddingMode.PKCS7;
-                    aes.Mode = CipherMode.CBC;
-
-                    var iv = new byte[ivLength];
-                    Array.Copy(encryptedMessage, 0, iv, 0, iv.Length);
-
-                    using (var decrypter = aes.CreateDecryptor(cryptKeyBytes, iv))
-                    using (var plainTextStream = new MemoryStream())
-                    {
-                        using (var decrypterStream = new CryptoStream(plainTextStream, decrypter, CryptoStreamMode.Write))
-                        using (var binaryWriter = new BinaryWriter(decrypterStream))
-                        {
-                            binaryWriter.Write(
-                                encryptedMessage,
-                                iv.Length,
-                                encryptedMessage.Length - iv.Length - sentTag.Length
-                            );
-                        }
-
-                        return Encoding.Unicode.GetString(plainTextStream.ToArray());
-                    }
-                }
+                return null;
             }
+
+            Array.Copy(encryptedMessage, encryptedMessage.Length - sentTag.Length, sentTag, 0, sentTag.Length);
+
+            //Compare Tag with constant time comparison
+            var compare = 0;
+            for (var i = 0; i < sentTag.Length; i++)
+            {
+                compare |= sentTag[i] ^ calcTag[i];
+            }
+
+            //if message doesn't authenticate return null
+            if (compare != 0)
+            {
+                return null;
+            }
+
+            using var aes = Aes.Create();
+            aes.KeySize = keyBitSize;
+            aes.BlockSize = blockBitSize;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.Mode = CipherMode.CBC;
+
+            var iv = new byte[ivLength];
+            Array.Copy(encryptedMessage, 0, iv, 0, iv.Length);
+
+            using var decrypter = aes.CreateDecryptor(cryptKeyBytes, iv);
+            using var plainTextStream = new MemoryStream();
+            using (var decrypterStream = new CryptoStream(plainTextStream, decrypter, CryptoStreamMode.Write))
+            using (var binaryWriter = new BinaryWriter(decrypterStream))
+            {
+                binaryWriter.Write(
+                    encryptedMessage,
+                    iv.Length,
+                    encryptedMessage.Length - iv.Length - sentTag.Length
+                );
+            }
+
+            return Encoding.Unicode.GetString(plainTextStream.ToArray());
         }
     }
 }

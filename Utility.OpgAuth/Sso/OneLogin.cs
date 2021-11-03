@@ -32,7 +32,6 @@ namespace Utility.OpgAuth.Sso
                         ("Authorization", "Bearer " + token)
                     });
 
-
                 var ge = await authData.Parse("application/json", body);
 
                 if (!success)

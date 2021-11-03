@@ -44,7 +44,7 @@ namespace QueueProcessorLib
             }
             catch (Exception ex)
             {
-                _fw?.Error(nameof(Config), ex.UnwrapForLog());
+                _ = (_fw?.Error(nameof(Config), ex.UnwrapForLog()));
                 throw;
             }
         }
@@ -139,7 +139,7 @@ namespace QueueProcessorLib
         {
             var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            foreach (var item in await data.GetL("@"))
+            foreach (var item in await data.GetL(""))
             {
                 yield return new QueueItem(
                     long.Parse(await item.GetS("id")),
@@ -154,7 +154,7 @@ namespace QueueProcessorLib
         {
             var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            foreach (var item in await data.GetL("@"))
+            foreach (var item in await data.GetL(""))
             {
                 yield return new QueueItem(
                     long.Parse(await item.GetS("id")),
@@ -181,7 +181,7 @@ namespace QueueProcessorLib
                 // the rest of the QueueItems for this Discriminator
                 if (processedSuccessfully && queueItem.RetryNumber > -1)
                 {
-                    await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", JsonSerializer.Serialize(new
+                    _ = await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", JsonSerializer.Serialize(new
                     {
                         queueItem.Discriminator
                     }));
@@ -209,7 +209,7 @@ namespace QueueProcessorLib
                 await _fw.Log("QueueProcessor.SendToRetryQueue", $"Discriminator {queueItem.Discriminator} has exhausted retries and will no longer be processed.  QueueItem.Id: {queueItem.Id}");
             }
 
-            await Data.CallFn("QueueProcessor", "RetryQueueMerge", JsonSerializer.Serialize(new
+            _ = await Data.CallFn("QueueProcessor", "RetryQueueMerge", JsonSerializer.Serialize(new
             {
                 QueueItemId = queueItem.Id,
                 queueItem.Discriminator,
@@ -226,14 +226,11 @@ namespace QueueProcessorLib
         /// <.summary>
         private static DateTime GetNextRetryDate(int retryNumber, DateTime timeFrom) => timeFrom.Add(TimeSpan.FromSeconds(Math.Exp(retryNumber) * 10));
 
-        private static Func<object, Task> GetQueueItemOutputWriter(QueueItem queueItem) => (output) =>
-                                                                                              {
-                                                                                                  return Data.CallFn("QueueProcessor", "QueueItemOutputAdd", JsonSerializer.Serialize(new
-                                                                                                  {
-                                                                                                      QueueItemId = queueItem.Id,
-                                                                                                      Output = output
-                                                                                                  }));
-                                                                                              };
+        private static Func<object, Task> GetQueueItemOutputWriter(QueueItem queueItem) => (output) => Data.CallFn("QueueProcessor", "QueueItemOutputAdd", JsonSerializer.Serialize(new
+        {
+            QueueItemId = queueItem.Id,
+            Output = output
+        }));
 
         public async Task ProcessRequest(HttpContext context)
         {

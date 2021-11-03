@@ -14,12 +14,7 @@ namespace Utility.Entity.QueryLanguage
         public static Query Parse(Entity entity, ReadOnlySpan<char> query)
         {
             var index = 0;
-            if (!TryParse(entity, query, ref index, false, out var value, out var exception))
-            {
-                throw exception;
-            }
-
-            return value;
+            return !TryParse(entity, query, ref index, false, out var value, out var exception) ? throw exception : value;
         }
 
         public static bool TryParse(Entity entity, ReadOnlySpan<char> query, out Query value)
@@ -50,6 +45,7 @@ namespace Utility.Entity.QueryLanguage
                     {
                         break;
                     }
+
                     value = null;
                     exception = new QueryParseException(index, $"Could not identify selector at index {index}");
                     return false;
@@ -133,12 +129,7 @@ namespace Utility.Entity.QueryLanguage
                 current = query[index++];
             }
 
-            if (current != ']')
-            {
-                return new ErrorSelector($"Expected ']' or ',' near position {index}");
-            }
-
-            return new IndexSelector(indexes);
+            return current != ']' ? new ErrorSelector($"Expected ']' or ',' near position {index}") : new IndexSelector(indexes);
         }
 
         private static ISelector AddLocalNode(ref int index)
@@ -160,6 +151,7 @@ namespace Utility.Entity.QueryLanguage
                     {
                         index++;
                     }
+
                     return new NestedDescentSelector();
                 }
                 else if (slice.StartsWith(".$ref"))
@@ -240,11 +232,13 @@ namespace Utility.Entity.QueryLanguage
         }
 
         private static bool IsValidForPropertyName(char ch) =>
+#pragma warning disable IDE0078 // Use pattern matching
             (ch >= 'a' && ch <= 'z') ||
             (ch >= 'A' && ch <= 'Z') ||
             (ch >= '0' && ch <= '9') ||
             ch == '_' || ch == '-' ||
             (ch >= 0x80 && ch < 0x10FFFF);
+#pragma warning restore IDE0078 // Use pattern matching
 
         private static bool ParseIndex(Entity entity, ReadOnlySpan<char> query, ref int index, out IIndexExpression indexExpression)
         {

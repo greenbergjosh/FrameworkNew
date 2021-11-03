@@ -98,6 +98,7 @@ namespace UnsubLib.UnsubFileProviders
                                 bucket = parts[1];
                                 break;
                             }
+
                             line = sr.ReadLine();
                         }
                     }

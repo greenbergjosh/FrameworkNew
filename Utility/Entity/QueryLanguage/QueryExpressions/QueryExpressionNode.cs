@@ -40,7 +40,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
             if (_query != null)
             {
-                var result = await entity.Evaluate(_query);
+                var result = await entity.Get(_query);
                 // don't set _value; need to always eval
                 return result.SingleOrDefault() ?? Entity.Undefined;
             }
@@ -71,6 +71,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
                     node = null;
                     return false;
                 }
+
                 node = new QueryExpressionNode(singleValue, Operators.Operators.Not, null);
                 return true;
             }
@@ -107,30 +108,15 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
             return asString;
         }
 
-        private QueryExpressionType GetOutputType()
-        {
-            if (_value != null)
-            {
-                return GetValueType();
-            }
-
-            if (_query != null)
-            {
-                return QueryExpressionType.InstanceDependent;
-            }
-
-            if (_left.OutputType == QueryExpressionType.Invalid || _right?.OutputType == QueryExpressionType.Invalid)
-            {
-                return QueryExpressionType.Invalid;
-            }
-
-            if (_left.OutputType == QueryExpressionType.InstanceDependent || _right?.OutputType == QueryExpressionType.InstanceDependent)
-            {
-                return QueryExpressionType.InstanceDependent;
-            }
-
-            return Operator?.GetOutputType(_left!, _right!) ?? GetValueType();
-        }
+        private QueryExpressionType GetOutputType() => _value != null
+                ? GetValueType()
+                : _query != null
+                ? QueryExpressionType.InstanceDependent
+                : _left.OutputType == QueryExpressionType.Invalid || _right?.OutputType == QueryExpressionType.Invalid
+                ? QueryExpressionType.Invalid
+                : _left.OutputType == QueryExpressionType.InstanceDependent || _right?.OutputType == QueryExpressionType.InstanceDependent
+                ? QueryExpressionType.InstanceDependent
+                : Operator?.GetOutputType(_left!, _right!) ?? GetValueType();
 
         private QueryExpressionType GetValueType() => _value.ValueType switch
         {

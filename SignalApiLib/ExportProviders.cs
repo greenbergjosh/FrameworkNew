@@ -13,14 +13,17 @@ namespace SignalApiLib.ExportProviders
     public class Console : IPostingQueueProvider
     {
         private const string PostingQueueKey = "WebPost";
-        private readonly Dictionary<string, string> _sourceMap = new Dictionary<string, string>
+        private readonly Dictionary<string, string> _sourceMap = new()
         {
             { "fluent", "1d6b7dd9-6d97-44b8-a795-9d0e5e72a01f" }
         };
 
         public PostingQueueEntry GetPostingQueueData(string feedSource, SourceData d)
         {
-            if (feedSource.IsNullOrWhitespace()) return null;
+            if (feedSource.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
             var domainId = _sourceMap.GetValueOrDefault(feedSource);
 
@@ -40,9 +43,12 @@ namespace SignalApiLib.ExportProviders
         //    user_ip = sd.ip;
         //}
 
-        public string BuildConsolePostBody(string reference, ConsolePostData body, Dictionary<string, object> overrideConsoleHeaders = null, Dictionary<string, string> additionalHttpHeaders = null)
+        public static string BuildConsolePostBody(string reference, ConsolePostData body, Dictionary<string, object> overrideConsoleHeaders = null, Dictionary<string, string> additionalHttpHeaders = null)
         {
-            if (body.domain_id.IsNullOrWhitespace()) throw new Exception("ConsolePostBody has empty domain_id");
+            if (body.domain_id.IsNullOrWhitespace())
+            {
+                throw new Exception("ConsolePostBody has empty domain_id");
+            }
 
             var httpHeaders = new Dictionary<string, string>
             {
@@ -54,7 +60,10 @@ namespace SignalApiLib.ExportProviders
             {
                 foreach (var h in additionalHttpHeaders)
                 {
-                    if (!httpHeaders.ContainsKey(h.Key)) httpHeaders.Add(h.Key, h.Value);
+                    if (!httpHeaders.ContainsKey(h.Key))
+                    {
+                        httpHeaders.Add(h.Key, h.Value);
+                    }
                 }
             }
 
@@ -68,8 +77,14 @@ namespace SignalApiLib.ExportProviders
             {
                 foreach (var h in overrideConsoleHeaders)
                 {
-                    if (consoleHeaders.ContainsKey(h.Key)) consoleHeaders[h.Key] = h.Value;
-                    else consoleHeaders.Add(h.Key, h.Value);
+                    if (consoleHeaders.ContainsKey(h.Key))
+                    {
+                        consoleHeaders[h.Key] = h.Value;
+                    }
+                    else
+                    {
+                        consoleHeaders.Add(h.Key, h.Value);
+                    }
                 }
             }
 
@@ -87,6 +102,5 @@ namespace SignalApiLib.ExportProviders
                 }
             });
         }
-
     }
 }

@@ -64,7 +64,7 @@ namespace Utility.Entity.Implementations
         {
             if (_value.ValueKind == JsonValueKind.Object && _value.TryGetProperty("$ref", out var refProperty))
             {
-                foreach (var entity in await Entity.Evaluate(refProperty.GetString()))
+                foreach (var entity in await Entity.Get(refProperty.GetString()))
                 {
                     yield return entity;
                 }
@@ -87,12 +87,9 @@ namespace Utility.Entity.Implementations
         {
             var targetType = typeof(T);
 
-            if (!_valueMap.TryGetValue(targetType, out var getter))
-            {
-                throw new Exception($"Unable to convert value to type {targetType}");
-            }
-
-            return (T)getter(_value);
+            return !_valueMap.TryGetValue(targetType, out var getter)
+                ? throw new Exception($"Unable to convert value to type {targetType}")
+                : (T)getter(_value);
         }
         #endregion
 

@@ -16,6 +16,7 @@ namespace Utility.DataLayer
             {
                 builder.ApplicationName = Path.GetFileName(Directory.GetCurrentDirectory());
             }
+
             return builder.ToString();
         }
 
@@ -26,7 +27,6 @@ namespace Utility.DataLayer
 
             cn.Open();
             var sql = $"SELECT * from {sproc}({parameters.Select(p => $"{p.Key} := '{p.Value}'").Join(",")})";
-
 
             await using (var cmd = new NpgsqlCommand(sql, cn) { CommandTimeout = timeout })
             {
@@ -57,6 +57,7 @@ namespace Utility.DataLayer
                     results.Add(row);
                 }
             }
+
             await cn.CloseAsync();
 
             return results;
@@ -71,14 +72,15 @@ namespace Utility.DataLayer
                 cn.Open();
                 await using (var cmd = new NpgsqlCommand($"SELECT {sproc}(@Args, @Payload) /* {args.Replace("/*", "/ *").Replace("*/", "* /")} */", cn) { CommandTimeout = timeout })
                 {
-                    cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args.IfNullOrWhitespace(JsonWrapper.Empty));
-                    cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Text, payload ?? string.Empty);
+                    _ = cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args.IfNullOrWhitespace(JsonWrapper.Empty));
+                    _ = cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Text, payload ?? string.Empty);
                     cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
-                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
+                    _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                     var res = cmd.Parameters["@Return"].Value;
 
                     outval = res == DBNull.Value ? null : (string)res;
                 }
+
                 await cn.CloseAsync();
             }
 
@@ -94,10 +96,10 @@ namespace Utility.DataLayer
                 await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
                 cn.Open();
                 await using var cmd = new NpgsqlCommand($"SELECT edw.submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout };
-                cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, payload);
+                _ = cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, payload);
                 cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;
                 await cn.CloseAsync();
             }
@@ -123,15 +125,15 @@ namespace Utility.DataLayer
                 await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
                 cn.Open();
                 await using var cmd = new NpgsqlCommand($"SELECT error_log.insert_error_log(@sequence, @severity, @process, @method, @descriptor, @message)", cn) { CommandTimeout = timeout };
-                cmd.Parameters.AddWithValue("@sequence", NpgsqlTypes.NpgsqlDbType.Integer, sequence);
-                cmd.Parameters.AddWithValue("@severity", NpgsqlTypes.NpgsqlDbType.Integer, severity);
-                cmd.Parameters.AddWithValue("@process", NpgsqlTypes.NpgsqlDbType.Text, process);
-                cmd.Parameters.AddWithValue("@method", NpgsqlTypes.NpgsqlDbType.Text, method);
-                cmd.Parameters.AddWithValue("@descriptor", NpgsqlTypes.NpgsqlDbType.Text, descriptor);
-                cmd.Parameters.AddWithValue("@message", NpgsqlTypes.NpgsqlDbType.Text, message);
+                _ = cmd.Parameters.AddWithValue("@sequence", NpgsqlTypes.NpgsqlDbType.Integer, sequence);
+                _ = cmd.Parameters.AddWithValue("@severity", NpgsqlTypes.NpgsqlDbType.Integer, severity);
+                _ = cmd.Parameters.AddWithValue("@process", NpgsqlTypes.NpgsqlDbType.Text, process);
+                _ = cmd.Parameters.AddWithValue("@method", NpgsqlTypes.NpgsqlDbType.Text, method);
+                _ = cmd.Parameters.AddWithValue("@descriptor", NpgsqlTypes.NpgsqlDbType.Text, descriptor);
+                _ = cmd.Parameters.AddWithValue("@message", NpgsqlTypes.NpgsqlDbType.Text, message);
                 cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;
                 await cn.CloseAsync();
             }
@@ -159,12 +161,12 @@ namespace Utility.DataLayer
                 await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
                 cn.Open();
                 await using var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout };
-                cmd.Parameters.AddWithValue("@post_type", NpgsqlTypes.NpgsqlDbType.Text, postType);
-                cmd.Parameters.AddWithValue("@post_date", NpgsqlTypes.NpgsqlDbType.TimestampTz, postDate);
-                cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
+                _ = cmd.Parameters.AddWithValue("@post_type", NpgsqlTypes.NpgsqlDbType.Text, postType);
+                _ = cmd.Parameters.AddWithValue("@post_date", NpgsqlTypes.NpgsqlDbType.TimestampTz, postDate);
+                _ = cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
                 cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;
                 await cn.CloseAsync();
             }
@@ -192,10 +194,10 @@ namespace Utility.DataLayer
                 await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
                 cn.Open();
                 await using var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue_bulk(@payload)", cn) { CommandTimeout = timeout };
-                cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
+                _ = cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
                 cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;
                 await cn.CloseAsync();
             }
@@ -213,6 +215,5 @@ namespace Utility.DataLayer
 
             return outval;
         }
-
     }
 }

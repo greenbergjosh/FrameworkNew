@@ -202,12 +202,12 @@ namespace Utility.Dataflow
                 var predicate = predicateMaker.Invoke(null, new object[] { predicateCode, rw });
 
                 var linkTo = typeof(DataflowBlock).GetMethods(BindingFlags.Public | BindingFlags.Static).Where(mi => mi.Name == nameof(DataflowBlock.LinkTo) && mi.GetParameters().Length == 4).Single().MakeGenericMethod(source.outputType);
-                linkTo.Invoke(null, new object[] { source.block, target.block, dataflowLinkOptions, predicate });
+                _ = linkTo.Invoke(null, new object[] { source.block, target.block, dataflowLinkOptions, predicate });
             }
             else
             {
                 var linkTo = sourceBlockType.GetMethod(nameof(DataflowBlock.LinkTo), new[] { targetBlockType, typeof(DataflowLinkOptions) });
-                linkTo.Invoke(source.block, new object[] { target.block, dataflowLinkOptions });
+                _ = linkTo.Invoke(source.block, new object[] { target.block, dataflowLinkOptions });
             }
         }
 

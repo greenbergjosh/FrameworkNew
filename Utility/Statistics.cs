@@ -32,7 +32,7 @@ namespace Utility
         {
             Name = name;
 
-            Weight = instance.Count();
+            Weight = instance.Count;
 
             var completed = instance.Where(s => s.IsCompleted).ToArray();
 
@@ -51,8 +51,8 @@ namespace Utility
 
     public class StatsProvider : BaseStatsProvider
     {
-        private ConcurrentDictionary<string, List<StatInstance>> _stats = new ConcurrentDictionary<string, List<StatInstance>>();
-        private readonly object _locker = new object();
+        private ConcurrentDictionary<string, List<StatInstance>> _stats = new();
+        private readonly object _locker = new();
         private DateTime _lastCleaned = DateTime.MinValue;
 
         private void CleanUp()
@@ -118,13 +118,12 @@ namespace Utility
 
     public class NullStatsProvider : BaseStatsProvider
     {
-        private static readonly NullStatInstance NullStat = new NullStatInstance();
+        private static readonly NullStatInstance NullStat = new();
 
         public override IStatInstance StartNewInstance(string name, TimeSpan timeToLive) => NullStat;
 
         public override IEnumerable<StatsResult> GetResults() => new List<StatsResult>();
     }
-
 
     public class NullStatInstance : IStatInstance
     {
@@ -132,11 +131,11 @@ namespace Utility
 
         public void Completed() { }
 
-        public TimeSpan GetElapsed() => default(TimeSpan);
+        public TimeSpan GetElapsed() => default;
 
-        public void Start() { }
+        public static void Start() { }
 
-        public bool IsCompleted => true;
+        public static bool IsCompleted => true;
     }
 
     #endregion

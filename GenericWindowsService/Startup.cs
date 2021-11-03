@@ -19,9 +19,7 @@ namespace GenericWindowsService
 
         public static void ConfigureServices(IServiceCollection services)
         {
-            _ = services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
+            _ = services.AddCors(options => options.AddPolicy("CorsPolicy",
                     builder => builder
                     .AllowAnyMethod()
                     .AllowAnyHeader()
@@ -29,9 +27,8 @@ namespace GenericWindowsService
                     // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio 
                     // We don't want a "*", because no browser supports that.  The lambda below returns the origin
                     // domain explicitly, which is what we were doing before the upgrade above.
-                    .SetIsOriginAllowed(x => { return true; })
-                    );
-            })
+                    .SetIsOriginAllowed(x => true)
+                    ))
             .Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -61,29 +58,24 @@ namespace GenericWindowsService
             {
                 if (env.IsDevelopment())
                 {
-                    app.UseDeveloperExceptionPage();
+                    _ = app.UseDeveloperExceptionPage();
                 }
 
                 AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionEventHandler;
 
                 TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
 
-                applicationLifetime.ApplicationStopping.Register(OnShutdown);
+                _ = applicationLifetime.ApplicationStopping.Register(OnShutdown);
 
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Setting static files path..." + Environment.NewLine);
 
-                if (!Program.WwwRootPath.IsNullOrWhitespace())
-                {
-                    app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(Program.WwwRootPath) });
-                }
-                else
-                {
-                    app.UseStaticFiles();
-                }
+                _ = !Program.WwwRootPath.IsNullOrWhitespace()
+                    ? app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(Program.WwwRootPath) })
+                    : app.UseStaticFiles();
 
-                app.UseCors("CorsPolicy");
+                _ = app.UseCors("CorsPolicy");
 
-                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                _ = app.UseForwardedHeaders(new ForwardedHeadersOptions
                 {
                     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                 });
@@ -124,6 +116,5 @@ namespace GenericWindowsService
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuration failed {e.UnwrapForLog()} {Environment.NewLine}");
             }
         }
-
     }
 }

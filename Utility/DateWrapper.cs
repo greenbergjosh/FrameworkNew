@@ -7,7 +7,7 @@ namespace Utility
     {
         public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
         {
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            var dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
             dtDateTime = dtDateTime.AddMilliseconds(unixTimeStamp);
             return dtDateTime;
         }
@@ -16,7 +16,7 @@ namespace Utility
                    new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).Milliseconds;
 
         public static Dictionary<string, int> MonthFullNameToNumber =
-            new Dictionary<string, int>()
+            new()
             {
                 {"January" , 1},
                 {"February", 2},

@@ -44,7 +44,7 @@ namespace SignalApiLib.SourceHandlers
 
                 if (await res?.GetS("result") != "success")
                 {
-                    await _fw.Error($"{sourceStr}.{nameof(HandleRequest)}", $"DB write failed. Response: {await res?.GetS("@") ?? "null"}\r\nBody: {requestFromPost}");
+                    await _fw.Error($"{sourceStr}.{nameof(HandleRequest)}", $"DB write failed. Response: {await res?.GetS("") ?? "null"}\r\nBody: {requestFromPost}");
                 }
 
                 return JsonSerializer.Serialize(new { Result = "Success" });
@@ -55,6 +55,5 @@ namespace SignalApiLib.SourceHandlers
                 throw new Exception("Could not process request");
             }
         }
-
     }
 }

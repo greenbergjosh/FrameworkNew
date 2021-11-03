@@ -64,7 +64,7 @@ namespace Utility
                     },
                     Retriever: async (entity, uri) => uri.Scheme switch
                     {
-                        "config" => (await fw.Entities.GetEntity(Guid.Parse(uri.Host)), UnescapeQueryString(uri)),
+                        "config" => (new[] { await fw.Entities.GetEntity(Guid.Parse(uri.Host)) }, UnescapeQueryString(uri)),
                         _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                     }
                 ));
@@ -79,11 +79,11 @@ namespace Utility
 
                 fw.Entities = new ConfigEntityRepo(fw.Entity, Data.GlobalConfigConnName);
                 var scripts = new List<ScriptDescriptor>();
-                var scriptsPath = await fw.StartupConfiguration.GetS("Config.RoslynScriptsPath");
+                var scriptsPath = await fw.StartupConfiguration.GetAsS("Config.RoslynScriptsPath");
 
                 // Yes, GetB can be used to pull a boolean, but that defaults to false
-                fw.TraceLogging = (await fw.StartupConfiguration.GetS("Config.EnableTraceLogging")).ParseBool() ?? true;
-                fw.TraceToConsole = (await fw.StartupConfiguration.GetB("Config.TraceToConsole")) || Debugger.IsAttached;
+                fw.TraceLogging = (await fw.StartupConfiguration.GetAsS("Config.EnableTraceLogging")).ParseBool() ?? true;
+                fw.TraceToConsole = (await fw.StartupConfiguration.GetB("Config.TraceToConsole", false)) || Debugger.IsAttached;
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
@@ -103,7 +103,10 @@ namespace Utility
                         Debug.WriteLine($"{DateTime.Now}: {method} {descriptor} {message}");
 #endif
 
-                        if (fw.TraceToConsole) Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{severity}\t{descriptor}\t{method}\t{message}");
+                        if (fw.TraceToConsole)
+                        {
+                            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{severity}\t{descriptor}\t{method}\t{message}");
+                        }
 
                         if (!fw.TraceLogging && descriptor == ErrorDescriptor.Trace)
                         {
@@ -120,7 +123,6 @@ namespace Utility
                 File.AppendAllText($"FrameworkStartupError-{DateTime.Now:yyyyMMddHHmmss}", $@"{DateTime.Now}::{ex.UnwrapForLog()}" + Environment.NewLine);
                 throw;
             }
-
         }
 
         private FrameworkWrapper()

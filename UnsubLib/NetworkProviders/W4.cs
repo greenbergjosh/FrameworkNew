@@ -51,14 +51,17 @@ namespace UnsubLib.NetworkProviders
                         var results = (await data.GetL("results")).ToList();
 
                         if (!results.Any())
+                        {
                             break;
+                        }
 
                         allCampaigns.AddRange(results);
                         offset += results.Count;
 
                         if (results.Count < limit)
+                        {
                             break;
-
+                        }
                     } while (true);
 
                     await _fw.Log(_logMethod, $"Retrieved campaigns from {networkName}");

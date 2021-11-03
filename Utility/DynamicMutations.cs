@@ -37,7 +37,10 @@ namespace Utility
             var result = constructor();
             var errors = new List<string>();
 
-            if (KnownTypeInfo.ContainsKey(typeof(TResult))) targetProperties = KnownTypeInfo[typeof(TResult)];
+            if (KnownTypeInfo.ContainsKey(typeof(TResult)))
+            {
+                targetProperties = KnownTypeInfo[typeof(TResult)];
+            }
             else
             {
                 targetProperties = typeof(TResult).GetProperties(BindingFlags.Instance | BindingFlags.Public);
@@ -52,7 +55,10 @@ namespace Utility
                 {
                     var spl = p.Split('.', StringSplitOptions.RemoveEmptyEntries);
 
-                    if (spl.Length != targetSplit.Length) valid = false;
+                    if (spl.Length != targetSplit.Length)
+                    {
+                        valid = false;
+                    }
 
                     return new
                     {
@@ -96,8 +102,14 @@ namespace Utility
                 {
                     MutationConfig conf = null;
 
-                    if (mutationConfig.ContainsKey(pi.Name)) conf = mutationConfig[pi.Name];
-                    else if (source.ContainsKey(pi.Name)) conf = new MutationConfig() { Type = MutationConfig.MutationType.Standard, JsonPropertyNames = new[] { pi.Name } };
+                    if (mutationConfig.ContainsKey(pi.Name))
+                    {
+                        conf = mutationConfig[pi.Name];
+                    }
+                    else if (source.ContainsKey(pi.Name))
+                    {
+                        conf = new MutationConfig() { Type = MutationConfig.MutationType.Standard, JsonPropertyNames = new[] { pi.Name } };
+                    }
 
                     if (conf != null)
                     {
@@ -134,9 +146,7 @@ namespace Utility
         {
             var res = source.TryMutateTo(constructor, mutationConfig);
 
-            if (res.errors.Any()) throw new Exception($"Mutation errors:\r\n{res.errors.Join("\r\n\r\n")}");
-
-            return res.result;
+            return res.errors.Any() ? throw new Exception($"Mutation errors:\r\n{res.errors.Join("\r\n\r\n")}") : res.result;
         }
 
         public static TResult MutateTo<TResult>(this JObject source, IDictionary<string, MutationConfig> mutationConfig)
@@ -144,10 +154,7 @@ namespace Utility
         {
             var res = source.TryMutateTo(() => new TResult(), mutationConfig);
 
-            if (res.errors.Any()) throw new Exception($"Mutation errors:\r\n{res.errors.Join("\r\n\r\n")}");
-
-            return res.result;
+            return res.errors.Any() ? throw new Exception($"Mutation errors:\r\n{res.errors.Join("\r\n\r\n")}") : res.result;
         }
-
     }
 }

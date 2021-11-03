@@ -21,46 +21,25 @@ namespace Utility.EDW.Queueing
         {
             var res = await dataLayerClient.InsertPostingQueue(connectionString, "Audit", DateTime.Now, "{}").ConfigureAwait(false);
             var result = res.ToLower();
-            if (result == "success")
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return result == "success";
         }
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
-            string res;
-
-            if (w is PostingQueueEntry p)
-            {
-                res = await dataLayerClient.InsertPostingQueue(connectionString, p.PostType, p.PostDate, p.Payload);
-            }
-            else if (w is IEnumerable<PostingQueueEntry> c)
-            {
-                res = await dataLayerClient.BulkInsertPostingQueue(connectionString, JsonConvert.SerializeObject(c));
-            }
-            else
-            {
-                throw new Exception($"Invalid posting queue payload type ${w?.GetType().FullName ?? "null"}");
-            }
-
+            var res = w is PostingQueueEntry p
+                ? await dataLayerClient.InsertPostingQueue(connectionString, p.PostType, p.PostDate, p.Payload)
+                : w is IEnumerable<PostingQueueEntry> c
+                    ? await dataLayerClient.BulkInsertPostingQueue(connectionString, JsonConvert.SerializeObject(c))
+                    : throw new Exception($"Invalid posting queue payload type ${w?.GetType().FullName ?? "null"}");
             res = res?.ToLower();
 
-            switch (res)
+            return res switch
             {
-                case "success":
-                    return LoadBalancedWriter.Result.Success;
-                case "walkaway":
-                    return LoadBalancedWriter.Result.Walkaway;
-                case "removeendpoint":
-                    return LoadBalancedWriter.Result.RemoveEndpoint;
-                default:
-                    return LoadBalancedWriter.Result.Failure;
-            }
+                "success" => LoadBalancedWriter.Result.Success,
+                "walkaway" => LoadBalancedWriter.Result.Walkaway,
+                "removeendpoint" => LoadBalancedWriter.Result.RemoveEndpoint,
+                _ => LoadBalancedWriter.Result.Failure,
+            };
         }
 
         public override bool Equals(object obj) => ((PostingQueueSiloEndpoint)obj).connectionString == connectionString;

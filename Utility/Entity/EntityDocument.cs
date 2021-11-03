@@ -99,35 +99,20 @@ namespace Utility.Entity
 
         public abstract T Value<T>();
 
-        public bool Equals(EntityDocument other)
-        {
-            if (ValueType == EntityValueType.Undefined || other?.ValueType == EntityValueType.Undefined)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            if (other is null || ValueType != other.ValueType)
-            {
-                return false;
-            }
-
-            return ValueType switch
-            {
-                EntityValueType.Array => Length == other.Length && EnumerateArrayCore().SequenceEqual(other.EnumerateArrayCore()),
-                EntityValueType.Boolean => Value<bool>() == other.Value<bool>(),
-                EntityValueType.Null => true,
-                EntityValueType.Number => Value<decimal>() == other.Value<decimal>(),
-                EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
-                EntityValueType.String => Value<string>() == other.Value<string>(),
-                EntityValueType.Undefined => false,
-                _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")
-            };
-        }
+        public bool Equals(EntityDocument other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
+            && (ReferenceEquals(this, other)
+                || (other is not null && ValueType == other.ValueType && ValueType switch
+                {
+                    EntityValueType.Array => Length == other.Length && EnumerateArrayCore().SequenceEqual(other.EnumerateArrayCore()),
+                    EntityValueType.Boolean => Value<bool>() == other.Value<bool>(),
+                    EntityValueType.Null => true,
+                    EntityValueType.Number => Value<decimal>() == other.Value<decimal>(),
+                    EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
+                    EntityValueType.String => Value<string>() == other.Value<string>(),
+                    EntityValueType.Undefined => false,
+                    _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")
+                })
+        );
 
         public override bool Equals(object obj) => Equals(obj as EntityDocument);
 

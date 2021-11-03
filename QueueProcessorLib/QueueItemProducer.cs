@@ -31,6 +31,7 @@ namespace QueueProcessorLib
             {
                 throw new InvalidOperationException($"{Config.Name} producer is already started.");
             }
+
             _started = true;
 
             IEnumerable<QueueItem> batch = null;
@@ -53,6 +54,7 @@ namespace QueueProcessorLib
                         {
                             Config.Queue.Add(queueItem, cancellationToken);
                         }
+
                         batchCount++;
                     }
 

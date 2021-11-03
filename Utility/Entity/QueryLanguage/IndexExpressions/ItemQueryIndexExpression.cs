@@ -36,18 +36,13 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public async Task<bool> Evaluate(Entity entity)
         {
-            if (_expression.OutputType != QueryExpressionType.Boolean && _expression.OutputType != QueryExpressionType.InstanceDependent)
+            if (_expression.OutputType is not QueryExpressionType.Boolean and not QueryExpressionType.InstanceDependent)
             {
                 return false;
             }
 
             var result = await _expression.Evaluate(entity);
-            if (result.ValueType != EntityValueType.Boolean)
-            {
-                return false;
-            }
-
-            return result.Value<bool>();
+            return result.ValueType == EntityValueType.Boolean && result.Value<bool>();
         }
 
         internal static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int i, out IIndexExpression index)

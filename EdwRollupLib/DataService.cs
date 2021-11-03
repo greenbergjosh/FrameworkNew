@@ -72,7 +72,7 @@ namespace EdwRollupLib
                 ConfigType = "EDW.ThreadGroup"
             }), "");
 
-            foreach (var threadGroup in await threadGroups.GetL("@"))
+            foreach (var threadGroup in await threadGroups.GetL(""))
             {
                 var threadGroupName = await threadGroup.GetS("Name");
 
@@ -127,7 +127,7 @@ namespace EdwRollupLib
                 ConfigType = "EDW.MaintenanceTask"
             }), "");
 
-            foreach (var maintenanceTask in await maintenanceTasks.GetL("@"))
+            foreach (var maintenanceTask in await maintenanceTasks.GetL(""))
             {
                 var enabled = await maintenanceTask.GetB("Config.enabled");
                 if (!enabled)
@@ -188,11 +188,11 @@ namespace EdwRollupLib
 
         public void OnStop()
         {
-            _fw.Log("EdwRollupService.OnStop", "Stopping...");
+            _ = _fw.Log("EdwRollupService.OnStop", "Stopping...");
 
             ShutdownScheduler().GetAwaiter().GetResult();
 
-            _fw.Log("EdwRollupService.OnStop", "Stopped");
+            _ = _fw.Log("EdwRollupService.OnStop", "Stopped");
         }
 
         private async Task ShutdownScheduler()
@@ -211,7 +211,9 @@ namespace EdwRollupLib
             {
                 var path = context.Request.Path.ToString().ToLowerInvariant();
                 if (path.EndsWith('/'))
+                {
                     path = path.Remove(path.Length - 1);
+                }
 
                 if (path == string.Empty && context.Request.Method == WebRequestMethods.Http.Get)
                 {
@@ -251,14 +253,14 @@ namespace EdwRollupLib
                 {
                     var jobName = context.Request.Query["job"].ToString();
                     var group = context.Request.Query["group"].ToString();
-                    await _scheduler.DeleteJob(new JobKey(jobName, group));
+                    _ = await _scheduler.DeleteJob(new JobKey(jobName, group));
                     Console.WriteLine($"{DateTime.Now}: Deleted {jobName} {group}");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/reset" && context.Request.Method == WebRequestMethods.Http.Post)
                 {
                     await ShutdownScheduler();
-                    await _fw.ReInitialize();
+                    _ = await _fw.ReInitialize();
                     await InitScheduler();
                     Console.WriteLine($"{DateTime.Now}: Reset");
                     await context.WriteSuccessRespAsync(_defaultResponse);
@@ -308,7 +310,9 @@ namespace EdwRollupLib
                     }
                 }
                 else
+                {
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
+                }
             }
             catch (Exception e)
             {
@@ -358,11 +362,15 @@ namespace EdwRollupLib
 
                         var nextFireTime = trigger.GetNextFireTimeUtc();
                         if (nextFireTime.HasValue)
+                        {
                             job.Add("nextFireTime", nextFireTime.Value.LocalDateTime);
+                        }
 
                         var previousFireTime = trigger.GetPreviousFireTimeUtc();
                         if (previousFireTime.HasValue)
+                        {
                             job.Add("previousFireTime", previousFireTime.Value.LocalDateTime);
+                        }
 
                         jobs.Add(job);
                     }

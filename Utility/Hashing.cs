@@ -13,39 +13,40 @@ namespace Utility
         public const int HexSHA512StringLength = 130;
         public const int Md5StringLength = 32;
 
-        public static Regex SHA512StringRegex() => new Regex("^(?:0[xX])?(?:[0-9a-fA-F]{" + SHA512StringLength.ToString() + "})$");
+        public static Regex SHA512StringRegex() => new("^(?:0[xX])?(?:[0-9a-fA-F]{" + SHA512StringLength.ToString() + "})$");
 
-        public static Regex MD5StringRegex() => new Regex("^[0-9a-fA-F]{" + Md5StringLength.ToString()  +"}$");
+        public static Regex MD5StringRegex() => new("^[0-9a-fA-F]{" + Md5StringLength.ToString()  +"}$");
 
         public static byte[] AsciiMD5HashAsByteArray(string input)
         {
             // step 1, calculate MD5 hash from input
-            MD5 md5 = MD5.Create();
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-            byte[] hash = md5.ComputeHash(inputBytes);
+            var md5 = MD5.Create();
+            var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            var hash = md5.ComputeHash(inputBytes);
             return hash;
         }
 
-        private static readonly MD5CryptoServiceProvider Md5Provider = new MD5CryptoServiceProvider();
+        private static readonly MD5CryptoServiceProvider Md5Provider = new();
 
         public static string Utf8MD5HashAsHexString(string input)
         {
             var hash = new StringBuilder();
             var bytes = Md5Provider.ComputeHash(new UTF8Encoding().GetBytes(input));
 
-            for (int i = 0; i < bytes.Length; i++)
+            for (var i = 0; i < bytes.Length; i++)
             {
-                hash.Append(bytes[i].ToString("x2"));
+                _ = hash.Append(bytes[i].ToString("x2"));
             }
+
             return hash.ToString();
         }
 
         public static byte[] CalculateSHA1Hash(string input)
         {
             // step 1, calculate MD5 hash from input
-            SHA1 sha1 = SHA1.Create();
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-            byte[] hash = sha1.ComputeHash(inputBytes);
+            var sha1 = SHA1.Create();
+            var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            var hash = sha1.ComputeHash(inputBytes);
             return hash;
 
             // step 2, convert byte array to hex string
@@ -59,12 +60,10 @@ namespace Utility
 
         public static string Base64EncodeForUrl(string s) => Convert.ToBase64String(Encoding.UTF8.GetBytes(s)).Replace('+', '-').Replace('/', '_').Replace('=', '~').Trim();
 
-        public static string Base64DecodeFromUrl(string s)
-        {
-            if (string.IsNullOrEmpty(s)) return s;
-            return Encoding.UTF8.GetString(
+        public static string Base64DecodeFromUrl(string s) => string.IsNullOrEmpty(s)
+                ? s
+                : Encoding.UTF8.GetString(
                 Convert.FromBase64String(s.Replace('-', '+').Replace('_', '/').Replace('~', '=')));
-        }
 
         public static string CalculateMD5Hash(string input)
         {
@@ -99,35 +98,38 @@ namespace Utility
 
         public static string ByteArrayToString(byte[] ba)
         {
-            StringBuilder hex = new StringBuilder(ba.Length * 2);
-            foreach (byte b in ba)
-                hex.AppendFormat("{0:x2}", b);
+            var hex = new StringBuilder(ba.Length * 2);
+            foreach (var b in ba)
+            {
+                _ = hex.AppendFormat("{0:x2}", b);
+            }
+
             return hex.ToString();
         }
 
         public static string EncodeTo64(string toEncode)
         {
-            byte[] toEncodeAsBytes
+            var toEncodeAsBytes
                   = System.Text.ASCIIEncoding.ASCII.GetBytes(toEncode);
-            string returnValue
+            var returnValue
                   = System.Convert.ToBase64String(toEncodeAsBytes);
             return returnValue;
         }
 
         public static string DecodeFrom64(string encodedData)
         {
-            byte[] encodedDataAsBytes
+            var encodedDataAsBytes
                 = System.Convert.FromBase64String(encodedData);
-            string returnValue =
+            var returnValue =
                System.Text.ASCIIEncoding.ASCII.GetString(encodedDataAsBytes);
             return returnValue;
         }
 
         public static string DecodeUtf8From64(string encodedData)
         {
-            byte[] encodedDataAsBytes
+            var encodedDataAsBytes
                 = System.Convert.FromBase64String(encodedData);
-            string returnValue =
+            var returnValue =
                System.Text.ASCIIEncoding.UTF8.GetString(encodedDataAsBytes, 0, encodedDataAsBytes.Length);
             return returnValue;
         }

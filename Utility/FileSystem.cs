@@ -61,7 +61,7 @@ namespace Utility
             try
             {
                 // Append text to the file
-                using StreamWriter sw = File.AppendText(path);
+                using var sw = File.AppendText(path);
                 // Yes, there is an async version of this, it did not end well
                 sw.WriteLine(text);
                 sw.Close();
@@ -90,6 +90,7 @@ namespace Utility
 
                 lines = theText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             }
+
             return lines;
         }
 
@@ -100,11 +101,12 @@ namespace Utility
             var ps = path.Split('\\');
             for (var i = 0; i < ps.Length - 1; i++)
             {
-                if (i == 0) quotedPath.Append(ps[i] + "\\");
-                else if (ps[i].Contains(' ')) quotedPath.Append("\"" + ps[i] + "\"\\");
-                else quotedPath.Append(ps[i] + "\\");
+                _ = i == 0
+                    ? quotedPath.Append(ps[i] + "\\")
+                    : ps[i].Contains(' ') ? quotedPath.Append("\"" + ps[i] + "\"\\") : quotedPath.Append(ps[i] + "\\");
             }
-            quotedPath.Append(ps[^1]);
+
+            _ = quotedPath.Append(ps[^1]);
 
             return quotedPath.ToString();
         }
@@ -130,6 +132,7 @@ namespace Utility
             {
                 f.Delete();
             }
+
             foreach (var d in dir.GetDirectories())
             {
                 d.Delete(true);
@@ -146,6 +149,7 @@ namespace Utility
             {
                 return false;
             }
+
             return true;
         }
 
@@ -159,6 +163,7 @@ namespace Utility
             {
                 return false;
             }
+
             return true;
         }
     }
