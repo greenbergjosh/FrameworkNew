@@ -27,6 +27,7 @@ export function EditDataBindingModal(props: {
   propertyLabel?: string
   propertyName?: string
 }): JSX.Element {
+  const { CodeEditor } = props
   /*
    * We must place the rules in a "rules" property of a container object
    * because CodeEditorInterfaceComponent expects to use a valueKey.
@@ -65,6 +66,7 @@ export function EditDataBindingModal(props: {
         setRulesDraft(nextRules)
       }
     )
+    /* Prevent memory leaks */
     return () => {
       /* On unmount, Clean up the event subscription */
       EventBus.removeSubscription("event.editDataBinding.valueChanged", subscriptionId)
@@ -130,8 +132,8 @@ export function EditDataBindingModal(props: {
         . You may use &ldquo;$root&rdquo; and &ldquo;$&rdquo; in the beginning of &ldquo;var&rdquo; value paths.
       </Typography>
       {!isValidRules && <Alert showIcon={true} message="Invalid JsonLogic rules." type="error" />}
-      {props.CodeEditor && (
-        <props.CodeEditor
+      {CodeEditor && (
+        <CodeEditor
           key="jsonlogic-editor"
           component={"code-editor"}
           defaultLanguage={"json"}

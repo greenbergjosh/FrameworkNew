@@ -68,6 +68,7 @@ export default class UserInterfaceInterfaceComponent extends BaseInterfaceCompon
             <div style={{ pointerEvents: "none" }}>
               <UserInterface
                 components={this.getValue(valueKey) || defaultValue}
+                getComponents={() => this.getValue(valueKey) || defaultValue} // See CHN-551 workaround
                 data={data}
                 mode="edit"
                 onChangeData={this.handleChangeData}
@@ -86,6 +87,7 @@ export default class UserInterfaceInterfaceComponent extends BaseInterfaceCompon
     return (
       <UserInterface
         components={this.getValue(valueKey) || defaultValue}
+        getComponents={() => this.getValue(valueKey) || defaultValue} // See CHN-551 workaround
         data={data}
         mode="edit"
         onChangeData={this.handleChangeData}

@@ -21,6 +21,7 @@ export const Settings = ({
   return (
     <ComponentRenderer
       components={Array.isArray(manageForm) ? manageForm : [manageForm]}
+      getComponents={() => (Array.isArray(manageForm) ? manageForm : [manageForm])}
       data={componentDefinition}
       getRootUserInterfaceData={getRootUserInterfaceData}
       onChangeRootData={onChangeRootData}

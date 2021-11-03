@@ -1,0 +1,39 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "$",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "loadingKey": "loading",
+      "label": "Pivot Table",
+      "hideLabel": true,
+      "component": "pivot-table",
+      "columns": [{ "name": "Year", "caption": "Production Year" }, { "name": "Quarter" }],
+      "expandAll": false,
+      "filters": [],
+      "formatSettings": [{ "name": "Amount", "format": "C0" }],
+      "rows": [{ "name": "Country" }, { "name": "Products" }],
+      "values": [
+        { "name": "Sold", "caption": "Units Sold" },
+        { "name": "Amount", "caption": "Sold Amount" }
+      ],
+      "height": 350
+    }
+  ]
+}

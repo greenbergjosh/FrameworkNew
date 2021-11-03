@@ -13,7 +13,7 @@ export function getUsableData(data: JSONRecord[], columns: EnrichedColumnDefinit
   /*
    * Iterate on the data
    */
-  return cloneDeep(data).map((dataRow) => {
+  return cloneDeep(data).map((dataRow, i) => {
     if (isEmpty(dataRow)) {
       return {}
     }
@@ -45,6 +45,7 @@ export function getUsableData(data: JSONRecord[], columns: EnrichedColumnDefinit
         }
       }
     })
+    dataRow.index = i
 
     return dataRow
   })

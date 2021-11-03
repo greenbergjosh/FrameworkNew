@@ -25,16 +25,28 @@ export function RenderInterfaceComponent(props: RenderInterfaceComponentProps): 
   const [CodeEditor, setCodeEditor] = React.useState<AbstractBaseInterfaceComponentType>()
 
   React.useEffect(() => {
+    let isMounted = true
     registry.lookup(props.componentDefinition.component).then((component) => {
-      // Why do we need to set an anonymous function into state?
-      // Otherwise we get "Can't set props of undefined" error.
-      setComponent(() => component)
+      // isMounted check prevents setting state on unmounted component
+      if (isMounted && setComponent) {
+        // Why do we need to set an anonymous function into state?
+        // Otherwise we get "Can't set props of undefined" error.
+        setComponent(() => component)
+      }
     })
     registry.lookup("code-editor").then((codeEditor) => {
-      // Why do we need to set an anonymous function into state?
-      // Otherwise we get "Can't set props of undefined" error.
-      setCodeEditor(() => codeEditor)
+      // isMounted check prevents setting state on unmounted component
+      if (isMounted) {
+        // We set an anonymous function into state,
+        // otherwise we get "Can't set props of undefined" error.
+        setCodeEditor(() => codeEditor)
+      }
     })
+
+    /* Prevent memory leaks */
+    return () => {
+      isMounted = false
+    }
   }, [props.componentDefinition.component])
 
   if (!Component) {

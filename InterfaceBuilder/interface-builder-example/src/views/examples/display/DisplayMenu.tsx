@@ -1,6 +1,6 @@
+import React from "react"
 import { Menu } from "antd"
 import { Link } from "react-router-dom"
-import React from "react"
 import { SubMenuProps } from "antd/lib/menu/SubMenu"
 
 export const DisplayMenu = (props: SubMenuProps): JSX.Element => {
@@ -14,6 +14,9 @@ export const DisplayMenu = (props: SubMenuProps): JSX.Element => {
       </Menu.Item>
       <Menu.Item key="/examples/display/table">
         <Link to="/examples/display/table">Table</Link>
+      </Menu.Item>
+      <Menu.Item key="/examples/display/pivot-table">
+        <Link to="/examples/display/pivot-table">Pivot Table</Link>
       </Menu.Item>
       <Menu.Item key="/examples/display/container">
         <Link to="/examples/display/container">Container</Link>

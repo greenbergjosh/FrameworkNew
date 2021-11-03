@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.Implementations
 {
@@ -77,5 +78,18 @@ namespace Utility.Entity.Implementations
             propertyEntityDocument = default;
             return false;
         }
+
+        public override async IAsyncEnumerable<Entity> ProcessEvaluatable()
+        {
+            if (_value is IEvaluatable evaluatable)
+            {
+                await foreach (var entity in evaluatable.Evaluate(Entity))
+                {
+                    yield return entity;
+                }
+            }
+        }
+
+        public override string ToString() => _value?.ToString();
     }
 }
