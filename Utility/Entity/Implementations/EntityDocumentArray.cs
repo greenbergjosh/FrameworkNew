@@ -41,5 +41,17 @@ namespace Utility.Entity.Implementations
         public override string ToString() => JsonSerializer.Serialize(_array);
 
         public override int GetHashCode() => _array?.GetHashCode() ?? base.GetHashCode();
+
+        public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+
+            foreach (var item in _array)
+            {
+                JsonSerializer.Serialize(writer, item, options);
+            }
+
+            writer.WriteEndArray();
+        }
     }
 }

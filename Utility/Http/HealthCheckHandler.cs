@@ -10,7 +10,7 @@ namespace Utility.Http
 
         public static async Task Initialize(FrameworkWrapper fw)
         {
-            if (Guid.TryParse(await fw.StartupConfiguration.GetS("HealthCheckHandler"), out var healthCheckLbmId))
+            if (Guid.TryParse(await fw.StartupConfiguration.GetS("HealthCheckHandler", null), out var healthCheckLbmId))
             {
                 var lbm = await fw.Entities.GetEntity(healthCheckLbmId);
                 var code = await lbm.GetS("Config");

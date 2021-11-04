@@ -106,7 +106,7 @@ namespace Utility.OpgAuth
             _ = SsoPlatforms.TryGetValue(await payload.GetS("sso"), out var platform);
 
             return platform == null
-                ? throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload.GetS("")}")
+                ? throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload}")
                 : await platform.GetUserDetails(payload);
         }
 
@@ -128,7 +128,7 @@ namespace Utility.OpgAuth
 
             var res = await Data.CallFn(ConnName, "SsoLogin", JsonSerializer.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
 
-            if (res == null || await res.GetS("") == null || !(await res.GetS("err")).IsNullOrWhitespace())
+            if (res == null || await res.GetAsS() == null || !(await res.GetS("err")).IsNullOrWhitespace())
             {
                 throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.ToString() ?? "[null]"}");
             }

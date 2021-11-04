@@ -82,7 +82,7 @@ namespace UnsubLib.NetworkProviders
                         PayloadType = "W4"
                     }), payload);
 
-                if (res == null || await res.GetS("result") == "failed")
+                if (res == null || await res.GetS("result", null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{body ?? "null"}");
                     return null;

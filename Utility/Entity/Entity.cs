@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
 using Utility.Entity.QueryLanguage;
@@ -15,6 +17,13 @@ namespace Utility.Entity
 
     public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 
+    public class EntityConverter : JsonConverter<Entity>
+    {
+        public override Entity Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+        public override void Write(Utf8JsonWriter writer, Entity value, JsonSerializerOptions options) => value.Document?.SerializeToJson(writer, options);
+    }
+
+    [JsonConverter(typeof(EntityConverter))]
     public class Entity : IEquatable<Entity>
     {
         private readonly EntityConfig _config;
@@ -124,7 +133,7 @@ namespace Utility.Entity
             return result?.ValueType == EntityValueType.String ? result.Value<string>() : result?.ToString();
         }
 
-        public Task<string> GetS(string query = "@", string defaultValue=null) => GetWithDefault(query, defaultValue);
+        public Task<string> GetS(string query = "@", string defaultValue = null) => GetWithDefault(query, defaultValue);
 
         public async Task<(bool found, string value)> TryGetS(string query = "@")
         {
@@ -138,7 +147,7 @@ namespace Utility.Entity
 
         public async Task<int> GetI(string query = "@") => (await GetE(query)).Value<int>();
 
-        public Task<int> GetI(string query = "@", int defaultValue=0) => GetWithDefault(query, defaultValue);
+        public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, defaultValue);
 
         public Task<Dictionary<string, Entity>> GetD(string query = "@") => GetD<Entity>(query);
 
@@ -149,7 +158,7 @@ namespace Utility.Entity
             return new Dictionary<string, TValue>(entity.Document.EnumerateObject().Select(item => new KeyValuePair<string, TValue>(item.name, item.value.Value<TValue>())));
         }
 
-        private async Task<T> GetWithDefault<T>(string query = "@", T defaultValue=default)
+        private async Task<T> GetWithDefault<T>(string query = "@", T defaultValue = default)
         {
             var result = (await Get(query)).ToList();
             return result.Count == 1 ? result[0].Value<T>() : defaultValue;

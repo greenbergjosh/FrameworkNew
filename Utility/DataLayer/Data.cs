@@ -139,15 +139,13 @@ namespace Utility.DataLayer
 
             TraceLog(nameof(GetConfigs), $"Loading configs from {configConn}.{configFunc}");
 
-            async Task<EntityDocumentStack> LoadConfig(EntityDocumentStack config, string key)
+            async Task LoadConfig(EntityDocumentStack config, string key)
             {
-                // this is not important for the DB, but it is for the local cache.
-                // ToDo: We should change it to GUID and that would solve it but not sure if that might break something
                 key = key.ToLower();
 
                 if (loaded.Contains(key))
                 {
-                    return config;
+                    return;
                 }
 
                 TraceLog(nameof(GetConfigs), $"Loading config {key}");
@@ -157,19 +155,25 @@ namespace Utility.DataLayer
                 try
                 {
                     var current = await GetConfigRecordValue(key, configConn, configFunc);
-                    var usings = (await current.Get("using")).FirstOrDefault();
+                    var usings = (await current.Get("Config.using")).FirstOrDefault();
                     var mergeConfig = current;
 
                     if (usings != null)
                     {
                         TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usings}");
 
-                        foreach (var u in (await usings.GetL("")).Select(u => u.Value<string>().Trim()).Where(u => !loaded.Contains(u)))
+                        foreach (var u in (await usings.GetL<string>()).Select(u => u.Trim()))
                         {
-                            config.Push(_entity.Create(await LoadConfig(config, u)));
+                            await LoadConfig(config, u);
                         }
 
-                        mergeConfig = await current.GetE("config");
+                        mergeConfig = _entity.Create(new
+                        {
+                            Id = await current.GetS("Id"),
+                            Name = await current.GetS("Name"),
+                            Type = await current.GetS("Type"),
+                            Config = await current.GetE("Config.config")
+                        });
                     }
 
                     TraceLog(nameof(GetConfigs), $"Merging configs\r\nCurrent\r\n{config}\r\n\r\n{key}\r\n{mergeConfig}");
@@ -177,8 +181,6 @@ namespace Utility.DataLayer
                     config.Push(mergeConfig);
 
                     TraceLog(nameof(GetConfigs), $"Merged configs into\r\n{config}");
-
-                    return config;
                 }
                 catch (Exception ex)
                 {
@@ -186,7 +188,11 @@ namespace Utility.DataLayer
                 }
             }
 
-            var resolvedConfig = await configKeys.AggregateAsync(new EntityDocumentStack(), async (c, k) => await LoadConfig(c, k));
+            var resolvedConfig = new EntityDocumentStack();
+            foreach (var configKey in configKeys)
+            {
+                await LoadConfig(resolvedConfig, configKey);
+            }
 
             if (commandLineArgs?.Any() == true)
             {

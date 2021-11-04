@@ -29,6 +29,12 @@ namespace UnsubClientWeb
                 return;
             }
 
+            if (context.IsLocal() && context.Request.Query["m"] == "config")
+            {
+                await context.WriteSuccessRespAsync(JsonSerializer.Serialize(_fw.StartupConfiguration));
+                return;
+            }
+
             var requestFromPost = "";
             var result = JsonSerializer.Serialize(new { Error = "SeeLogs" });
             var requestId = Guid.NewGuid();
@@ -43,7 +49,6 @@ namespace UnsubClientWeb
 
                 method = await dtv.GetS("m");
 
-                // Leaving out the await was on purpose, let's not hold up the call for trace logging
                 _ = _fw.Trace($"Router:{method} RequestId: {requestId}", dtv.ToString());
 
                 switch (method)

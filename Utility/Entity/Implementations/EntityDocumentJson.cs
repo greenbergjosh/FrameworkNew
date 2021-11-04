@@ -91,6 +91,8 @@ namespace Utility.Entity.Implementations
                 ? throw new Exception($"Unable to convert value to type {targetType}")
                 : (T)getter(_value);
         }
+
+        public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, _value, options);
         #endregion
 
         public override string ToString() => _value.ValueKind == JsonValueKind.String ? _value.GetRawText() : _value.ToString();

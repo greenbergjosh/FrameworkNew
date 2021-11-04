@@ -72,7 +72,7 @@ namespace SignalApiLib.SourceHandlers
             //{
             //    var res = await Data.CallFn(Conn, "consoleLiveFeed", payload: request);
 
-            //    if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"DB write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+            //    if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"DB write failed. Response: {res}\r\nBody: {request}");
             //    else result = Jw.Serialize(new { Result = "Success" });
             //}
             //catch (Exception e)
@@ -134,7 +134,7 @@ namespace SignalApiLib.SourceHandlers
             //{
             //    var res = await Data.CallFn(Conn, "consoleEvent", payload: request);
 
-            //    if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"DB write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+            //    if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"DB write failed. Response: {res}\r\nBody: {request}");
             //    else result = Jw.Serialize(new { Result = "Success" });
             //}
             //catch (Exception e)

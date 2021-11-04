@@ -216,8 +216,8 @@ SETTINGS index_granularity = 8192;";
                 })
             });
 
-            return await result.GetS("result") != "success"
-                ? throw new DataException($"Error exporting table: {tableName} result: {await result.GetS("")}")
+            return await result.GetS("result", null) != "success"
+                ? throw new DataException($"Error exporting table: {tableName} result: {result}")
                 : parameters;
         }
 
@@ -249,7 +249,7 @@ SETTINGS index_granularity = 8192;";
             var nestedTableName = await tableConfig.GetS("nested_table_name");
             foreach (var partition in partitions)
             {
-                var partitionKey = await partition.GetS("");
+                var partitionKey = partition.Value<string>();
 
                 sql = @$"drop table if exists datasets.import_{tableName}_{partitionKey};";
                 _ = await ExecuteClickhouseQuery(sql);

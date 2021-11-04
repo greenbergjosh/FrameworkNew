@@ -37,7 +37,7 @@ namespace UnsubLib.UnsubFileProviders
                 return (download, null);
             }
 
-            await _fw.Error(_logMethod, $"W4 API get file url call failed: {uri} Response: {resGe?.GetS("")}");
+            await _fw.Error(_logMethod, $"W4 API get file url call failed: {uri} Response: {resGe}");
 
             return default;
         }

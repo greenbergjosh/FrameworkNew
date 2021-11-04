@@ -99,7 +99,7 @@ namespace UnsubLib.UnsubFileProviders
                 resp = await client.PostAsync(loginUrl, new FormUrlEncodedContent(data));
                 var res = await network.Parse("application/json", await resp.Content.ReadAsStringAsync());
 
-                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after login {res.GetS("")}");
+                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after login {res}");
 
                 var token = await res.GetS("payload");
 
@@ -115,7 +115,7 @@ namespace UnsubLib.UnsubFileProviders
                 resp = await client.GetAsync(fileIdUrl);
                 res = await network.Parse("application/json", await resp.Content.ReadAsStringAsync());
 
-                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {fileIdUrl} response: {res.GetS("")}");
+                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {fileIdUrl} response: {res}");
 
                 var unsubListId = await res.GetS("unsubList.id");
                 var dlUrl = $"https://go.unsubcentral.com/backend/api/export/list/{unsubListId}/download?token={token}&type=DOWNLOAD_GRP_ENC_TEXT";
@@ -124,7 +124,7 @@ namespace UnsubLib.UnsubFileProviders
                 resp = await client.GetAsync(dlUrl);
                 res = await network.Parse("application/json", await resp.Content.ReadAsStringAsync());
 
-                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {dlUrl} response: {res.GetS("")}");
+                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {dlUrl} response: {res}");
 
                 var dl = await res.GetS("payload");
                 await _fw.Trace("UV2C", $"{unsubRelationshipId} payload value: {(!dl.IsNullOrWhitespace() ? dl : $"empty, will use default Url: {defaultUrl}")}");

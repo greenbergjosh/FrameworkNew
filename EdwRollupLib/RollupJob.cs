@@ -125,7 +125,7 @@ namespace EdwRollupLib
             var rsConfigIds = (await prepareThreadGroupResult.GetL<string>("rs_config_ids")).Select(i => Guid.Parse(i));
             if (!rsConfigIds.Any())
             {
-                throw new Exception($"No rs_config_ids, response: {await prepareThreadGroupResult.GetS("")}");
+                throw new Exception($"No rs_config_ids, response: {prepareThreadGroupResult}");
             }
 
             foreach (var rsConfigId in rsConfigIds)

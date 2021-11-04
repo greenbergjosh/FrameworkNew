@@ -81,37 +81,37 @@ namespace UnsubLib
         {
             var config = fw.StartupConfiguration;
 
-            var queuedCampaignsUrl = await config.GetS("Config/QueuedCampaignsUrl");
-            var queuedCampaignsBody = await config.GetS("Config/QueuedCampaignsBody");
+            var queuedCampaignsUrl = await config.GetS("Config.QueuedCampaignsUrl");
+            var queuedCampaignsBody = await config.GetS("Config.QueuedCampaignsBody", null);
 
             var unsubLib = new UnsubLib(fw, queuedCampaignsUrl, queuedCampaignsBody)
             {
-                ServerWorkingDirectory = await config.GetS("Config/ServerWorkingDirectory"),
-                ClientWorkingDirectory = await config.GetS("Config/ClientWorkingDirectory"),
-                SearchDirectory = await config.GetS("Config/SearchDirectory"),
-                FileCacheDirectory = await config.GetS("Config/FileCacheDirectory"),
-                FileImportDBDirectory = await config.GetS("Config/FileImportDBDirectory"),
-                FileImportStagingDirectory = await config.GetS("Config/FileImportStagingDirectory"),
-                FileCacheFtpServer = await config.GetS("Config/FileCacheFtpServer"),
-                FileCacheFtpUser = await config.GetS("Config/FileCacheFtpUser"),
-                FileCacheFtpPassword = await config.GetS("Config/FileCacheFtpPassword"),
-                ManualFilePath = await config.GetS("Config/ManualFilePath"),
-                WorkingFileCacheSize = long.Parse(await config.GetS("Config/WorkingFileCacheSize")),
-                SearchFileCacheSize = long.Parse(await config.GetS("Config/SearchFileCacheSize")),
-                UnsubServerUri = await config.GetS("Config/UnsubServerUri"),
-                UnsubJobServerUri = await config.GetS("Config/UnsubJobServerUri"),
-                CallLocalLoadUnsubFiles = await config.GetB("Config/CallLocalLoadUnsubFiles"),
-                UseLocalNetworkFile = await config.GetB("Config/UseLocalNetworkFile"),
-                LocalNetworkFilePath = await config.GetS("Config/LocalNetworkFilePath"),
+                ServerWorkingDirectory = await config.GetS("Config.ServerWorkingDirectory"),
+                ClientWorkingDirectory = await config.GetS("Config.ClientWorkingDirectory"),
+                SearchDirectory = await config.GetS("Config.SearchDirectory"),
+                FileCacheDirectory = await config.GetS("Config.FileCacheDirectory"),
+                FileImportDBDirectory = await config.GetS("Config.FileImportDBDirectory"),
+                FileImportStagingDirectory = await config.GetS("Config.FileImportStagingDirectory"),
+                FileCacheFtpServer = await config.GetS("Config.FileCacheFtpServer"),
+                FileCacheFtpUser = await config.GetS("Config.FileCacheFtpUser"),
+                FileCacheFtpPassword = await config.GetS("Config.FileCacheFtpPassword"),
+                ManualFilePath = await config.GetS("Config.ManualFilePath"),
+                WorkingFileCacheSize = long.Parse(await config.GetS("Config.WorkingFileCacheSize")),
+                SearchFileCacheSize = long.Parse(await config.GetS("Config.SearchFileCacheSize")),
+                UnsubServerUri = await config.GetS("Config.UnsubServerUri"),
+                UnsubJobServerUri = await config.GetS("Config.UnsubJobServerUri"),
+                CallLocalLoadUnsubFiles = await config.GetB("Config.CallLocalLoadUnsubFiles"),
+                UseLocalNetworkFile = await config.GetB("Config.UseLocalNetworkFile"),
+                LocalNetworkFilePath = await config.GetS("Config.LocalNetworkFilePath"),
                 // for diffs and loads
-                MaxParallelism = await config.GetI("Config/MaxParallelism"),
+                MaxParallelism = await config.GetI("Config.MaxParallelism"),
                 // for downloads and uploads
-                MaxConnections = await config.GetI("Config/MaxConnections"),
-                SeleniumChromeDriverPath = await config.GetS("Config/SeleniumChromeDriverPath"),
-                FileCacheFtpServerPath = await config.GetS("Config/FileCacheFtpServerPath"),
-                SortBufferSize = await config.GetS("Config/SortBufferSize"),
+                MaxConnections = await config.GetI("Config.MaxConnections"),
+                SeleniumChromeDriverPath = await config.GetS("Config.SeleniumChromeDriverPath"),
+                FileCacheFtpServerPath = await config.GetS("Config.FileCacheFtpServerPath"),
+                SortBufferSize = await config.GetS("Config.SortBufferSize"),
 
-                FileCopyTimeout = int.TryParse(await config.GetS("Config/FileCopyTimeout"), out var to) ? to : DefaultFileCopyTimeout
+                FileCopyTimeout = await config.GetI("Config.FileCopyTimeout", DefaultFileCopyTimeout),
             };
 
             ServicePointManager.DefaultConnectionLimit = unsubLib.MaxConnections;
@@ -132,7 +132,7 @@ namespace UnsubLib
             var network = await Data.CallFn(Conn, "SelectNetwork",
                     singleNetworkName != null ? JsonSerializer.Serialize(new { NetworkName = singleNetworkName }) : "{}", "");
 
-            await _fw.Trace(nameof(GetNetworks), $"After SelectNetwork: {network.GetS("")} {singleNetworkName ?? "null"}");
+            await _fw.Trace(nameof(GetNetworks), $"After SelectNetwork: {network} {singleNetworkName ?? "null"}");
 
             return network;
         }
@@ -382,7 +382,7 @@ namespace UnsubLib
                             });
                             var res = await Data.CallFn(Conn, "MergeNetworkCampaigns", args, campaignJson);
 
-                            if (res == null || await res.GetS("result") == "failed")
+                            if (res == null || await res.GetS("result", null) == "failed")
                             {
                                 await _fw.Error($"{nameof(ManualDirectory)}-{networkName}", $"Failed to merge campaings. Response: {res}");
                             }
@@ -409,7 +409,7 @@ namespace UnsubLib
                         var unsubRelId = cd.id;
                         var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", JsonSerializer.Serialize(new { relationshipId = unsubRelId, NetworkId = networkId }));
 
-                        if (res == null || await res.GetS("result") == "failed")
+                        if (res == null || await res.GetS("result", null) == "failed")
                         {
                             await _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Campaign lookup failed. Response: {res}");
                             continue;
@@ -540,13 +540,13 @@ namespace UnsubLib
             {
                 var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", JsonSerializer.Serialize(new { NetworkId = networkId }), "");
 
-                if (res == null || await res.GetS("result") == "failed")
+                if (res == null || await res.GetS("result", null) == "failed")
                 {
                     await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"Campaigns lookup failed. Response: {res}");
                     return;
                 }
 
-                var campaign = (await res.Get($"[NetworkCampaignId=\"{networkCampaignId}\"]")).FirstOrDefault();
+                var campaign = (await res.Get($"[?(@.NetworkCampaignId==\"{networkCampaignId}\")]")).FirstOrDefault();
 
                 if (campaign == null)
                 {
@@ -681,7 +681,7 @@ namespace UnsubLib
                 }
 
                 var resDigest = await Data.CallFn(Conn, "UpdateNetworkCampaignsDigestType", "", JsonSerializer.Serialize(digestTypes.Select(kvp => new { Id = kvp.Key, DtId = kvp.Value })));
-                if (await resDigest?.GetS("result") != "success")
+                if (await resDigest?.GetS("result", null) != "success")
                 {
                     await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update digest type for campaigns. Response: {resDigest}");
                 }
@@ -689,7 +689,7 @@ namespace UnsubLib
                 await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Campaigns with Positive Delta: {campaignsWithPositiveDelta.Count}");
                 var res = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", JsonSerializer.Serialize(campaignsWithPositiveDelta.Select(kvp => new { Id = kvp.Key, FId = kvp.Value })));
 
-                if (await res?.GetS("result") != "success")
+                if (await res?.GetS("result", null) != "success")
                 {
                     await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update unsub files. Response: {res}");
                 }
@@ -721,7 +721,7 @@ namespace UnsubLib
 
                 if (campaigns != null)
                 {
-                    File.WriteAllText(localNetworkFilePath, await campaigns.GetAsS());
+                    File.WriteAllText(localNetworkFilePath, JsonSerializer.Serialize(campaigns));
                 }
             }
 
@@ -815,7 +815,7 @@ namespace UnsubLib
         {
             var networkName = await network.GetS("Name");
             var networkUnsubMethod = await network.GetS("Credentials.UnsubMethod");
-            var parallelism = int.Parse(await network.GetS("Credentials.Parallelism"));
+            var parallelism = await network.GetI("Credentials.Parallelism");
 
             parallelism = MaxParallelism < parallelism ? MaxParallelism : parallelism;
 
@@ -1103,7 +1103,7 @@ namespace UnsubLib
             var campaigns = await Data.CallFn(Conn, "SelectNetworkCampaigns", "{}", "");
             var refdFiles = new HashSet<string>();
 
-            if (campaigns == null || await campaigns.GetS("result") == "failed")
+            if (campaigns == null || await campaigns.GetS("result", null) == "failed")
             {
                 await _fw.Error(nameof(CleanUnusedFiles), $"Campaign lookup failed. Response: {campaigns}");
                 throw new HaltingException($"Campaign lookup failed. Response: {campaigns}", null);
@@ -1451,7 +1451,7 @@ namespace UnsubLib
             {
                 var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", JsonSerializer.Serialize(new { Base64Payload = true }));
 
-                if (res == null || await res.GetS("result") == "failed")
+                if (res == null || await res.GetS("result", null) == "failed")
                 {
                     await _fw.Error(nameof(GetCampaigns), $"Campaign lookup failed. Response: {res}");
                     return null;
@@ -1830,12 +1830,12 @@ namespace UnsubLib
         private static async Task<IEnumerable<Entity>> FlexStringArray(Entity ge, string path)
         {
             var entity = await ge.GetE(path);
-            if (entity.ValueType == EntityValueType.Array)
+            if (entity?.ValueType == EntityValueType.Array)
             {
                 return await entity.GetL();
             }
 
-            var str = await entity.GetAsS();
+            var str = entity == null ? null : await entity.GetS("@");
 
             return str.IsNullOrWhitespace() ? null : new[] { ge.Create(str) };
         }
@@ -1844,10 +1844,10 @@ namespace UnsubLib
         {
             var request = new
             {
-                batch = new[]
+                batch = dtve.Create(new[]
                 {
                     dtve
-                }
+                })
             };
 
             var result = await dtve.Parse("application/json", await IsUnsubBatch(dtve.Create(request)));
@@ -1855,7 +1855,7 @@ namespace UnsubLib
             var campaignId = await dtve.GetS("CampaignId");
 
             var campaignResult = (await result.GetD()).First(r => r.Key == campaignId);
-            return await campaignResult.Value.GetAsS();
+            return JsonSerializer.Serialize(campaignResult.Value);
         }
 
         public record BatchResult(IEnumerable<string> NotUnsub = null, string Error = null, string Exception = null);
@@ -1866,11 +1866,11 @@ namespace UnsubLib
 
             try
             {
-                var dbResults = await Data.CallFn(Conn, "IsUnsubBatch", await batchRequest.GetAsS());
-                var dbResult = await dbResults.GetS("result");
+                var dbResults = await Data.CallFn(Conn, "IsUnsubBatch", JsonSerializer.Serialize(batchRequest));
+                var dbResult = await dbResults.GetS("result", null);
                 if (dbResult == "failed")
                 {
-                    return await dbResults.GetAsS();
+                    return JsonSerializer.Serialize(dbResults);
                 }
 
                 var unsubResults = new ConcurrentDictionary<string, BatchResult>();
@@ -1967,13 +1967,13 @@ namespace UnsubLib
 
                 async Task<(bool found, string groups)> TryGetSignalGroups(Entity request)
                 {
-                    var globalSuppGroup = await FlexStringArray(request, "Groups") ?? await FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
-                    if (!globalSuppGroup.Any())
+                    var globalSuppGroup = await FlexStringArray(request, "Groups");
+                    if (globalSuppGroup == null || globalSuppGroup.Any())
                     {
-                        globalSuppGroup = await FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+                        globalSuppGroup = await FlexStringArray(_fw.StartupConfiguration, "Config.DefaultSignalGroup");
                     }
 
-                    var groups = string.Join(",", await globalSuppGroup.Select(async g => await g.GetS("@")));
+                    var groups = JsonSerializer.Serialize(globalSuppGroup);
 
                     return (globalSuppGroup.Any(), groups);
                 }
@@ -2004,7 +2004,12 @@ namespace UnsubLib
                 {
                     try
                     {
-                        var args = JsonSerializer.Serialize(new { SignalGroups = (await (await _fw.Entity.Parse("application/json", item.Key)).GetL<string>()).Select(sg => sg.ToString() == "Tier1" ? "Tier1 Suppression" : sg), Emails = item.Value.Where(e => e.Contains("@")).ToArray(), EmailMd5s = item.Value.Where(e => !e.Contains("@")).ToArray() });
+                        var args = JsonSerializer.Serialize(new
+                        {
+                            SignalGroups = (await (await _fw.Entity.Parse("application/json", item.Key)).GetL<string>()).Select(sg => sg == "Tier1" ? "Tier1 Suppression" : sg),
+                            Emails = item.Value.Where(e => e.Contains("@")).ToArray(),
+                            EmailMd5s = item.Value.Where(e => !e.Contains("@")).ToArray()
+                        });
 
                         await _fw.Trace(nameof(IsUnsubBatch), $"Checking global suppression\n{args}");
 
@@ -2115,7 +2120,7 @@ namespace UnsubLib
         {
             IDictionary<string, IEnumerable<Guid>> dr = null;
             var networkName = await network.GetS("Name");
-            var parallelism = int.Parse(await network.GetS("Credentials.Parallelism"));
+            var parallelism = await network.GetI("Credentials.Parallelism");
             var uri = new Uri(unsubUrl.url);
             var authString = (await network.GetD<string>("Credentials.DomainAuthStrings"))?.FirstOrDefault(d => string.Equals(d.Key, uri.Host, StringComparison.CurrentCultureIgnoreCase)).Value;
 

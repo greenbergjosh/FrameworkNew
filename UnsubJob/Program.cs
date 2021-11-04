@@ -189,7 +189,7 @@ namespace UnsubJob
                         }
                     }
 
-                    if ((await network.GetS("Credentials.IgnoreManualDirectory")).ParseBool() != false)
+                    if (await network.GetB("Credentials.IgnoreManualDirectory", false) != false)
                     {
                         try
                         {

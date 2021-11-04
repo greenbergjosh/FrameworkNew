@@ -613,7 +613,7 @@
 //            {
 //                entity.Set("/Config/$id", entity.GetS("/Id"));
 //                entity.Set("/Config/$name", entity.GetS("/Name"));
-//                var convertedEntity = await root.Parse("application/json", entity.GetS(""));
+//                var convertedEntity = await root.Parse("application/json", entity.GetS("@"));
 //                convertedEntities.Add(convertedEntity);
 //            }
 //            return convertedEntities;

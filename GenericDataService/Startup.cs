@@ -87,7 +87,7 @@ namespace GenericDataService
 
                     if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
-                        await context.WriteSuccessRespAsync(fw.StartupConfiguration.ToString(), Encoding.UTF8);
+                        await context.WriteSuccessRespAsync(JsonSerializer.Serialize(fw.StartupConfiguration), Encoding.UTF8);
                         return;
                     }
 

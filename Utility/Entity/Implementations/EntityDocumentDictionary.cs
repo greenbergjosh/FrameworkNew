@@ -45,5 +45,7 @@ namespace Utility.Entity.Implementations
         public override string ToString() => JsonSerializer.Serialize(_dictionary);
 
         public override int GetHashCode() => _dictionary?.GetHashCode() ?? base.GetHashCode();
+
+        public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, _dictionary, options);
     }
 }

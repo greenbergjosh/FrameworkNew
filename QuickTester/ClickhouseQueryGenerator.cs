@@ -51,7 +51,6 @@ namespace QuickTester
             }
             else if (op == "filter")
             {
-                // We materialize the list with ToArray just in case the GenericEntity doesn't preserve order (we iterate vars twice)
                 var vars = (await (await ge.Get("[0]..var")).Select(var => var.GetAsS(""))).Distinct().ToArray();
                 var whereClause = await GenerateClickhouseWhere(await ge.GetE("[0]"));
                 for (var i = 0; i < vars.Length; i++)

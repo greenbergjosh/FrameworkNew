@@ -2,11 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
 
 namespace Utility.Entity
 {
+    public class EntityDocumentConverter : JsonConverter<EntityDocument>
+    {
+        public override EntityDocument Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+        public override void Write(Utf8JsonWriter writer, EntityDocument value, JsonSerializerOptions options) => value.SerializeToJson(writer, options);
+    }
+
+    [JsonConverter(typeof(EntityDocumentConverter))]
     public abstract class EntityDocument : IEquatable<EntityDocument>
     {
         public Entity Entity { get; internal set; }
@@ -46,6 +55,8 @@ namespace Utility.Entity
                 yield return (name, Entity.Create(value, $"{Entity.Query}.{name}"));
             }
         }
+
+        public abstract void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options);
 
         protected internal abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 

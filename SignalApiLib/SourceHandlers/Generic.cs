@@ -42,9 +42,9 @@ namespace SignalApiLib.SourceHandlers
             {
                 var res = await Data.CallFn(Conn, func, requestFromPost);
 
-                if (await res?.GetS("result") != "success")
+                if (await res?.GetS("result", null) != "success")
                 {
-                    await _fw.Error($"{sourceStr}.{nameof(HandleRequest)}", $"DB write failed. Response: {await res?.GetS("") ?? "null"}\r\nBody: {requestFromPost}");
+                    await _fw.Error($"{sourceStr}.{nameof(HandleRequest)}", $"DB write failed. Response: {res}\r\nBody: {requestFromPost}");
                 }
 
                 return JsonSerializer.Serialize(new { Result = "Success" });

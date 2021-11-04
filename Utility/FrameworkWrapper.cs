@@ -79,10 +79,9 @@ namespace Utility
 
                 fw.Entities = new ConfigEntityRepo(fw.Entity, Data.GlobalConfigConnName);
                 var scripts = new List<ScriptDescriptor>();
-                var scriptsPath = await fw.StartupConfiguration.GetAsS("Config.RoslynScriptsPath");
+                var scriptsPath = await fw.StartupConfiguration.GetS("Config.RoslynScriptsPath");
 
-                // Yes, GetB can be used to pull a boolean, but that defaults to false
-                fw.TraceLogging = (await fw.StartupConfiguration.GetAsS("Config.EnableTraceLogging")).ParseBool() ?? true;
+                fw.TraceLogging = await fw.StartupConfiguration.GetB("Config.EnableTraceLogging", true);
                 fw.TraceToConsole = (await fw.StartupConfiguration.GetB("Config.TraceToConsole", false)) || Debugger.IsAttached;
 
                 if (!scriptsPath.IsNullOrWhitespace())
@@ -94,7 +93,7 @@ namespace Utility
                 fw.PostingQueueWriter = await PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(fw.StartupConfiguration);
                 fw.ErrorWriter = await ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(fw.StartupConfiguration);
 
-                var appName = (await fw.StartupConfiguration.GetS("Config.ErrorLogAppName")) ?? fw.ConfigurationKeys.Join("::");
+                var appName = await fw.StartupConfiguration.GetS("Config.ErrorLogAppName", fw.ConfigurationKeys.Join("::"));
 
                 fw.Err =
                     async (int severity, string method, string descriptor, string message) =>
