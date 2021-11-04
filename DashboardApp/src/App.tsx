@@ -19,7 +19,7 @@ import { LegacyThemeLoader } from "./themes/ant-default/LegacyThemeLoader"
  * Import InterfaceBuilder Styles
  * TODO: Can't each plugin be responsible for loading its own css? Rollup is outputting css separately with no import.
  */
-import "@opg/interface-builder-plugins/lib/ant/ant-repeater/index.css"
+import "@opg/interface-builder-plugins/lib/ant/ordered-list/index.css"
 import "@opg/interface-builder-plugins/lib/ant/color-picker/index.css"
 import "@opg/interface-builder-plugins/lib/ant/column/index.css"
 import "@opg/interface-builder-plugins/lib/ant/dev-tools/index.css"
@@ -107,16 +107,16 @@ import tableLayoutDefinition from "@opg/interface-builder-plugins/lib/syncfusion
 /*
  * Import DashboardApp Plugins
  */
-import Query from "./components/custom-ib-components/query"
-import Execute from "./components/custom-ib-components/execute"
-import Relationships from "./components/custom-ib-components/relationships"
-import RemoteComponent from "./components/custom-ib-components/remote-component"
-import SlotConfig from "./components/custom-ib-components/slot-config"
-import Select from "./components/custom-ib-components/select"
-import Tags from "./components/custom-ib-components/tags"
-import StringTemplate from "./components/custom-ib-components/string-template"
+import Query from "./ib-plugins/query"
+import Execute from "./ib-plugins/execute"
+import Relationships from "./ib-plugins/relationships"
+import RemoteComponent from "./ib-plugins/remote-component"
+import SlotConfig from "./ib-plugins/slot-config"
+import Select from "./ib-plugins/select"
+import Tags from "./ib-plugins/tags"
+import StringTemplate from "./ib-plugins/string-template"
 // import Pie from "./components/custom-ib-components/pie"
-import Link from "./components/custom-ib-components/link"
+import Link from "./ib-plugins/link"
 
 const persistor = getPersistor()
 
@@ -247,14 +247,12 @@ export function App(): JSX.Element {
       "string-template": StringTemplate,
       select: Select,
       table: {
-        component: (() =>
-          import("./components/custom-ib-components/table/TableInterfaceComponent")) as unknown as ImportFactory,
+        component: (() => import("./ib-plugins/table/TableInterfaceComponent")) as unknown as ImportFactory,
         layoutDefinition: tableLayoutDefinition,
       },
       tags: Tags,
       pie: {
-        component: (() =>
-          import("./components/custom-ib-components/pie/PieInterfaceComponent")) as unknown as ImportFactory,
+        component: (() => import("./ib-plugins/pie/PieInterfaceComponent")) as unknown as ImportFactory,
         layoutDefinition: pieLayoutDefinition,
       },
       link: Link,

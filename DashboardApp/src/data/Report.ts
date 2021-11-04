@@ -2,7 +2,7 @@ import { ComponentDefinition } from "@opg/interface-builder"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
 import { JSONRecord } from "./JSON"
-import { ColumnConfig } from "../components/custom-ib-components/table/types"
+import { ColumnConfig } from "../ib-plugins/table/types"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
 export const TableLayoutItemCodec = iots.type({

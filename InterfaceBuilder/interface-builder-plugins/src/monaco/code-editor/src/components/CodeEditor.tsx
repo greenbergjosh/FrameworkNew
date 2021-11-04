@@ -158,7 +158,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
       <div
         style={{
           resize: "vertical",
-          overflow: "auto",
+          overflow: "hidden",
           width: props.width,
           height: props.height,
           minHeight: 50,

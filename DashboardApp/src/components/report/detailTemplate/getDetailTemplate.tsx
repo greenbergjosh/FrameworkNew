@@ -15,7 +15,7 @@ import { mapData, unMapData } from "./mapData"
 import { ReportDetailsType } from "./types"
 import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"
 import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
-import { ColumnConfig } from "../../custom-ib-components/table/types"
+import { ColumnConfig } from "../../../ib-plugins/table/types"
 
 /***************************************************************************
  *
