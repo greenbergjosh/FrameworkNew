@@ -1,5 +1,5 @@
 {
-  "name": "@opg/interface-builder-plugins_ant_repeater",
+  "name": "@opg/interface-builder-plugins_ordered_list",
   "version": "1.0.0",
   "description": "React Library for creating WYSIWYG interfaces",
   "author": "OnPoint UI Team",
@@ -10,8 +10,8 @@
   },
   "homepage": "https://github.com/onpointglobal/interface-builder#readme",
   "scripts": {
-    "start": "rollup -cw --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/ant/repeater",
-    "build": "rollup --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/ant/repeater",
+    "start": "rollup -cw --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/ant/ordered-list",
+    "build": "rollup --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/ant/ordered-list",
     "lint": "eslint './src/**/*.{ts,tsx}' --fix"
   },
   "keywords": [

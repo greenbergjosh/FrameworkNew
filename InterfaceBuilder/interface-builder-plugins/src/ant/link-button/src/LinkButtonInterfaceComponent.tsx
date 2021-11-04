@@ -2,15 +2,15 @@ import React from "react"
 import { AbstractBaseInterfaceComponentType, BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { isEmpty, isEqual, isObject } from "lodash/fp"
 import { Link, LinkButton } from "./components/LinkTypes"
-import { LinkInterfaceComponentProps, LinkInterfaceComponentState } from "./types"
-import { linkManageForm } from "./link-manage-form"
+import { LinkButtonInterfaceComponentProps, LinkButtonInterfaceComponentState } from "./types"
+import { linkButtonManageForm } from "./link-button-manage-form"
 import layoutDefinition from "./layoutDefinition"
 
-export default class LinkInterfaceComponent extends BaseInterfaceComponent<
-  LinkInterfaceComponentProps,
-  LinkInterfaceComponentState
+export default class LinkButtonInterfaceComponent extends BaseInterfaceComponent<
+  LinkButtonInterfaceComponentProps,
+  LinkButtonInterfaceComponentState
 > {
-  constructor(props: LinkInterfaceComponentProps) {
+  constructor(props: LinkButtonInterfaceComponentProps) {
     super(props)
 
     this.state = {
@@ -36,7 +36,7 @@ export default class LinkInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = linkManageForm
+  static manageForm = linkButtonManageForm
 
   componentDidMount(): void {
     const { useLinkLabelKey, linkLabelKey, linkLabel, uri, useUriTokens } = this.props
@@ -58,7 +58,7 @@ export default class LinkInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  componentDidUpdate(prevProps: Readonly<LinkInterfaceComponentProps>): void {
+  componentDidUpdate(prevProps: Readonly<LinkButtonInterfaceComponentProps>): void {
     const { useLinkLabelKey, linkLabelKey, linkLabel } = this.props
 
     /*

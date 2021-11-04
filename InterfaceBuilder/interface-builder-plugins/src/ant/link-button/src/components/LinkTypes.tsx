@@ -1,8 +1,8 @@
 import React from "react"
 import { Button } from "antd"
-import { LinkDisplayProps } from "../types"
+import { LinkButtonDisplayProps } from "../types"
 
-export function LinkButton({ linkLabel, uri, disabled, linkType, onClick }: LinkDisplayProps) {
+export function LinkButton({ linkLabel, uri, disabled, linkType, onClick }: LinkButtonDisplayProps) {
   const handleClick = (): void => {
     if (onClick) {
       onClick(uri)
@@ -16,7 +16,7 @@ export function LinkButton({ linkLabel, uri, disabled, linkType, onClick }: Link
   )
 }
 
-export function Link({ linkLabel, uri, disabled, linkType, onClick }: LinkDisplayProps) {
+export function Link({ linkLabel, uri, disabled, linkType, onClick }: LinkButtonDisplayProps) {
   return (
     <Button type={linkType} href={uri} disabled={disabled}>
       {linkLabel}

@@ -1,5 +1,4 @@
 export { default as CharCounter } from "./CharCounter"
-export * from "./icon-select-form-config"
 export * from "./common-include-time-form"
 export * from "./selectable/selectable-manage-form"
 export * from "./selectable/types"

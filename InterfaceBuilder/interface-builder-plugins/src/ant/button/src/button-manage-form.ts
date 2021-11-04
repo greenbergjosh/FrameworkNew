@@ -1,5 +1,5 @@
 import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
-import { getIconSelectConfig } from "@opg/interface-builder-plugins/lib/ant/shared/icon-select-form-config"
+import { getIconSelectConfig } from "@opg/interface-builder-plugins/lib/ant/icon/icon-select-form-config"
 
 export const buttonManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...buttonManageFormDefinition, ...extend)

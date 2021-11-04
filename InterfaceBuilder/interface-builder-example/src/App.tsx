@@ -33,7 +33,7 @@ import Download from "@opg/interface-builder-plugins/lib/ant/download"
 import Empty from "@opg/interface-builder-plugins/lib/ant/empty"
 import Form from "@opg/interface-builder-plugins/lib/ant/form"
 import Input from "@opg/interface-builder-plugins/lib/ant/input"
-import Link from "@opg/interface-builder-plugins/lib/ant/link"
+import LinkButton from "@opg/interface-builder-plugins/lib/ant/link-button"
 import List from "@opg/interface-builder-plugins/lib/ant/list"
 import Menu from "@opg/interface-builder-plugins/lib/ant/menu"
 import Modal from "@opg/interface-builder-plugins/lib/ant/modal"
@@ -44,7 +44,7 @@ import Progress from "@opg/interface-builder-plugins/lib/ant/progress"
 // import QueryBuilder from "@opg/interface-builder-plugins/lib/ant/query-builder"
 import queryBuilderLayoutDefinition from "@opg/interface-builder-plugins/lib/ant/query-builder/layoutDefinition"
 import Radio from "@opg/interface-builder-plugins/lib/ant/radio"
-import Repeater from "@opg/interface-builder-plugins/lib/ant/repeater"
+import OrderedList from "@opg/interface-builder-plugins/lib/ant/ordered-list"
 import SectionedNavigation from "@opg/interface-builder-plugins/lib/ant/sectioned-navigation"
 import Select from "@opg/interface-builder-plugins/lib/ant/select"
 import StringTemplate from "@opg/interface-builder-plugins/lib/ant/string-template"
@@ -61,6 +61,8 @@ import Wizard from "@opg/interface-builder-plugins/lib/ant/wizard"
 import Container from "@opg/interface-builder-plugins/lib/html/container"
 import DataInjector from "@opg/interface-builder-plugins/lib/html/data-injector"
 import IFrame from "@opg/interface-builder-plugins/lib/html/iframe"
+import Link from "@opg/interface-builder-plugins/lib/html/link"
+import Repeater from "@opg/interface-builder-plugins/lib/html/repeater"
 import Tab from "@opg/interface-builder-plugins/lib/html/tab"
 import TabSet from "@opg/interface-builder-plugins/lib/html/tab-set"
 // import CodeEditor from "@opg/interface-builder-plugins/lib/monaco/code-editor"
@@ -79,6 +81,7 @@ import tableLayoutDefinition from "@opg/interface-builder-plugins/lib/syncfusion
  * REGISTER PLUGINS
  */
 registry.register({
+  "ordered-list": OrderedList,
   "bulk-text-input": BulkTextInput,
   button: Button,
   card: Card,
@@ -104,6 +107,7 @@ registry.register({
   form: Form,
   input: Input,
   link: Link,
+  "link-button": LinkButton,
   list: List,
   menu: Menu,
   modal: Modal,

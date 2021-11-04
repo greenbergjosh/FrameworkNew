@@ -1,11 +1,11 @@
 export default {
   category: "Navigation",
-  name: "link",
-  title: "Link",
+  name: "link-button",
+  title: "Link Button",
   icon: "link",
   description: `ADVANCED: You can include simple jsonPath expressions in the Link path, such as "?id={$.id}".`,
   componentDefinition: {
-    component: "link",
+    component: "link-button",
     components: [],
   },
 }

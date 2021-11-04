@@ -19,15 +19,17 @@ import { LegacyThemeLoader } from "./themes/ant-default/LegacyThemeLoader"
  * Import InterfaceBuilder Styles
  * TODO: Can't each plugin be responsible for loading its own css? Rollup is outputting css separately with no import.
  */
+import "@opg/interface-builder-plugins/lib/ant/ant-repeater/index.css"
 import "@opg/interface-builder-plugins/lib/ant/color-picker/index.css"
 import "@opg/interface-builder-plugins/lib/ant/column/index.css"
 import "@opg/interface-builder-plugins/lib/ant/dev-tools/index.css"
 import "@opg/interface-builder-plugins/lib/ant/input/index.css"
 import "@opg/interface-builder-plugins/lib/ant/menu/index.css"
-import "@opg/interface-builder-plugins/lib/ant/repeater/index.css"
 import "@opg/interface-builder-plugins/lib/ant/text/index.css"
 import "@opg/interface-builder-plugins/lib/ant/tree/index.css"
 import "@opg/interface-builder-plugins/lib/ant/upload/index.css"
+import "@opg/interface-builder-plugins/lib/html/link/index.css"
+import "@opg/interface-builder-plugins/lib/html/repeater/index.css"
 import "@opg/interface-builder-plugins/lib/html/tab-set/index.css"
 import "@opg/interface-builder-plugins/lib/html/tab/index.css"
 import "@opg/interface-builder-plugins/lib/syncfusion/table/index.css"
@@ -53,8 +55,9 @@ import Divider from "@opg/interface-builder-plugins/lib/ant/divider"
 import Download from "@opg/interface-builder-plugins/lib/ant/download"
 import Empty from "@opg/interface-builder-plugins/lib/ant/empty"
 import Form from "@opg/interface-builder-plugins/lib/ant/form"
+import Icon from "@opg/interface-builder-plugins/lib/ant/icon"
 import Input from "@opg/interface-builder-plugins/lib/ant/input"
-// import Link from  "@opg/interface-builder-plugins/lib/ant/link"
+import LinkButton from "@opg/interface-builder-plugins/lib/ant/link-button"
 import List from "@opg/interface-builder-plugins/lib/ant/list"
 import Menu from "@opg/interface-builder-plugins/lib/ant/menu"
 import Modal from "@opg/interface-builder-plugins/lib/ant/modal"
@@ -65,7 +68,7 @@ import Progress from "@opg/interface-builder-plugins/lib/ant/progress"
 // import QueryBuilder from  "@opg/interface-builder-plugins/lib/ant/query-builder"
 import queryBuilderLayoutDefinition from "@opg/interface-builder-plugins/lib/ant/query-builder/layoutDefinition"
 import Radio from "@opg/interface-builder-plugins/lib/ant/radio"
-import Repeater from "@opg/interface-builder-plugins/lib/ant/repeater"
+import OrderedList from "@opg/interface-builder-plugins/lib/ant/ordered-list"
 import SectionedNavigation from "@opg/interface-builder-plugins/lib/ant/sectioned-navigation"
 // import Select from  "@opg/interface-builder-plugins/lib/ant/select"
 // import StringTemplate from  "@opg/interface-builder-plugins/lib/ant/string-template"
@@ -82,6 +85,8 @@ import Wizard from "@opg/interface-builder-plugins/lib/ant/wizard"
 import Container from "@opg/interface-builder-plugins/lib/html/container"
 import DataInjector from "@opg/interface-builder-plugins/lib/html/data-injector"
 import IFrame from "@opg/interface-builder-plugins/lib/html/iframe"
+// import Link from "@opg/interface-builder-plugins/lib/html/link"
+import Repeater from "@opg/interface-builder-plugins/lib/html/repeater"
 import Tab from "@opg/interface-builder-plugins/lib/html/tab"
 import TabSet from "@opg/interface-builder-plugins/lib/html/tab-set"
 // import CodeEditor from  "@opg/interface-builder-plugins/lib/monaco/code-editor"
@@ -133,6 +138,7 @@ export function App(): JSX.Element {
      * Register InterfaceBuilder Components
      */
     registry.register({
+      "ordered-list": OrderedList,
       "bulk-text-input": BulkTextInput,
       button: Button,
       card: Card,
@@ -156,8 +162,10 @@ export function App(): JSX.Element {
       download: Download,
       empty: Empty,
       form: Form,
+      icon: Icon,
       input: Input,
       link: Link,
+      "link-button": LinkButton,
       list: List,
       menu: Menu,
       modal: Modal,

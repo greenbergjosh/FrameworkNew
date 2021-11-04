@@ -1,10 +1,10 @@
 import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
 
-export const repeaterManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
-  return baseManageForm(...repeaterManageFormDefinition, ...extend)
+export const orderedListManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
+  return baseManageForm(...orderedListManageFormDefinition, ...extend)
 }
 
-const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
+const orderedListManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [

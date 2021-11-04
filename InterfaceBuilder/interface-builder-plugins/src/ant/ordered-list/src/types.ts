@@ -7,7 +7,7 @@ import {
 
 export type OrientationType = "horizontal" | "vertical"
 
-export interface RepeaterInterfaceComponentProps extends ComponentDefinitionNamedProps {
+export interface OrderedListInterfaceComponentProps extends ComponentDefinitionNamedProps {
   addItemLabel: string
   allowDelete: boolean
   allowReorder: boolean

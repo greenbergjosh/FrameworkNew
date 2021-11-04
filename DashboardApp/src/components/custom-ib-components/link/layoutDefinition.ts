@@ -1,3 +1,3 @@
-import Link from "@opg/interface-builder-plugins/lib/ant/link"
+import Link from "@opg/interface-builder-plugins/lib/html/link"
 
 export default Link.layoutDefinition

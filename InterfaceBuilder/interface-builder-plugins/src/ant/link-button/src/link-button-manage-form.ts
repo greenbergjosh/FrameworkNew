@@ -1,10 +1,10 @@
 import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
 
-export const linkManageForm = (...extend: Partial<ComponentDefinition>[]) => {
-  return baseManageForm(...LinkManageFormDefinition, ...extend)
+export const linkButtonManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+  return baseManageForm(...LinkButtonManageFormDefinition, ...extend)
 }
 
-export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
+export const LinkButtonManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [
@@ -16,7 +16,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Link",
+                defaultValue: "Link Button",
                 bindable: true,
               },
               {

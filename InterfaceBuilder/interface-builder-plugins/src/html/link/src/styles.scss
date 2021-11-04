@@ -1,0 +1,21 @@
+@import "~@opg/interface-builder/dist/styles/colors.scss";
+
+.link {
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+
+  > .label {
+    background-color: transparent;
+    color: $ib-blue-dark;
+    font-weight: 400;
+    transition: color 0.3s;
+    white-space: nowrap;
+  }
+
+  &.disabled {
+    > .label {
+      color: $ib-grey;
+    }
+  }
+}

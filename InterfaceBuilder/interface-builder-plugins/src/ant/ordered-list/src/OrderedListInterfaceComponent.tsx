@@ -3,11 +3,11 @@ import { BaseInterfaceComponent, JSONRecord, LayoutDefinition } from "@opg/inter
 import { ConfigureMode } from "./components/ConfigureMode"
 import { DisplayMode } from "./components/DisplayMode"
 import { isEmpty } from "lodash/fp"
-import { RepeaterInterfaceComponentProps } from "./types"
-import { repeaterManageForm } from "./repeater-manage-form"
+import { OrderedListInterfaceComponentProps } from "./types"
+import { orderedListManageForm } from "./ordered-list-manage-form"
 import layoutDefinition from "./layoutDefinition"
 
-export default class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterInterfaceComponentProps> {
+export default class OrderedListInterfaceComponent extends BaseInterfaceComponent<OrderedListInterfaceComponentProps> {
   static defaultProps = {
     addItemLabel: "Add Item",
     allowDelete: true,
@@ -21,7 +21,7 @@ export default class RepeaterInterfaceComponent extends BaseInterfaceComponent<R
     return layoutDefinition
   }
 
-  static manageForm = repeaterManageForm
+  static manageForm = orderedListManageForm
 
   handleChange = (nextState: JSONRecord | JSONRecord[], subpath?: string): void => {
     const { valueKey, userInterfaceData } = this.props

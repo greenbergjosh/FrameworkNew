@@ -2,9 +2,9 @@ import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps 
 
 type LinkType = "link" | "default" | "ghost" | "primary" | "dashed" | "danger" | undefined
 
-export interface LinkInterfaceComponentProps extends ComponentDefinitionNamedProps {
+export interface LinkButtonInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // Core props
-  component: "text"
+  component: "link-button"
   components: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
   preconfigured?: boolean
@@ -23,12 +23,12 @@ export interface LinkInterfaceComponentProps extends ComponentDefinitionNamedPro
   onClick?: (uri: string) => void
 }
 
-export interface LinkInterfaceComponentState {
+export interface LinkButtonInterfaceComponentState {
   linkLabel: string
   uri: string
 }
 
-export interface LinkDisplayProps {
+export interface LinkButtonDisplayProps {
   linkLabel: string
   uri: string
   disabled: boolean

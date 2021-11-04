@@ -1,10 +1,10 @@
 import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
 
-export const containerManageForm = (...extend: Partial<ComponentDefinition>[]) => {
-  return baseManageForm(...ContainerManageFormDefinition, ...extend)
+export const repeaterManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
+  return baseManageForm(...repeaterManageFormDefinition, ...extend)
 }
 
-const ContainerManageFormDefinition: Partial<ComponentDefinition>[] = [
+const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [
@@ -15,24 +15,23 @@ const ContainerManageFormDefinition: Partial<ComponentDefinition>[] = [
             key: "data",
             components: [
               {
+                key: "label",
+                defaultValue: "Repeater",
+                bindable: true,
+              },
+              {
                 key: "hideLabel",
                 defaultValue: true,
-                hidden: true,
               },
               {
                 key: "valueKey",
-                defaultValue: "",
+                defaultValue: "repeaterItems",
                 bindable: true,
-                hidden: true,
               },
             ],
           },
           {
             key: "appearance",
-            components: [],
-          },
-          {
-            key: "style",
             components: [],
           },
         ],
