@@ -67,7 +67,7 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   /**
    *
    */
-  static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
+  static getSummary(props: Partial<ExecuteInterfaceComponentProps>): JSX.Element | undefined {
     return (
       <>
         <div>
@@ -79,6 +79,11 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
         {props.executeImmediately && (
           <div>
             <Icon type="check-square" /> <strong>Execute Immediately</strong>
+          </div>
+        )}
+        {props.RemoteConfig_useDefault && (
+          <div>
+            <Icon type="check-square" /> <strong>Config Default</strong>
           </div>
         )}
       </>
@@ -259,25 +264,27 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             actionType={castProps.RemoteConfig_actionType}
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            redirectPath={castProps.RemoteConfig_redirectPath}
+            configDefault={castProps.RemoteConfig_configDefault}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            onChangeRootData={onChangeRootData}
+            getValue={this.getValue.bind(this)}
             mode={mode}
             onChangeData={onChangeData}
+            onChangeRootData={onChangeRootData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             onResults={this.handleResults}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submitting}
+            redirectPath={castProps.RemoteConfig_redirectPath}
             remoteConfigStaticId={castProps.RemoteConfig_staticId}
             resultsType={castProps.RemoteConfig_resultsType}
             setParentSubmitting={this.setSubmitting}
+            useConfigDefault={castProps.RemoteConfig_useConfigDefault}
             useRedirect={castProps.RemoteConfig_useRedirect}
             userInterfaceData={userInterfaceData}
-            getValue={this.getValue.bind(this)}
-            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       case "remote-query":
@@ -289,16 +296,17 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             buttonProps={buttonProps}
             executeQuery={executeQuery}
             executeQueryUpdate={executeQueryUpdate}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteQuery_isCRUD}
-            notifyOkShow={castProps.RemoteQuery_notifyOkShow}
-            notifyUnauthorizedShow={castProps.RemoteQuery_notifyUnauthorizedShow}
-            notifyServerExceptionShow={castProps.RemoteQuery_notifyServerExceptionShow}
             loadById={loadById}
             mode={mode}
+            notifyOkShow={castProps.RemoteQuery_notifyOkShow}
+            notifyServerExceptionShow={castProps.RemoteQuery_notifyServerExceptionShow}
+            notifyUnauthorizedShow={castProps.RemoteQuery_notifyUnauthorizedShow}
             onChangeData={onChangeData}
+            onChangeRootData={onChangeRootData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             onResults={this.handleResults}
@@ -308,7 +316,6 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
-            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       case "remote-url":
@@ -318,16 +325,17 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
             executeHTTPRequestQuery={executeHTTPRequestQuery}
+            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={getRootUserInterfaceData}
-            onChangeRootData={onChangeRootData}
             isCRUD={castProps.RemoteUrl_isCRUD}
-            notifyOkShow={castProps.RemoteUrl_notifyOkShow}
-            notifyUnauthorizedShow={castProps.RemoteUrl_notifyUnauthorizedShow}
-            notifyServerExceptionShow={castProps.RemoteUrl_notifyServerExceptionShow}
             loadById={loadById}
             mode={mode}
+            notifyOkShow={castProps.RemoteUrl_notifyOkShow}
+            notifyServerExceptionShow={castProps.RemoteUrl_notifyServerExceptionShow}
+            notifyUnauthorizedShow={castProps.RemoteUrl_notifyUnauthorizedShow}
             onChangeData={onChangeData}
+            onChangeRootData={onChangeRootData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             onResults={this.handleResults}
@@ -337,7 +345,6 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             reportDataByQuery={reportDataByQuery}
             setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
-            getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
           />
         )
       default:

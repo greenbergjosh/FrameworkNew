@@ -6,13 +6,20 @@ import { QueryConfig } from "../../../../data/Report"
 import { JSONRecord } from "../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues } from "../utils"
 import { QueryForm } from "../../../../components/query/QueryForm"
-import { LoadStatusCode, LOADSTATUSCODES, OnSubmitType, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
+import {
+  LoadStatus,
+  LoadStatusCode,
+  LOADSTATUSCODES,
+  OnSubmitType,
+  RemoteConfigFromStore,
+  RemoteConfigProps,
+} from "../../types"
 import { QueryParams } from "../../../../components/query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 import { AppDispatch } from "../../../../state/store.types"
-import { isEmpty } from "lodash/fp"
+import { isEmpty, merge } from "lodash/fp"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import { NotifyConfig } from "../../../../state/feedback"
 
@@ -21,25 +28,27 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     actionType,
     buttonLabel,
     buttonProps,
-    redirectPath,
+    configDefault,
     entityTypeId,
+    getDefinitionDefaultValue,
     getParams,
     getRootUserInterfaceData,
-    onChangeRootData,
+    getValue,
     mode,
     onChangeData,
-    onResults,
-    onRaiseEvent,
+    onChangeRootData,
     onMount,
+    onRaiseEvent,
+    onResults,
     outboundValueKey,
     parentSubmitting,
+    redirectPath,
     remoteConfigStaticId,
     resultsType,
     setParentSubmitting,
+    useConfigDefault,
     useRedirect,
     userInterfaceData,
-    getValue,
-    getDefinitionDefaultValue,
   } = props
 
   /* *************************************
@@ -129,10 +138,14 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       setLoadStatus(newLoadingState.loadStatus)
 
       // Put response data into userInterfaceData via onResults
+      const value: LoadStatus["data"] = useConfigDefault
+        ? merge(newLoadingState.data, configDefault)
+        : newLoadingState.data
+
       if (onResults) {
-        onResults(newLoadingState.data)
+        onResults(value)
       }
-      newLoadingState.loadStatus && onRaiseEvent(newLoadingState.loadStatus, { value: newLoadingState.data })
+      newLoadingState.loadStatus && onRaiseEvent(newLoadingState.loadStatus, { value })
     })
   }
 

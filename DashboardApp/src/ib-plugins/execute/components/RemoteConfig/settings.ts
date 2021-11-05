@@ -64,7 +64,6 @@ export const remoteConfigSettings = [
       ],
     },
   },
-
   {
     key: "RemoteConfig_resultsType",
     valueKey: "RemoteConfig_resultsType",
@@ -226,6 +225,25 @@ export const remoteConfigSettings = [
           ],
         },
       ],
+    },
+  },
+  {
+    component: "toggle",
+    label: "Use Config Default",
+    valueKey: "RemoteConfig_useConfigDefault",
+    key: "RemoteConfig_useConfigDefault",
+    bindable: true,
+  },
+  {
+    component: "code-editor",
+    label: "Config Default",
+    valueKey: "RemoteConfig_configDefault",
+    key: "RemoteConfig_configDefault",
+    height: "300px",
+    defaultValue: { lang: "json" },
+    bindable: true,
+    visibilityConditions: {
+      "===": [{ var: ["RemoteConfig_useConfigDefault"] }, true],
     },
   },
   {

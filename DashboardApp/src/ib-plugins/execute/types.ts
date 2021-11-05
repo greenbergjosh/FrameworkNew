@@ -148,10 +148,12 @@ export interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInte
 
   // RemoteConfig Settings
   RemoteConfig_actionType: ActionType
-  RemoteConfig_redirectPath?: string
+  RemoteConfig_configDefault?: string
   RemoteConfig_entityTypeId?: PersistedConfig["id"]
-  RemoteConfig_staticId?: PersistedConfig["id"]
+  RemoteConfig_redirectPath?: string
   RemoteConfig_resultsType?: ResultsType
+  RemoteConfig_staticId?: PersistedConfig["id"]
+  RemoteConfig_useConfigDefault?: boolean
   RemoteConfig_useRedirect?: boolean
 }
 
@@ -163,8 +165,8 @@ export interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfa
   remoteUrl?: PersistedConfig["id"]
   RemoteUrl_isCRUD?: boolean
   RemoteUrl_notifyOkShow?: boolean
-  RemoteUrl_notifyUnauthorizedShow?: boolean
   RemoteUrl_notifyServerExceptionShow?: boolean
+  RemoteUrl_notifyUnauthorizedShow?: boolean
 }
 
 export type ExecuteInterfaceComponentProps = (
@@ -197,25 +199,25 @@ export type OnMountType = (
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
   buttonProps: ButtonProps
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+  getParams: () => JSONRecord
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  onChangeRootData: UserInterfaceProps["onChangeRootData"]
   mode: "display" | "preview" | "edit"
   onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
-  onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
+  onComplete?: () => void
+  onExecute?: () => void
   onMount: OnMountType
+  onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
   outboundValueKey: IExecuteInterfaceComponentProps["outboundValueKey"]
   parentSubmitting: QueryFormProps["parentSubmitting"]
   setParentSubmitting: QueryFormProps["setParentSubmitting"]
   userInterfaceData: UserInterfaceProps["data"]
-  getParams: () => JSONRecord
-  onExecute?: () => void
-  onComplete?: () => void
-  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
 }
 
 export interface FromStore {
-  reportDataByQuery: AppState["reports"]["reportDataByQuery"]
   loadById: UserInterfaceContextManager["loadById"]
+  reportDataByQuery: AppState["reports"]["reportDataByQuery"]
 }
 
 /* ****************************************************************************
@@ -262,13 +264,15 @@ export interface RemoteUrlProps extends RemoteComponentProps, RemoteUrlFromStore
 
 export interface RemoteConfigProps extends RemoteComponentProps {
   actionType: ActionType
-  redirectPath?: string
+  configDefault?: string
   entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
+  getValue: GetValue
   onResults: IExecuteInterfaceComponentProps["onChangeData"]
+  redirectPath?: string
   remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
   resultsType?: ResultsType
+  useConfigDefault?: boolean
   useRedirect?: boolean
-  getValue: GetValue
 }
 
 export interface RemoteConfigFromStore extends FromStore {
@@ -300,9 +304,9 @@ export type ExecuteRemoteConfigParams = RemoteConfigActionParams & {
 }
 
 export type ParsedConfig = {
+  config: JSONRecord | null
   id: PersistedConfig["id"]
   name: PersistedConfig["name"]
   type: PersistedConfig["type"]
   type_id: PersistedConfig["type_id"]
-  config: JSONRecord | null
 }
