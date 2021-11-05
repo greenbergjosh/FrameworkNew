@@ -11,7 +11,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { formManageForm } from "./form-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 interface FormColumnLayout {
@@ -60,7 +60,7 @@ export default class FormInterfaceComponent extends BaseInterfaceComponent<FormI
     return layoutDefinition
   }
 
-  static manageForm = formManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const {

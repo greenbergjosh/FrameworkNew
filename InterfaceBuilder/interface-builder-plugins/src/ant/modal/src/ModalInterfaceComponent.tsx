@@ -3,7 +3,7 @@ import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder
 import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
 import { ModalInterfaceComponentProps } from "./types"
-import { modalManageForm } from "./modal-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class ModalInterfaceComponent extends BaseInterfaceComponent<ModalInterfaceComponentProps> {
@@ -16,7 +16,7 @@ export default class ModalInterfaceComponent extends BaseInterfaceComponent<Moda
     return layoutDefinition
   }
 
-  static manageForm = modalManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     if (this.props.mode === "edit") {

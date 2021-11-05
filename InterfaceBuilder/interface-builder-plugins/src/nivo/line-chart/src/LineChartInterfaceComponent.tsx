@@ -2,12 +2,12 @@ import React from "react"
 import { AxisProps } from "@nivo/axes"
 import { BaseInterfaceComponent, EventBus, JSONRecord, LayoutDefinition, utils } from "@opg/interface-builder"
 import { emptyDataSet } from "./utils"
-import { getNivoColorScheme } from "@opg/interface-builder-plugins/lib/nivo/shared/nivoColors"
+import { getNivoColorScheme } from "@opg/interface-builder-plugins/lib/nivo/shared"
 import { Icon, Spin } from "antd"
 import { isEqual } from "lodash/fp"
 import { LegendProps } from "@nivo/legends"
 import { LineChartInterfaceComponentProps, LineChartInterfaceComponentState, ScaleType } from "./types"
-import { lineChartManageForm } from "./line-chart-manage-form"
+import { settings } from "./settings"
 import { ResponsiveLine, Serie } from "@nivo/line"
 import layoutDefinition from "./layoutDefinition"
 
@@ -19,7 +19,7 @@ export default class LineChartInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = lineChartManageForm
+  static manageForm = settings
 
   constructor(props: LineChartInterfaceComponentProps) {
     super(props)

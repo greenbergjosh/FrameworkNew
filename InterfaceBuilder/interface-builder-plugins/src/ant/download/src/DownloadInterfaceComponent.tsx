@@ -4,7 +4,7 @@ import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder
 import { Button, message, Tooltip } from "antd"
 import { convertParamKVPMapsToParams, getFilename, postData } from "./utils"
 import { DownloadInterfaceComponentProps, DownloadInterfaceComponentState } from "./types"
-import { downloadManageForm } from "./download-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class DownloadInterfaceComponent extends BaseInterfaceComponent<
@@ -15,7 +15,7 @@ export default class DownloadInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = downloadManageForm
+  static manageForm = settings
 
   constructor(props: DownloadInterfaceComponentProps) {
     super(props)

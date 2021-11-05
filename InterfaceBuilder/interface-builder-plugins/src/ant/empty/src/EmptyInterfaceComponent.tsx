@@ -1,7 +1,7 @@
 import React from "react"
 import { BaseInterfaceComponent, ComponentDefinitionNamedProps, LayoutDefinition } from "@opg/interface-builder"
 import { Empty } from "antd"
-import { emptyManageForm } from "./empty-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export interface EmptyInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -16,7 +16,7 @@ export default class EmptyInterfaceComponent extends BaseInterfaceComponent<Empt
     return layoutDefinition
   }
 
-  static manageForm = emptyManageForm
+  static manageForm = settings
 
   constructor(props: EmptyInterfaceComponentProps) {
     super(props)

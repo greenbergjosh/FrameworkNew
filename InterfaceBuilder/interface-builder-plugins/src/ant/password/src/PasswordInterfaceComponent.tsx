@@ -1,6 +1,6 @@
 import React from "react"
 import { Input } from "antd"
-import { passwordManageForm } from "./password-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -30,7 +30,7 @@ export default class PasswordInterfaceComponent extends BaseInterfaceComponent<P
     return layoutDefinition
   }
 
-  static manageForm = passwordManageForm
+  static manageForm = settings
 
   constructor(props: PasswordInterfaceComponentProps) {
     super(props)

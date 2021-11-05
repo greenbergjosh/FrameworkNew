@@ -2,7 +2,7 @@ import React from "react"
 import styled, { css } from "styled-components"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { IconInterfaceComponentProps } from "./types"
-import { iconManageForm } from "./icon-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 import { Icon } from "antd"
 import { isEmpty } from "lodash/fp"
@@ -18,7 +18,7 @@ export default class IconInterfaceComponent extends BaseInterfaceComponent<IconI
     return layoutDefinition
   }
 
-  static manageForm = iconManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const iconNameFromInput = !isEmpty(this.props.icon) ? this.props.icon : layoutDefinition.icon

@@ -19,17 +19,16 @@ import { LegacyThemeLoader } from "./themes/ant-default/LegacyThemeLoader"
  * Import InterfaceBuilder Styles
  * TODO: Can't each plugin be responsible for loading its own css? Rollup is outputting css separately with no import.
  */
-import "@opg/interface-builder-plugins/lib/ant/ordered-list/index.css"
 import "@opg/interface-builder-plugins/lib/ant/color-picker/index.css"
 import "@opg/interface-builder-plugins/lib/ant/column/index.css"
 import "@opg/interface-builder-plugins/lib/ant/dev-tools/index.css"
 import "@opg/interface-builder-plugins/lib/ant/input/index.css"
 import "@opg/interface-builder-plugins/lib/ant/menu/index.css"
+import "@opg/interface-builder-plugins/lib/ant/ordered-list/index.css"
 import "@opg/interface-builder-plugins/lib/ant/text/index.css"
 import "@opg/interface-builder-plugins/lib/ant/tree/index.css"
 import "@opg/interface-builder-plugins/lib/ant/upload/index.css"
 import "@opg/interface-builder-plugins/lib/html/link/index.css"
-import "@opg/interface-builder-plugins/lib/html/repeater/index.css"
 import "@opg/interface-builder-plugins/lib/html/tab-set/index.css"
 import "@opg/interface-builder-plugins/lib/html/tab/index.css"
 import "@opg/interface-builder-plugins/lib/syncfusion/table/index.css"

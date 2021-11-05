@@ -8,7 +8,7 @@ import {
   getDefaultsFromComponentDefinitions,
   LayoutDefinition,
 } from "@opg/interface-builder"
-import { columnManageForm } from "./column-manage-form"
+import { settings } from "./settings"
 import { ColumnInterfaceComponentProps } from "./types"
 import styles from "./styles.scss"
 import layoutDefinition from "./layoutDefinition"
@@ -26,7 +26,7 @@ export default class ColumnInterfaceComponent extends BaseInterfaceComponent<Col
     return layoutDefinition
   }
 
-  static manageForm = columnManageForm
+  static manageForm = settings
 
   static getDefinitionDefaultValue({ columns }: ColumnInterfaceComponentProps) {
     return (columns || []).reduce(

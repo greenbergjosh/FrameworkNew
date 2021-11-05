@@ -7,5 +7,5 @@ export default { component: QueryBuilderInterfaceComponent, layoutDefinition } a
 export type { QueryBuilderInterfaceComponentProps }
 export type { QueryBuilderInterfaceComponentState }
 export type { SchemaType }
-export { queryBuilderManageFormDefinition } from "./query-builder-manage-form"
+export { queryBuilderManageFormDefinition } from "./settings"
 export * from "./QueryBuilderInterfaceComponent"

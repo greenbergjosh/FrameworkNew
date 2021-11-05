@@ -5,4 +5,4 @@ import { LinkInterfaceComponentProps as _LinkInterfaceComponentProps } from "./t
 
 export default { component: LinkInterfaceComponent, layoutDefinition } as RegisterableComponent
 export type LinkInterfaceComponentProps = _LinkInterfaceComponentProps
-export { LinkManageFormDefinition, linkManageForm } from "./link-manage-form"
+export { LinkManageFormDefinition, settings } from "./settings"

@@ -1,6 +1,6 @@
 import React from "react"
 import { Progress } from "antd"
-import { progressManageForm } from "./progress-manage-form"
+import { settings } from "./settings"
 import { ProgressProps, ProgressSize } from "antd/lib/progress/progress"
 import {
   BaseInterfaceComponent,
@@ -55,7 +55,7 @@ export default class ProgressInterfaceComponent extends BaseInterfaceComponent<P
     return layoutDefinition
   }
 
-  static manageForm = progressManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const {

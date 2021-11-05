@@ -4,7 +4,7 @@ import styles from "./styles.scss"
 import tinycolor from "tinycolor2"
 import { BaseInterfaceComponent, LayoutDefinition, Undraggable } from "@opg/interface-builder"
 import { ColorPickerInterfaceComponentProps, ColorPickerInterfaceComponentState } from "./types"
-import { colorPickerManageForm } from "./color-picker-manage-form"
+import { settings } from "./settings"
 import { Input, Popover } from "antd"
 import { isEmpty, isEqual } from "lodash/fp"
 import { RgbaColor, RgbaColorPicker } from "react-colorful"
@@ -26,7 +26,7 @@ export default class ColorPickerInterfaceComponent extends BaseInterfaceComponen
     return layoutDefinition
   }
 
-  static manageForm = colorPickerManageForm
+  static manageForm = settings
 
   constructor(props: ColorPickerInterfaceComponentProps) {
     super(props)

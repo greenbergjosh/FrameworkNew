@@ -1,6 +1,11 @@
 import { get, intersectionWith, isEqual } from "lodash/fp"
 import React from "react"
-import { BaseInterfaceComponent, JSONRecord, UserInterfaceContext } from "@opg/interface-builder"
+import {
+  BaseInterfaceComponent,
+  JSONRecord,
+  UserInterfaceContext,
+  UserInterfaceContextManager,
+} from "@opg/interface-builder"
 import { SelectableChildProps, SelectableOption, SelectableProps, SelectableState } from "./types"
 
 export class Selectable extends BaseInterfaceComponent<SelectableProps, SelectableState> {
@@ -26,7 +31,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     }
   }*/
 
-  static contextType = UserInterfaceContext
+  static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
   // static manageForm = selectManageForm

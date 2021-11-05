@@ -1,7 +1,7 @@
 import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { ContainerInterfaceComponentProps } from "./types"
-import { containerManageForm } from "./container-manage-form"
+import { settings } from "./settings"
 import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
 import layoutDefinition from "./layoutDefinition"
@@ -11,7 +11,7 @@ export default class ContainerInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = containerManageForm
+  static manageForm = settings
 
   render(): JSX.Element | undefined {
     switch (this.props.mode) {

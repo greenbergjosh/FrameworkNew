@@ -64,6 +64,9 @@ export default {
     "fp-ts/lib/Option",
     "fp-ts/lib/Either",
     "uuid/v4",
+    "@opg/interface-builder-plugins/lib/ant/shared",
+    "@opg/interface-builder-plugins/lib/ant/icon",
+    "@opg/interface-builder-plugins/lib/nivo/shared",
   ],
   plugins: [
     postcss({

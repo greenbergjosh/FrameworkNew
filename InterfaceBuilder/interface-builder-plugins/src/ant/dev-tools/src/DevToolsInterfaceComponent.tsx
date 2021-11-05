@@ -4,7 +4,7 @@ import styles from "./styles.scss"
 import { BaseInterfaceComponent, JSONEditor, JSONEditorProps, LayoutDefinition } from "@opg/interface-builder"
 import { Button, Tooltip } from "antd"
 import { DevToolsInterfaceComponentProps, DevToolsInterfaceComponentState } from "./types"
-import { devToolsManageForm } from "./dev-tools-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class DevToolsInterfaceComponent extends BaseInterfaceComponent<
@@ -28,7 +28,7 @@ export default class DevToolsInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = devToolsManageForm
+  static manageForm = settings
 
   handleChange: JSONEditorProps["onChange"] = (data): void => {
     this.setValue([this.props.valueKey, data || {}])

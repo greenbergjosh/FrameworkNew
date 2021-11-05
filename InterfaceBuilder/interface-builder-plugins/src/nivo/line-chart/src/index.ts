@@ -11,4 +11,4 @@ export default { component: LineChartInterfaceComponent, layoutDefinition } as R
 export type LineChartInterfaceComponentProps = _LineChartInterfaceComponentProps
 export type LineChartInterfaceComponentState = _LineChartInterfaceComponentState
 export type SerieTooltipFunction = _SerieTooltipFunction
-export { LineChartManageFormDefinition } from "./line-chart-manage-form"
+export { LineChartManageFormDefinition } from "./settings"

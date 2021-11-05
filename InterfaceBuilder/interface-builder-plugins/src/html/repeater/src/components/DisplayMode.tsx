@@ -1,8 +1,7 @@
 import React from "react"
 import { DisplayModeProps } from "../types"
-import { JSONRecord, ComponentRenderer } from "@opg/interface-builder"
+import { JSONRecord, ComponentRenderer, UserInterfaceProps } from "@opg/interface-builder"
 import { v4 as uuid } from "uuid"
-import { UserInterfaceProps } from "../../../../../../interface-builder/src"
 
 export function DisplayMode({
   components,

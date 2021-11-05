@@ -9,7 +9,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { dataDictionaryManageForm } from "./data-dictionary-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export interface DataDictionaryInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -45,7 +45,7 @@ export default class DataDictionaryInterfaceComponent extends BaseInterfaceCompo
     return layoutDefinition
   }
 
-  static manageForm = dataDictionaryManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const { defaultValue, keyLabel, valueLabel, getRootUserInterfaceData, onChangeRootData, valueComponent, valueKey } = this.props

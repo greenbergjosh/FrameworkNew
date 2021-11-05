@@ -14,7 +14,7 @@ import { Card } from "antd"
 import { isEmpty, toPairs } from "lodash/fp"
 import styled, { css } from "styled-components"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
-import { stringTemplateManageForm } from "./string-template-manage-form"
+import { settings } from "./settings"
 import { tryCatch } from "fp-ts/lib/Option"
 import layoutDefinition from "./layoutDefinition"
 
@@ -52,7 +52,7 @@ export default class StringTemplateInterfaceComponent extends BaseInterfaceCompo
     return layoutDefinition
   }
 
-  static manageForm = stringTemplateManageForm
+  static manageForm = settings
 
   componentDidMount(): void {
     this.parseSerializeSrc()

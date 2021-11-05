@@ -7,7 +7,7 @@ import {
   UserInterface,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { userInterfaceManageForm } from "./user-interface-manage-form"
+import { settings } from "./settings"
 import { Tooltip } from "antd"
 import layoutDefinition from "./layoutDefinition"
 
@@ -43,7 +43,7 @@ export default class UserInterfaceInterfaceComponent extends BaseInterfaceCompon
     return layoutDefinition
   }
 
-  static manageForm = userInterfaceManageForm
+  static manageForm = settings
 
   constructor(props: UserInterfaceInterfaceComponentProps) {
     super(props)

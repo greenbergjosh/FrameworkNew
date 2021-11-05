@@ -1,6 +1,6 @@
 import React from "react"
 import { isEmpty, isEqual, isString } from "lodash/fp"
-import { queryBuilderManageForm } from "./query-builder-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
@@ -33,7 +33,7 @@ export default class QueryBuilderInterfaceComponent extends BaseInterfaceCompone
     return layoutDefinition
   }
 
-  static manageForm = queryBuilderManageForm
+  static manageForm = settings
 
   constructor(props: QueryBuilderInterfaceComponentProps) {
     super(props)

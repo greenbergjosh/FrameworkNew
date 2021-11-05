@@ -1,13 +1,13 @@
 import React from "react"
 import { BaseInterfaceComponent, EventBus, JSONRecord, LayoutDefinition, utils } from "@opg/interface-builder"
 import { convertToPieDatum, emptyDataSet, legends } from "./utils"
-import { getNivoColorScheme } from "@opg/interface-builder-plugins/lib/nivo/shared/nivoColors"
+import { getNivoColorScheme } from "@opg/interface-builder-plugins/lib/nivo/shared"
 import { Icon, Spin } from "antd"
 import { InheritedColorProp } from "@nivo/colors"
 import { isArray, isEqual } from "lodash/fp"
 import { PieDatum, PieDatumWithColor, ResponsivePie } from "@nivo/pie"
 import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
-import { pieManageForm } from "./pie-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class PieInterfaceComponent extends BaseInterfaceComponent<
@@ -18,7 +18,7 @@ export default class PieInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = pieManageForm
+  static manageForm = settings
 
   constructor(props: PieInterfaceComponentProps) {
     super(props)

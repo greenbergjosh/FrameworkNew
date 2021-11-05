@@ -7,7 +7,7 @@ import {
   LayoutDefinition,
 } from "@opg/interface-builder"
 import { RouteInterfaceComponentProps, RouteInterfaceComponentState } from "./types"
-import { routeManageForm } from "./route-manage-form"
+import { settings } from "./settings"
 import { set } from "lodash/fp"
 import layoutDefinition from "./layoutDefinition"
 
@@ -18,7 +18,7 @@ export default class RouteInterfaceComponent extends BaseInterfaceComponent<
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition
   }
-  static manageForm = routeManageForm
+  static manageForm = settings
   static availableEvents: []
 
   private handleChangeSchema() {

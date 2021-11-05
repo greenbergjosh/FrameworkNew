@@ -4,7 +4,7 @@ import React from "react"
 import styled, { css } from "styled-components"
 import { BaseInterfaceComponent, ComponentRendererModeContext, LayoutDefinition } from "@opg/interface-builder"
 import { ListInterfaceComponentProps } from "./types"
-import { listManageForm } from "./list-manage-form"
+import { settings } from "./settings"
 import { v4 as uuid } from "uuid"
 import layoutDefinition from "./layoutDefinition"
 
@@ -30,7 +30,7 @@ export default class ListInterfaceComponent extends BaseInterfaceComponent<ListI
     return layoutDefinition
   }
 
-  static manageForm = listManageForm
+  static manageForm = settings
 
   listId = uuid()
 

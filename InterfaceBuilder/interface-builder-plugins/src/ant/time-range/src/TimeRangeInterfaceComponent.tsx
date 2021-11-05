@@ -2,7 +2,7 @@ import moment from "moment"
 import React from "react"
 import { set } from "lodash/fp"
 import { TimePicker } from "antd"
-import { timeRangeManageForm } from "./time-range-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -37,7 +37,7 @@ export default class TimeRangeInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = timeRangeManageForm
+  static manageForm = settings
 
   static getDefinitionDefaultValue({ endTimeKey, startTimeKey }: TimeRangeInterfaceComponentProps) {
     const startTime = moment.utc()

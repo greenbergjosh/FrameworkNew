@@ -1,4 +1,4 @@
-import { SelectableProps } from "@opg/interface-builder-plugins/lib/ant/shared/selectable/types"
+import { SelectableProps } from "@opg/interface-builder-plugins/lib/ant/shared"
 import { SelectProps as AntdSelectProps } from "antd/lib/select"
 
 export interface SelectState {}

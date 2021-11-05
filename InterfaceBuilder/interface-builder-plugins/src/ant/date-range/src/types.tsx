@@ -1,4 +1,4 @@
-import { TimeSettings } from "@opg/interface-builder-plugins/lib/ant/shared/common-include-time-form"
+import { TimeSettings } from "@opg/interface-builder-plugins/lib/ant/shared"
 import { ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
 
 export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {

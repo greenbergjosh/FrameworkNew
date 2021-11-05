@@ -1,5 +1,5 @@
 import React from "react"
-import { numberRangeManageForm } from "./number-range-manage-form"
+import { settings } from "./settings"
 import { set } from "lodash/fp"
 import { Slider } from "antd"
 import { SliderMarks, SliderValue } from "antd/lib/slider"
@@ -54,7 +54,7 @@ export default class NumberRangeInterfaceComponent extends BaseInterfaceComponen
     return layoutDefinition
   }
 
-  static manageForm = numberRangeManageForm
+  static manageForm = settings
 
   static getDefinitionDefaultValue({
     defaultRangeValueType,

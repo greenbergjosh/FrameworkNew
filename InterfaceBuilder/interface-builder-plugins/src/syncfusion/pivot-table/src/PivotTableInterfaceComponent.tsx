@@ -1,7 +1,7 @@
 import React from "react"
 import { BaseInterfaceComponent, ComponentDefinitionNamedProps, LayoutDefinition } from "@opg/interface-builder"
 import { PivotTableInterfaceComponentProps, PivotTableInterfaceComponentState } from "./types"
-import { pivotTableManageForm } from "./pivot-table-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
@@ -26,7 +26,7 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
     return layoutDefinition
   }
 
-  static manageForm = pivotTableManageForm
+  static manageForm = settings
 
   /**
    *

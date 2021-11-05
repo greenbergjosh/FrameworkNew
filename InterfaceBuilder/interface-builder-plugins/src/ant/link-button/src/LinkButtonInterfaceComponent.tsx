@@ -3,7 +3,7 @@ import { AbstractBaseInterfaceComponentType, BaseInterfaceComponent, LayoutDefin
 import { isEmpty, isEqual, isObject } from "lodash/fp"
 import { Link, LinkButton } from "./components/LinkTypes"
 import { LinkButtonInterfaceComponentProps, LinkButtonInterfaceComponentState } from "./types"
-import { linkButtonManageForm } from "./link-button-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class LinkButtonInterfaceComponent extends BaseInterfaceComponent<
@@ -36,7 +36,7 @@ export default class LinkButtonInterfaceComponent extends BaseInterfaceComponent
     return layoutDefinition
   }
 
-  static manageForm = linkButtonManageForm
+  static manageForm = settings
 
   componentDidMount(): void {
     const { useLinkLabelKey, linkLabelKey, linkLabel, uri, useUriTokens } = this.props

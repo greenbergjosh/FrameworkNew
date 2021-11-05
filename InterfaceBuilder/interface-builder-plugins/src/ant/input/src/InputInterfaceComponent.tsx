@@ -1,6 +1,6 @@
 import React from "react"
 import { Input } from "antd"
-import { inputManageForm } from "./input-manage-form"
+import { settings } from "./settings"
 import { InputProps } from "antd/lib/input"
 import {
   BaseInterfaceComponent,
@@ -8,7 +8,7 @@ import {
   LayoutDefinition,
   Undraggable,
 } from "@opg/interface-builder"
-import CharCounter from "@opg/interface-builder-plugins/lib/ant/shared/CharCounter"
+import { CharCounter } from "@opg/interface-builder-plugins/lib/ant/shared"
 import styles from "./styles.scss"
 import layoutDefinition from "./layoutDefinition"
 
@@ -34,7 +34,7 @@ export default class InputInterfaceComponent extends BaseInterfaceComponent<Inpu
     return layoutDefinition
   }
 
-  static manageForm = inputManageForm
+  static manageForm = settings
 
   constructor(props: InputInterfaceComponentProps) {
     super(props)

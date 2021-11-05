@@ -4,7 +4,7 @@ import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder
 import { Empty, Icon, Spin } from "antd"
 import { intersectionWith, isEqual } from "lodash/fp"
 import { MapInterfaceComponentProps, MapInterfaceComponentState, MarkerType } from "./types"
-import { mapManageForm } from "./map-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class MapInterfaceComponent extends BaseInterfaceComponent<
@@ -15,7 +15,7 @@ export default class MapInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = mapManageForm
+  static manageForm = settings
 
   constructor(props: MapInterfaceComponentProps) {
     super(props)

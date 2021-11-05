@@ -4,7 +4,7 @@ import { EditMode } from "./components/EditMode"
 import { DisplayMode } from "./components/DisplayMode"
 import { isEmpty } from "lodash/fp"
 import { RepeaterInterfaceComponentProps } from "./types"
-import { repeaterManageForm } from "./repeater-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterInterfaceComponentProps> {
@@ -19,7 +19,7 @@ export default class RepeaterInterfaceComponent extends BaseInterfaceComponent<R
     return layoutDefinition
   }
 
-  static manageForm = repeaterManageForm
+  static manageForm = settings
 
   handleChange = (nextState: JSONRecord | JSONRecord[], subpath?: string): void => {
     const { valueKey, userInterfaceData } = this.props

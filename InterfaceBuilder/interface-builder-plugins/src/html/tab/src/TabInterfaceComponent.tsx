@@ -4,7 +4,7 @@ import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
 import { TabContent } from "./components/TabContent"
 import { TabInterfaceComponentProps } from "./types"
-import { tabManageForm } from "./tab-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class TabInterfaceComponent extends BaseInterfaceComponent<TabInterfaceComponentProps> {
@@ -12,7 +12,7 @@ export default class TabInterfaceComponent extends BaseInterfaceComponent<TabInt
     return layoutDefinition
   }
 
-  static manageForm = tabManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const { onChangeData, userInterfaceData, getRootUserInterfaceData, onChangeRootData } = this.props

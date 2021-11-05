@@ -6,7 +6,7 @@ import {
   UserInterfaceContextManager,
 } from "@opg/interface-builder"
 import Table from "@opg/interface-builder-plugins/lib/syncfusion/table/TableInterfaceComponent"
-import { tableManageForm } from "./table-manage-form"
+import { settings } from "./settings"
 import { TableInterfaceComponentProps, TableInterfaceComponentState } from "./types"
 import { TableWrapper } from "./components/TableWrapper"
 
@@ -27,7 +27,7 @@ export default class TableInterfaceComponent extends BaseInterfaceComponent<
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static defaultProps = Table.defaultProps
   static getLayoutDefinition = Table.getLayoutDefinition
-  static manageForm = tableManageForm
+  static manageForm = settings
 
   /**
    *

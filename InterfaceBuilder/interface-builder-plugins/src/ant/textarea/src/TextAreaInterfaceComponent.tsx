@@ -1,6 +1,6 @@
 import React from "react"
 import { Input } from "antd"
-import { textAreaManageForm } from "./text-area-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -8,7 +8,7 @@ import {
   Undraggable,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import CharCounter from "@opg/interface-builder-plugins/lib/ant/shared/CharCounter"
+import { CharCounter } from "@opg/interface-builder-plugins/lib/ant/shared"
 import layoutDefinition from "./layoutDefinition"
 
 export interface TextAreaInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -44,7 +44,7 @@ export default class TextAreaInterfaceComponent extends BaseInterfaceComponent<T
     return layoutDefinition
   }
 
-  static manageForm = textAreaManageForm
+  static manageForm = settings
 
   constructor(props: TextAreaInterfaceComponentProps) {
     super(props)

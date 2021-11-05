@@ -3,7 +3,7 @@ import React from "react"
 import styled, { css } from "styled-components"
 import styles from "../styles.scss"
 import { ComponentRenderer, DataPathContext } from "@opg/interface-builder"
-import { DisplayModeProps } from "types"
+import { DisplayModeProps } from "../types"
 import { isEmpty } from "lodash/fp"
 
 const A = styled.a`

@@ -1,7 +1,7 @@
 import { Checkbox } from "antd"
 import { CheckboxChangeEvent } from "antd/lib/checkbox"
 import React from "react"
-import { checkboxManageForm } from "./checkbox-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -39,7 +39,7 @@ export default class CheckboxInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = checkboxManageForm
+  static manageForm = settings
 
   constructor(props: CheckboxInterfaceComponentProps) {
     super(props)

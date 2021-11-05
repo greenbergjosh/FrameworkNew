@@ -1,7 +1,7 @@
 import React from "react"
 import { Switch } from "antd"
 import { SwitchProps } from "antd/lib/switch"
-import { toggleManageForm } from "./toggle-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -31,7 +31,7 @@ export default class ToggleInterfaceComponent extends BaseInterfaceComponent<Tog
     return layoutDefinition
   }
 
-  static manageForm = toggleManageForm
+  static manageForm = settings
 
   handleChange = (checked: boolean) => {
     const { inverted, valueKey } = this.props

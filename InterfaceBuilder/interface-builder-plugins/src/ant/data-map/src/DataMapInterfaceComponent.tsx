@@ -9,7 +9,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { dataMapManageForm } from "./data-map-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export interface DataMapInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -50,7 +50,7 @@ export default class DataMapInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = dataMapManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const {

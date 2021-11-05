@@ -6,7 +6,7 @@ import {
   ComponentRenderer,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { slotConfigManageForm } from "./slot-config-manage-form"
+import { settings } from "./settings"
 import { getSlotConfigLayout } from "./getSlotConfigLayout"
 import layoutDefinition from "./layoutDefinition"
 
@@ -33,7 +33,7 @@ export default class SlotConfigInterfaceComponent extends BaseInterfaceComponent
     return layoutDefinition
   }
 
-  static manageForm = slotConfigManageForm
+  static manageForm = settings
 
   private handleChangeData = (newData: UserInterfaceProps["data"]) => {
     const value = newData.data.map(({ value }: { value: any }) => value)

@@ -10,7 +10,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { sectionedNavigationManageForm } from "./sectioned-navigation-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 interface NavigationSection {
@@ -58,7 +58,7 @@ export default class SectionedNavigationInterfaceComponent extends BaseInterface
     return layoutDefinition
   }
 
-  static manageForm = sectionedNavigationManageForm
+  static manageForm = settings
 
   state = { activeKey: null }
 

@@ -21,7 +21,7 @@ export type {
   TableInterfaceComponentEditModeProps,
   SortableGroupableColumnModel,
 }
-export { tableManageFormDefinition } from "./table-manage-form"
+export { tableManageFormDefinition } from "./settings"
 export type { CustomAggregateFunction }
 
 export * as StandardGridTypes from "./StandardGrid/types"

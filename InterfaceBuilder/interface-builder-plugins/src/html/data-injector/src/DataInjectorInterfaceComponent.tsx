@@ -1,5 +1,5 @@
 import React from "react"
-import { dataInjectorManageForm } from "./data-injector-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   JSONEditor,
@@ -28,7 +28,7 @@ export default class DataInjectorInterfaceComponent extends BaseInterfaceCompone
     return layoutDefinition
   }
 
-  static manageForm = dataInjectorManageForm
+  static manageForm = settings
 
   componentDidMount(): void {
     this.updateValue()

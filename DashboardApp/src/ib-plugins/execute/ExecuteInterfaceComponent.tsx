@@ -8,7 +8,7 @@ import {
   UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { executeManageForm } from "./execute-manage-form"
+import { settings } from "./settings"
 import {
   ExecuteInterfaceComponentProps,
   ExecuteInterfaceComponentState,
@@ -38,7 +38,7 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   static getLayoutDefinition() {
     return layoutDefinition
   }
-  static manageForm = executeManageForm
+  static manageForm = settings
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static availableEvents: LoadStatusCode[] = [
     LOADSTATUSCODES.loading,

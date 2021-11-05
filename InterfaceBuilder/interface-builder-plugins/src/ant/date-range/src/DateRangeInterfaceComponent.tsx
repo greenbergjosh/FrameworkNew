@@ -3,8 +3,8 @@ import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { get, isEmpty, set } from "lodash/fp"
 import moment, { MomentInput } from "moment"
 import React from "react"
-import { getTimeFormat } from "@opg/interface-builder-plugins/lib/ant/shared/common-include-time-form"
-import { dateRangeManageForm } from "./date-range-manage-form"
+import { getTimeFormat } from "@opg/interface-builder-plugins/lib/ant/shared"
+import { settings } from "./settings"
 import { BaseInterfaceComponent, LayoutDefinition, Undraggable } from "@opg/interface-builder"
 import { DateRangeInterfaceComponentProps, DateRangeInterfaceComponentState, EVENTS } from "./types"
 import layoutDefinition from "./layoutDefinition"
@@ -23,7 +23,7 @@ export default class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = dateRangeManageForm
+  static manageForm = settings
 
   static getDefinitionDefaultValue({ defaultRangeValue, endDateKey, startDateKey }: DateRangeInterfaceComponentProps) {
     const [startDate, endDate] = this.standardRanges()[defaultRangeValue]

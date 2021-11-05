@@ -2,14 +2,9 @@ import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition, Undraggable } from "@opg/interface-builder"
 import { Icon, Radio } from "antd"
 import { IRadioProps, RadioProps } from "./types"
-import {
-  MODES,
-  SelectableChildProps,
-  SelectableProps,
-} from "@opg/interface-builder-plugins/lib/ant/shared/selectable/types"
+import { MODES, Selectable, SelectableChildProps, SelectableProps } from "@opg/interface-builder-plugins/lib/ant/shared"
 import { RadioChangeEvent } from "antd/lib/radio"
-import { radioManageForm } from "./radio-manage-form"
-import { Selectable } from "@opg/interface-builder-plugins/lib/ant/shared/selectable/Selectable"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class RadioInterfaceComponent extends BaseInterfaceComponent<RadioProps> {
@@ -30,7 +25,7 @@ export default class RadioInterfaceComponent extends BaseInterfaceComponent<Radi
     valueSuffix: "",
   }
 
-  static manageForm = radioManageForm
+  static manageForm = settings
 
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition

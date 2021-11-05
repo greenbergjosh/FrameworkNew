@@ -3,9 +3,9 @@ import {
   ComponentDefinitionNamedProps,
   JSONRecord,
   UserInterfaceProps,
+  AbstractBaseInterfaceComponentType,
 } from "@opg/interface-builder"
 import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
-import { AbstractBaseInterfaceComponentType } from "../../../../../interface-builder/src"
 
 export interface IPivotTableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // Core props

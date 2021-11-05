@@ -8,7 +8,7 @@ import {
   DataPathContext,
   LayoutDefinition,
 } from "@opg/interface-builder"
-import { tabsManageForm } from "./tabs-manage-form"
+import { settings } from "./settings"
 import { set } from "lodash/fp"
 import { EVENTS, TabsInterfaceComponentDisplayModeState, TabsInterfaceComponentProps } from "./types"
 import layoutDefinition from "./layoutDefinition"
@@ -21,7 +21,7 @@ export default class TabsInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = tabsManageForm
+  static manageForm = settings
   static availableEvents = [EVENTS.ACTIVE_TAB_CHANGED]
 
   constructor(props: TabsInterfaceComponentProps) {

@@ -1,7 +1,7 @@
 import React from "react"
 import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
 import Pie from "@opg/interface-builder-plugins/lib/nivo/pie/PieInterfaceComponent"
-import { pieManageForm } from "./pie-manage-form"
+import { settings } from "./settings"
 import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../../lib/loadRemoteLBM"
 import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
@@ -22,7 +22,7 @@ export default class PieInterfaceComponent extends BaseInterfaceComponent<
   context!: React.ContextType<typeof UserInterfaceContext>
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static getLayoutDefinition = Pie.getLayoutDefinition
-  static manageForm = pieManageForm
+  static manageForm = settings
 
   componentDidMount(): void {
     if (!this.context) {

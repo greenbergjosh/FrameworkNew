@@ -1,7 +1,7 @@
 import React from "react"
 import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
 import Link from "@opg/interface-builder-plugins/lib/html/link/LinkInterfaceComponent"
-import { linkManageForm } from "./link-manage-form"
+import { settings } from "./settings"
 import { LinkInterfaceComponentProps } from "./types"
 import { AdminUserInterfaceContext } from "../../data/AdminUserInterfaceContextManager"
 
@@ -12,7 +12,7 @@ export default class LinkInterfaceComponent extends BaseInterfaceComponent<LinkI
     useRouter: true,
   }
   static getLayoutDefinition = Link.getLayoutDefinition
-  static manageForm = linkManageForm
+  static manageForm = settings
 
   handleClick = (uri: string, e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     if (this.props.useRouter && this.context) {

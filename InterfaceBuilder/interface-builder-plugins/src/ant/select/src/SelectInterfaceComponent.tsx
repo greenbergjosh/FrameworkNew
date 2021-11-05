@@ -2,13 +2,8 @@ import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition, Undraggable } from "@opg/interface-builder"
 import { Icon, Select } from "antd"
 import { ISelectProps, SelectProps, SelectState } from "./types"
-import {
-  MODES,
-  SelectableChildProps,
-  SelectableProps,
-} from "@opg/interface-builder-plugins/lib/ant/shared/selectable/types"
-import { Selectable } from "@opg/interface-builder-plugins/lib/ant/shared/selectable/Selectable"
-import { selectManageForm } from "./select-manage-form"
+import { MODES, Selectable, SelectableChildProps, SelectableProps } from "@opg/interface-builder-plugins/lib/ant/shared"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
@@ -29,7 +24,7 @@ export default class SelectInterfaceComponent extends BaseInterfaceComponent<Sel
     valueSuffix: "",
   }
 
-  static manageForm = selectManageForm
+  static manageForm = settings
 
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition

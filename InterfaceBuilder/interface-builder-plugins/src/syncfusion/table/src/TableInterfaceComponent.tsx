@@ -10,7 +10,7 @@ import { AbstractTable } from "./components/AbstractTable"
 import { EditTable } from "./components/EditTable"
 import { isBoolean } from "lodash/fp"
 import { TableInterfaceComponentProps, TableInterfaceComponentState } from "./types"
-import { tableManageForm } from "./table-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class TableInterfaceComponent extends BaseInterfaceComponent<
@@ -34,7 +34,7 @@ export default class TableInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = tableManageForm
+  static manageForm = settings
 
   /**
    *

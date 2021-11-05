@@ -2,7 +2,7 @@ import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { Text } from "./components/Text"
 import { TextInterfaceComponentProps, TextInterfaceComponentState } from "./types"
-import { textManageForm } from "./text-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class TextInterfaceComponent extends BaseInterfaceComponent<
@@ -23,7 +23,7 @@ export default class TextInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = textManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     return <Text {...this.props} data={this.getValue(this.props.valueKey)} />

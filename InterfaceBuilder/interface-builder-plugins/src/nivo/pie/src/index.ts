@@ -16,4 +16,4 @@ export type PieInterfaceComponentState = _PieInterfaceComponentState
 export type SliceLabelValueFunction = _SliceLabelValueFunction
 export type SliceTooltipFunction = _SliceTooltipFunction
 export type OtherSliceAggregatorFunction = _OtherSliceAggregatorFunction
-export { PieManageFormDefinition } from "./pie-manage-form"
+export { PieManageFormDefinition } from "./settings"

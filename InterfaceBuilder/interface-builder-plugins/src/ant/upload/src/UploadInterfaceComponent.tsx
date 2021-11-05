@@ -1,7 +1,7 @@
 import React from "react"
 import { getOr } from "lodash/fp"
 import { Icon, message, Spin } from "antd"
-import { uploadManageForm } from "./upload-manage-form"
+import { settings } from "./settings"
 import {
   FailureEventArgs,
   PauseResumeEventArgs,
@@ -88,7 +88,7 @@ export default class UploadInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = uploadManageForm
+  static manageForm = settings
 
   constructor(props: UploadInterfaceComponentProps) {
     super(props)

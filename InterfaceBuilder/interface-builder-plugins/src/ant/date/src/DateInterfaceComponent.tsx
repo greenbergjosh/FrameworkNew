@@ -1,8 +1,8 @@
 import { DatePicker } from "antd"
 import moment from "moment"
 import React from "react"
-import { getTimeFormat, TimeSettings } from "@opg/interface-builder-plugins/lib/ant/shared/common-include-time-form"
-import { dateManageForm } from "./date-manage-form"
+import { getTimeFormat, TimeSettings } from "@opg/interface-builder-plugins/lib/ant/shared"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -36,7 +36,7 @@ export default class DateInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = dateManageForm
+  static manageForm = settings
 
   handleChange: SinglePickerProps["onChange"] = (inputMoment, dateString) => {
     const { onChangeData, timeSettings, valueKey } = this.props

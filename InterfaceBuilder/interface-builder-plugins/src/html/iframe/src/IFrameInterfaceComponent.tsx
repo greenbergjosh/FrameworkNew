@@ -1,5 +1,5 @@
 import React from "react"
-import { iframeManageForm } from "./iframe-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
@@ -26,7 +26,7 @@ export default class IFrameInterfaceComponent extends BaseInterfaceComponent<IFr
     return layoutDefinition
   }
 
-  static manageForm = iframeManageForm
+  static manageForm = settings
 
   /*
    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe

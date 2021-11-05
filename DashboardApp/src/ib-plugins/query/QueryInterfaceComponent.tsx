@@ -1,7 +1,7 @@
 import React from "react"
 import { Query } from "../../components/query/Query"
 import { QueryChildProps } from "../../components/query/types"
-import { queryManageForm } from "./query-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentRenderer,
@@ -27,7 +27,7 @@ export default class QueryInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = queryManageForm
+  static manageForm = settings
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 

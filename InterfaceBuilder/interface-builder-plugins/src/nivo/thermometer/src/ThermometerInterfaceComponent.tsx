@@ -1,10 +1,10 @@
-import getColor from "@opg/interface-builder-plugins/lib/nivo/shared/colors"
+import { getColor } from "@opg/interface-builder-plugins/lib/nivo/shared"
 import getThermometer from "./components"
 import React from "react"
 import { BaseInterfaceComponent, formatNumber, LayoutDefinition } from "@opg/interface-builder"
 import { Icon, Spin, Tooltip } from "antd"
 import { ThermometerInterfaceComponentProps, ThermometerInterfaceComponentState } from "./types"
-import { thermometerManageForm } from "./thermometer-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class ThermometerInterfaceComponent extends BaseInterfaceComponent<
@@ -15,7 +15,7 @@ export default class ThermometerInterfaceComponent extends BaseInterfaceComponen
     return layoutDefinition
   }
 
-  static manageForm = thermometerManageForm
+  static manageForm = settings
 
   constructor(props: ThermometerInterfaceComponentProps) {
     super(props)

@@ -9,4 +9,4 @@ import {
 export default { component: LinkButtonInterfaceComponent, layoutDefinition } as RegisterableComponent
 export type LinkButtonInterfaceComponentProps = _LinkButtonInterfaceComponentProps
 export type LinkButtonInterfaceComponentState = _LinkButtonInterfaceComponentState
-export { LinkButtonManageFormDefinition } from "./link-button-manage-form"
+export { LinkButtonManageFormDefinition } from "./settings"

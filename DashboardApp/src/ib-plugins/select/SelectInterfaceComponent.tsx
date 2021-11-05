@@ -3,7 +3,7 @@ import { Icon, Select } from "antd"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { MODES, ModeType, SelectableChildProps, SelectableProps } from "../_shared/selectable/types"
 import { Selectable } from "../_shared/selectable/Selectable"
-import { selectManageForm } from "./select-manage-form"
+import { settings } from "./settings"
 import { SelectProps, SelectState } from "./types"
 import { isUndefined, isString } from "lodash/fp"
 import { AbstractSelectProps } from "antd/lib/select"
@@ -21,7 +21,7 @@ export default class SelectInterfaceComponent extends BaseInterfaceComponent<Sel
     valueSuffix: "",
   }
 
-  static manageForm = selectManageForm
+  static manageForm = settings
 
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition

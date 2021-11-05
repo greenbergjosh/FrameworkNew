@@ -10,7 +10,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { collapseManageForm } from "./collapse-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export interface SectionDefinition {
@@ -46,7 +46,7 @@ export default class CollapseInterfaceComponent extends BaseInterfaceComponent<C
     return layoutDefinition
   }
 
-  static manageForm = collapseManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const { accordion, onChangeData, sections, userInterfaceData, getRootUserInterfaceData, onChangeRootData } =

@@ -5,7 +5,7 @@ import {
   UserInterfaceContext,
   UserInterfaceContextManager,
 } from "@opg/interface-builder"
-import { relationshipsManageForm } from "./relationships-manage-form"
+import { settings } from "./settings"
 import { RelationshipsInterfaceComponentProps, RelationshipsInterfaceComponentState } from "./types"
 import { ExecuteInterfaceComponentProps, LoadStatusCode } from "../execute/types"
 import { AdminUserInterfaceContext } from "../../data/AdminUserInterfaceContextManager"
@@ -31,7 +31,7 @@ export default class RelationshipsInterfaceComponent extends BaseInterfaceCompon
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition
   }
-  static manageForm = relationshipsManageForm
+  static manageForm = settings
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static availableEvents: LoadStatusCode[] = []
   context!: React.ContextType<typeof AdminUserInterfaceContext>

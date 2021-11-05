@@ -1,5 +1,9 @@
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
-import { ComponentRenderMetaProps } from "../../../../../interface-builder/src"
+import {
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  UserInterfaceProps,
+  ComponentRenderMetaProps,
+} from "@opg/interface-builder"
 
 export interface IconInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "icon"

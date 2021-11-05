@@ -1,7 +1,7 @@
 import { Button, Form, Icon } from "antd"
 import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
-import { dateStepperManageForm } from "./date-stepper-manage-form"
+import { settings } from "./settings"
 import {
   DateAction,
   DateStepperInterfaceComponentProps,
@@ -24,7 +24,7 @@ export default class DateStepperInterfaceComponent extends BaseInterfaceComponen
     return layoutDefinition
   }
 
-  static manageForm = dateStepperManageForm
+  static manageForm = settings
 
   /* ***********************************************
    *

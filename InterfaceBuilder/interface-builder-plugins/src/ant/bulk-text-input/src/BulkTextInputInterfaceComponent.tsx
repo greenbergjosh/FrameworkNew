@@ -1,6 +1,6 @@
 import { Input } from "antd"
 import React from "react"
-import { bulkTextInputManageForm } from "./bulk-text-input-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -51,7 +51,7 @@ export default class BulkTextInputInterfaceComponent extends BaseInterfaceCompon
     return layoutDefinition
   }
 
-  static manageForm = bulkTextInputManageForm
+  static manageForm = settings
 
   constructor(props: BulkTextInputInterfaceComponentProps) {
     super(props)

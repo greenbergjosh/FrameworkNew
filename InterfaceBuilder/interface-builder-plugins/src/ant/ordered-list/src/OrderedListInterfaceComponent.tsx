@@ -4,7 +4,7 @@ import { ConfigureMode } from "./components/ConfigureMode"
 import { DisplayMode } from "./components/DisplayMode"
 import { isEmpty } from "lodash/fp"
 import { OrderedListInterfaceComponentProps } from "./types"
-import { orderedListManageForm } from "./ordered-list-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class OrderedListInterfaceComponent extends BaseInterfaceComponent<OrderedListInterfaceComponentProps> {
@@ -21,7 +21,7 @@ export default class OrderedListInterfaceComponent extends BaseInterfaceComponen
     return layoutDefinition
   }
 
-  static manageForm = orderedListManageForm
+  static manageForm = settings
 
   handleChange = (nextState: JSONRecord | JSONRecord[], subpath?: string): void => {
     const { valueKey, userInterfaceData } = this.props

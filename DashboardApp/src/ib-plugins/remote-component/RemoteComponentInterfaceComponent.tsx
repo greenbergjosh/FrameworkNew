@@ -4,7 +4,7 @@ import JSON5 from "json5"
 import React from "react"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { AdminUserInterfaceContext } from "../../data/AdminUserInterfaceContextManager"
-import { remoteComponentManageForm } from "./remote-component-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -42,7 +42,7 @@ export default class RemoteComponentInterfaceComponent extends BaseInterfaceComp
     return layoutDefinition
   }
 
-  static manageForm = remoteComponentManageForm
+  static manageForm = settings
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   context!: React.ContextType<typeof AdminUserInterfaceContext>
 

@@ -3,7 +3,7 @@ import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { DisplayMode } from "./components/DisplayMode"
 import { TreeInterfaceComponentProps } from "./types"
-import { treeManageForm } from "./tree-manage-form"
+import { settings } from "./settings"
 import { TreeNodeNormal } from "antd/lib/tree/Tree"
 import layoutDefinition from "./layoutDefinition"
 
@@ -19,7 +19,7 @@ export default class TreeInterfaceComponent extends BaseInterfaceComponent<TreeI
     return layoutDefinition
   }
 
-  static manageForm = treeManageForm
+  static manageForm = settings
 
   handleChange = (treeData: TreeNodeNormal[]): void => {
     this.setValue([this.props.valueKey, treeData])

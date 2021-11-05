@@ -10,7 +10,7 @@ import {
   LayoutDefinition,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { wizardManageForm } from "./wizard-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 interface WizardStep {
@@ -62,7 +62,7 @@ export default class WizardInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = wizardManageForm
+  static manageForm = settings
 
   static availableEvents = [EVENTS.nextClick, EVENTS.prevClick]
 

@@ -3,7 +3,7 @@ import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder
 import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
 import { RouterInterfaceComponentProps, RouterInterfaceComponentState } from "./types"
-import { routerManageForm } from "./router-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class RouterInterfaceComponent extends BaseInterfaceComponent<
@@ -13,7 +13,7 @@ export default class RouterInterfaceComponent extends BaseInterfaceComponent<
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition
   }
-  static manageForm = routerManageForm
+  static manageForm = settings
   static availableEvents: []
 
   render(): JSX.Element | null {

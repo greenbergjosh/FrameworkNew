@@ -1,4 +1,4 @@
-import getColor from "@opg/interface-builder-plugins/lib/nivo/shared/colors"
+import { getColor } from "@opg/interface-builder-plugins/lib/nivo/shared"
 import React from "react"
 import { formatNumber } from "@opg/interface-builder"
 import { isMarker, MagnitudeMarkerProps } from "../types"

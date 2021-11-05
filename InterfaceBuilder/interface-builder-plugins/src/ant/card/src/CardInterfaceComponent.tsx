@@ -7,7 +7,7 @@ import {
   DataPathContext,
   LayoutDefinition,
 } from "@opg/interface-builder"
-import { cardManageForm } from "./card-manage-form"
+import { settings } from "./settings"
 import { set } from "lodash/fp"
 import { CardInterfaceComponentProps } from "./types"
 import layoutDefinition from "./layoutDefinition"
@@ -17,7 +17,7 @@ export default class CardInterfaceComponent extends BaseInterfaceComponent<CardI
     return layoutDefinition
   }
 
-  static manageForm = cardManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const {

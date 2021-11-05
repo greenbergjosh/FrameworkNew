@@ -2,7 +2,7 @@ import React from "react"
 import { BaseInterfaceComponent, EventBus, JSONRecord, LayoutDefinition, utils } from "@opg/interface-builder"
 import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
 import { ButtonInterfaceComponentProps, ButtonInterfaceComponentState, EVENTS } from "./types"
-import { buttonManageForm } from "./button-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class ButtonInterfaceComponent extends BaseInterfaceComponent<
@@ -17,7 +17,7 @@ export default class ButtonInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = buttonManageForm
+  static manageForm = settings
   static availableEvents = [EVENTS.CLICK]
 
   constructor(props: ButtonInterfaceComponentProps) {

@@ -2,7 +2,7 @@ import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { Divider } from "antd"
 import { DividerInterfaceComponentProps } from "./types"
-import { dividerManageForm } from "./divider-manage-form"
+import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
 
 export default class DividerInterfaceComponent extends BaseInterfaceComponent<DividerInterfaceComponentProps> {
@@ -14,7 +14,7 @@ export default class DividerInterfaceComponent extends BaseInterfaceComponent<Di
     return layoutDefinition
   }
 
-  static manageForm = dividerManageForm
+  static manageForm = settings
 
   render(): JSX.Element {
     const { dashed, orientation, text, textAlignment } = this.props

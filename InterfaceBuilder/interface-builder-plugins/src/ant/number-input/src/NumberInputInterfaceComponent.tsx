@@ -2,7 +2,7 @@ import React from "react"
 import { InputNumber } from "antd"
 import { InputNumberProps } from "antd/lib/input-number"
 import { isEmpty, isNumber, isUndefined, parseInt } from "lodash/fp"
-import { numberInputManageForm } from "./number-input-manage-form"
+import { settings } from "./settings"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -36,7 +36,7 @@ export default class NumberInputInterfaceComponent extends BaseInterfaceComponen
     return layoutDefinition
   }
 
-  static manageForm = numberInputManageForm
+  static manageForm = settings
 
   constructor(props: NumberInputInterfaceComponentProps) {
     super(props)

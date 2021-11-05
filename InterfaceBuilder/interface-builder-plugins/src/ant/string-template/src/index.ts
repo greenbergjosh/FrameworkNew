@@ -13,4 +13,4 @@ export type { StringTemplateInterfaceComponentProps }
 export type { StringTemplateInterfaceComponentState }
 export type { SerializeType }
 export type { DeserializeType }
-export { stringTemplateManageFormDefinition } from "./string-template-manage-form"
+export { stringTemplateManageFormDefinition } from "./settings"

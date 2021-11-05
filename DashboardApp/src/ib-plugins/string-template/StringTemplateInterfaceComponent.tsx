@@ -1,7 +1,7 @@
 import React from "react"
 import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManager } from "@opg/interface-builder"
 import StringTemplate from "@opg/interface-builder-plugins/lib/ant/string-template/StringTemplateInterfaceComponent"
-import { stringTemplateManageForm } from "./string-template-manage-form"
+import { settings } from "./settings"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../../lib/loadRemoteLBM"
 import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
@@ -22,7 +22,7 @@ export default class StringTemplateInterfaceComponent extends BaseInterfaceCompo
   static contextType: React.Context<UserInterfaceContextManager | null> = UserInterfaceContext
   static defaultProps = StringTemplate.defaultProps
   static getLayoutDefinition = StringTemplate.getLayoutDefinition
-  static manageForm = stringTemplateManageForm
+  static manageForm = settings
 
   componentDidMount(): void {
     if (!this.context) {

@@ -1,4 +1,4 @@
-import { buttonDisplayType, shapeType, sizeType } from "./button-manage-form"
+import { buttonDisplayType, shapeType, sizeType } from "./settings"
 import { ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
 
 export type ParamKVPMapsType = { values: { sourceKey: string; targetKey: string }[] }

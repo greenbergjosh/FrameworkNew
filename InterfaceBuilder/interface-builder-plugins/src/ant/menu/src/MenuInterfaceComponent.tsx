@@ -3,9 +3,8 @@ import styles from "./styles.scss"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import { Button, Empty, Icon, Input, Menu, Skeleton, Typography } from "antd"
 import { ClickParam } from "antd/lib/menu"
-import { menuManageForm } from "./menu-manage-form"
-import { Selectable } from "@opg/interface-builder-plugins/lib/ant/shared/selectable/Selectable"
-import { SelectableChildProps, SelectableProps } from "@opg/interface-builder-plugins/lib/ant/shared/selectable/types"
+import { settings } from "./settings"
+import { Selectable, SelectableChildProps, SelectableProps } from "@opg/interface-builder-plugins/lib/ant/shared"
 import layoutDefinition from "./layoutDefinition"
 
 /******************************
@@ -43,7 +42,7 @@ export default class MenuInterfaceComponent extends BaseInterfaceComponent<MenuP
     valueSuffix: "",
   }
 
-  static manageForm = menuManageForm
+  static manageForm = settings
 
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition

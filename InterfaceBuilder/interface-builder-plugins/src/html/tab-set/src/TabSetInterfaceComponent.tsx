@@ -1,5 +1,5 @@
 import React from "react"
-import { tabSetManageForm } from "./tab-set-manage-form"
+import { settings } from "./settings"
 import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
 import {
   EVENTS,
@@ -21,7 +21,7 @@ export default class TabSetInterfaceComponent extends BaseInterfaceComponent<
     return layoutDefinition
   }
 
-  static manageForm = tabSetManageForm
+  static manageForm = settings
   static availableEvents = [EVENTS.ACTIVE_TAB_CHANGED]
 
   constructor(props: TabSetInterfaceComponentProps) {
