@@ -139,7 +139,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
 
       // Put response data into userInterfaceData via onResults
       const value: LoadStatus["data"] = useConfigDefault
-        ? merge(newLoadingState.data, configDefault)
+        ? merge(configDefault, newLoadingState.data)
         : newLoadingState.data
 
       if (onResults) {
