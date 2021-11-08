@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace SimpleImportExport
 {
@@ -13,12 +13,19 @@ namespace SimpleImportExport
     {
         private readonly FrameworkWrapper _fw;
 
-        public LocalEndPoint(IGenericEntity ge, FrameworkWrapper fw) : base(ge)
+        private LocalEndPoint(FrameworkWrapper fw, string baseDir)
         {
             _fw = fw;
-            var baseDir = ge.GetS("Path");
-
             BaseDir = new DirectoryInfo(baseDir);
+        }
+
+        public static async Task<LocalEndPoint> Create(Entity ge, FrameworkWrapper fw)
+        {
+            var baseDir = await ge.GetS("Path");
+
+            var endpoint = new LocalEndPoint(fw, baseDir);
+            await endpoint.LoadPatterns(ge);
+            return endpoint;
         }
 
         public override EndpointType Type { get; } = EndpointType.Local;
@@ -31,16 +38,18 @@ namespace SimpleImportExport
         {
             var destFile = new FileInfo(Path.Combine(BaseDir.FullName, (file.Pattern?.DestinationRelativePath).IfNullOrWhitespace(""), file.FileName));
 
-            if (!destFile.Directory.Exists) destFile.Directory.Create();
+            if (!destFile.Directory.Exists)
+            {
+                destFile.Directory.Create();
+            }
+
             var destinationDirectoryPath = destFile.Directory.FullName;
 
-            using (var srcStream = await source.GetStream(file))
-            using (var f = File.OpenWrite(destFile.FullName))
-            {
-                await srcStream.CopyToAsync(f);
+            using var srcStream = await source.GetStream(file);
+            using var f = File.OpenWrite(destFile.FullName);
+            await srcStream.CopyToAsync(f);
 
-                return (size: f.Length, records: null, destinationDirectoryPath);
-            }
+            return (size: f.Length, records: null, destinationDirectoryPath);
         }
 
         public override Task<IEnumerable<SourceFileInfo>> GetFiles() => Task.FromResult(Filter(BaseDir.GetFiles().Select(f => (new SourceFileInfo(f.Directory?.FullName, f.Name), f.FullName)).ToArray()));
@@ -56,8 +65,14 @@ namespace SimpleImportExport
             var src = new FileInfo(Path.Combine(directoryPath, fileName));
             var dest = new FileInfo(Path.Combine(BaseDir.FullName, relativeBasePath, fileName));
 
-            if (!dest.Directory.Exists) dest.Directory.Create();
-            else if (dest.Exists && overwrite) dest.Delete();
+            if (!dest.Directory.Exists)
+            {
+                dest.Directory.Create();
+            }
+            else if (dest.Exists && overwrite)
+            {
+                dest.Delete();
+            }
             else if (dest.Exists)
             {
                 await _fw.Error($"{nameof(LocalEndPoint)}.{nameof(Move)}", $"Could not perform move because destination file already exists. Source: {dest.FullName}, Destination: {dest.FullName}");
@@ -90,7 +105,10 @@ namespace SimpleImportExport
 
             await _fw.Trace(logContext, $"Renaming {src.Name} to {dest.Name} {src.FullName} -> {dest.FullName}");
 
-            if (dest.Exists && overwrite) dest.Delete();
+            if (dest.Exists && overwrite)
+            {
+                dest.Delete();
+            }
             else if (dest.Exists)
             {
                 await _fw.Error(logContext, $"Could not perform rename because destination file already exists: {nameof(directoryPath)}: {directoryPath}, {nameof(fileName)}: {fileName}, {nameof(pattern)}: {pattern}, {nameof(patternReplace)}: {patternReplace}");

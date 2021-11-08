@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Utility.DataLayer;
 using Utility.EDW.Logging;
-using Utility.EDW.Queueing;
 using Utility.EDW.Reporting;
 using Utility.Entity.Implementations;
 
@@ -24,7 +23,6 @@ namespace Utility
         public RoslynWrapper RoslynWrapper { get; private set; }
         public Entity.Entity StartupConfiguration { get; private set; }
         public EdwSiloLoadBalancedWriter EdwWriter { get; private set; }
-        public PostingQueueSiloLoadBalancedWriter PostingQueueWriter { get; private set; }
         public ErrorSiloLoadBalancedWriter ErrorWriter { get; private set; }
         public ErrorDelegate Err { get; private set; }
         public bool TraceLogging { get; set; } = true;
@@ -90,7 +88,6 @@ namespace Utility
                 }
 
                 fw.EdwWriter = await EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(fw.StartupConfiguration);
-                fw.PostingQueueWriter = await PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(fw.StartupConfiguration);
                 fw.ErrorWriter = await ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(fw.StartupConfiguration);
 
                 var appName = await fw.StartupConfiguration.GetS("Config.ErrorLogAppName", fw.ConfigurationKeys.Join("::"));
@@ -158,7 +155,7 @@ namespace Utility
 
         public Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log) => Alert(LogMethodPrefix + method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }), severity);
 
-        public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, LogMethodPrefix + method, ErrorDescriptor.EmailAlert, JsonConvert.SerializeObject(payload));
+        public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, LogMethodPrefix + method, ErrorDescriptor.EmailAlert, JsonSerializer.Serialize(payload));
 
         public async Task<T> EvaluateEntity<T>(Guid entityId, Entity.Entity parameters = null)
         {
@@ -169,7 +166,7 @@ namespace Utility
 
             var stackedParameters = new EntityDocumentStack();
 
-            var implementation = await entity.GetS("Config.Evaluate.EntityId");
+            var implementation = await entity.GetS("Config.Evaluate.EntityId", null);
             if (!string.IsNullOrWhiteSpace(implementation))
             {
                 evaluatableId = Guid.Parse(implementation);

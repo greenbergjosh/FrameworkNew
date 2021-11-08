@@ -7,6 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Utility;
+using Utility.Http;
 
 namespace GenericWindowsService
 {
@@ -20,8 +21,12 @@ namespace GenericWindowsService
         private static async Task Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
             Fw = await LoadFramework(args);
-            if (args.Contains("console"))
+
+            await HealthCheckHandler.Initialize(Fw);
+
+            if (args.Contains("console") || Debugger.IsAttached)
             {
                 await (await ValidateAndConfigureService(args)).Build().RunAsync();
             }
@@ -87,7 +92,7 @@ namespace GenericWindowsService
                     Service = (IGenericWindowsService)dynamicContext.Assembly.CreateInstance(await fw.StartupConfiguration.GetS("Config.DataServiceTypeName"));
                 }
 
-                WwwRootPath = await fw.StartupConfiguration.GetS("Config.PhysicalFileProviderPath");
+                WwwRootPath = await fw.StartupConfiguration.GetS("Config.PhysicalFileProviderPath", null);
 
                 return fw;
             }

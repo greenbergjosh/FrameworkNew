@@ -65,6 +65,14 @@ namespace Utility
                 return null;
             }
 
+            entity = _entity.Create(new
+            {
+                Id = await entity.GetS("Id"),
+                Name = name,
+                Type = type,
+                Config = await _entity.Parse("application/json", await entity.GetS("Config"))
+            });
+
             _ = _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
             _ = _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
 

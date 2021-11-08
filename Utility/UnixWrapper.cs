@@ -22,7 +22,7 @@ namespace Utility
             {
                 using var outs = new StringWriter();
                 using var errs = new StringWriter();
-                
+
                 var exitCode = await ProcessWrapper.StartProcess(
                     exeUnzip,
                     $"\"{zipFileName}\" -d \"{UnzippedDirectory}\"",
@@ -61,22 +61,6 @@ namespace Utility
 
         public static async Task RemoveNonAsciiFromFile(string sourcePath, string inputFile, string outputFile)
         {
-            // This version is too slow
-            //using (var inf = new FileStream(sourcePath + "\\" + inputFile, FileMode.Open))
-            //{
-            //    using (var outf = File.CreateText(sourcePath + "\\" + outputFile))
-            //    {
-            //          var exitCode = await ProcessWrapper.StartProcess(
-            //            exeTr,
-            //            $"-cd '\\11\\12\\15\\40-\\176'",
-            //            sourcePath,
-            //            timeout,
-            //            outf,
-            //            null,
-            //            inf).ConfigureAwait(continueOnCapturedContext: false);
-            //    }
-            //}
-
             var inf = sourcePath + "\\" + inputFile;
             var outf = sourcePath + "\\" + outputFile;
             var pProcess = new Process();
@@ -96,22 +80,6 @@ namespace Utility
 
         public static async Task RemoveFirstLine(string sourcePath, string inputFile)
         {
-            // This version is too slow
-            //using (var inf = new FileStream(sourcePath + "\\" + inputFile, FileMode.Open))
-            //{
-            //    using (var outf = File.CreateText(sourcePath + "\\" + outputFile))
-            //    {
-            //          var exitCode = await ProcessWrapper.StartProcess(
-            //            exeTr,
-            //            $"-cd '\\11\\12\\15\\40-\\176'",
-            //            sourcePath,
-            //            timeout,
-            //            outf,
-            //            null,
-            //            inf).ConfigureAwait(continueOnCapturedContext: false);
-            //    }
-            //}
-
             var inf = sourcePath + "\\" + inputFile;
             var pProcess = new Process();
             pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
@@ -168,14 +136,10 @@ namespace Utility
         }
 
         public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "[0-9a-f]{32}");
-        // regex is tightened up from the one above (not sure if it would break existing checks, so leaving it alone)
-        // 1. check from the beginning of the line to the end
-        // 2. allow possible "0x" (case-insensitive) leading string in front of hex digest string
-        // 3. include possible carriage return & linefeed as line termination characters
+
         public static async Task RemoveNonSHA512LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "^(?:0[xX])?[0-9a-f]{128}[\\r\\n]?$");
 
-        private static void OutputRedirection(object sendingProcess,
-                              DataReceivedEventArgs outLine)
+        private static void OutputRedirection(object sendingProcess, DataReceivedEventArgs outLine)
         {
             try
             {

@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Utility;
-using Utility.Entity;
 
 namespace GenericDaemonLib
 {
@@ -24,7 +23,7 @@ namespace GenericDaemonLib
         {
             await _fw.Log($"{nameof(DaemonRunner)}.OnStart", "Starting...");
 
-            foreach (var daemonConfig in await _fw.StartupConfiguration.GetD<Entity>("Config.Daemons"))
+            foreach (var daemonConfig in await _fw.StartupConfiguration.GetD("Config.Daemons"))
             {
                 var daemonName = daemonConfig.Key;
                 var daemonEntityId = Guid.Parse(await daemonConfig.Value.GetS("EntityId"));
@@ -63,7 +62,14 @@ namespace GenericDaemonLib
 
             _cancellationTokenSource.Cancel();
 
-            _ = Task.WaitAll(_workerTasks.ToArray(), 60000);
+            try
+            {
+                _ = Task.WaitAll(_workerTasks.ToArray(), 60000);
+            }
+            catch(AggregateException aex)
+            {
+                aex.Handle(ex => ex is TaskCanceledException);
+            }
 
             _ = _fw.Log($"{ nameof(DaemonRunner)}.OnStop", "Stopped");
         }

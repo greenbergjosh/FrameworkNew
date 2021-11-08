@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Utility.EDW.Reporting
 {
@@ -19,8 +19,8 @@ namespace Utility.EDW.Reporting
         {
             { EdwType.Event, new List<object>() },
             { EdwType.Immediate, new List<object>() },
-            { EdwType.Checked, new List<object>()},
-            { EdwType.CheckedDetail, new List<object>()}
+            { EdwType.Checked, new List<object>() },
+            { EdwType.CheckedDetail, new List<object>() }
         };
 
         #region Event Methods
@@ -119,7 +119,7 @@ namespace Utility.EDW.Reporting
         }
         #endregion
 
-        public override string ToString() => JsonConvert.SerializeObject(
+        public override string ToString() => JsonSerializer.Serialize(
             new
             {
                 E = _rsTypes[EdwType.Event],

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace SimpleImportExport
 {
-
     public enum EndpointType
     {
         Local, Ftp
@@ -38,7 +38,7 @@ namespace SimpleImportExport
 
     public abstract class Endpoint
     {
-        protected Endpoint(IGenericEntity ge) => Patterns = ge.GetL("Patterns")?.Select(p => new Pattern(p)).ToArray() ?? new Pattern[0];
+        protected async Task LoadPatterns(Entity ge) => Patterns = (await (await ge.GetL("Patterns")).Select(async p => await Pattern.Create(p))).ToArray();
 
         public abstract EndpointType Type { get; }
         public abstract Task<Stream> GetStream(SourceFileInfo file);
@@ -49,17 +49,14 @@ namespace SimpleImportExport
         public abstract Task Move(string directoryPath, string fileName, string relativeBasePath, bool overwrite);
         public Task Rename(string directoryPath, string fileName, Regex pattern, string patternReplace) => Rename(directoryPath, fileName, pattern, patternReplace, false);
         public abstract Task Rename(string directoryPath, string fileName, Regex pattern, string patternReplace, bool overwrite);
-        protected IEnumerable<Pattern> Patterns { get; }
+        protected IEnumerable<Pattern> Patterns { get; private set; }
 
         protected IEnumerable<SourceFileInfo> Filter(ICollection<(SourceFileInfo file, string matchString)> files)
         {
             if (files?.Any() == true && Patterns?.Any() == true)
             {
-                return Patterns.SelectMany(p =>
-                {
-                    return files.Select(f => new { match = ApplyPattern(p, f.matchString), sourceFile = f.file }).Where(f => f.match.isMatch)
-                        .Select(f => new SourceFileInfo(f.sourceFile.SourceDirectory, f.sourceFile.FileName, p, f.match.fileDate, f.match.additionalFields));
-                }).ToArray();
+                return Patterns.SelectMany(p => files.Select(f => new { match = ApplyPattern(p, f.matchString), sourceFile = f.file }).Where(f => f.match.isMatch)
+                        .Select(f => new SourceFileInfo(f.sourceFile.SourceDirectory, f.sourceFile.FileName, p, f.match.fileDate, f.match.additionalFields))).ToArray();
             }
 
             return files?.Select(f => f.file);
@@ -84,19 +81,20 @@ namespace SimpleImportExport
                     }
                     catch (Exception e)
                     {
-                        Program._fw.Error($"{this.GetType().Name}.{nameof(GetFiles)}.{nameof(ApplyPattern)}", $"Failed to parse date: Endpoint: {this} File: {filePath} Pattern: {JsonWrapper.Serialize(pattern, true)}\r\n{e.UnwrapForLog()}").GetAwaiter().GetResult();
+                        Program._fw.Error($"{GetType().Name}.{nameof(GetFiles)}.{nameof(ApplyPattern)}", $"Failed to parse date: Endpoint: {this} File: {filePath} Pattern: {JsonSerializer.Serialize(pattern)}\r\n{e.UnwrapForLog()}").GetAwaiter().GetResult();
                         isMatch = false;
                     }
                 }
 
-                additionalFields.AddRange(pattern.AdditionalFields.Select(field => new { field, match.Groups[field]?.Value }).Where(p => !p.Value.IsNullOrWhitespace()).Select(p => (key: p.field, value: p.Value)));
+                foreach (var p in pattern.AdditionalFields.Select(field => new { field, match.Groups[field]?.Value }).Where(p => !p.Value.IsNullOrWhitespace()))
+                {
+                    additionalFields.Add(p.field, p.Value);
+                }
             }
 
             return (isMatch, fileDate, filePath, additionalFields);
         }
 
-        protected string CombineUrl(Func<string, string> modifier, params string[] list) => list.Select(i => modifier(i)).Where(i => !i.IsNullOrWhitespace()).Join("/");
-
-        protected string CombineUrl(params string[] list) => list.Select(i => i?.Trim('/')).Where(i => !i.IsNullOrWhitespace()).Join("/");
+        protected static string CombineUrl(params string[] list) => list.Select(i => i?.Trim('/')).Where(i => !i.IsNullOrWhitespace()).Join("/");
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Utility.EDW.Logging
 {
@@ -19,7 +20,7 @@ namespace Utility.EDW.Logging
             Message = message;
         }
 
-        public override string ToString() => JsonWrapper.Json(new
+        public override string ToString() => JsonSerializer.Serialize(new
         {
             s = Severity,
             p = Process,

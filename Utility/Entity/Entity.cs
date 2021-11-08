@@ -79,43 +79,21 @@ namespace Utility.Entity
             return new Entity(entityDocument, null, _config, "$");
         }
 
+        public async Task<(bool success, Entity entity)> TryParse(string contentType, string content)
+        {
+            try
+            {
+                return (true, await Parse(contentType, content));
+            }
+            catch
+            {
+                return (false, null);
+            }
+        }
+
         internal Task<IEnumerable<Entity>> Get(Query query) => Evaluate(new[] { this }, query);
 
-        private async Task<IEnumerable<Entity>> Evaluate(string query)
-        {
-            IEnumerable<Entity> entities;
-            Query parsedQuery;
-
-            if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
-            {
-                if (_config.Retriever is null)
-                {
-                    throw new InvalidOperationException($"Absolute queries are not allowed unless a retriever has been provided.");
-                }
-
-                var result = await _config.Retriever(this, uri);
-                entities = result.entities;
-
-                if (entities is null || !entities.Any())
-                {
-                    throw new InvalidOperationException("Absolute query did not return an entity");
-                }
-
-                parsedQuery = QueryLanguage.Query.Parse(this, string.IsNullOrWhiteSpace(result.query) ? "@" : result.query);
-            }
-            else
-            {
-                if (Document is null)
-                {
-                    throw new InvalidOperationException("Cannot run a relative query on a null entity");
-                }
-
-                entities = new[] { this };
-                parsedQuery = QueryLanguage.Query.Parse(this, query);
-            }
-
-            return await Evaluate(entities, parsedQuery);
-        }
+        public async Task<T> Get<T>(string query = "@") => (await Evaluate(query)).Single().Value<T>();
 
         public async Task<Entity> GetE(string query = "@") => (await Evaluate(query)).SingleOrDefault();
 
@@ -127,10 +105,10 @@ namespace Utility.Entity
 
         public async Task<string> GetS(string query = "@") => (await GetE(query)).Value<string>();
 
-        public async Task<string> GetAsS(string query = "@")
+        public async Task<string> GetAsS(string query = "@", string defaultValue = null)
         {
             var result = await GetE(query);
-            return result?.ValueType == EntityValueType.String ? result.Value<string>() : result?.ToString();
+            return result?.ValueType == EntityValueType.String ? result.Value<string>() : result?.ToString() ?? defaultValue;
         }
 
         public Task<string> GetS(string query = "@", string defaultValue = null) => GetWithDefault(query, defaultValue);
@@ -187,6 +165,42 @@ namespace Utility.Entity
         }
 
         public override string ToString() => Document?.ToString();
+
+        private async Task<IEnumerable<Entity>> Evaluate(string query)
+        {
+            IEnumerable<Entity> entities;
+            Query parsedQuery;
+
+            if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
+            {
+                if (_config.Retriever is null)
+                {
+                    throw new InvalidOperationException($"Absolute queries are not allowed unless a retriever has been provided.");
+                }
+
+                var result = await _config.Retriever(this, uri);
+                entities = result.entities;
+
+                if (entities is null || !entities.Any())
+                {
+                    throw new InvalidOperationException("Absolute query did not return an entity");
+                }
+
+                parsedQuery = QueryLanguage.Query.Parse(this, string.IsNullOrWhiteSpace(result.query) ? "@" : result.query);
+            }
+            else
+            {
+                if (Document is null)
+                {
+                    throw new InvalidOperationException("Cannot run a relative query on a null entity");
+                }
+
+                entities = new[] { this };
+                parsedQuery = QueryLanguage.Query.Parse(this, query);
+            }
+
+            return await Evaluate(entities, parsedQuery);
+        }
 
         private static async Task<IEnumerable<Entity>> Evaluate(IEnumerable<Entity> rootEntities, Query query)
         {

@@ -53,7 +53,7 @@ namespace Utility.EDW.Logging
 
         public static int NextWalkawayValue(int previousValue) => previousValue == 0 ? 1 : previousValue == 1 ? 5 : previousValue == 5 ? 60 : 0;
 
-        public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, IReadOnlyList<IEndpoint> alreadyChosen)
+        public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, (bool alive, int delaySeconds)> endpoints, IReadOnlyList<IEndpoint> alreadyChosen)
         {
             IEndpoint e = null;
             var es = endpoints.Keys.ToList();
@@ -61,7 +61,7 @@ namespace Utility.EDW.Logging
             for (int i = rnd.Next(0, es.Count), k = 0; k < es.Count; k++)
             {
                 e = es[i];
-                if (!alreadyChosen.Contains(e) && endpoints[e].Item1)
+                if (!alreadyChosen.Contains(e) && endpoints[e].alive)
                 {
                     break;
                 }

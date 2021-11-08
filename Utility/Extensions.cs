@@ -46,23 +46,12 @@ namespace Utility
         public static bool IsNullOrWhitespace(this string str) => string.IsNullOrEmpty(str?.Trim());
 
         public static string IfNullOrWhitespace(this string source, string ifEmpty) => source.IsNullOrWhitespace() ? ifEmpty : source;
-        
-        public static string IfNullOrWhitespace(this string source, Func<string> ifEmpty) => source.IsNullOrWhitespace() ? ifEmpty?.Invoke() : source;
-
-        public static bool Contains(this string source, string value, StringComparison comparisonType) => source.IndexOf(value, comparisonType) > -1;
 
         public static DateTime? ParseDate(this string str) => DateTime.TryParse(str, out var i) ? i : null;
-
-        public static DateTime? ParseDate(this string str, string format, IFormatProvider provider = null, DateTimeStyles style = DateTimeStyles.AssumeLocal) =>
-            DateTime.TryParseExact(str, format, provider ?? CultureInfo.CurrentCulture, style, out var i) ? i : null;
-
-        public static long? ParseLong(this string str) => long.TryParse(str, out var i) ? i : null;
 
         public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : null;
 
         public static Guid? ParseGuid(this string str) => Guid.TryParse(str, out var i) ? i : null;
-
-        public static uint? ParseUInt(this string str) => uint.TryParse(str, out var i) ? i : null;
 
         public static bool? ParseBool(this string str)
         {
@@ -83,25 +72,6 @@ namespace Utility
             return i;
         }
 
-        public static Uri ParseWebUrl(this string str, UriKind kind = UriKind.Absolute)
-        {
-            if (str.IsNullOrWhitespace())
-            {
-                return null;
-            }
-
-            str = str.Trim();
-
-            if (kind == UriKind.Absolute && !str.StartsWith("http"))
-            {
-                str = "http://" + str;
-            }
-
-            _ = Uri.TryCreate(str, UriKind.Absolute, out var u);
-
-            return u;
-        }
-
         public static bool IsMatch(this string str, Regex rx)
         {
             if (str.IsNullOrWhitespace())
@@ -113,25 +83,6 @@ namespace Utility
 
             return m.Success;
         }
-
-        public static string Match(this string str, Regex rx)
-        {
-            var m = rx.Match(str);
-
-            return m.Success ? m.Value : null;
-        }
-
-        public static string Match(this string str, Regex rx, string groupName)
-        {
-            var m = rx.Match(str);
-
-            return m.Success ? m.Groups[groupName]?.Value : null;
-        }
-
-        public static string Replace(this string str, Regex rx, string with) => rx.Replace(str, with);
-
-        public static IEnumerable<string> Matches(this string str, Regex rx) => rx.Matches(str).Cast<Match>().Select(m => m.Value);
-
         #endregion
 
         #region Exceptions
@@ -187,11 +138,6 @@ namespace Utility
         #endregion
 
         #region Collections
-
-        public static Task WhenAll(this IEnumerable<Task> tasks) => Task.WhenAll(tasks);
-
-        public static Task WhenAny(this IEnumerable<Task> tasks) => Task.WhenAny(tasks);
-
         public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> col, Func<T, TKey> keySelector, bool takeLast = false)
         {
             var grp = col.GroupBy(keySelector);
@@ -199,154 +145,17 @@ namespace Utility
             return takeLast ? grp.Select(g => g.Last()) : grp.Select(g => g.First());
         }
 
-        public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<T> initialSet, params IEnumerable<T>[] sets)
-        {
-            var finalSet = initialSet.Select(x => new[] { x });
-
-            foreach (var set in sets)
-            {
-                var cp = finalSet.SelectMany(fs => set, (fs, s) => new { fs, s });
-
-                finalSet = cp.Select(x =>
-                {
-                    var a = new T[x.fs.Length + 1];
-
-                    x.fs.CopyTo(a, 0);
-                    a[x.fs.Length] = x.s;
-
-                    return a;
-                });
-            }
-
-            return finalSet;
-        }
-
-        public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size) => Batch(source, size, x => x);
-
-        // Split a collection into batches of a max size
-        //https://github.com/morelinq/MoreLINQ/blob/master/MoreLinq/Batch.cs
-        public static IEnumerable<TResult> Batch<TSource, TResult>(this IEnumerable<TSource> source, int size,
-            Func<IEnumerable<TSource>, TResult> resultSelector)
-        {
-            return source == null
-                ? throw new ArgumentNullException(nameof(source))
-                : size <= 0
-                ? throw new ArgumentOutOfRangeException(nameof(size))
-                : resultSelector == null ? throw new ArgumentNullException(nameof(resultSelector)) : _();
-            IEnumerable<TResult> _()
-            {
-                TSource[] bucket = null;
-                var count = 0;
-
-                foreach (var item in source)
-                {
-                    if (bucket == null)
-                    {
-                        bucket = new TSource[size];
-                    }
-
-                    bucket[count++] = item;
-
-                    // The bucket is fully buffered before it's yielded
-                    if (count != size)
-                    {
-                        continue;
-                    }
-
-                    yield return resultSelector(bucket);
-
-                    bucket = null;
-                    count = 0;
-                }
-
-                // Return the last bucket with all remaining elements
-                if (bucket != null && count > 0)
-                {
-                    Array.Resize(ref bucket, count);
-                    yield return resultSelector(bucket);
-                }
-            }
-        }
-
-        public static void AddRange<TK, TV>(this Dictionary<TK, TV> dic, IEnumerable<(TK key, TV value)> collection)
-        {
-            foreach (var i in collection)
-            {
-                dic.Add(i.key, i.value);
-            }
-        }
-
-        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key) where TKey : struct => key != null && d.ContainsKey(key.Value) ? d[key.Value] : default;
-
-        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key, TValue defaultValue) where TKey : struct => key != null && d.ContainsKey(key.Value) ? d[key.Value] : defaultValue;
-
         #endregion
 
         #region IO
 
-        public static string PathCombine(this DirectoryInfo di, params string[] parts)
-        {
-            //
-            // Union does not garantee preserved order
-            //
-            var arr = new string[parts.Length + 1];
-
-            arr[0] = di.FullName;
-
-            for (var i = 0; i < parts.Length; i++)
-            {
-                arr[i + 1] = parts[i];
-            }
-
-            return Path.Combine(arr);
-        }
-
-        public static void Rename(this DirectoryInfo di, string newName)
-        {
-            if (di.Parent == null)
-            {
-                return;
-            }
-
-            di.MoveTo(di.Parent.PathCombine(newName));
-        }
-
-        public static void Rename(this FileInfo fi, string newName)
-        {
-            if (fi.Directory == null)
-            {
-                return;
-            }
-
-            fi.MoveTo(fi.Directory.PathCombine(newName));
-        }
+        public static string PathCombine(this DirectoryInfo di, params string[] parts) => Path.Combine(parts.Prepend(di.FullName).ToArray());
 
         public static async Task<string> ReadAllTextAsync(this FileInfo fi)
         {
             using var fr = fi.OpenText();
             return await fr.ReadToEndAsync();
         }
-
-        #endregion
-
-        // Asynchronous streams is slated for C# 8.0, allegedly in Sept 2019, replace this then
-        #region LinqAsync
-
-        public static Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func) => source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
-
-        /// <summary>
-        /// DO NOT USE THIS IF YOU'RE EXPECTING ASYNCHRONOUS YIELDING, that's not possible yet
-        /// </summary>
-        public static Task<TResult[]> SelectAsync<TSource, TResult>(
-            this IEnumerable<TSource> source,
-            Func<TSource, Task<TResult>> selector) => Task.WhenAll(source.Select(selector));
-
-        /// <summary>
-        /// DO NOT USE THIS IF YOU'RE EXPECTING ASYNCHRONOUS YIELDING, that's not possible yet
-        /// </summary>
-        public static Task<TResult[]> SelectAsync<TSource, TResult>(
-            this IEnumerable<TSource> source,
-            Func<TSource, int, Task<TResult>> selector) => Task.WhenAll(source.Select(selector));
 
         #endregion
 

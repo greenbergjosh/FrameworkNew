@@ -72,7 +72,7 @@ namespace Utility.DataLayer
                 cn.Open();
                 await using (var cmd = new NpgsqlCommand($"SELECT {sproc}(@Args, @Payload) /* {args.Replace("/*", "/ *").Replace("*/", "* /")} */", cn) { CommandTimeout = timeout })
                 {
-                    _ = cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args.IfNullOrWhitespace(JsonWrapper.Empty));
+                    _ = cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args.IfNullOrWhitespace("{}"));
                     _ = cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Text, payload ?? string.Empty);
                     cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                     _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);

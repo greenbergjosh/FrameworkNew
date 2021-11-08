@@ -59,11 +59,7 @@ namespace Utility
                                                                                         Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
                                                                                         Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
                                                                                         Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
-                                                                                        Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
-                                                                                        Assembly.GetAssembly(typeof(JsonWrapper)),
-                                                                                        Assembly.GetAssembly(typeof(HtmlAgilityPack.HtmlAttribute)),
-                                                                                        Assembly.GetAssembly(typeof(TurnerSoftware.SitemapTools.SitemapEntry)),
-                                                                                        Assembly.GetAssembly(typeof(SetCookieHeaderValue))
+                                                                                        GetType().Assembly
                                                                                     )
                                                                                     .AddReferences(dynamicAssemblies)
                                                                                     .AddImports("System.Dynamic", "System.Xml", "System.Linq");

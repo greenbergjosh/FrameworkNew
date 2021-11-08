@@ -20,11 +20,6 @@ namespace SignalApiLib.SourceHandlers
         private static readonly string LogCtx = $"{nameof(Fluent)}.{nameof(HandleRequest)}";
         private readonly string _traceLogRootPath;
         private readonly bool _traceLog = false;
-        // ToDo: abstract and move to config
-        private readonly IEnumerable<ExportProviders.IPostingQueueProvider> _postingQueueExports = new[]
-        {
-            new ExportProviders.Console()
-        };
 
         private Fluent(FrameworkWrapper fw, string traceLogRootPath)
         {
@@ -125,7 +120,6 @@ namespace SignalApiLib.SourceHandlers
                                     success = false;
                                 }
                             }),
-                            PostToQueue(payloads)
                         };
 
                         await Task.WhenAll(tasks);
@@ -161,15 +155,5 @@ namespace SignalApiLib.SourceHandlers
         };
 
         private Task<SourceData> Mutate(Entity s) => SourceData.Create(s, mutations);
-
-        private async Task PostToQueue(IEnumerable<SourceData> payloads)
-        {
-            var posts = _postingQueueExports.SelectMany(p => payloads, (p, d) => p.GetPostingQueueData("fluent", d)).Where(qd => qd != null).ToArray();
-
-            if (posts.Any())
-            {
-                var res = await _fw.PostingQueueWriter.Write(posts);
-            }
-        }
     }
 }

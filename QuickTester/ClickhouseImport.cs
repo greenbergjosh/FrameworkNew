@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using EdwRollupLib;
-using Newtonsoft.Json;
 using Utility;
 using Utility.DataLayer;
 
@@ -15,7 +15,7 @@ namespace QuickTester
 
             var config = await fw.Entities.GetEntity(Guid.Parse("f4de787b-2bd6-443d-9e57-e3930bb86a8c"));
 
-            var cacheResult = await Data.CallFn("appCache", "appCacheGet", JsonConvert.SerializeObject(new
+            var cacheResult = await Data.CallFn("appCache", "appCacheGet", JsonSerializer.Serialize(new
             {
                 cacheScopeId = "d046030e-ea51-4647-a18d-447ef14a682a",
                 x1 = "NextStartDate"
@@ -47,7 +47,7 @@ namespace QuickTester
 
                 await (await ClickhouseImport.Create(config, fw)).RunAsync(startDate, endDate);
 
-                _ = await Data.CallFn("appCache", "appCacheSet", JsonConvert.SerializeObject(new
+                _ = await Data.CallFn("appCache", "appCacheSet", JsonSerializer.Serialize(new
                 {
                     cacheScopeId = "d046030e-ea51-4647-a18d-447ef14a682a",
                     x1 = "NextStartDate",

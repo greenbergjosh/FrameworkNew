@@ -69,8 +69,8 @@ namespace Utility.DataLayer
 
                 _ = cmd.Parameters.Add(new SqlParameter("@Args", args));
                 _ = cmd.Parameters.Add(new SqlParameter("@Payload", payload));
-                cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                    .Direction = System.Data.ParameterDirection.Output;
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
                 _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                 var ov = cmd.Parameters["@Return"].Value;
@@ -95,8 +95,8 @@ namespace Utility.DataLayer
 
                 _ = cmd.Parameters.Add(new SqlParameter("@Payload", payload));
                 _ = cmd.Parameters.Add(new SqlParameter("@Debug", debug));
-                cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                    .Direction = System.Data.ParameterDirection.Output;
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
                 _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;
@@ -138,8 +138,8 @@ namespace Utility.DataLayer
                 _ = cmd.Parameters.Add(new SqlParameter("Method", method));
                 _ = cmd.Parameters.Add(new SqlParameter("Descriptor", descriptor));
                 _ = cmd.Parameters.Add(new SqlParameter("Message", message));
-                cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                    .Direction = System.Data.ParameterDirection.Output;
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
                 _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;
@@ -179,8 +179,8 @@ namespace Utility.DataLayer
                 _ = cmd.Parameters.Add(new SqlParameter("PostType", postType));
                 _ = cmd.Parameters.Add(new SqlParameter("PostDate", postDate));
                 _ = cmd.Parameters.Add(new SqlParameter("Payload", payload));
-                cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                    .Direction = System.Data.ParameterDirection.Output;
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
                 _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;
@@ -216,8 +216,8 @@ namespace Utility.DataLayer
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 _ = cmd.Parameters.Add(new SqlParameter("Payload", payload));
-                cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                    .Direction = System.Data.ParameterDirection.Output;
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
                 _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 outval = (string)cmd.Parameters["@Return"].Value;

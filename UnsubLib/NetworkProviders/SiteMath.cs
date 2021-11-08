@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
@@ -45,15 +46,15 @@ namespace UnsubLib.NetworkProviders
                 await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
                 var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
-                        JsonWrapper.Json(new
-                        {
-                            NetworkId = networkId,
-                            PayloadType = "json",
-                            DataPath = "{}",
-                            CampaignIdPath = campaignIdPath,
-                            NamePath = campaignNamePath,
-                            RelationshipPath = relationshipPath
-                        }), responseBody);
+                    JsonSerializer.Serialize(new
+                    {
+                        NetworkId = networkId,
+                        PayloadType = "json",
+                        DataPath = "{}",
+                        CampaignIdPath = campaignIdPath,
+                        NamePath = campaignNamePath,
+                        RelationshipPath = relationshipPath
+                    }), responseBody);
 
                 if (res == null || await res.GetS("result", null) == "failed")
                 {

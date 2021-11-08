@@ -5,18 +5,20 @@ namespace Utility.EDW.Logging
 {
     public class ErrorSiloEndpoint : IEndpoint
     {
-        public string connectionString;
-        public int sequence = 0;
-        public IDataLayerClient dataLayerClient;
+        private readonly IDataLayerClient _dataLayerClient;
+
+        private int _sequence = 0;
+
+        public string ConnectionString { get; }
 
         public ErrorSiloEndpoint(string dataLayerType, string connectionString)
         {
-            this.connectionString = connectionString;
-            dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
+            ConnectionString = connectionString;
+            _dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
         }
         public async Task<bool> Audit()
         {
-            var res = await dataLayerClient.InsertErrorLog(connectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
+            var res = await _dataLayerClient.InsertErrorLog(ConnectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
             var result = res.ToLower();
             return result == "success";
         }
@@ -24,19 +26,21 @@ namespace Utility.EDW.Logging
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
             var e = (ErrorLogError)w;
-            var res = await dataLayerClient.InsertErrorLog(connectionString, sequence++, e.Severity, e.Process,
+            var res = await _dataLayerClient.InsertErrorLog(ConnectionString, _sequence++, e.Severity, e.Process,
                 e.Method, e.Descriptor, e.Message).ConfigureAwait(false);
             var result = res.ToLower();
 
-            return result == "success"
-                ? LoadBalancedWriter.Result.Success
-                : result == "walkaway"
-                    ? LoadBalancedWriter.Result.Walkaway
-                    : result == "removeendpoint" ? LoadBalancedWriter.Result.RemoveEndpoint : LoadBalancedWriter.Result.Failure;
+            return result switch
+            {
+                "success" => LoadBalancedWriter.Result.Success,
+                "walkaway" => LoadBalancedWriter.Result.Walkaway,
+                "removeendpoint" => LoadBalancedWriter.Result.RemoveEndpoint,
+                _ => LoadBalancedWriter.Result.Failure,
+            };
         }
 
-        public override bool Equals(object obj) => ((ErrorSiloEndpoint)obj).connectionString == connectionString;
+        public override bool Equals(object obj) => ((ErrorSiloEndpoint)obj).ConnectionString == ConnectionString;
 
-        public override int GetHashCode() => connectionString.GetHashCode();
+        public override int GetHashCode() => ConnectionString.GetHashCode();
     }
 }

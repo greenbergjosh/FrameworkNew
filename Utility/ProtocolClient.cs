@@ -18,7 +18,6 @@ using Amazon.S3.Transfer;
 using HtmlAgilityPack;
 using Renci.SshNet;
 using Renci.SshNet.Async;
-using TurnerSoftware.SitemapTools;
 using Fs = Utility.FileSystem;
 
 namespace Utility
@@ -911,27 +910,6 @@ namespace Utility
         {
             var (success, body) = await HttpGetAsync(remoteContentLocation);
             return success && body == contentToCompare;
-        }
-
-        public static async Task<List<Uri>> SitemapURIs(string domain, string sitemapFileName)
-        {
-            var siteMapQuery = new SitemapQuery();
-            var siteMaps = await siteMapQuery.GetAllSitemapsForDomainAsync(domain);
-            var uris = new List<Uri>();
-            foreach (var siteMapFile in siteMaps)
-            {
-                if (!siteMapFile.Location.ToString().EndsWith(sitemapFileName))
-                {
-                    continue;
-                }
-
-                uris.AddRange(siteMapFile.Urls
-                    .Where(u => u.Location != null)
-                    .Select(u => u.Location)
-                    .ToList());
-            }
-
-            return uris;
         }
 
         public static bool DomElementExists(string uri, string xpath, Stack<(string attr, string attrVal)> attrVals)

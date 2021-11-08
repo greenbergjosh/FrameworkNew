@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace Utility.Http
 {
@@ -43,7 +43,7 @@ namespace Utility.Http
         {
             var cacheKey = BuildKey(key);
 
-            var chunks = JsonConvert.DeserializeObject<Dictionary<int, byte[]>>(await _cache.GetStringAsync(cacheKey) ?? "{}");
+            var chunks = JsonSerializer.Deserialize<Dictionary<int, byte[]>>(await _cache.GetStringAsync(cacheKey) ?? "{}");
 
             if (chunkIndex > 0 && chunks.Count == 0)
             {
@@ -56,7 +56,7 @@ namespace Utility.Http
 
             chunks[chunkIndex] = buffer;
 
-            await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(chunks), new DistributedCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(chunks), new DistributedCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
 
             if (chunks.Count == totalChunks)
             {

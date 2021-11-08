@@ -82,8 +82,6 @@ namespace GenericWindowsService
 
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuring Http Handler..." + Environment.NewLine);
 
-                HealthCheckHandler.Initialize(Program.Fw).GetAwaiter().GetResult();
-
                 app.Run(async context =>
                 {
                     try

@@ -35,7 +35,7 @@ namespace Utility.Entity.QueryLanguage
                     '@' => AddLocalNode(ref index),
                     '.' => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index),
                     '[' => AddIndex(entity, query, ref index),
-                    char ch when Query.IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index, true),
+                    char ch when IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index, true),
                     _ => null
                 };
 
