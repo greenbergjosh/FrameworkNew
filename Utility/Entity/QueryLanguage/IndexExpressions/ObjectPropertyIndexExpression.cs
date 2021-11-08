@@ -24,7 +24,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         internal static bool TryParse(ReadOnlySpan<char> query, ref int index, out IIndexExpression indexExpression)
         {
-            if (query[index] != '\'' && query[index] != '"')
+            if (query[index] is not '\'' and not '"')
             {
                 index = -1;
                 indexExpression = null;
@@ -42,10 +42,12 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
                     length += 2;
                     continue;
                 }
+
                 if (query[index + length] == start)
                 {
                     break;
                 }
+
                 length++;
             }
 

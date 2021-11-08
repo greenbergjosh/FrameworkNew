@@ -5,38 +5,42 @@ namespace Utility.EDW.Logging
 {
     public class ErrorSiloEndpoint : IEndpoint
     {
-        public string connectionString;
-        public int sequence = 0;
-        public IDataLayerClient dataLayerClient;
+        private readonly IDataLayerClient _dataLayerClient;
+
+        private int _sequence = 0;
+
+        public string ConnectionString { get; }
 
         public ErrorSiloEndpoint(string dataLayerType, string connectionString)
         {
-            this.connectionString = connectionString;
-            this.dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
+            ConnectionString = connectionString;
+            _dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
         }
         public async Task<bool> Audit()
         {
-            string res = await dataLayerClient.InsertErrorLog(this.connectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
-            string result = res.ToLower();
-            if (result == "success") return true;
-            else return false;
+            var res = await _dataLayerClient.InsertErrorLog(ConnectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
+            var result = res.ToLower();
+            return result == "success";
         }
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
-            ErrorLogError e = (ErrorLogError)w;
-            string res = await dataLayerClient.InsertErrorLog(this.connectionString, sequence++, e.Severity, e.Process,
+            var e = (ErrorLogError)w;
+            var res = await _dataLayerClient.InsertErrorLog(ConnectionString, _sequence++, e.Severity, e.Process,
                 e.Method, e.Descriptor, e.Message).ConfigureAwait(false);
-            string result = res.ToLower();
-            if (result == "success") return LoadBalancedWriter.Result.Success;
-            else if (result == "walkaway")
-                return LoadBalancedWriter.Result.Walkaway;
-            else if (result == "removeendpoint") return LoadBalancedWriter.Result.RemoveEndpoint;
-            else return LoadBalancedWriter.Result.Failure;
+            var result = res.ToLower();
+
+            return result switch
+            {
+                "success" => LoadBalancedWriter.Result.Success,
+                "walkaway" => LoadBalancedWriter.Result.Walkaway,
+                "removeendpoint" => LoadBalancedWriter.Result.RemoveEndpoint,
+                _ => LoadBalancedWriter.Result.Failure,
+            };
         }
 
-        public override bool Equals(object obj) => ((ErrorSiloEndpoint)obj).connectionString == this.connectionString;
+        public override bool Equals(object obj) => ((ErrorSiloEndpoint)obj).ConnectionString == ConnectionString;
 
-        public override int GetHashCode() => this.connectionString.GetHashCode();
+        public override int GetHashCode() => ConnectionString.GetHashCode();
     }
 }

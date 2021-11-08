@@ -17,11 +17,9 @@ namespace GenericWindowsService
     public class Startup
     {
 
-        public void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services)
         {
-            _ = services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
+            _ = services.AddCors(options => options.AddPolicy("CorsPolicy",
                     builder => builder
                     .AllowAnyMethod()
                     .AllowAnyHeader()
@@ -29,9 +27,8 @@ namespace GenericWindowsService
                     // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio 
                     // We don't want a "*", because no browser supports that.  The lambda below returns the origin
                     // domain explicitly, which is what we were doing before the upgrade above.
-                    .SetIsOriginAllowed(x => { return true; })
-                    );
-            })
+                    .SetIsOriginAllowed(x => true)
+                    ))
             .Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -49,7 +46,7 @@ namespace GenericWindowsService
         private void OnShutdown()
         {
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::OnShutdown()" + Environment.NewLine);
-            if (Program.HasOnStop) Program.Service.OnStop();
+            Program.Service.OnStop();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,38 +58,29 @@ namespace GenericWindowsService
             {
                 if (env.IsDevelopment())
                 {
-                    app.UseDeveloperExceptionPage();
+                    _ = app.UseDeveloperExceptionPage();
                 }
 
                 AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionEventHandler;
 
                 TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
 
-                applicationLifetime.ApplicationStopping.Register(OnShutdown);
+                _ = applicationLifetime.ApplicationStopping.Register(OnShutdown);
 
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Setting static files path..." + Environment.NewLine);
 
-                var wwwrootPath = Program.Fw.StartupConfiguration.GetS("Config/PhysicalFileProviderPath");
+                _ = !Program.WwwRootPath.IsNullOrWhitespace()
+                    ? app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(Program.WwwRootPath) })
+                    : app.UseStaticFiles();
 
-                if (!wwwrootPath.IsNullOrWhitespace())
-                {
-                    app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(wwwrootPath) });
-                }
-                else
-                {
-                    app.UseStaticFiles();
-                }
+                _ = app.UseCors("CorsPolicy");
 
-                app.UseCors("CorsPolicy");
-
-                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                _ = app.UseForwardedHeaders(new ForwardedHeadersOptions
                 {
                     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                 });
 
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuring Http Handler..." + Environment.NewLine);
-
-                HealthCheckHandler.Initialize(Program.Fw).GetAwaiter().GetResult();
 
                 app.Run(async context =>
                 {
@@ -100,13 +88,16 @@ namespace GenericWindowsService
                     {
                         if (context.Request.Query["m"] == "config")
                         {
-                            await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                            await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.ToString(), Encoding.UTF8);
                         }
                         else if (await HealthCheckHandler.Handle(context, Program.Fw))
                         {
                             return;
                         }
-                        else await Program.Service.HandleHttpRequest(context);
+                        else
+                        {
+                            await Program.Service.ProcessRequest(context);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -114,18 +105,14 @@ namespace GenericWindowsService
                     }
                 });
 
-                if (Program.HasOnStart)
-                {
-                    File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Starting service..." + Environment.NewLine);
+                File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Starting service..." + Environment.NewLine);
 
-                    Program.Service.OnStart();
-                }
+                Program.Service.OnStart();
             }
             catch (Exception e)
             {
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuration failed {e.UnwrapForLog()} {Environment.NewLine}");
             }
         }
-
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using Utility.Evaluatable;
 
 namespace Utility.Entity.Implementations
@@ -91,5 +92,7 @@ namespace Utility.Entity.Implementations
         }
 
         public override string ToString() => _value?.ToString();
+
+        public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, _value, options);
     }
 }

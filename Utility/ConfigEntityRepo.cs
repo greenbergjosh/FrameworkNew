@@ -1,63 +1,82 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Utility.DataLayer;
-using Utility.GenericEntity;
 
 namespace Utility
 {
     public class ConfigEntityRepo
     {
-        public string ConName;
-        private readonly ConcurrentDictionary<Guid, IGenericEntity> _entities = new();
+        public string ConName { get; init; }
+
+        private readonly ConcurrentDictionary<Guid, Entity.Entity> _entities = new();
         private readonly ConcurrentDictionary<string, Guid> _entityIds = new();
+        private readonly Entity.Entity _entity;
 
-        public ConfigEntityRepo(string conName) => ConName = conName;
+        public ConfigEntityRepo(Entity.Entity entity, string conName)
+        {
+            _entity = entity;
+            ConName = conName;
+        }
 
-        public async Task<IGenericEntity> GetEntity(Guid id)
+        public async Task<Entity.Entity> GetEntity(Guid id)
         {
             if (!_entities.TryGetValue(id, out var result))
             {
-                result = await AddEntity(id, null, null);
+                result = await GetEntityFromDatabase(id, null, null);
             }
 
             return result;
         }
 
-        public async Task<IGenericEntity> GetEntity(string type, string name)
+        public async Task<Entity.Entity> GetEntity(string type, string name)
         {
-            if (type.IsNullOrWhitespace() || name.IsNullOrWhitespace()) return null;
+            if (type.IsNullOrWhitespace() || name.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
             if (!_entityIds.TryGetValue($"{type}:{name}", out var id) || _entities.TryGetValue(id, out var result))
             {
-                result = await AddEntity(null, type, name);
+                result = await GetEntityFromDatabase(null, type, name);
             }
 
             return result;
         }
 
-        private async Task<IGenericEntity> AddEntity(Guid? id, string type, string name)
+        private async Task<Entity.Entity> GetEntityFromDatabase(Guid? id, string type, string name)
         {
-            var result = await Data.CallFnString(ConName, Data.ConfigFunctionName, JsonWrapper.Json(new { InstanceId = id, ConfigType = type, ConfigName = name }), null);
+            var result = await Data.CallFnString(ConName, Data.ConfigFunctionName, JsonSerializer.Serialize(new { InstanceId = id, ConfigType = type, ConfigName = name }), null);
 
-            if (result.IsNullOrWhitespace()) return null;
+            if (result.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
-            var entity = JsonWrapper.JsonToGenericEntity(result);
-            var configJs = JsonWrapper.TryParse(entity.GetS("Config"));
+            var entity = await _entity.Parse("application/json", result);
 
-            if (configJs != null) entity.Set("Config", configJs);
+            id = (await entity.GetS("Id")).ParseGuid();
+            type = await entity.GetS("Type");
+            name = await entity.GetS("Name");
 
-            id = entity.GetS("Id").ParseGuid();
-            type = entity.GetS("Type");
-            name = entity.GetS("Name");
+            if (!id.HasValue || type.IsNullOrWhitespace() || name.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
-            if (!id.HasValue || type.IsNullOrWhitespace() || name.IsNullOrWhitespace()) return null;
+            entity = _entity.Create(new
+            {
+                Id = await entity.GetS("Id"),
+                Name = name,
+                Type = type,
+                Config = await _entity.Parse("application/json", await entity.GetS("Config"))
+            });
 
-            _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
-            _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
+            _ = _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
+            _ = _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
 
             return entity;
         }
-
     }
 }

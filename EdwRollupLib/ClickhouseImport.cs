@@ -4,38 +4,26 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Newtonsoft.Json;
 using Renci.SshNet;
 using Renci.SshNet.Async;
 using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace EdwRollupLib
 {
     public class ClickhouseImport
     {
-        private record Parameters(DateTime StartDate, DateTime EndDate, IGenericEntity Config, int? TableIndex = null, string PartitionIndex = null, string MergedTableName = null)
+        private record Parameters(DateTime StartDate, DateTime EndDate, Entity Config, int? TableIndex = null, string PartitionIndex = null, string MergedTableName = null)
         {
-            public string Table
-            {
-                get
-                {
-                    if (TableIndex.HasValue)
-                    {
-                        var tableConfig = Config.GetE($"source_tables[{TableIndex.Value}]");
-                        return tableConfig.GetS("table_name");
-                    }
-
-                    return null;
-                }
-            }
+            public async Task<string> Table() => TableIndex.HasValue ? await Config.GetS($"source_tables[{TableIndex.Value}].table_name") : null;
         }
 
-        private readonly IGenericEntity _config;
+        private readonly Entity _config;
         private readonly Guid _rsConfigId;
         private readonly FrameworkWrapper _fw;
 
@@ -51,10 +39,16 @@ namespace EdwRollupLib
 
         private readonly TaskCompletionSource _complete = new();
 
-        public ClickhouseImport(IGenericEntity config, FrameworkWrapper fw)
+        public static async Task<ClickhouseImport> Create(Entity config, FrameworkWrapper fw)
+        {
+            var rsConfigId = Guid.Parse(await config.GetS("Config.rs_config_id"));
+            return new ClickhouseImport(config, fw, rsConfigId);
+        }
+
+        private ClickhouseImport(Entity config, FrameworkWrapper fw, Guid rsConfigId)
         {
             _config = config;
-            _rsConfigId = Guid.Parse(_config.GetS("Config/rs_config_id"));
+            _rsConfigId = rsConfigId;
             _fw = fw;
         }
 
@@ -82,10 +76,10 @@ namespace EdwRollupLib
             }
 
             var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = _config.GetS("Name") }, _rsConfigId);
+            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = await _config.GetS("Name") }, _rsConfigId);
             await _fw.EdwWriter.Write(edwBulkEvent);
 
-            await DropStartEvent(new Parameters(startDate, endDate, _config.GetE("Config")), "ImportProcess", null);
+            await DropStartEvent(new Parameters(startDate, endDate, await _config.GetE("Config")), "ImportProcess", null);
             var start = DateTime.Now;
 
             try
@@ -96,15 +90,15 @@ namespace EdwRollupLib
 
                 var createTargetTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateTargetTable, null), options);
                 var createFileTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateFileTasks, null), options);
-                var createExportFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateExportFile, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
-                var createImportTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateImportTables, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
-                var importFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ImportFile, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
-                var createPartitionTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreatePartitionTasks, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")), options);
-                var populateGroupedTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PopulateGroupedTable, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
-                var gatherPopulatedPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherPopulatedPartition, p => $"{p.Config.GetS($"source_tables[{p.TableIndex.Value}]/table_name")}-{p.PartitionIndex}"), options);
-                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergeTablesInPartition, p => $"{p.PartitionIndex}"), options);
-                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable, p => $"{p.PartitionIndex}"), options);
-                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions, p => $"{p.PartitionIndex}"), options);
+                var createExportFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateExportFile, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}].table_name")), options);
+                var createImportTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateImportTables, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}].table_name")), options);
+                var importFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ImportFile, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}].table_name")), options);
+                var createPartitionTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreatePartitionTasks, p => p.Config.GetS($"source_tables[{p.TableIndex.Value}].table_name")), options);
+                var populateGroupedTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PopulateGroupedTable, async p => $"{await p.Config.GetS($"source_tables[{p.TableIndex.Value}].table_name")}-{p.PartitionIndex}"), options);
+                var gatherPopulatedPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherPopulatedPartition, async p => $"{await p.Config.GetS($"source_tables[{p.TableIndex.Value}].table_name")}-{p.PartitionIndex}"), options);
+                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergeTablesInPartition, p => Task.FromResult($"{p.PartitionIndex}")), options);
+                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable, p => Task.FromResult($"{p.PartitionIndex}")), options);
+                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions, p => Task.FromResult($"{p.PartitionIndex}")), options);
                 var swapMergedTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(SwapMergedTable, null), options);
                 var cleanupTempTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CleanupTempTables, null), options);
                 var cleanupFiles = new ActionBlock<Parameters>(withEventsMaker.WithEvents(CleanupFiles, null), options);
@@ -125,19 +119,19 @@ namespace EdwRollupLib
                 swapMergedTables.LinkTo(cleanupTempTables);
                 cleanupTempTables.LinkTo(cleanupFiles);
 
-                var clickhouseConfig = _config.GetE("Config/clickhouse");
-                var host = clickhouseConfig.GetS("host");
-                var user = clickhouseConfig.GetS("ssh/user");
-                var password = clickhouseConfig.GetS("ssh/password");
+                var clickhouseConfig = await _config.GetE("Config.clickhouse");
+                var host = await clickhouseConfig.GetS("host");
+                var user = await clickhouseConfig.GetS("ssh.user");
+                var password = await clickhouseConfig.GetS("ssh.password");
 
-                _clickhouseUser = clickhouseConfig.GetS("clickhouse/user");
-                _clickhousePassword = clickhouseConfig.GetS("clickhouse/password");
+                _clickhouseUser = await clickhouseConfig.GetS("clickhouse.user");
+                _clickhousePassword = await clickhouseConfig.GetS("clickhouse.password");
 
                 using (_client = new SshClient(host, user, password))
                 {
                     _client.Connect();
 
-                    await createTargetTable.SendAsync(new Parameters(startDate, endDate, _config.GetE("Config")));
+                    await createTargetTable.SendAsync(new Parameters(startDate, endDate, await _config.GetE("Config")));
 
                     await _complete.Task;
                 }
@@ -145,7 +139,7 @@ namespace EdwRollupLib
             finally
             {
                 var end = DateTime.Now;
-                await DropEndEvent(new Parameters(startDate, endDate, _config.GetE("Config")), end - start, "ImportProcess", null);
+                await DropEndEvent(new Parameters(startDate, endDate, await _config.GetE("Config")), end - start, "ImportProcess", null);
                 _running = false;
 #if DEBUG
                 Console.WriteLine(end - start);
@@ -158,8 +152,8 @@ namespace EdwRollupLib
         {
             var config = parameters.Config;
 
-            var sourceTables = config.GetL("source_tables");
-            var targetTableName = $"{config.GetS("merged_table_name")}";
+            var sourceTables = await config.GetL("source_tables");
+            var targetTableName = $"{await config.GetS("merged_table_name")}";
 
             var combinedColumnDefinitions = GetCombinedColumnDefinitions(config, sourceTables);
 
@@ -169,14 +163,14 @@ namespace EdwRollupLib
 )
 engine = MergeTree()
 ORDER BY
-{GetSelectList(config.GetL("key_columns"))}
+{await GetSelectList(await config.GetL("key_columns"))}
 SETTINGS index_granularity = 8192;";
 
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             sql = $"drop table if exists datasets.{targetTableName}_new;";
 
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             sql = @$"create table datasets.{targetTableName}_new
 (
@@ -184,29 +178,29 @@ SETTINGS index_granularity = 8192;";
 )
 engine = MergeTree()
 ORDER BY
-{GetSelectList(config.GetL("key_columns"))}
+{await GetSelectList(await config.GetL("key_columns"))}
 SETTINGS index_granularity = 8192;";
 
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             return parameters;
         }
 
-        private IEnumerable<Parameters> CreateFileTasks(Parameters parameters) => Enumerable.Range(0, parameters.Config.GetL("source_tables").Count()).Select(i => parameters with { TableIndex = i });
+        private async Task<IEnumerable<Parameters>> CreateFileTasks(Parameters parameters) => Enumerable.Range(0, (await parameters.Config.GetL("source_tables")).Count()).Select(i => parameters with { TableIndex = i });
 
         private async Task<Parameters> CreateExportFile(Parameters parameters)
         {
             var config = parameters.Config;
             var tableIndex = parameters.TableIndex.Value;
 
-            var tableConfig = config.GetE($"source_tables[{tableIndex}]");
-            var tableName = tableConfig.GetS("table_name");
+            var tableConfig = await config.GetE($"source_tables[{tableIndex}]");
+            var tableName = await tableConfig.GetS("table_name");
 
-            var export = tableConfig.GetE("export");
+            var export = await tableConfig.GetE("export");
 
-            var connectionString = export.GetS("connection_string");
-            var function = export.GetS("function");
-            var path = export.GetS("source_path");
+            var connectionString = await export.GetS("connection_string");
+            var function = await export.GetS("function");
+            var path = await export.GetS("source_path");
             var filename = $"{tableName}_{parameters.StartDate:yyyy_MM_dd}.csv";
 
             var result = await ExecutePostgresQuery(connectionString, "exportData", new
@@ -215,19 +209,16 @@ SETTINGS index_granularity = 8192;";
                 date_end = parameters.EndDate,
                 export_function = function,
                 export_path = $"{path}/{filename}",
-                columns = config.GetL("key_columns").Concat(tableConfig.GetL("columns")).Select(c => new
+                columns = (await config.GetL("key_columns")).Concat(await tableConfig.GetL("columns")).Select(async c => new
                 {
-                    name = c.GetS("name"),
-                    type = c.GetS("source_type")
+                    name = await c.GetS("name"),
+                    type = await c.GetS("source_type")
                 })
             });
 
-            if (result.GetS("result") != "success")
-            {
-                throw new DataException($"Error exporting table: {tableName} result: {result.GetS("")}");
-            }
-
-            return parameters;
+            return await result.GetS("result", null) != "success"
+                ? throw new DataException($"Error exporting table: {tableName} result: {result}")
+                : parameters;
         }
 
         private async Task<Parameters> CreateImportTables(Parameters parameters)
@@ -235,58 +226,55 @@ SETTINGS index_granularity = 8192;";
             var config = parameters.Config;
             var tableIndex = parameters.TableIndex.Value;
 
-            var tableConfig = config.GetE($"source_tables[{tableIndex}]");
-            var tableName = tableConfig.GetS("table_name");
+            var tableConfig = await config.GetE($"source_tables[{tableIndex}]");
+            var tableName = await tableConfig.GetS("table_name");
 
             var sql = @$"drop table if exists datasets.import_{tableName};";
 
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             sql = $@"create table datasets.import_{tableName}
 (
-{GetColumnDefinitions(config.GetL("key_columns"))},
-{GetColumnDefinitions(tableConfig.GetL("columns"))}
+{await GetColumnDefinitions(await config.GetL("key_columns"))},
+{await GetColumnDefinitions(await tableConfig.GetL("columns"))}
 )
 engine = MergeTree()
 ORDER BY
-{GetSelectList(config.GetL("key_columns"))}
+{await GetSelectList(await config.GetL("key_columns"))}
 SETTINGS index_granularity = 8192;";
 
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
-            var partitions = config.GetL("partitioning/partitions");
-            var nestedTableName = tableConfig.GetS("nested_table_name");
+            var partitions = await config.GetL("partitioning/partitions");
+            var nestedTableName = await tableConfig.GetS("nested_table_name");
             foreach (var partition in partitions)
             {
-                sql = @$"drop table if exists datasets.import_{tableName}_{partition.GetS("")};";
-                await ExecuteClickhouseQuery(sql);
+                var partitionKey = partition.Value<string>();
 
-                if (nestedTableName != null)
-                {
-                    sql = @$"create table datasets.import_{tableName}_{partition.GetS("")}
+                sql = @$"drop table if exists datasets.import_{tableName}_{partitionKey};";
+                _ = await ExecuteClickhouseQuery(sql);
+
+                sql = nestedTableName != null
+                    ? @$"create table datasets.import_{tableName}_{partitionKey}
 (
-{GetColumnDefinitions(config.GetL("key_columns"))},
-{GetColumnDefinitions(tableConfig.GetL("columns"), nestedTableName)}
+{await GetColumnDefinitions(await config.GetL("key_columns"))},
+{await GetColumnDefinitions(await tableConfig.GetL("columns"), nestedTableName)}
 )
 engine = MergeTree()
 ORDER BY
-{GetSelectList(config.GetL("key_columns"))}
-SETTINGS index_granularity = 8192;";
-                }
-                else
-                {
-                    sql = @$"create table datasets.import_{tableName}_{partition.GetS("")}
+{await GetSelectList(await config.GetL("key_columns"))}
+SETTINGS index_granularity = 8192;"
+                    : @$"create table datasets.import_{tableName}_{partitionKey}
 (
-{GetColumnDefinitions(config.GetL("key_columns"))},
-{GetColumnDefinitions(tableConfig.GetL("columns"))}
+{await GetColumnDefinitions(await config.GetL("key_columns"))},
+{await GetColumnDefinitions(await tableConfig.GetL("columns"))}
 )
 engine = MergeTree()
 ORDER BY
-{GetSelectList(config.GetL("key_columns"))}
+{await GetSelectList(await config.GetL("key_columns"))}
 SETTINGS index_granularity = 8192;";
-                }
 
-                await ExecuteClickhouseQuery(sql);
+                _ = await ExecuteClickhouseQuery(sql);
             }
 
             return parameters;
@@ -297,30 +285,29 @@ SETTINGS index_granularity = 8192;";
             var config = parameters.Config;
             var tableIndex = parameters.TableIndex.Value;
 
-            var tableConfig = config.GetE($"source_tables[{tableIndex}]");
-            var tableName = tableConfig.GetS("table_name");
+            var tableConfig = await config.GetE($"source_tables[{tableIndex}]");
+            var tableName = await tableConfig.GetS("table_name");
 
-            var export = tableConfig.GetE("export");
-            var path = export.GetS("target_path");
-            var filename = $"{tableConfig.GetS("table_name")}_{parameters.StartDate:yyyy_MM_dd}.csv";
+            var export = await tableConfig.GetE("export");
+            var path = await export.GetS("target_path");
+            var filename = $"{await tableConfig.GetS("table_name")}_{parameters.StartDate:yyyy_MM_dd}.csv";
             var importPath = $"{path}/{filename}";
 
-            await ExecuteSSHCommand($"sudo chmod 666 {path}/*");
+            _ = await ExecuteSSHCommand($"sudo chmod 666 {path}/*");
 
-            await ExecuteClickhouseQuery($"INSERT INTO datasets.import_{tableName} FORMAT CSVWithNames", importPath);
+            _ = await ExecuteClickhouseQuery($"INSERT INTO datasets.import_{tableName} FORMAT CSVWithNames", importPath);
 
             return parameters;
         }
 
-        private IEnumerable<Parameters> CreatePartitionTasks(Parameters parameters)
+        private async Task<IEnumerable<Parameters>> CreatePartitionTasks(Parameters parameters)
         {
             var config = parameters.Config;
             var tableIndex = parameters.TableIndex.Value;
 
-            var tableConfig = config.GetE($"source_tables[{tableIndex}]");
-            var tableName = tableConfig.GetS("table_name");
+            var tableName = await config.GetS($"source_tables[{tableIndex}].table_name");
 
-            return config.GetL("partitioning/partitions").Select(p => parameters with { PartitionIndex = p.GetS("") });
+            return (await config.GetL("partitioning/partitions")).Select(p => parameters with { PartitionIndex = p.Value<string>() });
         }
 
         private async Task<Parameters> PopulateGroupedTable(Parameters parameters)
@@ -328,18 +315,18 @@ SETTINGS index_granularity = 8192;";
             var config = parameters.Config;
             var tableIndex = parameters.TableIndex.Value;
 
-            var tableConfig = config.GetE($"source_tables[{tableIndex}]");
-            var nestedTableName = tableConfig.GetS("nested_table_name");
+            var tableConfig = await config.GetE($"source_tables[{tableIndex}]");
+            var nestedTableName = await tableConfig.GetS("nested_table_name");
             var isGrouped = !string.IsNullOrWhiteSpace(nestedTableName);
 
-            var tableName = tableConfig.GetS("table_name");
+            var tableName = await tableConfig.GetS("table_name");
             var partitionIndex = parameters.PartitionIndex;
-            var partitionSelector = config.GetS("partitioning/partition_selector");
+            var partitionSelector = await config.GetS("partitioning.partition_selector");
 
             var sql = @$"insert into datasets.import_{tableName}_{partitionIndex}
 select
-{GetSelectList(config.GetL("key_columns"))},
-{GetSelectList(tableConfig.GetL("columns"), isGrouped)}
+{await GetSelectList(await config.GetL("key_columns"))},
+{await GetSelectList(await tableConfig.GetL("columns"), isGrouped)}
 from datasets.import_{tableName}
 where {partitionSelector} = '{partitionIndex}'";
 
@@ -347,32 +334,26 @@ where {partitionSelector} = '{partitionIndex}'";
             {
                 sql += $@"
 group by
-{GetSelectList(config.GetL("key_columns"))};";
+{await GetSelectList(await config.GetL("key_columns"))};";
             }
 
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             return parameters;
         }
 
-        private Parameters GatherPopulatedPartition(Parameters parameters)
+        private async Task<Parameters> GatherPopulatedPartition(Parameters parameters)
         {
             var config = parameters.Config;
             var tableIndex = parameters.TableIndex.Value;
 
-            var tableConfig = config.GetE($"source_tables[{tableIndex}]");
-            var tableName = tableConfig.GetS("table_name");
+            var tableName = await config.GetS($"source_tables[{tableIndex}].table_name");
 
-            var numberOfTables = config.GetL("source_tables").Count();
+            var numberOfTables = (await config.GetL("source_tables")).Count();
 
             var completedCount = _partitionPopulationProgress.AddOrUpdate(parameters.PartitionIndex, 1, (_, existing) => existing + 1);
 
-            if (completedCount == numberOfTables)
-            {
-                return parameters with { TableIndex = null };
-            }
-
-            return default;
+            return completedCount == numberOfTables ? (parameters with { TableIndex = null }) : default;
         }
 
         private async Task<Parameters> MergeTablesInPartition(Parameters parameters)
@@ -380,29 +361,29 @@ group by
             var config = parameters.Config;
             var partitionIndex = parameters.PartitionIndex;
 
-            var sourceTables = config.GetL("source_tables");
+            var sourceTables = await config.GetL("source_tables");
 
             var combinedColumnDefinitions = GetCombinedColumnDefinitions(config, sourceTables);
             var combinedColumnInsert = GetCombinedColumnInserts(config, sourceTables);
 
-            var partitionSelector = config.GetS("partitioning/partition_selector");
+            var partitionSelector = await config.GetS("partitioning.partition_selector");
 
-            var clickhouse = config.GetE("clickhouse");
+            var clickhouse = await config.GetE("clickhouse");
 
-            IGenericEntity previousTable = null;
+            Entity previousTable = null;
 
             var previousMergedTableName = string.Empty;
 
-            void ProcessSection(StringBuilder sql, string currentTableName, Action<string, bool, IGenericEntity> handler, int indentCount = 1)
+            async Task ProcessSection(StringBuilder sql, string currentTableName, Action<string, bool, Entity> handler, int indentCount = 1)
             {
                 foreach (var columnTable in sourceTables)
                 {
-                    var isCurrent = columnTable.GetS("table_name") == currentTableName;
-                    var nestedTableName = columnTable.GetS("nested_table_name");
+                    var isCurrent = (await columnTable.GetS("table_name")) == currentTableName;
+                    var nestedTableName = await columnTable.GetS("nested_table_name");
 
-                    sql.AppendLine($"{new string(' ', 4 * indentCount)}-- {columnTable.GetS("table_name")} {(isCurrent ? " -- CURRENT TABLE" : "")}");
+                    _ = sql.AppendLine($"{new string(' ', 4 * indentCount)}-- {await columnTable.GetS("table_name")} {(isCurrent ? " -- CURRENT TABLE" : "")}");
 
-                    foreach (var column in columnTable.GetL("columns"))
+                    foreach (var column in await columnTable.GetL("columns"))
                     {
                         handler(nestedTableName, isCurrent, column);
                     }
@@ -413,14 +394,14 @@ group by
 
             foreach (var currentTable in sourceTables)
             {
-                var previousTableName = previousTable?.GetS("table_name") ?? config.GetS("merged_table_name");
-                var firstMerge = previousTableName == config.GetS("merged_table_name");
-                var currentTableName = currentTable.GetS("table_name");
+                var previousTableName = await previousTable?.GetS("table_name") ?? await config.GetS("merged_table_name");
+                var firstMerge = previousTableName == await config.GetS("merged_table_name");
+                var currentTableName = await currentTable.GetS("table_name");
 
                 var tableName = $"import_merge_{previousTableName}_and_{currentTableName}_{partitionIndex}";
 
                 var sql = new StringBuilder(@$"drop table if exists datasets.{tableName};");
-                await ExecuteClickhouseQuery(sql.ToString());
+                _ = await ExecuteClickhouseQuery(sql.ToString());
 
                 sql = new StringBuilder(@$"create table if not exists datasets.{tableName}
 (
@@ -428,25 +409,25 @@ group by
 )
 engine = MergeTree()
 ORDER BY
-{GetSelectList(config.GetL("key_columns"))}
+{await GetSelectList(await config.GetL("key_columns"))}
 SETTINGS index_granularity = 8192;");
-                await ExecuteClickhouseQuery(sql.ToString());
+                _ = await ExecuteClickhouseQuery(sql.ToString());
 
                 sql = new StringBuilder(@$"insert into datasets.{tableName}
 (
 {combinedColumnInsert}
 )
 select
-{GetSelectList(config.GetL("key_columns"))},
+{await GetSelectList(await config.GetL("key_columns"))},
 ");
 
                 // Outer select
-                ProcessSection(sql, currentTableName, (nestedTableName, isCurrent, column) =>
+                await ProcessSection(sql, currentTableName, async (nestedTableName, isCurrent, column) =>
                 {
-                    var columnName = column.GetS("name");
-                    var defaultValue = new Lazy<string>(() => GetDefaultValue(column.GetS("target_type")));
+                    var columnName = await column.GetS("name");
+                    var defaultValue = new Lazy<Task<string>>(async () => GetDefaultValue(await column.GetS("target_type")));
 
-                    sql.AppendLine((nestedTableName, isCurrent, firstMerge) switch
+                    _ = sql.AppendLine((nestedTableName, isCurrent, firstMerge) switch
                     {
                         (null, true, _) => $"    coalesce(max(z.{columnName}2), max(z.{columnName}1), {defaultValue.Value}) {columnName},",
                         (null, false, _) => $"    coalesce(max(z.{columnName}), {defaultValue.Value}) {columnName},",
@@ -455,17 +436,17 @@ select
                     });
                 });
 
-                sql.AppendLine(@$"
+                _ = sql.AppendLine(@$"
 from (
     select
-    {GetSelectList(config.GetL("key_columns"))},");
+    {await GetSelectList(await config.GetL("key_columns"))},");
 
                 // Inner select from previous
-                ProcessSection(sql, currentTableName, (nestedTableName, isCurrent, column) =>
+                await ProcessSection(sql, currentTableName, async (nestedTableName, isCurrent, column) =>
                 {
-                    var columnName = column.GetS("name");
+                    var columnName = await column.GetS("name");
 
-                    sql.AppendLine((nestedTableName, isCurrent, firstMerge) switch
+                    _ = sql.AppendLine((nestedTableName, isCurrent, firstMerge) switch
                     {
                         (null, true, _) => $"        {columnName} {columnName}1,\r\n        NULL {columnName}2,",
                         (null, false, _) => $"        {columnName} {columnName},",
@@ -473,30 +454,25 @@ from (
                     });
                 }, 2);
 
-                if (firstMerge)
-                {
-                    sql.Append(@$"
+                _ = firstMerge
+                    ? sql.Append(@$"
     from datasets.{previousTableName}
     where {partitionSelector} = '{partitionIndex}'
-        and email != ''");
-                }
-                else
-                {
-                    sql.Append(@$"
+        and email != ''")
+                    : sql.Append(@$"
     from datasets.{previousMergedTableName}");
-                }
 
-                sql.AppendLine($@"
+                _ = sql.AppendLine($@"
     union all
     select
-    { GetSelectList(config.GetL("key_columns"))},");
+    { GetSelectList(await config.GetL("key_columns"))},");
 
                 // Inner select from current
-                ProcessSection(sql, currentTableName, (nestedTableName, isCurrent, column) =>
+                await ProcessSection(sql, currentTableName, async (nestedTableName, isCurrent, column) =>
                 {
-                    var columnName = column.GetS("name");
+                    var columnName = await column.GetS("name");
 
-                    sql.AppendLine((nestedTableName, isCurrent, firstMerge) switch
+                    _ = sql.AppendLine((nestedTableName, isCurrent, firstMerge) switch
                     {
                         (null, true, _) => $"        NULL {columnName}1,\r\n        {columnName} {columnName}2,",
                         (null, false, _) => $"        NULL {columnName},",
@@ -505,13 +481,13 @@ from (
                     });
                 }, 2);
 
-                sql.AppendLine(@$"
+                _ = sql.AppendLine(@$"
     from datasets.import_{currentTableName}_{partitionIndex}
 ) z
 group by 
-{GetSelectList(config.GetL("key_columns"))};");
+{await GetSelectList(await config.GetL("key_columns"))};");
 
-                await ExecuteClickhouseQuery(sql.ToString());
+                _ = await ExecuteClickhouseQuery(sql.ToString());
 
                 previousTable = currentTable;
                 previousMergedTableName = tableName;
@@ -525,10 +501,10 @@ group by
             var config = parameters.Config;
             var mergedTableName = parameters.MergedTableName;
 
-            var sourceTables = config.GetL("source_tables");
+            var sourceTables = await config.GetL("source_tables");
             var combinedColumnInsert = GetCombinedColumnInserts(config, sourceTables);
 
-            var targetTableName = $"{config.GetS("merged_table_name")}_new";
+            var targetTableName = $"{await config.GetS("merged_table_name")}_new";
 
             var sql = $@"insert into datasets.{targetTableName}
 (
@@ -538,45 +514,39 @@ select
 {combinedColumnInsert}
 from datasets.{mergedTableName};";
 
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             return parameters with { MergedTableName = null };
         }
 
-        private Parameters GatherCompletedPartitions(Parameters parameters)
+        private async Task<Parameters> GatherCompletedPartitions(Parameters parameters)
         {
             var config = parameters.Config;
             var partitionIndex = parameters.PartitionIndex;
 
-            if (!_partitionCompletionProgress.TryAdd(partitionIndex, partitionIndex))
-            {
-                throw new InvalidOperationException($"Partition {partitionIndex} completed more than once");
-            }
-
-            if (_partitionCompletionProgress.Count == config.GetL("partitioning/partitions").Count())
-            {
-                return parameters with { PartitionIndex = null };
-            }
-
-            return default;
+            return !_partitionCompletionProgress.TryAdd(partitionIndex, partitionIndex)
+                ? throw new InvalidOperationException($"Partition {partitionIndex} completed more than once")
+                : _partitionCompletionProgress.Count == (await config.GetL("partitioning.partitions")).Count()
+                ? (parameters with { PartitionIndex = null })
+                : default;
         }
 
         private async Task<Parameters> SwapMergedTable(Parameters parameters)
         {
             var config = parameters.Config;
-            var targetTableName = $"{config.GetS("merged_table_name")}";
+            var targetTableName = $"{await config.GetS("merged_table_name")}";
 
             var sql = $@"drop table if exists datasets.{targetTableName}_old;";
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             sql = $@"rename table datasets.{targetTableName} to datasets.{targetTableName}_old;";
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             sql = $@"rename table datasets.{targetTableName}_new to datasets.{targetTableName};";
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             sql = $@"optimize table datasets.{targetTableName} final;";
-            await ExecuteClickhouseQuery(sql);
+            _ = await ExecuteClickhouseQuery(sql);
 
             return parameters;
         }
@@ -585,29 +555,29 @@ from datasets.{mergedTableName};";
         {
             var config = parameters.Config;
 
-            IGenericEntity previousTable = null;
+            Entity previousTable = null;
 
-            foreach (var table in config.GetL("source_tables"))
+            foreach (var table in await config.GetL("source_tables"))
             {
-                var previousTableName = previousTable?.GetS("table_name") ?? config.GetS("merged_table_name");
-                var firstMerge = previousTableName == config.GetS("merged_table_name");
+                var previousTableName = await previousTable?.GetS("table_name") ?? await config.GetS("merged_table_name");
+                var firstMerge = previousTableName == await config.GetS("merged_table_name");
 
-                var currentTableName = table.GetS("table_name");
+                var currentTableName = await table.GetS("table_name");
 
                 var sql = @$"drop table if exists datasets.import_{currentTableName};";
 
-                await ExecuteClickhouseQuery(sql);
+                _ = await ExecuteClickhouseQuery(sql);
 
-                foreach (var partition in config.GetL("partitioning/partitions"))
+                foreach (var partition in await config.GetL("partitioning.partitions"))
                 {
-                    var partitionIndex = partition.GetS("");
+                    var partitionIndex = partition.Value<string>();
                     sql = @$"drop table if exists datasets.import_{currentTableName}_{partitionIndex}";
 
-                    await ExecuteClickhouseQuery(sql);
+                    _ = await ExecuteClickhouseQuery(sql);
 
                     sql = @$"drop table if exists datasets.import_merge_{previousTableName}_and_{currentTableName}_{partitionIndex}";
 
-                    await ExecuteClickhouseQuery(sql);
+                    _ = await ExecuteClickhouseQuery(sql);
                 }
 
                 previousTable = table;
@@ -618,16 +588,16 @@ from datasets.{mergedTableName};";
 
         private async Task CleanupFiles(Parameters parameters)
         {
-            foreach (var tableConfig in parameters.Config.GetL("source_tables"))
+            foreach (var tableConfig in await parameters.Config.GetL("source_tables"))
             {
-                var tableName = tableConfig.GetS("table_name");
+                var tableName = await tableConfig.GetS("table_name");
 
-                var export = tableConfig.GetE("export");
-                var path = export.GetS("target_path");
+                var export = await tableConfig.GetE("export");
+                var path = await export.GetS("target_path");
                 var filename = $"{tableName}_{parameters.StartDate:yyyy_MM_dd}.csv";
                 var importPath = $"{path}/{filename}";
 
-                await ExecuteSSHCommand($"sudo rm {importPath}");
+                _ = await ExecuteSSHCommand($"sudo rm {importPath}");
             }
 
             _complete.SetResult();
@@ -648,15 +618,15 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = input.Config.GetS("Name"),
+                job = await input.Config.GetS("Name"),
                 step,
                 stepContext,
                 eventType = "Start",
-                table = input.Table,
+                table = await input.Table(),
                 partitionIndex = input.PartitionIndex
             };
 
-            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonConvert.SerializeObject(payload));
+            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -664,16 +634,16 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = input.Config.GetS("Name"),
+                job = await input.Config.GetS("Name"),
                 step,
                 stepContext,
                 eventType = "End",
-                table = input.Table,
+                table = await input.Table(),
                 partitionIndex = input.PartitionIndex,
                 elapsed = elapsed.TotalSeconds
             };
 
-            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonConvert.SerializeObject(payload));
+            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
         }
 
@@ -681,21 +651,21 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = input.Config.GetS("Name"),
+                job = await input.Config.GetS("Name"),
                 step,
                 stepContext,
                 eventType = "Error",
-                table = input.Table,
+                table = await input.Table(),
                 partitionIndex = input.PartitionIndex,
                 message = ex.ToString()
             };
 
-            await _fw.Error($"{nameof(ClickhouseImport)}.{step}", JsonConvert.SerializeObject(payload));
+            await _fw.Error($"{nameof(ClickhouseImport)}.{step}", JsonSerializer.Serialize(payload));
             await DropEvent(payload);
 
             if (alert)
             {
-                var text = $"Clickhouse Import - {input.Config.GetS("Name")} - ";
+                var text = $"Clickhouse Import - {await input.Config.GetS("Name")} - ";
 
                 void AddField(string fieldName, object field)
                 {
@@ -706,11 +676,11 @@ from datasets.{mergedTableName};";
                 }
 
                 AddField("Step", step);
-                AddField("Table", input?.Table);
+                AddField("Table", await input?.Table());
                 AddField("PartitionIndex", input?.PartitionIndex);
                 AddField("Error", ex.Message);
 
-                await ProtocolClient.HttpPostAsync(_fw.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+                _ = await ProtocolClient.HttpPostAsync(await _fw.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
                 {
                     text
                 }), "application/json");
@@ -725,12 +695,7 @@ from datasets.{mergedTableName};";
 
             var result = await command.ExecuteAsync();
 
-            if (!string.IsNullOrWhiteSpace(command.Error))
-            {
-                throw new Exception($"{command.Error}\r\nCommand:\r\n{commandText}");
-            }
-
-            return result;
+            return !string.IsNullOrWhiteSpace(command.Error) ? throw new Exception($"{command.Error}\r\nCommand:\r\n{commandText}") : result;
         }
 
         private Task<string> ExecuteClickhouseQuery(string query, string pipeIn = null)
@@ -754,43 +719,45 @@ from datasets.{mergedTableName};";
             return ExecuteSSHCommand(commandText);
         }
 
-        private static Task<IGenericEntity> ExecutePostgresQuery(string connectionName, string functionName, object args)
+        private static Task<Entity> ExecutePostgresQuery(string connectionName, string functionName, object args)
         {
 #if DEBUG
-            Console.WriteLine($"{connectionName}:{functionName} {JsonConvert.SerializeObject(args)}");
+            Console.WriteLine($"{connectionName}:{functionName} {JsonSerializer.Serialize(args)}");
 #endif
-            return Data.CallFn(connectionName, functionName, JsonConvert.SerializeObject(args), timeout: 600000);
+            return Data.CallFn(connectionName, functionName, JsonSerializer.Serialize(args), timeout: 600000);
         }
 
-        private static string GetColumnDefinitions(IEnumerable<IGenericEntity> columns, string nestedTableName = null) => string.Join(",\r\n", columns.Select(c => GetColumnDefinition(c, nestedTableName)));
+        private static async Task<string> GetColumnDefinitions(IEnumerable<Entity> columns, string nestedTableName = null) => string.Join(",\r\n", await columns.Select(column => GetColumnDefinition(column, nestedTableName)));
 
-        private static string GetColumnDefinition(IGenericEntity columnConfig, string nestedTableName = null) => $"    {(nestedTableName != null ? $"`{nestedTableName}." : "")}{columnConfig.GetS("name")}{(nestedTableName != null ? "`" : "")} {(nestedTableName != null ? "Array(" : "")}{columnConfig.GetS("target_type")}{(nestedTableName != null ? ")" : "")}";
+        private static async Task<string> GetColumnDefinition(Entity columnConfig, string nestedTableName = null) => $"    {(nestedTableName != null ? $"`{nestedTableName}." : "")}{await columnConfig.GetS("name")}{(nestedTableName != null ? "`" : "")} {(nestedTableName != null ? "Array(" : "")}{await columnConfig.GetS("target_type")}{(nestedTableName != null ? ")" : "")}";
 
-        private static string GetCombinedColumnDefinitions(IGenericEntity config, IEnumerable<IGenericEntity> sourceTables)
+        private static async Task<string> GetCombinedColumnDefinitions(Entity config, IEnumerable<Entity> sourceTables)
         {
             var combinedColumnDefinitionsBuilder = new StringBuilder();
-            combinedColumnDefinitionsBuilder.Append(GetColumnDefinitions(config.GetL("key_columns")));
-            combinedColumnDefinitionsBuilder.AppendLine(",");
+            _ = combinedColumnDefinitionsBuilder.Append(GetColumnDefinitions(await config.GetL("key_columns")));
+            _ = combinedColumnDefinitionsBuilder.AppendLine(",");
 
             foreach (var table in sourceTables)
             {
-                combinedColumnDefinitionsBuilder.AppendLine($"    -- {table.GetS("table_name")}");
-                combinedColumnDefinitionsBuilder.AppendLine(GetColumnDefinitions(table.GetL("columns"), table.GetS("nested_table_name")) + ",");
+                _ = combinedColumnDefinitionsBuilder.AppendLine($"    -- {await table.GetS("table_name")}");
+                _ = combinedColumnDefinitionsBuilder.AppendLine(GetColumnDefinitions(await table.GetL("columns"), await table.GetS("nested_table_name")) + ",");
             }
+
             var combinedColumnDefinitions = combinedColumnDefinitionsBuilder.ToString().TrimEnd(("," + Environment.NewLine).ToArray());
             return combinedColumnDefinitions;
         }
 
-        private static string GetCombinedColumnInserts(IGenericEntity config, IEnumerable<IGenericEntity> sourceTables)
+        private static async Task<string> GetCombinedColumnInserts(Entity config, IEnumerable<Entity> sourceTables)
         {
             var combinedColumnInsertBuilder = new StringBuilder();
-            combinedColumnInsertBuilder.Append(GetInsertList(config.GetL("key_columns")));
-            combinedColumnInsertBuilder.AppendLine(",");
+            _ = combinedColumnInsertBuilder.Append(GetInsertList(await config.GetL("key_columns")));
+            _ = combinedColumnInsertBuilder.AppendLine(",");
             foreach (var table in sourceTables)
             {
-                combinedColumnInsertBuilder.AppendLine($"    -- {table.GetS("table_name")}");
-                combinedColumnInsertBuilder.AppendLine(GetInsertList(table.GetL("columns"), table.GetS("nested_table_name")) + ",");
+                _ = combinedColumnInsertBuilder.AppendLine($"    -- {table.GetS("table_name")}");
+                _ = combinedColumnInsertBuilder.AppendLine(GetInsertList(await table.GetL("columns"), await table.GetS("nested_table_name")) + ",");
             }
+
             var combinedColumnInsert = combinedColumnInsertBuilder.ToString().TrimEnd(("," + Environment.NewLine).ToArray());
             return combinedColumnInsert;
         }
@@ -804,13 +771,13 @@ from datasets.{mergedTableName};";
             _ => throw new ArgumentException($"{type} not handled")
         };
 
-        private static string GetInsertList(IEnumerable<IGenericEntity> columns, string nestedTableName = null) => string.Join(",\r\n", columns.Select(c => InsertColumn(c, nestedTableName)));
+        private static async Task<string> GetInsertList(IEnumerable<Entity> columns, string nestedTableName = null) => string.Join(",\r\n", await columns.Select(column => InsertColumn(column, nestedTableName)));
 
-        private static string GetSelectList(IEnumerable<IGenericEntity> columns, bool isArray = false) => string.Join(",\r\n", columns.Select(c => SelectColumn(c, isArray)));
+        private static async Task<string> GetSelectList(IEnumerable<Entity> columns, bool isArray = false) => string.Join(",\r\n", await columns.Select(c => SelectColumn(c, isArray)));
 
-        private static string InsertColumn(IGenericEntity columnConfig, string nestedTableName = null) => $"    {(nestedTableName != null ? $"`{nestedTableName}." : "")}{columnConfig.GetS("name")}{(nestedTableName != null ? "`" : "")}";
+        private static async Task<string> InsertColumn(Entity columnConfig, string nestedTableName = null) => $"    {(nestedTableName != null ? $"`{nestedTableName}." : "")}{await columnConfig.GetS("name")}{(nestedTableName != null ? "`" : "")}";
 
-        private static string SelectColumn(IGenericEntity columnConfig, bool isArray = false) => isArray ? $"    groupArray({columnConfig.GetS("name")}) {columnConfig.GetS("name")}" : $"    {columnConfig.GetS("name")}";
+        private static async Task<string> SelectColumn(Entity columnConfig, bool isArray = false) => isArray ? $"    groupArray({await columnConfig.GetS("name")}) {await columnConfig.GetS("name")}" : $"    {await columnConfig.GetS("name")}";
         #endregion
     }
 }

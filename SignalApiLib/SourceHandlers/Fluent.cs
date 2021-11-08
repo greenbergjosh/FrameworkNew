@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity;
 
 namespace SignalApiLib.SourceHandlers
 {
@@ -21,17 +20,18 @@ namespace SignalApiLib.SourceHandlers
         private static readonly string LogCtx = $"{nameof(Fluent)}.{nameof(HandleRequest)}";
         private readonly string _traceLogRootPath;
         private readonly bool _traceLog = false;
-        // ToDo: abstract and move to config
-        private readonly IEnumerable<ExportProviders.IPostingQueueProvider> _postingQueueExports = new[]
-        {
-            new ExportProviders.Console()
-        };
 
-        public Fluent(FrameworkWrapper fw)
+        private Fluent(FrameworkWrapper fw, string traceLogRootPath)
         {
             _fw = fw;
-            _traceLogRootPath = _fw.StartupConfiguration.GetS("Config/TraceLog");
+            _traceLogRootPath = traceLogRootPath;
             _traceLog = _traceLogRootPath != null;
+        }
+
+        public static async Task<Fluent> Create(FrameworkWrapper fw)
+        {
+            var traceLogRootPath = await fw.StartupConfiguration.GetS("Config.TraceLog");
+            return new Fluent(fw, traceLogRootPath);
         }
 
         private void LogRequest(string req)
@@ -47,27 +47,27 @@ namespace SignalApiLib.SourceHandlers
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
         {
             LogRequest(requestFromPost);
-            var body = JsonConvert.DeserializeObject(requestFromPost);
+            var body = await _fw.Entity.Parse("application/json", requestFromPost);
 
-            if (body is JObject b)
+            if (body.IsObject)
             {
-                if (b["k"].ToString() != Key) return null;
+                if (await body.GetS("k") != Key)
+                {
+                    return null;
+                }
 
-                var token = b["p"];
+                var token = await body.GetE("p");
+
                 IEnumerable<SourceData> payloads;
 
-                if (token is JObject jobj) payloads = new[] { Mutate(jobj) };
-                else if (token is JArray)
+                if (token.IsObject)
                 {
-                    var original = ((JArray)token).Select(p => new { orig = p, jobj = p as JObject }).ToArray();
-                    var bad = original.Where(p => p.jobj == null).ToArray();
-
-                    if (bad.Any())
-                    {
-                        await _fw.Error(LogCtx, $"Invalid items in array:\r\n\r\nBad items:\r\n{bad.Select(p => p.orig.ToString()).Join("\r\n")}\r\n\r\nFull payload:\r\n{token}");
-                    }
-
-                    payloads = original.Where(p => p.jobj != null).Select(p => Mutate(p.jobj)).ToArray();
+                    payloads = new[] { await Mutate(token) };
+                }
+                else if (token.IsArray)
+                {
+                    var mutations = await (await token.GetL<Entity>("")).Select(async p => await Mutate(p));
+                    payloads = mutations;
                 }
                 else
                 {
@@ -77,7 +77,7 @@ namespace SignalApiLib.SourceHandlers
 
                 if (payloads.Any())
                 {
-                    var dbp = JsonConvert.SerializeObject(payloads);
+                    var dbp = JsonSerializer.Serialize(payloads);
                     var success = true;
 
                     try
@@ -90,9 +90,9 @@ namespace SignalApiLib.SourceHandlers
                                 {
                                     var res = await Data.CallFn(MsConn, "SaveData", payload: dbp);
 
-                                    if (res.GetS("Result") != "Success")
+                                    if (await res.GetS("Result") != "Success")
                                     {
-                                        await _fw.Error(LogCtx, $"MSSql write failed. Response: {res.GetS("")}");
+                                        await _fw.Error(LogCtx, $"MSSql write failed. Response: {res}");
                                         success = false;
                                     }
                                 }
@@ -108,9 +108,9 @@ namespace SignalApiLib.SourceHandlers
                                 {
                                     var res = await Data.CallFn(PgConn, "fluentLead", payload: dbp);
 
-                                    if (res.GetS("Result") != "Success")
+                                    if (await res.GetS("Result") != "Success")
                                     {
-                                        await _fw.Error(LogCtx, $"PG write failed. Response: {res.GetS("")}");
+                                        await _fw.Error(LogCtx, $"PG write failed. Response: {res}");
                                         success = false;
                                     }
                                 }
@@ -120,7 +120,6 @@ namespace SignalApiLib.SourceHandlers
                                     success = false;
                                 }
                             }),
-                            PostToQueue(payloads)
                         };
 
                         await Task.WhenAll(tasks);
@@ -131,38 +130,30 @@ namespace SignalApiLib.SourceHandlers
                         success = false;
                     }
 
-                    return Jw.Serialize(new { Result = success ? "Success" : "Failure" });
+                    return JsonSerializer.Serialize(new { Result = success ? "Success" : "Failure" });
                 }
             }
-            else await _fw.Error(LogCtx, $"Invalid json body: {requestFromPost}");
+            else
+            {
+                await _fw.Error(LogCtx, $"Invalid json body: {requestFromPost}");
+            }
 
             return null;
         }
 
         // ToDo: move to config
-        private readonly Dictionary<string, string[]> mutations = new Dictionary<string, string[]>
+        private readonly Dictionary<string, string[]> mutations = new()
         {
-            {"fn", new[]{"FirstName","Firstname"} },
-            {"ln", new[]{ "LastName", "Lastname" } },
-            {"su", new[]{ "OptInURL" } },
-            {"ip", new[]{ "LeadIPAddress"} },
-            {"daq", new[]{ "LeadDate" } },
-            {"zip", new[]{ "PostalZipCode" } },
-            {"dob", new[]{ "BirthDate" } },
-            {"g", new[]{ "GenderID", "GenderId" } }
+            { "fn", new[] { "FirstName", "Firstname" } },
+            { "ln", new[] { "LastName", "Lastname" } },
+            { "su", new[] { "OptInURL" } },
+            { "ip", new[] { "LeadIPAddress" } },
+            { "daq", new[] { "LeadDate" } },
+            { "zip", new[] { "PostalZipCode" } },
+            { "dob", new[] { "BirthDate" } },
+            { "g", new[] { "GenderID", "GenderId" } }
         };
 
-        private SourceData Mutate(JObject s) => new SourceData(s, mutations);
-
-        private async Task PostToQueue(IEnumerable<SourceData> payloads)
-        {
-            var posts = _postingQueueExports.SelectMany(p => payloads, (p, d) => p.GetPostingQueueData("fluent", d)).Where(qd => qd != null).ToArray();
-
-            if (posts.Any())
-            {
-                var res = await _fw.PostingQueueWriter.Write(posts);
-            }
-        }
-
+        private Task<SourceData> Mutate(Entity s) => SourceData.Create(s, mutations);
     }
 }

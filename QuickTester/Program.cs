@@ -8,6 +8,7 @@ namespace QuickTester
         private static async Task Main()
         {
             await EdwGrammar3.Run();
+            await EntityTest.Run();
         }
     }
 }

@@ -79,7 +79,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
                 while (current.Any() && current.Peek().Operator?.OrderOfOperation < op.OrderOfOperation)
                 {
-                    current.Pop();
+                    _ = current.Pop();
                 }
 
                 if (current.Any())

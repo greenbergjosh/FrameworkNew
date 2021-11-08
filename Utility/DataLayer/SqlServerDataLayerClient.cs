@@ -11,52 +11,49 @@ namespace Utility.DataLayer
     {
         public async Task<List<Dictionary<string, object>>> CallStoredFunction(IDictionary<string, object> parameters, string sproc, string connectionString, int timeout = 120)
         {
-            using (var cn = new SqlConnection(connectionString))
+            using var cn = new SqlConnection(connectionString);
+            var results = new List<Dictionary<string, object>>();
+
+            cn.Open();
+            using (var cmd = new SqlCommand($"EXEC {sproc} {parameters.Select(p => $"@{p.Key}").Join(",")}", cn) { CommandTimeout = timeout })
             {
-                var results = new List<Dictionary<string, object>>();
 
-                cn.Open();
-                using (var cmd = new SqlCommand($"EXEC {sproc} {parameters.Select(p => $"@{p.Key}").Join(",")}", cn) { CommandTimeout = timeout })
+                foreach (var p in parameters)
                 {
-
-                    foreach (var p in parameters)
-                    {
-                        cmd.Parameters.AddWithValue($"@{p.Key}", p.Value);
-                    }
-
-                    using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false))
-                    {
-                        var fields = new string[rdr.FieldCount];
-
-                        for (var i = 0; i < rdr.FieldCount; i++)
-                        {
-                            fields[i] = rdr.GetName(i);
-                        }
-
-                        while (await rdr.ReadAsync())
-                        {
-                            var row = new Dictionary<string, object>();
-
-                            foreach (var f in fields)
-                            {
-                                var val = rdr[f];
-
-                                if (val == DBNull.Value)
-                                {
-                                    val = null;
-                                }
-
-                                row.Add(f, val);
-                            }
-
-                            results.Add(row);
-                        }
-                    }
+                    _ = cmd.Parameters.AddWithValue($"@{p.Key}", p.Value);
                 }
-                cn.Close();
 
-                return results;
+                using var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false);
+                var fields = new string[rdr.FieldCount];
+
+                for (var i = 0; i < rdr.FieldCount; i++)
+                {
+                    fields[i] = rdr.GetName(i);
+                }
+
+                while (await rdr.ReadAsync())
+                {
+                    var row = new Dictionary<string, object>();
+
+                    foreach (var f in fields)
+                    {
+                        var val = rdr[f];
+
+                        if (val == DBNull.Value)
+                        {
+                            val = null;
+                        }
+
+                        row.Add(f, val);
+                    }
+
+                    results.Add(row);
+                }
             }
+
+            cn.Close();
+
+            return results;
         }
 
         public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
@@ -70,12 +67,12 @@ namespace Utility.DataLayer
                 cmd.CommandText = sproc;
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.Add(new SqlParameter("@Args", args));
-                cmd.Parameters.Add(new SqlParameter("@Payload", payload));
-                cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                    .Direction = System.Data.ParameterDirection.Output;
+                _ = cmd.Parameters.Add(new SqlParameter("@Args", args));
+                _ = cmd.Parameters.Add(new SqlParameter("@Payload", payload));
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                 var ov = cmd.Parameters["@Return"].Value;
                 outval = ov == DBNull.Value ? null : (string)ov;
                 cn.Close();
@@ -90,22 +87,20 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new SqlConnection(connectionString))
-                {
-                    cn.Open();
-                    var cmd = cn.CreateCommand();
-                    cmd.CommandText = "[Data].[p_submit_bulk_payload]";
-                    cmd.CommandType = CommandType.StoredProcedure;
+                using var cn = new SqlConnection(connectionString);
+                cn.Open();
+                var cmd = cn.CreateCommand();
+                cmd.CommandText = "[Data].[p_submit_bulk_payload]";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.Add(new SqlParameter("@Payload", payload));
-                    cmd.Parameters.Add(new SqlParameter("@Debug", debug));
-                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                        .Direction = System.Data.ParameterDirection.Output;
-                    cmd.CommandTimeout = timeout;
-                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                    outval = (string)cmd.Parameters["@Return"].Value;
-                    cn.Close();
-                }
+                _ = cmd.Parameters.Add(new SqlParameter("@Payload", payload));
+                _ = cmd.Parameters.Add(new SqlParameter("@Debug", debug));
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
+                cn.Close();
             }
             catch (System.Data.SqlClient.SqlException sqlex)
             {
@@ -118,7 +113,7 @@ namespace Utility.DataLayer
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.ToString()}";
+                outval = $"Exception::{ex}";
             }
 
             return outval;
@@ -131,26 +126,24 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new SqlConnection(connectionString))
-                {
-                    cn.Open();
-                    var cmd = cn.CreateCommand();
-                    cmd.CommandText = "[ErrorLog].[spInsertErrorLog]";
-                    cmd.CommandType = CommandType.StoredProcedure;
+                using var cn = new SqlConnection(connectionString);
+                cn.Open();
+                var cmd = cn.CreateCommand();
+                cmd.CommandText = "[ErrorLog].[spInsertErrorLog]";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.Add(new SqlParameter("Sequence", sequence));
-                    cmd.Parameters.Add(new SqlParameter("Severity", severity));
-                    cmd.Parameters.Add(new SqlParameter("Process", process));
-                    cmd.Parameters.Add(new SqlParameter("Method", method));
-                    cmd.Parameters.Add(new SqlParameter("Descriptor", descriptor));
-                    cmd.Parameters.Add(new SqlParameter("Message", message));
-                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                        .Direction = System.Data.ParameterDirection.Output;
-                    cmd.CommandTimeout = timeout;
-                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                    outval = (string)cmd.Parameters["@Return"].Value;
-                    cn.Close();
-                }
+                _ = cmd.Parameters.Add(new SqlParameter("Sequence", sequence));
+                _ = cmd.Parameters.Add(new SqlParameter("Severity", severity));
+                _ = cmd.Parameters.Add(new SqlParameter("Process", process));
+                _ = cmd.Parameters.Add(new SqlParameter("Method", method));
+                _ = cmd.Parameters.Add(new SqlParameter("Descriptor", descriptor));
+                _ = cmd.Parameters.Add(new SqlParameter("Message", message));
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
+                cn.Close();
             }
             catch (System.Data.SqlClient.SqlException sqlex)
             {
@@ -163,7 +156,7 @@ namespace Utility.DataLayer
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.ToString()}";
+                outval = $"Exception::{ex}";
             }
 
             return outval;
@@ -177,23 +170,21 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new SqlConnection(connectionString))
-                {
-                    cn.Open();
-                    var cmd = cn.CreateCommand();
-                    cmd.CommandText = "[PostingQueue].[spInsertPostingQueue]";
-                    cmd.CommandType = CommandType.StoredProcedure;
+                using var cn = new SqlConnection(connectionString);
+                cn.Open();
+                var cmd = cn.CreateCommand();
+                cmd.CommandText = "[PostingQueue].[spInsertPostingQueue]";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.Add(new SqlParameter("PostType", postType));
-                    cmd.Parameters.Add(new SqlParameter("PostDate", postDate));
-                    cmd.Parameters.Add(new SqlParameter("Payload", payload));
-                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                        .Direction = System.Data.ParameterDirection.Output;
-                    cmd.CommandTimeout = timeout;
-                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                    outval = (string)cmd.Parameters["@Return"].Value;
-                    cn.Close();
-                }
+                _ = cmd.Parameters.Add(new SqlParameter("PostType", postType));
+                _ = cmd.Parameters.Add(new SqlParameter("PostDate", postDate));
+                _ = cmd.Parameters.Add(new SqlParameter("Payload", payload));
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
+                cn.Close();
             }
             catch (System.Data.SqlClient.SqlException sqlex)
             {
@@ -206,7 +197,7 @@ namespace Utility.DataLayer
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.ToString()}";
+                outval = $"Exception::{ex}";
             }
 
             return outval;
@@ -218,20 +209,18 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new SqlConnection(connectionString))
-                {
-                    cn.Open();
-                    var cmd = cn.CreateCommand();
-                    cmd.CommandText = "[PostingQueue].[spBulkInsertPostingQueue]";
-                    cmd.CommandType = CommandType.StoredProcedure;
+                using var cn = new SqlConnection(connectionString);
+                cn.Open();
+                var cmd = cn.CreateCommand();
+                cmd.CommandText = "[PostingQueue].[spBulkInsertPostingQueue]";
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.Add(new SqlParameter("Payload", payload));
-                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
-                        .Direction = System.Data.ParameterDirection.Output;
-                    cmd.CommandTimeout = timeout;
-                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                    outval = (string)cmd.Parameters["@Return"].Value;
-                }
+                _ = cmd.Parameters.Add(new SqlParameter("Payload", payload));
+                cmd.Parameters.Add("@Return", SqlDbType.NVarChar, -1)
+                    .Direction = ParameterDirection.Output;
+                cmd.CommandTimeout = timeout;
+                _ = await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                outval = (string)cmd.Parameters["@Return"].Value;
             }
             catch (SqlException sqlex)
             {
@@ -242,11 +231,10 @@ namespace Utility.DataLayer
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.ToString()}";
+                outval = $"Exception::{ex}";
             }
 
             return outval;
         }
-
     }
 }

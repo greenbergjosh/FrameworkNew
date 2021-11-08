@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Utility.Entity.Implementations
 {
@@ -47,5 +48,7 @@ namespace Utility.Entity.Implementations
         public override string ToString() => _value?.ToString();
 
         public override int GetHashCode() => _value?.GetHashCode() ?? base.GetHashCode();
+
+        public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, _value, options);
     }
 }

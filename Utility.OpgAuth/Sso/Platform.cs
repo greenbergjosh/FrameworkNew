@@ -1,14 +1,13 @@
 ﻿using System.Threading.Tasks;
-using Utility.GenericEntity;
 
 namespace Utility.OpgAuth.Sso
 {
     public abstract class Platform
     {
-        public abstract void Init(FrameworkWrapper fw, IGenericEntity init);
+        public abstract Task Init(FrameworkWrapper fw, Entity.Entity init);
 
         public abstract string PlatformType { get; }
 
-        public abstract Task<UserDetails> GetUserDetails(IGenericEntity authData);
+        public abstract Task<UserDetails> GetUserDetails(Entity.Entity authData);
     }
 }

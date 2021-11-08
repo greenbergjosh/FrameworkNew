@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace UnsubLib.UnsubFileProviders
 {
@@ -16,13 +16,13 @@ namespace UnsubLib.UnsubFileProviders
 
         public Ezepo(FrameworkWrapper fw) => _fw = fw;
 
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("ezepo.net");
+        public Task<bool> CanHandle(Entity network, string unsubRelationshipId, Uri uri) => Task.FromResult(uri.ToString().Contains("ezepo.net"));
 
-        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(Entity network, string unsubRelationshipId, Uri uri)
         {
             await _fw.Trace(_logMethod, $"Getting Unsub location: {uri}");
 
-            var ezepoUnsubUrl = await GetEzepoUnsubFileUri(uri.ToString());
+            var ezepoUnsubUrl = await GetEzepoUnsubFileUri(network, uri.ToString());
 
             await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {ezepoUnsubUrl}");
 
@@ -36,7 +36,7 @@ namespace UnsubLib.UnsubFileProviders
             return default;
         }
 
-        public async Task<string> GetEzepoUnsubFileUri(string url)
+        public async Task<string> GetEzepoUnsubFileUri(Entity network, string url)
         {
             var fileUrl = "";
 
@@ -98,6 +98,7 @@ namespace UnsubLib.UnsubFileProviders
                                 bucket = parts[1];
                                 break;
                             }
+
                             line = sr.ReadLine();
                         }
                     }
@@ -110,12 +111,11 @@ namespace UnsubLib.UnsubFileProviders
                         var (success, body) = await ProtocolClient.HttpGetAsync(messengerUrl);
                         if (success)
                         {
-                            var ge = new GenericEntityJson();
-                            ge.InitializeEntity(null, null, JsonWrapper.TryParse(body));
-                            var status = int.Parse(ge.GetS("status"));
+                            var ge = await network.Parse("application/json", body);
+                            var status = int.Parse(await ge.GetS("status"));
                             if (status == 1)
                             {
-                                file = ge.GetS("downloadfile");
+                                file = await ge.GetS("downloadfile");
                                 break;
                             }
                         }

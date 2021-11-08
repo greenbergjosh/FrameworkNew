@@ -1,6 +1,7 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 // email_events_merged
 
@@ -8,36 +9,50 @@ namespace QuickTester
 {
     internal class ClickhouseQueryGenerator
     {
-        public static string GenerateClickhouseQuery(IGenericEntity ge)
+        public static async Task<string> GenerateClickhouseQuery(Entity ge)
         {
-            string q = "SELECT email FROM datasets.email_events_merged WHERE "
-                + GenerateClickhouseWhere(ge);
+            var q = "SELECT email FROM datasets.email_events_merged WHERE "
+                + await GenerateClickhouseWhere(ge);
             return q;
         }
 
-        public static string GenerateClickhouseWhere(IGenericEntity ge)
+        public static async Task<string> GenerateClickhouseWhere(Entity ge)
         {
             string r;
-            var op = ge.GetD("").Single().Item1;
-            if (op == "and" || op == "or") r = GenerateClickhouseNary(op, ge.GetE(op));
-            else if (op == "filter" || op == "!") r = GenerateClickhouseUnary(op, ge.GetE(op));
+            var op = (await ge.GetD("")).Single().Key;
+            if (op is "and" or "or")
+            {
+                r = await GenerateClickhouseNary(op, await ge.GetE(op));
+            }
+            else if (op is "filter" or "!")
+            {
+                r = await GenerateClickhouseUnary(op, await ge.GetE(op));
+            }
             else if (op == "all")
-                r = GenerateClickhouseIn(ge.GetS($"{op}[0]/var"), $"[{ge.GetLS($"{op}[1]/in[1]", true).Join(",")}]");
-            else r = GenerateClickhouseBinary(op, ge.GetS($"{op}[0]/var"), ge.GetS($"{op}[1]", '\''));   // used to pass true to second getS
+            {
+                r = GenerateClickhouseIn(await ge.GetS($"{op}[0].var"), $"[{(await ge.GetL<string>($"{op}[1].in[1]")).Select(s => $"\"{s}\"").Join(",")}]");
+            }
+            else
+            {
+                r = GenerateClickhouseBinary(op, await ge.GetS($"{op}[0].var"), $"'{await ge.GetS($"{op}[1]")}'");   // used to pass true to second getS
+            }
+
             return "(" + r + ")";
         }
 
-        public static string GenerateClickhouseNary(string op, IGenericEntity ge) => ge.GetL("").Select(x => GenerateClickhouseWhere(x)).Join(" " + op + " ");
+        public static async Task<string> GenerateClickhouseNary(string op, Entity ge) => (await (await ge.GetL("")).Select(async x => await GenerateClickhouseWhere(x))).Join(" " + op + " ");
 
-        public static string GenerateClickhouseUnary(string op, IGenericEntity ge)
+        public static async Task<string> GenerateClickhouseUnary(string op, Entity ge)
         {
-            string r = "";
-            if (op == "!") r = "NOT " + GenerateClickhouseWhere(ge);
+            var r = "";
+            if (op == "!")
+            {
+                r = "NOT " + await GenerateClickhouseWhere(ge);
+            }
             else if (op == "filter")
             {
-                // We materialize the list with ToArray just in case the GenericEntity doesn't preserve order (we iterate vars twice)
-                var vars = ge.GetEs("[0]//var").Select(var => var.GetS("")).Distinct().ToArray();
-                var whereClause = GenerateClickhouseWhere(ge.GetE("[0]"));
+                var vars = (await (await ge.Get("[0]..var")).Select(var => var.GetAsS(""))).Distinct().ToArray();
+                var whereClause = await GenerateClickhouseWhere(await ge.GetE("[0]"));
                 for (var i = 0; i < vars.Length; i++)
                 {
                     whereClause = whereClause.Replace(vars[i], $"x.{i + 1}");
@@ -45,6 +60,7 @@ namespace QuickTester
 
                 r = "arrayFilter(x -> " + whereClause + ", arrayZip(" + string.Join(',', vars) + ")) <> []";
             }
+
             return r;
         }
 

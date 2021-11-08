@@ -38,8 +38,12 @@ namespace Utility
         {
             get
             {
-                if (_key == null) _key = (Id == null ? null : Id.ToString().ToLower()) ?? 
-                        (Name?.ToLower() ?? Hashing.Utf8MD5HashAsHexString(Code));
+                if (_key == null)
+                {
+                    _key = (Id?.ToString().ToLower()) ?? 
+                        Name?.ToLower() ?? Hashing.Utf8MD5HashAsHexString(Code);
+                }
+
                 return _key;
             }
         }

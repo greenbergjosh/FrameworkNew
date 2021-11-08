@@ -3,12 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using Utility.DataLayer;
-using Utility.GenericEntity;
 using Utility.OpgAuth.Sso;
-using Jw = Utility.JsonWrapper;
 using Random = Utility.Crypto.Random;
 
 namespace Utility.OpgAuth
@@ -20,44 +18,51 @@ namespace Utility.OpgAuth
         private static string _initError = "Auth not configured";
         private static bool _initialized = false;
         private static FrameworkWrapper _fw = null;
-        private static readonly ConcurrentDictionary<string, Platform> SsoPlatforms = new ConcurrentDictionary<string, Platform>();
+        private static readonly ConcurrentDictionary<string, Platform> SsoPlatforms = new();
 
         public static async Task Initialize(FrameworkWrapper fw)
         {
             try
             {
                 _fw = fw;
-                var conf = GetConfig(false);
-                var conn = conf?.GetS("Conn").ParseGuid();
+                var conf = await GetConfig(false);
+                var conn = (await conf?.GetS("Conn")).ParseGuid();
 
                 if (conf != null)
                 {
-                    if (!conn.HasValue) _initError = "";
+                    if (!conn.HasValue)
+                    {
+                        _initError = "";
+                    }
                     else
                     {
-                        await Data.AddConnectionStrings(new[] { new Tuple<string, string>(ConnName, conn.Value.ToString()) });
+                        await Data.AddConnectionStrings(fw.Entity.Create(new Dictionary<string, string> { [ConnName] = conn.Value.ToString() }));
                         var ssoFailed = false;
 
                         SsoPlatforms.Clear();
 
-                        foreach (var sso in conf.GetD("Sso"))
+                        foreach (var sso in await conf.GetD<string>("Sso"))
                         {
-                            var key = sso.Item1;
+                            var key = sso.Key;
 
                             try
                             {
-                                var typeName = conf.GetS($"Sso/{key}/Type");
-                                var init = conf.GetE($"Sso/{key}/Initialization");
+                                var typeName = await conf.GetS($"Sso.{key}.Type");
+                                var init = await conf.GetE($"Sso.{key}.Initialization");
 
-                                if (typeName.IsNullOrWhitespace()) throw new AuthException($"Type not defined for SSO {key}");
+                                if (typeName.IsNullOrWhitespace())
+                                {
+                                    throw new AuthException($"Type not defined for SSO {key}");
+                                }
 
-                                var instance = Assembly.GetExecutingAssembly().CreateInstance(typeName) as Platform;
+                                if (Assembly.GetExecutingAssembly().CreateInstance(typeName) is not Platform instance)
+                                {
+                                    throw new AuthException($"Invalid Type for SSO {key}");
+                                }
 
-                                if (instance == null) throw new AuthException($"Invalid Type for SSO {key}");
+                                await instance.Init(_fw, init);
 
-                                instance.Init(_fw, init);
-
-                                SsoPlatforms.TryAdd(key, instance);
+                                _ = SsoPlatforms.TryAdd(key, instance);
                             }
                             catch (AuthException e)
                             {
@@ -73,7 +78,10 @@ namespace Utility.OpgAuth
                             }
                         }
 
-                        if (!ssoFailed) _initialized = true;
+                        if (!ssoFailed)
+                        {
+                            _initialized = true;
+                        }
                     }
                 }
             }
@@ -82,90 +90,83 @@ namespace Utility.OpgAuth
                 _initError = $"Unhandled Auth init exception: {e.UnwrapForLog()}";
             }
 
-            if (!_initialized) throw new AuthException(_initError);
+            if (!_initialized)
+            {
+                throw new AuthException(_initError);
+            }
         }
 
-        public static async Task<UserDetails> GetSsoUserDetails(IGenericEntity payload)
+        public static async Task<UserDetails> GetSsoUserDetails(Entity.Entity payload)
         {
-            if (!_initialized) throw new Exception(_initError);
+            if (!_initialized)
+            {
+                throw new Exception(_initError);
+            }
 
-            SsoPlatforms.TryGetValue(payload.GetS("sso"), out var platform);
+            _ = SsoPlatforms.TryGetValue(await payload.GetS("sso"), out var platform);
 
-            if (platform == null) throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload.GetS("")}");
-
-            return await platform.GetUserDetails(payload);
+            return platform == null
+                ? throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload}")
+                : await platform.GetUserDetails(payload);
         }
 
-        public static Task<string> VerifyCode(string email, string verificationCode)
+        public static async Task<UserDetails> Login(string ssoKey, Entity.Entity payload, Func<UserDetails, bool> registrationValidation = null)
         {
-            if (!_initialized) throw new Exception(_initError);
+            if (!_initialized)
+            {
+                throw new Exception(_initError);
+            }
 
-            throw new NotImplementedException();
-        }
+            _ = SsoPlatforms.TryGetValue(ssoKey, out var platform);
 
-        public static Task<string> SendVerificationCode(string email)
-        {
-            if (!_initialized) throw new Exception(_initError);
-
-            throw new NotImplementedException();
-        }
-
-        public static Task<UserDetails> Login(string username, string password)
-        {
-            if (!_initialized) throw new Exception(_initError);
-
-            throw new NotImplementedException();
-        }
-
-        public static async Task<UserDetails> Login(string ssoKey, IGenericEntity payload, Func<UserDetails, bool> registrationValidation = null)
-        {
-            if (!_initialized) throw new Exception(_initError);
-
-            SsoPlatforms.TryGetValue(ssoKey, out var platform);
-
-            if (platform == null) throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload.GetS("")}");
+            if (platform == null)
+            {
+                throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload}");
+            }
 
             var userDetails = await platform.GetUserDetails(payload);
 
-            var res = await Data.CallFn(ConnName, "SsoLogin", Jw.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
+            var res = await Data.CallFn(ConnName, "SsoLogin", JsonSerializer.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
 
-            if (res == null || res.GetS("") == null ||  !res.GetS("err").IsNullOrWhitespace() ) throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
-
-
-            if (!res.GetS("t").IsNullOrWhitespace())
+            if (res == null || await res.GetAsS() == null || !(await res.GetS("err")).IsNullOrWhitespace())
             {
-                return new UserDetails(loginToken: res.GetS("t"), name: res.GetS("name"), email: res.GetS("primaryemail"), phone: "", imageUrl: res.GetS("image"), id: null, raw: res.GetS(""));
-            }
-            else if (!res.GetS("uid").IsNullOrWhitespace())
-            {
-                throw new AuthException($"SSO login failed: Unexpected error condition: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
+                throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.ToString() ?? "[null]"}");
             }
 
-            if (userDetails.Name.IsNullOrWhitespace()) throw new AuthException("Failed to retrieve name from SSO");
+            if (!(await res.GetS("t")).IsNullOrWhitespace())
+            {
+                return new UserDetails(loginToken: await res.GetS("t"), name: await res.GetS("name"), email: await res.GetS("primaryemail"), phone: "", imageUrl: await res.GetS("image"), id: null, raw: res.ToString());
+            }
+            else if (!(await res.GetS("uid")).IsNullOrWhitespace())
+            {
+                throw new AuthException($"SSO login failed: Unexpected error condition: Platform: {platform.PlatformType} Payload: {payload} Result: {res}");
+            }
 
-            if (userDetails.Email.IsNullOrWhitespace()) throw new AuthException("Failed to retrieve email from SSO");
-
-            if (registrationValidation == null || !registrationValidation(userDetails)) throw new AuthException($"SSO login failed {nameof(registrationValidation)}: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
-
-            return await RegisterSsoUser(platform, userDetails, payload);
+            return userDetails.Name.IsNullOrWhitespace()
+                ? throw new AuthException("Failed to retrieve name from SSO")
+                : userDetails.Email.IsNullOrWhitespace()
+                ? throw new AuthException("Failed to retrieve email from SSO")
+                : registrationValidation == null || !registrationValidation(userDetails)
+                ? throw new AuthException($"SSO login failed {nameof(registrationValidation)}: Platform: {platform.PlatformType} Payload: {payload} Result: {res}")
+                : await RegisterSsoUser(platform, userDetails, payload);
         }
 
-        private static async Task<UserDetails> RegisterSsoUser(Platform platform, UserDetails userDetails, IGenericEntity loginPayload)
+        private static async Task<UserDetails> RegisterSsoUser(Platform platform, UserDetails userDetails, Entity.Entity loginPayload)
         {
             var handle = ToCamelCase(userDetails.Name).IfNullOrWhitespace(userDetails.Email.Split('@').First());
             var altHandles = GenerateAltHandles(handle, new (int digits, int count)[] { (1, -1), (2, -1), (3, 100), (4, 100), (5, 100) });
             var sourceId = Guid.NewGuid().ToString();
             var saltHash = Random.GenerateRandomString(32, 32, Random.hex);
-            var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(Jw.Serialize(new { loginPayload, platform.PlatformType, userDetails })));
+            var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(JsonSerializer.Serialize(new { loginPayload, platform.PlatformType, userDetails })));
 
-            loginPayload.Set("platform", platform.PlatformType);
+            //loginPayload.Set("platform", platform.PlatformType);
 
             try
             {
-                var res = await Data.CallFn(ConnName, "RegisterSsoUser", Jw.Serialize(userDetails), Jw.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = JToken.Parse(loginPayload.GetS("")) }));
-                if (res.GetS("t").IsNullOrWhitespace()) throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res?.GetS("") ?? "[null]"}");
-
-                return new UserDetails(loginToken: res.GetS("t"), name: res.GetS("name"), email: res.GetS("primaryemail"), phone: "", imageUrl: res.GetS("image"), id: null, raw: res.GetS(""));
+                var res = await Data.CallFn(ConnName, "RegisterSsoUser", JsonSerializer.Serialize(userDetails), JsonSerializer.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = loginPayload }));
+                return (await res.GetS("t")).IsNullOrWhitespace()
+                    ? throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res}")
+                    : new UserDetails(loginToken: await res.GetS("t"), name: await res.GetS("name"), email: await res.GetS("primaryemail"), phone: "", imageUrl: await res.GetS("image"), id: null, raw: res.ToString());
             }
             catch (Exception e)
             {
@@ -173,45 +174,44 @@ namespace Utility.OpgAuth
             }
         }
 
-        public static Task<string> RegisterUser(string handle, string email, string password, string verificationCode)
+        public static async Task<Entity.Entity> GetTokenUserDetails(string token)
         {
-            if (!_initialized) throw new Exception(_initError);
+            var res = await Data.CallFn(ConnName, "GetTokenUserDetails", JsonSerializer.Serialize(new { t = token }));
+            var err = await res.GetS("err");
 
-            throw new NotImplementedException();
-        }
-
-        public static async Task<IGenericEntity> GetTokenUserDetails(string token)
-        {
-            var res = await Data.CallFn(ConnName, "GetTokenUserDetails", Jw.Serialize(new { t = token }));
-            var err = res.GetS("err");
-
-            if (!err.IsNullOrWhitespace()) throw new AuthException($"Failed to get user details from token: Token: {token} Error: {err}");
-
-            return res;
+            return !err.IsNullOrWhitespace()
+                ? throw new AuthException($"Failed to get user details from token: Token: {token} Error: {err}")
+                : res;
         }
 
         public static async Task<IEnumerable<string>> GetSecurables()
         {
-            var permissions = JArray.Parse((await Data.CallFn(ConnName, "AllPermissions")).GetS(""));
+            var permissions = await Data.CallFn(ConnName, "AllPermissions");
             var res = new List<string>();
 
-            void Dive(string rootPath, JObject tree)
+            async Task Dive(string rootPath, Entity.Entity tree)
             {
                 var divider = rootPath.IsNullOrWhitespace() ? "" : ".";
 
-                foreach (var branch in tree.Properties())
+                foreach (var branch in await tree.GetD<Entity.Entity>(""))
                 {
-                    var path = rootPath + divider + branch.Name;
+                    var path = rootPath + divider + branch.Key;
 
                     res.Add(path);
 
-                    if (branch.Value is JObject jo) Dive(path, jo);
+                    if (branch.Value.IsObject)
+                    {
+                        await Dive(path, branch.Value);
+                    }
                 }
             }
 
-            foreach (var jt in permissions)
+            foreach (var item in await permissions.GetL<Entity.Entity>(""))
             {
-                if (jt is JObject jo) Dive("", jo);
+                if (item.IsObject)
+                {
+                    await Dive("", item);
+                }
             }
 
             return res.Distinct().OrderBy(s => s).ToArray();
@@ -219,29 +219,46 @@ namespace Utility.OpgAuth
 
         public static async Task<bool> HasPermission(string token, string securable)
         {
-            var res = await Data.CallFn(ConnName, "AllUserPermissions", Jw.Serialize(new { t = token }));
-            var err = res.GetS("err");
+            var res = await Data.CallFn(ConnName, "AllUserPermissions", JsonSerializer.Serialize(new { t = token }));
+            var err = await res.GetS("err");
 
-            if (!err.IsNullOrWhitespace()) throw new AuthException($"Failed to get user permission details: Token: {token} Securable: {securable} Error: {err}");
+            if (!err.IsNullOrWhitespace())
+            {
+                throw new AuthException($"Failed to get user permission details: Token: {token} Securable: {securable} Error: {err}");
+            }
 
-            JObject final = new JObject();
-            res.GetL("").ForEach(perm => { final.Merge(JObject.Parse(perm.GetS(""))); });
-            IGenericEntity mergedPermissions = Jw.JsonToGenericEntity(final.ToString());
+            var permissions = new Dictionary<string, Entity.Entity>();
+            foreach (var permissionSet in await res.GetL<Entity.Entity>(""))
+            {
+                foreach (var kvp in await permissionSet.GetD<Entity.Entity>(""))
+                {
+                    permissions[kvp.Key] = kvp.Value;
+                }
+            }
 
-            if (mergedPermissions.GetB(GOD_USER)) return true;
+            var mergedPermissions = _fw.Entity.Create(permissions);
+
+            if (await mergedPermissions.GetB(GOD_USER))
+            {
+                return true;
+            }
 
             var steps = securable.Split('.');
 
-            for (int i = 1; i < steps.Length + 1; i++)
+            for (var i = 1; i < steps.Length + 1; i++)
             {
-                var path = steps.Take(i).Join("/");
-                var val = mergedPermissions.GetS(path);
+                var path = steps.Take(i).Join(".");
+                var val = (await mergedPermissions.Get(path)).FirstOrDefault();
 
-                if (val == null) return false;
+                if (val == null)
+                {
+                    return false;
+                }
 
-                var hasPermissions = val.ParseBool();
-
-                if (hasPermissions.HasValue) return hasPermissions.Value;
+                if (val.ValueType == Entity.EntityValueType.Boolean)
+                {
+                    return val.Value<bool>();
+                }
             }
 
             return false;
@@ -251,18 +268,23 @@ namespace Utility.OpgAuth
         {
             handle = handle?.Trim();
 
-            if (handle.IsNullOrWhitespace()) return null;
+            if (handle.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
             var parts = handle.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            string res;
-
-            if (parts[0].Length > 2) res = parts[0][0].ToString().ToLower() + parts[0].Substring(1);
-            else res = parts[0][0].ToString().ToLower();
-
-            for (int i = 1; i < parts.Length; i++)
+            var res = parts[0].Length > 2 ? parts[0][0].ToString().ToLower() + parts[0][1..] : parts[0][0].ToString().ToLower();
+            for (var i = 1; i < parts.Length; i++)
             {
-                if (parts[i].Length > 2) res += parts[i][0].ToString().ToUpper() + parts[i].Substring(1);
-                else res += parts[i][i].ToString().ToLower();
+                if (parts[i].Length > 2)
+                {
+                    res += parts[i][0].ToString().ToUpper() + parts[i][1..];
+                }
+                else
+                {
+                    res += parts[i][i].ToString().ToLower();
+                }
             }
 
             return res;
@@ -274,7 +296,10 @@ namespace Utility.OpgAuth
 
             return cfg.SelectMany(c =>
             {
-                if (c.count == 0) return new string[0];
+                if (c.count == 0)
+                {
+                    return Array.Empty<string>();
+                }
 
                 if (c.count < 0)
                 {
@@ -282,7 +307,7 @@ namespace Utility.OpgAuth
                     var end = (int)Math.Pow(10, c.digits);
                     var l = new List<(string handle, Guid sort)>();
 
-                    for (int i = start; i < end; i++)
+                    for (var i = start; i < end; i++)
                     {
                         l.Add(($"{handle}{separator}{i}", Guid.NewGuid()));
                     }
@@ -296,15 +321,11 @@ namespace Utility.OpgAuth
             });
         }
 
-        internal static IGenericEntity GetConfig(bool throwOnNull = true)
+        internal static async Task<Entity.Entity> GetConfig(bool throwOnNull = true)
         {
-            var conf = _fw?.StartupConfiguration.GetE("Config/OpgAuth");
+            var conf = (await _fw?.StartupConfiguration.Get("Config.OpgAuth")).FirstOrDefault();
 
-            if (conf == null && throwOnNull) throw new Exception(_initError);
-
-            return conf;
+            return conf == null && throwOnNull ? throw new Exception(_initError) : conf;
         }
-
-
     }
 }

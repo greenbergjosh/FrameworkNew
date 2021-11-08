@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Utility.GenericEntity;
 
 namespace Utility.LongRunningWorkflow
 {
@@ -19,7 +18,7 @@ namespace Utility.LongRunningWorkflow
         public string Name;
 
         [JsonProperty("discriminator_payload")]
-        public IGenericEntity Payload;
+        public Entity.Entity Payload;
 
         [JsonProperty("type")]
         [JsonConverter(typeof(StringEnumConverter), true)]

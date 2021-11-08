@@ -20,12 +20,9 @@ namespace Utility.Entity.QueryLanguage.Selectors
         public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
         {
             var functionHandler = entities.FirstOrDefault()?.FunctionHandler;
-            if (functionHandler is null)
-            {
-                throw new InvalidOperationException($"No function handler defined");
-            }
-
-            return functionHandler(entities, _functionName, _functionArguments, _query);
+            return functionHandler is null
+                ? throw new InvalidOperationException($"No function handler defined")
+                : functionHandler(entities, _functionName, _functionArguments, _query);
         }
     }
 }

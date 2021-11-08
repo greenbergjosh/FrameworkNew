@@ -11,9 +11,7 @@
             Raw = raw;
             Id = id;
             LoginToken = loginToken;
-
         }
-
 
         public string Id { get; }
         public string Name { get; }

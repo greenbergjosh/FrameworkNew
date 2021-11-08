@@ -6,14 +6,14 @@ namespace Utility.Http
 {
     public static class HealthCheckHandler
     {
-        public static ScriptDescriptor _healthCheckHandler;
+        private static ScriptDescriptor _healthCheckHandler;
 
         public static async Task Initialize(FrameworkWrapper fw)
         {
-            if (Guid.TryParse(fw.StartupConfiguration.GetS("/HealthCheckHandler"), out var healthCheckLbmId))
+            if (Guid.TryParse(await fw.StartupConfiguration.GetS("HealthCheckHandler", null), out var healthCheckLbmId))
             {
                 var lbm = await fw.Entities.GetEntity(healthCheckLbmId);
-                var code = lbm.GetS("Config");
+                var code = await lbm.GetS("Config");
 
                 var sd = fw.RoslynWrapper.CompileAndCache(new ScriptDescriptor(healthCheckLbmId.ToString(), code));
                 _healthCheckHandler = sd;

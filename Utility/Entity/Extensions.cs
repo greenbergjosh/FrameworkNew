@@ -1,40 +1,111 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Utility.Entity
 {
     public static class Extensions
     {
-        public static async Task<IEnumerable<Entity>> Where(this IEnumerable<Entity> source, Func<Entity, Task<bool>> predicate)
+        public static Task<IOrderedEnumerable<TSource>> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector) => OrderByDescending(source, keySelector, Comparer<TKey>.Default);
+
+        public static async Task<IOrderedEnumerable<TSource>> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector, IComparer<TKey> comparer)
         {
-            var found = new List<Entity>();
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (keySelector is null)
+            {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            var keys = new Dictionary<TSource, TKey>();
+
+            foreach (var item in source)
+            {
+                var key = await keySelector(item);
+                keys.Add(item, key);
+            }
+
+            return source.OrderByDescending(item => keys[item], comparer);
+        }
+
+        public static async Task<IEnumerable<TResult>> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, Task<TResult>> selector)
+        {
+            var result = new List<TResult>();
+
+            foreach (var entity in source)
+            {
+                result.Add(await selector(entity));
+            }
+
+            return result;
+        }
+
+        public static async Task<TSource> SingleOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, Task<bool>> predicate)
+        {
+            TSource found = default;
+            var alreadyFound = false;
 
             foreach (var entity in source)
             {
                 if (await predicate(entity))
                 {
-                    found.Add(entity);
+                    if (alreadyFound)
+                    {
+                        return default;
+                    }
+
+                    found = entity;
                 }
             }
 
             return found;
         }
 
-        public static async Task<Entity> SingleOrDefault(this IEnumerable<Entity> source, Func<Entity, Task<bool>> predicate)
+        public static Task<Dictionary<TKey, TSource>> ToDictionary<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector) where TKey : notnull => ToDictionary(source, keySelector, null);
+
+        public static Task<Dictionary<TKey, TSource>> ToDictionary<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector, IEqualityComparer<TKey> comparer) where TKey : notnull => ToDictionary(source, keySelector, x => Task.FromResult(x), comparer);
+
+        public static Task<Dictionary<TKey, TElement>> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector, Func<TSource, Task<TElement>> elementSelector) where TKey : notnull => ToDictionary(source, keySelector, elementSelector, null);
+
+        public static async Task<Dictionary<TKey, TElement>> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector, Func<TSource, Task<TElement>> elementSelector, IEqualityComparer<TKey> comparer) where TKey : notnull
         {
-            Entity found = default;
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (keySelector == null)
+            {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            if (elementSelector == null)
+            {
+                throw new ArgumentNullException(nameof(elementSelector));
+            }
+
+            var d = new Dictionary<TKey, TElement>(comparer);
+            foreach (var element in source)
+            {
+                d.Add(await keySelector(element), await elementSelector(element));
+            }
+
+            return d;
+        }
+
+        public static async Task<IEnumerable<TSource>> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, Task<bool>> predicate)
+        {
+            var found = new List<TSource>();
 
             foreach (var entity in source)
             {
                 if (await predicate(entity))
                 {
-                    if (found != default)
-                    {
-                        return default;
-                    }
-
-                    found = default;
+                    found.Add(entity);
                 }
             }
 

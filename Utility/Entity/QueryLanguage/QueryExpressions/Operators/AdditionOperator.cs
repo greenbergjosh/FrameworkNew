@@ -7,20 +7,14 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
     {
         public int OrderOfOperation => 3;
 
-        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            if (left.OutputType != right.OutputType)
-            {
-                return QueryExpressionType.Invalid;
-            }
-
-            return left.OutputType switch
-            {
-                QueryExpressionType.Number => QueryExpressionType.Number,
-                QueryExpressionType.String => QueryExpressionType.String,
-                _ => QueryExpressionType.Invalid
-            };
-        }
+        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right) => left.OutputType != right.OutputType
+                ? QueryExpressionType.Invalid
+                : left.OutputType switch
+                {
+                    QueryExpressionType.Number => QueryExpressionType.Number,
+                    QueryExpressionType.String => QueryExpressionType.String,
+                    _ => QueryExpressionType.Invalid
+                };
 
         public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
         {
@@ -34,12 +28,14 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                     {
                         return default;
                     }
+
                     return new EntityDocumentConstant(leftEntity.Value<decimal>() + rightEntity.Value<decimal>(), EntityValueType.Number);
                 case QueryExpressionType.String:
                     if (leftEntity.ValueType != EntityValueType.String || rightEntity.ValueType != EntityValueType.String)
                     {
                         return default;
                     }
+
                     return new EntityDocumentConstant(string.Concat(leftEntity.Value<string>(), rightEntity.Value<string>()), EntityValueType.Number);
                 default:
                     return default;

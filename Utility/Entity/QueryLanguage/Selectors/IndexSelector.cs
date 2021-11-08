@@ -34,7 +34,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                             {
                                 if (index >= 0 && index < arrayLength)
                                 {
-                                    returnedIndexes.Add(index);
+                                    _ = returnedIndexes.Add(index);
                                 }
                             }
                         }
@@ -65,7 +65,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                         {
                             await foreach (var property in indexExpression.GetProperties(entity))
                             {
-                                properties.Add(property);
+                                _ = properties.Add(property);
                             }
                         }
 

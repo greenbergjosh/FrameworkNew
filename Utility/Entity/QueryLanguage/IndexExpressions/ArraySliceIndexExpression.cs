@@ -128,19 +128,19 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             var sb = new StringBuilder();
             if (!_range.Start.Equals(Index.End))
             {
-                sb.Append(IArrayIndexExpression.IndexToPath(_range.Start));
+                _ = sb.Append(IArrayIndexExpression.IndexToPath(_range.Start));
             }
 
-            sb.Append(':');
+            _ = sb.Append(':');
             if (!_range.End.Equals(Index.End))
             {
-                sb.Append(IArrayIndexExpression.IndexToPath(_range.End));
+                _ = sb.Append(IArrayIndexExpression.IndexToPath(_range.End));
             }
 
             if (_step != 1)
             {
-                sb.Append(':');
-                sb.Append(_step);
+                _ = sb.Append(':');
+                _ = sb.Append(_step);
             }
 
             return sb.ToString();

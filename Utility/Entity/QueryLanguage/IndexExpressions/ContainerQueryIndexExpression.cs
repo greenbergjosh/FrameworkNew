@@ -12,7 +12,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public async IAsyncEnumerable<int> GetIndexes(Entity entity)
         {
-            if (_expression.OutputType != QueryExpressionType.Number && _expression.OutputType != QueryExpressionType.InstanceDependent)
+            if (_expression.OutputType is not QueryExpressionType.Number and not QueryExpressionType.InstanceDependent)
             {
                 yield break;
             }
@@ -34,7 +34,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public async IAsyncEnumerable<string> GetProperties(Entity entity)
         {
-            if (_expression.OutputType != QueryExpressionType.String && _expression.OutputType != QueryExpressionType.InstanceDependent)
+            if (_expression.OutputType is not QueryExpressionType.String and not QueryExpressionType.InstanceDependent)
             {
                 yield break;
             }

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Utility;
 using Utility.DataLayer;
-using Jw = Utility.JsonWrapper;
 
 namespace SignalApiLib.SourceHandlers
 {
@@ -12,7 +12,7 @@ namespace SignalApiLib.SourceHandlers
         private readonly FrameworkWrapper _fw;
         private const string Conn = "Signal";
         private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
-        private readonly string _defaultFailureResponse = Jw.Serialize(new { Result = "Failure" });
+        private readonly string _defaultFailureResponse = JsonSerializer.Serialize(new { Result = "Failure" });
 
         public Wadiya(FrameworkWrapper fw) => _fw = fw;
 
@@ -26,28 +26,23 @@ namespace SignalApiLib.SourceHandlers
 
             var result = _defaultFailureResponse;
 
-            if (Jw.TryParseObject(requestFromPost) != null)
+            try
             {
-                try
-                {
-                    var res = await Data.CallFn(Conn, "saveWadiya", requestFromPost);
+                var res = await Data.CallFn(Conn, "saveWadiya", requestFromPost);
 
-                    if (res?.GetS("result") != "success")
-                    {
-                        await _fw.Error(_logCtx, $"DB write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {requestFromPost}");
-                        throw new Exception($"{nameof(Wadiya)} signal insert failed");
-                    }
-                    else result = Jw.Serialize(new { Result = "Success" });
-                }
-                catch (Exception ex)
+                if (await res?.GetS("result", null) != "success")
                 {
-                    await _fw.Error(_logCtx, $@"Unhandled exception Body: {requestFromPost}\r\n{ex.UnwrapForLog()}");
+                    await _fw.Error(_logCtx, $"DB write failed. Response: {res}\r\nBody: {requestFromPost}");
                     throw new Exception($"{nameof(Wadiya)} signal insert failed");
                 }
+                else
+                {
+                    result = JsonSerializer.Serialize(new { Result = "Success" });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await _fw.Error(_logCtx, $"Invalid post body: {requestFromPost ?? "null"}");
+                await _fw.Error(_logCtx, $@"Unhandled exception Body: {requestFromPost}\r\n{ex.UnwrapForLog()}");
                 throw new Exception($"{nameof(Wadiya)} signal insert failed");
             }
 

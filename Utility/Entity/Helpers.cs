@@ -54,7 +54,7 @@ namespace Utility.Entity
         {
             try
             {
-                int end = index;
+                var end = index;
                 char endChar;
                 switch (query[index])
                 {
@@ -85,9 +85,11 @@ namespace Utility.Entity
                             {
                                 break;
                             }
+
                             allowDash = query[end] == 'e';
                             end++;
                         }
+
                         break;
                     case '\'':
                     case '"':
@@ -103,6 +105,7 @@ namespace Utility.Entity
                                     break;
                                 }
                             }
+
                             end++;
                         }
 
@@ -125,6 +128,7 @@ namespace Utility.Entity
                                     break;
                                 }
                             }
+
                             if (!escaped && query[end] == '"')
                             {
                                 inString = !inString;
@@ -149,6 +153,7 @@ namespace Utility.Entity
                 {
                     block = $"\"{block[1..^1].ToString()}\"".AsSpan();
                 }
+
                 using var doc = JsonDocument.Parse(block.ToString());
                 entityDocument = new EntityDocumentJson(doc.RootElement.Clone());
                 index = end;

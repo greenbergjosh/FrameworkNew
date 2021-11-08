@@ -17,5 +17,4 @@ namespace Utility.DataLayer
 
         Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120);
     }
-
 }

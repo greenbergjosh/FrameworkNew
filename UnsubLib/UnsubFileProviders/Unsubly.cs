@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Web;
 using HtmlAgilityPack;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace UnsubLib.UnsubFileProviders
 {
@@ -16,9 +16,9 @@ namespace UnsubLib.UnsubFileProviders
 
         public Unsubly(FrameworkWrapper fw) => _fw = fw;
 
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("unsubly.com");
+        public Task<bool> CanHandle(Entity network, string unsubRelationshipId, Uri uri) => Task.FromResult(uri.ToString().Contains("unsubly.com"));
 
-        public Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public Task<(string url, IDictionary<string, string> postData)> GetFileUrl(Entity network, string unsubRelationshipId, Uri uri)
         {
             var web = new HtmlWeb();
             var doc = web.Load(uri);
