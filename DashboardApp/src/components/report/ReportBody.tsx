@@ -42,7 +42,7 @@ const ReportBody = ({
 
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
-    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    globalConfigPath: appState.navigation.routes.globalConfig.abs,
     isExecutingQuery: appState.loading.effects.reports.executeQuery,
     reportDataByQuery: appState.reports.reportDataByQuery,
   }))

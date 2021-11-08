@@ -12,7 +12,7 @@ import styles from "./landing.module.css"
 import { WithRouteProps } from "../../state/navigation"
 import { PageBeacon } from "../../components/PageBeacon"
 
-export interface LandingProps {
+export interface LoginProps {
   location: {
     state?: {
       redirectedFrom?: string
@@ -20,7 +20,7 @@ export interface LandingProps {
   }
 }
 
-export function Landing(props: WithRouteProps<LandingProps>): JSX.Element {
+export function Login(props: WithRouteProps<LoginProps>): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
     iam: appState.iam,
     routes: appState.navigation.routes,
@@ -32,11 +32,11 @@ export function Landing(props: WithRouteProps<LandingProps>): JSX.Element {
         if (props.location.state && props.location.state.redirectedFrom) {
           props.navigate(props.location.state.redirectedFrom)
         } else {
-          dispatch.navigation.goToDashboard(none)
+          props.navigate("/app/default")
         }
       }
     },
-    [dispatch.navigation, fromStore.iam.profile, fromStore.routes.dashboard.abs, props]
+    [props.navigate, fromStore.iam.profile, props]
   )
 
   const [formState, setFormState] = React.useState({ user: "", password: "" })
@@ -138,12 +138,8 @@ export function Landing(props: WithRouteProps<LandingProps>): JSX.Element {
                       <Space.Horizontal height={25} />
 
                       <Row>
-                        <Button
-                          block={true}
-                          htmlType="button"
-                          type="primary"
-                          onClick={() => dispatch.navigation.goToDashboard(none)}>
-                          <Reach.Link to="/dashboard">Go to your Dashboard</Reach.Link>
+                        <Button block={true} htmlType="button" type="primary" onClick={() => props.navigate("/")}>
+                          <Reach.Link to="/app/default">Go to the Dashboard</Reach.Link>
                         </Button>
                       </Row>
                     </Layout.Content>
@@ -166,4 +162,4 @@ export function Landing(props: WithRouteProps<LandingProps>): JSX.Element {
   )
 }
 
-export default Landing
+export default Login

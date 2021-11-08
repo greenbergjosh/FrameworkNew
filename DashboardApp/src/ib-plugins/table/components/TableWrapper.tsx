@@ -27,9 +27,6 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
 
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
-    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
-    isExecutingQuery: appState.loading.effects.reports.executeQuery,
-    reportDataByQuery: appState.reports.reportDataByQuery,
   }))
 
   /*

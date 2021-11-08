@@ -114,6 +114,7 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
     logout() {
       dispatch.iam.reset()
       dispatch.remoteDataClient.reset()
+      dispatch.navigation.navigate("/login")
     },
   }),
 

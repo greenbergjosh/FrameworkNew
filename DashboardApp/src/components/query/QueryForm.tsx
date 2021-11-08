@@ -65,18 +65,26 @@ export const QueryForm = React.memo(
      * query form immediately when the page loads.
      */
     React.useEffect(() => {
+      let isMounted = true
       if (!onMount) return
       const newState = getDefaultFormValues(layout, parameters, parameterValues, getDefinitionDefaultValue)
       const promise = onMount(newState)
 
       updateFormState(newState)
-      if (promise) {
+      if (promise && isMounted) {
         setLoading(true)
         promise.finally(() => {
           setLoading(false)
         })
       }
-      setSubmitting(false)
+      if (isMounted) {
+        setSubmitting(false)
+      }
+
+      /* Prevent memory leaks */
+      return () => {
+        isMounted = false
+      }
     }, [])
 
     /*
@@ -93,20 +101,28 @@ export const QueryForm = React.memo(
      * Wait until state is updated to submit the form so we don't submit old data.
      */
     React.useEffect(() => {
+      let isMounted = true
       // This effect triggers whenever state updates,
       // so we check first for submitting.
       if (!submitting) {
         return
       }
       const promise = onSubmit(formState)
-      if (promise) {
+      if (promise && isMounted) {
         setLoading(true)
         promise.finally(() => {
           setLoading(false)
         })
       }
-      setSubmitting(false)
-      setParentSubmitting && setParentSubmitting(false)
+      if (isMounted) {
+        setSubmitting(false)
+        setParentSubmitting && setParentSubmitting(false)
+      }
+
+      /* Prevent memory leaks */
+      return () => {
+        isMounted = false
+      }
     }, [submitting, onSubmit, setParentSubmitting, formState])
 
     /*
@@ -114,8 +130,15 @@ export const QueryForm = React.memo(
      * Allow parent components to trigger a submit
      */
     React.useEffect(() => {
-      if (parentSubmitting) {
+      let isMounted = true
+
+      if (parentSubmitting && isMounted) {
         setSubmitting(true)
+      }
+
+      /* Prevent memory leaks */
+      return () => {
+        isMounted = false
       }
     }, [parentSubmitting, setSubmitting])
 

@@ -13,7 +13,6 @@ import { registerMonacoEditorMount } from "@opg/interface-builder-plugins/lib/mo
 import getMonacoEditorConstructionOptions from "./data/getMonacoEditorConstructionOptions"
 import { SplashScreen } from "./components/SplashScreen/SplashScreen"
 import { ThemeLoader } from "./themes/ThemeLoader"
-import { LegacyThemeLoader } from "./themes/ant-default/LegacyThemeLoader"
 
 /*
  * Import InterfaceBuilder Styles
@@ -269,8 +268,7 @@ export function App(): JSX.Element {
               <SplashScreen title="Checking Session Authentication..." />
             ) : (
               <Reach.Router>
-                <ThemeLoader path={`/app/*`} />
-                <LegacyThemeLoader path={`/*`} />
+                <ThemeLoader path={`/*`} />
               </Reach.Router>
             )}
           </DragDropContext.HTML5>

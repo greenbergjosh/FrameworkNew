@@ -21,7 +21,7 @@ interface ReportOrErrorsProps {
 
 export const ReportOrErrors = React.memo(({ children, reportConfig, reportId, queryConfig }: ReportOrErrorsProps) => {
   const [fromStore, dispatch] = useRematch((appState) => ({
-    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    globalConfigPath: appState.navigation.routes.globalConfig.abs,
   }))
 
   const id = reportId.getOrElse("NestedReport")

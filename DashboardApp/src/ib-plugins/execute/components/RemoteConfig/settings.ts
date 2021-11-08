@@ -330,7 +330,7 @@ export const remoteConfigSettings = [
     valueKey: "RemoteConfig_redirectPath",
     label: "Redirect Path",
     component: "input",
-    defaultValue: "/dashboard/apps/",
+    defaultValue: "/",
     bindable: true,
     visibilityConditions: {
       and: [
