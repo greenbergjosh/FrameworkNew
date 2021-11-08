@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace Utility.LongRunningWorkflow
 {
@@ -14,41 +13,41 @@ namespace Utility.LongRunningWorkflow
 
     public class Wait
     {
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name;
 
-        [JsonProperty("discriminator_payload")]
+        [JsonPropertyName("discriminator_payload")]
         public Entity.Entity Payload;
 
-        [JsonProperty("type")]
-        [JsonConverter(typeof(StringEnumConverter), true)]
+        [JsonPropertyName("type")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public WaitType Type;
     }
 
     public class WaitOne : Wait
     {
-        [JsonProperty("discriminator")]
+        [JsonPropertyName("discriminator")]
         public string Discriminator;
 
-        [JsonProperty("lookback_period")]
+        [JsonPropertyName("lookback_period")]
         public string LookbackPeriod;
     }
 
     public class WaitTimedOne : WaitOne
     {
-        [JsonProperty("raise_at")]
+        [JsonPropertyName("raise_at")]
         public DateTime RaiseAt;
 
-        [JsonProperty("raise_payload")]
+        [JsonPropertyName("raise_payload")]
         public object RaisePayload;
     }
 
     public abstract class WaitGroup : Wait
     {
-        [JsonProperty("logic")]
+        [JsonPropertyName("logic")]
         public abstract string Logic { get; }
 
-        [JsonProperty("waits")]
+        [JsonPropertyName("waits")]
         public List<Wait> Waits { get; } = new();
 
         protected WaitGroup(Wait[] children)
