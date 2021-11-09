@@ -5,7 +5,7 @@ import OpgCorporateTheme from "../themes/opg-corporate"
 import { isEmpty, isEqual } from "lodash/fp"
 import { ITheme, ThemeLoaderProps } from "./types"
 import { UserInterfaceProps } from "@opg/interface-builder"
-import { Router, RouteComponentProps, Redirect } from "@reach/router"
+import { Redirect, RouteComponentProps, Router } from "@reach/router"
 import { Login, LoginProps } from "../views/login"
 import { WithRouteProps } from "../state/navigation"
 import { NotFound } from "../views/not-found"
@@ -82,6 +82,22 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
 
   return (
     <Router>
+      <NotFound
+        location={props.location as WithRouteProps<LoginProps>["location"]}
+        default={true}
+        navigate={props.navigate!}
+        uri={props.uri || ""}
+        requiresAuthentication={false}
+        component={Login}
+        abs={""}
+        description={""}
+        title={""}
+        iconType={""}
+        path={""}
+        redirectFrom={[]}
+        subroutes={{}}
+        children={<></>}
+      />
       <Login
         location={props.location as WithRouteProps<LoginProps>["location"]}
         default={false}
@@ -110,11 +126,13 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
         )),
         Some((prof) => (
           <>
-            <Redirect key={abs} from="/" to={"/app/default"} noThrow />
-            <Redirect key={abs} from="/app" to={"/app/default"} noThrow />
+            <Redirect key="/" from="/" to={"/app/home"} noThrow />
+            <Redirect key="/app" from="/app" to={"/app/home"} noThrow />
+            {/* Redirect legacy site links */}
+            <Redirect key="/dashboard" from="/dashboard/*" to={"/app/home"} noThrow />
             <SelectedTheme.Shell
               {...props}
-              path={`/:appUri/*`}
+              path="/app/:appUri/*"
               appConfig={fromStore.appConfig}
               appRootPath={fromStore.appPaths.appRootPath}
               pagePath={fromStore.appPaths.pagePathSegments.join("/")}
@@ -124,7 +142,6 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
           </>
         ))
       )}
-      <NotFound default />
     </Router>
   )
 }

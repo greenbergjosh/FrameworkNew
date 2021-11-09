@@ -12,18 +12,18 @@ export const routes = {
     requiresAuthentication: false as const,
     subroutes: {},
   },
-  default: {
-    abs: "/default",
-    component: null,
-    description: "OnPoint Global reports and admin",
-    title: "OnPoint Global Business",
-    iconType: "home",
-    path: "default",
-    redirectFrom: [],
-    requiresAuthentication: true as const,
-  },
+  // home: {
+  //   abs: "/app/home",
+  //   component: null,
+  //   description: "OnPoint Global reports and admin",
+  //   title: "OnPoint Global Business",
+  //   iconType: "home",
+  //   path: "default",
+  //   redirectFrom: [],
+  //   requiresAuthentication: true as const,
+  // },
   globalConfig: {
-    abs: "/admin/global-config",
+    abs: "/app/admin/global-config",
     component: null,
     description: "Manage GlobalConfig.Config entries",
     title: "Global Config",
@@ -33,7 +33,7 @@ export const routes = {
     requiresAuthentication: true as const,
     subroutes: {
       "/": {
-        abs: "/admin/global-config",
+        abs: "/app/admin/global-config",
         component: null,
         description: "",
         title: "Global Configs Index",
@@ -44,7 +44,7 @@ export const routes = {
         subroutes: {},
       },
       create: {
-        abs: "/admin/global-config/create",
+        abs: "/app/admin/global-config/create",
         component: null,
         description: "",
         title: "Create Global Config",
@@ -55,7 +55,7 @@ export const routes = {
         subroutes: {},
       },
       ":configId/edit": {
-        abs: "/admin/global-config/:configId/edit",
+        abs: "/app/admin/global-config/:configId/edit",
         component: null,
         description: "",
         title: "Edit Global Config",
@@ -66,7 +66,7 @@ export const routes = {
         subroutes: {},
       },
       ":configId": {
-        abs: "/admin/global-config/:configId",
+        abs: "/app/admin/global-config/:configId",
         component: null,
         description: "",
         title: "Global Configs Index",

@@ -22,9 +22,9 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
       /*
        * USE REACT ROUTER TO GET APP
        * Example: /app/app-uri/group-uri/page-uri
-       * Example: /app/admin/global-configs/*
-       * Example: /app/admin/global-configs/:configId
-       * Example: /app/admin/global-configs/:configId/edit
+       * Example: /app/admin/global-config/*
+       * Example: /app/admin/global-config/:configId
+       * Example: /app/admin/global-config/:configId/edit
        */
       if (useAppPath) {
         pathSegments.shift() // remove "app"

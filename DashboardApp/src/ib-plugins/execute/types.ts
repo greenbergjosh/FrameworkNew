@@ -11,13 +11,12 @@ import { ConfigType, PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../data/Report"
 import { AppDispatch, AppState } from "../../state/store.types"
-import { confirmationType, QueryFormProps } from "../../components/query/types"
+import { confirmationType, QueryFormProps } from "../_shared/query/types"
 import { JSONRecord } from "../../data/JSON"
-import { PropsFromQueryParams } from "../../components/query/QueryParams"
+import { PropsFromQueryParams } from "../_shared/query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { NotifyConfig } from "../../state/feedback"
-import { AbstractBaseInterfaceComponent } from "@opg/interface-builder/dist/components/BaseInterfaceComponent/types"
 
 export enum LOADSTATUSCODES {
   none = "none",

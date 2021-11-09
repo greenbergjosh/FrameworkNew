@@ -1,12 +1,12 @@
-import { AppDispatch } from "../../../state/store.types"
+import { AppDispatch } from "../../../../state/store.types"
 import {
   GlobalConfigReference,
   IReportDetailsAsReport,
   LocalReportConfig,
   ReportDetailsAsReport,
   SimpleLayoutConfig,
-} from "../../../data/Report"
-import { JSONRecord } from "../../../data/JSON"
+} from "../../../../data/Report"
+import { JSONRecord } from "../../../../data/JSON"
 import { Report } from "../Report"
 import React from "react"
 import * as record from "fp-ts/lib/Record"
@@ -15,7 +15,7 @@ import { mapData, unMapData } from "./mapData"
 import { ReportDetailsType } from "./types"
 import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"
 import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
-import { ColumnConfig } from "../../../ib-plugins/table/types"
+import { ColumnConfig } from "../../types"
 
 /***************************************************************************
  *

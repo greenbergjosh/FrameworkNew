@@ -1,5 +1,5 @@
-import { JSONRecord } from "../../../data/JSON"
-import { ParameterItem } from "../../../data/Report"
+import { JSONRecord } from "../../../../data/JSON"
+import { ParameterItem } from "../../../../data/Report"
 import { SortedParamsType } from "../types"
 
 function sortParam(

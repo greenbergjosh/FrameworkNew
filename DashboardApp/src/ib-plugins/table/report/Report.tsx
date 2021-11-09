@@ -4,16 +4,15 @@ import { none, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { Errors } from "io-ts"
 import React from "react"
-import { Left, Right, right } from "../../data/Either"
-import { LocalReportConfig } from "../../data/Report"
-import { useRematch } from "../../hooks"
-import { store } from "../../state/store"
+import { Left, Right, right } from "../../../data/Either"
+import { LocalReportConfig } from "../../../data/Report"
+import { useRematch } from "../../../hooks"
+import { store } from "../../../state/store"
 import ReportBody from "./ReportBody"
 import { ReportOrErrors } from "./reportOrErrors/ReportOrErrors"
 import { ReportProps } from "./types"
-import { QueryParams } from "../query/QueryParams"
+import { QueryParams } from "../../_shared/query/QueryParams"
 import { UserInterfaceProps } from "@opg/interface-builder"
-import { PageBeacon } from "../PageBeacon"
 
 export const Report = (props: ReportProps): JSX.Element => {
   const [fromStore /*dispatch*/] = useRematch((appState) => ({
@@ -104,14 +103,6 @@ export const Report = (props: ReportProps): JSX.Element => {
           </QueryParams>
         )}
       </ReportOrErrors>
-      <PageBeacon
-        data={{
-          reportId: reportId.toUndefined(),
-          appName: "Legacy Site",
-          pageTitle: reportGlobalConfig && reportGlobalConfig.name,
-        }}
-        pageReady={!!reportGlobalConfig && reportGlobalConfig.name.length > 0}
-      />
     </div>
   )
 }

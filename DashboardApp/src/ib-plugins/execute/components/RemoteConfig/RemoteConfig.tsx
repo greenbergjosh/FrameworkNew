@@ -5,7 +5,7 @@ import React from "react"
 import { QueryConfig } from "../../../../data/Report"
 import { JSONRecord } from "../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { QueryForm } from "../../../../components/query/QueryForm"
+import { QueryForm } from "../../../_shared/query/QueryForm"
 import {
   LoadStatus,
   LoadStatusCode,
@@ -14,7 +14,7 @@ import {
   RemoteConfigFromStore,
   RemoteConfigProps,
 } from "../../types"
-import { QueryParams } from "../../../../components/query/QueryParams"
+import { QueryParams } from "../../../_shared/query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"

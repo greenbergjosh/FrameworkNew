@@ -6,9 +6,8 @@ import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import jsonLogic from "json-logic-js"
 import { get, isNull } from "lodash/fp"
-import { RemoteConfigFromStore, ParsedConfig } from "../../../types"
-import { UserInterfaceProps } from "@opg/interface-builder"
-import { JSONRecord } from "../../../../../data/JSON"
+import { ParsedConfig, RemoteConfigFromStore } from "../../../types"
+import { JSONRecord, UserInterfaceProps } from "@opg/interface-builder"
 
 /**
  * From Query.tsx

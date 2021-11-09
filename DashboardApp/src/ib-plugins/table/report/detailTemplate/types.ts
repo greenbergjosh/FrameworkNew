@@ -5,7 +5,7 @@ import {
   ReportDetailsAsLayout,
   ReportDetailsAsNone,
   SimpleLayoutConfig,
-} from "../../../data/Report"
+} from "../../../../data/Report"
 
 export type ReportDetailsType =
   | string

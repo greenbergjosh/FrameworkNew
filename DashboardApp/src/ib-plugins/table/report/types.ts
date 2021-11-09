@@ -1,7 +1,7 @@
-import { JSONRecord } from "../../data/JSON"
-import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../data/Report"
+import { JSONRecord } from "../../../data/JSON"
+import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../../data/Report"
 import { Option } from "fp-ts/lib/Option"
-import { PropsFromQueryParams } from "../query/QueryParams"
+import { PropsFromQueryParams } from "../../_shared/query/QueryParams"
 import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"
 import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
 

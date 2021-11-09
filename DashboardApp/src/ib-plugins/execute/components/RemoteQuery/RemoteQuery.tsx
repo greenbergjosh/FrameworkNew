@@ -5,9 +5,9 @@ import React from "react"
 import { QueryConfig } from "../../../../data/Report"
 import { JSONRecord } from "../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { QueryForm } from "../../../../components/query/QueryForm"
+import { QueryForm } from "../../../_shared/query/QueryForm"
 import { ErrorResponse, LOADSTATUSCODES, OnSubmitType, RemoteQueryProps } from "../../types"
-import { QueryParams } from "../../../../components/query/QueryParams"
+import { QueryParams } from "../../../_shared/query/QueryParams"
 import { executeRemoteQuery } from "./executeRemoteQuery"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
