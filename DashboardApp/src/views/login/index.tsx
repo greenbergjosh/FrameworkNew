@@ -32,7 +32,7 @@ export function Login(props: WithRouteProps<LoginProps>): JSX.Element {
         if (props.location.state && props.location.state.redirectedFrom) {
           props.navigate(props.location.state.redirectedFrom)
         } else {
-          props.navigate("/app/default")
+          props.navigate("/app/home")
         }
       }
     },
@@ -139,7 +139,7 @@ export function Login(props: WithRouteProps<LoginProps>): JSX.Element {
 
                       <Row>
                         <Button block={true} htmlType="button" type="primary" onClick={() => props.navigate("/")}>
-                          <Reach.Link to="/app/default">Go to the Dashboard</Reach.Link>
+                          <Reach.Link to="/app/home">Go to the Dashboard</Reach.Link>
                         </Button>
                       </Row>
                     </Layout.Content>
