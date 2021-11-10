@@ -33,7 +33,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
    * Store original document version
    */
   const original = React.useMemo(() => {
-    return formatDocument(props.document, props.language)
+    return formatDocument(props.original, props.language)
   }, [props.document, props.original])
 
   /**
