@@ -1,11 +1,11 @@
 import React from "react"
 import { BaseInterfaceComponent, LayoutDefinition, UserInterfaceDataType } from "@opg/interface-builder"
-import { CodeEditor } from "./components/CodeEditor"
 import { CodeEditorInterfaceComponentProps, CodeEditorInterfaceComponentState } from "./types.js"
 import { settings } from "./settings"
-import { CodeEditorProps } from "./types"
-import { isEqual, cloneDeep } from "lodash/fp"
+import { isEqual } from "lodash/fp"
 import layoutDefinition from "./layoutDefinition"
+import { ChangeManager } from "components/ChangeManager"
+import { normalize } from "./components/normalize"
 
 export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent<
   CodeEditorInterfaceComponentProps,
@@ -29,135 +29,83 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
     super(props)
 
     this.state = {
-      document: null,
+      internalDocument: "",
     }
   }
 
   /**
-   * Public method for external clients to trigger a load
-   *
+   * onMount load externalDocument into internalDocument.
+   * Ignore autoSync because this component hasn't
+   * been listening to InterfaceBuilder events until now.
+   */
+  componentDidMount(): void {
+    const externalDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
+    if (!isEqual(normalize(this.state.internalDocument), normalize(externalDocument))) {
+      this.setState({ internalDocument: externalDocument })
+    }
+  }
+
+  /**
+   * Public method for external clients to trigger a load.
+   * If the externalDocument is different than internalDocument, put the externalDocument into internalDocument.
    * @public
    */
   public load(): void {
-    const prevDocument = this.state.document
-    const nextDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
-    console.log("CodeEditorInterfaceComponent > load", { document: nextDocument })
+    const externalDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
+    console.log("CodeEditorInterfaceComponent > load", {
+      internalDocument: this.state.internalDocument,
+      externalDocument,
+    })
 
-    /*
-     * If the external model is ahead of local state,
-     * put the external model into local state
-     */
-    if (!isEqual(prevDocument, nextDocument)) {
-      this.setState({ document: nextDocument })
+    if (!isEqual(normalize(this.state.internalDocument), normalize(externalDocument))) {
+      this.setState({ internalDocument: externalDocument })
     }
   }
 
   /**
-   * Public method for external clients to trigger a save
-   *
+   * Public method for external clients to trigger a save.
+   * If the internalDocument is different than the externalDocument, push internalDocument into the externalDocument.
    * @public
    */
   public save(): void {
-    const prevDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
-    const nextDocument = this.state.document
-    console.log("CodeEditorInterfaceComponent > save", { document: nextDocument })
+    const externalDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
+    console.log("CodeEditorInterfaceComponent > save", {
+      internalDocument: this.state.internalDocument,
+      externalDocument,
+    })
 
-    /*
-     * If the local state is ahead of the external model,
-     * push local state into the external model
-     */
-    if (!isEqual(prevDocument, nextDocument)) {
-      this.setValue([this.props.valueKey, nextDocument])
+    if (!isEqual(normalize(externalDocument), normalize(this.state.internalDocument))) {
+      // Set external document
+      this.setValue([this.props.valueKey, this.state.internalDocument])
     }
   }
 
-  componentDidMount(): void {
-    /*
-     * Ignore autoSync because this component hasn't
-     * been listening to InterfaceBuilder events until now.
-     */
-    const document: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
-    console.log("CodeEditorInterfaceComponent > mount", { document })
-    this.setState({ document })
+  private handleExternalDocumentChange(externalDocument: UserInterfaceDataType): void {
+    this.setState({ internalDocument: externalDocument })
   }
 
-  componentDidUpdate(
-    prevProps: Readonly<CodeEditorInterfaceComponentProps>,
-    prevState: Readonly<CodeEditorInterfaceComponentState>
-  ): void {
-    if (!this.props.autoSync) {
-      return
-    }
-
-    // Is this a state change or prop change?
-    const prevStateDocument = prevState.document
-    const nextStateDocument = this.state.document
-    const prevExternalDocument: UserInterfaceDataType =
-      this.getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData) ||
-      prevProps.defaultValue
-    const nextExternalDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue
-    console.log("CodeEditorInterfaceComponent > update", { document: nextExternalDocument })
-
-    /*
-     * This update does not involve the document
-     */
-    if (isEqual(nextExternalDocument, nextStateDocument)) {
-      return
-    }
-
-    /*
-     * If the local state has changed,
-     * push local state into the external model
-     */
-    if (!isEqual(prevStateDocument, nextStateDocument)) {
-      this.setValue([this.props.valueKey, nextStateDocument])
-      return
-    }
-
-    /*
-     * If the external model has changed,
-     * put the external model into local state
-     */
-    if (!isEqual(prevExternalDocument, nextExternalDocument)) {
-      this.setState({ document: nextExternalDocument })
-    }
-  }
-
-  /**
-   * Handle changes made in the editor
-   * @param value
-   * @param errors
-   */
-  private handleChange: CodeEditorProps["onChange"] = ({ value, errors }): void => {
-    if (errors.isSome()) {
-      console.error("CodeEditorInterfaceComponent.handleChange", { errors })
-    }
-    console.log("CodeEditorInterfaceComponent.handleChange", { value })
-    const prevDocument: UserInterfaceDataType = this.getValue(this.props.valueKey) || this.props.defaultValue || ""
-    const nextDocument = value || ""
-
-    /*
-     * If the editor document has changed:
-     * put the editor document into local state,
-     * and push the editor document to the external model (when auto sync is enabled).
-     */
-    if (!isEqual(prevDocument, nextDocument)) {
-      this.setState({ document: value })
-    }
+  private handleEditorDocumentChange(editorDocument: UserInterfaceDataType): void {
+    this.setState({ internalDocument: editorDocument })
   }
 
   render(): JSX.Element {
     return (
-      <CodeEditor
-        original={cloneDeep(this.getValue(this.props.valueKey) || this.props.defaultValue)}
-        document={this.state.document}
-        height={this.props.height || "400px"}
-        language={this.props.defaultLanguage}
-        theme={this.props.defaultTheme}
-        width={this.props.width || "100%"}
-        onChange={this.handleChange}
+      <ChangeManager
+        mode={this.props.mode}
+        autoSync={this.props.autoSync}
+        defaultLanguage={this.props.defaultLanguage}
+        defaultTheme={this.props.defaultTheme}
+        getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+        getValue={this.getValue.bind(this)}
+        height={this.props.height}
+        internalDocument={this.state.internalDocument}
+        onEditorDocumentChange={this.handleEditorDocumentChange.bind(this)}
+        onExternalDocumentChange={this.handleExternalDocumentChange.bind(this)}
         raiseEvent={this.raiseEvent.bind(this)}
-        showMinimap={this.props.showMinimap}
+        setValue={this.setValue.bind(this)}
+        userInterfaceData={this.props.userInterfaceData}
+        valueKey={this.props.valueKey}
+        width={this.props.width}
       />
     )
   }

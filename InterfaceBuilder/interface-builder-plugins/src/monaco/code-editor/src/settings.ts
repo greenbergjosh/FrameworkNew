@@ -62,14 +62,6 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
-                key: "stringifyValue",
-                valueKey: "stringifyValue",
-                label: "Stringify Value",
-                defaultValue: true,
-                component: "toggle",
-                bindable: true,
-              },
-              {
                 key: "autoSync",
                 valueKey: "autoSync",
                 label: "Auto Load",

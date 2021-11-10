@@ -35,7 +35,7 @@ export const eventsManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "incomingEventHandlers",
                 label: "Event Handlers",
                 hideLabel: false,
-                component: "repeater",
+                component: "ordered-list",
                 components: [
                   {
                     size: "default",
