@@ -1,6 +1,6 @@
 import React from "react"
-import { ComponentRenderer } from "../../components/ComponentRenderer"
-import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../globalTypes"
+import { ComponentRenderer } from "../../ComponentRenderer"
+import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface ManageComponentFormProps {
   componentDefinition: ComponentDefinition

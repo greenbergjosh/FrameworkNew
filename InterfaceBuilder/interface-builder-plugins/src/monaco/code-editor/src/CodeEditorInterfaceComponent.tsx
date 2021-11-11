@@ -25,6 +25,8 @@ export default class CodeEditorInterfaceComponent extends BaseInterfaceComponent
 
   static manageForm = settings
 
+  static availableEvents = ["valueChanged"]
+
   constructor(props: CodeEditorInterfaceComponentProps) {
     super(props)
 

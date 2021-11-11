@@ -1,12 +1,15 @@
 import { Icon, Menu, Tag } from "antd"
 import { groupBy } from "lodash/fp"
 import React from "react"
-import { Draggable } from "../DragAndDrop"
-import { CachedComponent, ComponentRegistryCache, ComponentRegistryContext } from "../../services/ComponentRegistry"
-import { LayoutDefinition } from "../../globalTypes"
-import styles from "./styles.scss"
+import { Draggable } from "../../DragAndDrop"
+import { CachedComponent, ComponentRegistryCache, ComponentRegistryContext } from "../../../services/ComponentRegistry"
+import { LayoutDefinition } from "../../../globalTypes"
+import styles from "../styles.scss"
 
-type MenuCategory = [category: string, layoutDefinitions: LayoutDefinition[]]
+/**
+ * [category: string, layoutDefinitions: LayoutDefinition[]]
+ */
+type MenuCategory = [string, LayoutDefinition[]]
 
 export const ComponentMenu = () => {
   const { componentRegistry } = React.useContext(ComponentRegistryContext)
