@@ -231,10 +231,19 @@ function formatDocument(doc: CodeEditorProps["document"], language: EditorLang):
   if (isEmpty(doc)) {
     return isString(doc) ? doc : ""
   }
+
+  /* Stringfiy json */
   if (language === "json" && isString(doc)) {
     const value = tryCatch(() => JSON.parse(doc)).getOrElse({})
     return JSON.stringify(value, null, 2)
   }
+
+  /* Don't stringify strings. For instance the language may be csharp or some text */
+  if (isString(doc)) {
+    return doc
+  }
+
+  /* Stringify anything else */
   return JSON.stringify(doc, null, 2) || ""
 }
 
