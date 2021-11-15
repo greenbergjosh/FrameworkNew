@@ -40,11 +40,11 @@ namespace QueueProcessorLib
 
         public static async Task<QueueItemProducerConfig> Create(FrameworkWrapper fw, string name, Func<int, IAsyncEnumerable<QueueItem>> itemGetter, HashSet<string> discriminatorsInRetry, Func<QueueItem, Task> sendToRetryQueue, Func<IEnumerable<long>, Task> sendToRestartQueue)
         {
-            var sleepInterval = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemProducer.SleepInterval")).IfNullOrWhitespace("1000"));
-            var batchSize = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemProducer.BatchSize")).IfNullOrWhitespace("20"));
-            var lowWatermark = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemProducer.LowWatermark")).IfNullOrWhitespace("10"));
+            var sleepInterval = int.Parse((await fw.StartupConfiguration.GetS("QueueProcessor.QueueItemProducer.SleepInterval")).IfNullOrWhitespace("1000"));
+            var batchSize = int.Parse((await fw.StartupConfiguration.GetS("QueueProcessor.QueueItemProducer.BatchSize")).IfNullOrWhitespace("20"));
+            var lowWatermark = int.Parse((await fw.StartupConfiguration.GetS("QueueProcessor.QueueItemProducer.LowWatermark")).IfNullOrWhitespace("10"));
 
-            var highWatermark = int.Parse((await fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemProducer.HighWatermark")).IfNullOrWhitespace("20"));
+            var highWatermark = int.Parse((await fw.StartupConfiguration.GetS("QueueProcessor.QueueItemProducer.HighWatermark")).IfNullOrWhitespace("20"));
 
             return new QueueItemProducerConfig(name, itemGetter, discriminatorsInRetry, sendToRetryQueue, sendToRestartQueue, sleepInterval, batchSize, lowWatermark, highWatermark);
         }

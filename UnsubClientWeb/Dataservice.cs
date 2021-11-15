@@ -101,8 +101,8 @@ namespace UnsubClientWeb
                             else
                             {
                                 var latestCampaign = resArr.OrderByDescending(async c => (await c.GetS("MostRecentUnsubFileDate")).ParseDate()).First();
-                                var testEmails = await _fw.StartupConfiguration.GetL<string>("Config.TestEmails");
-                                var isUnsubArgs = _fw.Entity.Create(new { m = "IsUnsubList", CampaignId = await latestCampaign.GetS("Id"), GlobalSuppression = true, EmailMd5 = testEmails });
+                                var testEmails = await _fw.StartupConfiguration.GetL<string>("TestEmails");
+                                var isUnsubArgs = _fw.Entity.Create(new { m = "IsUnsubList", CampaignId = await latestCampaign.GetS("$meta.id"), GlobalSuppression = true, EmailMd5 = testEmails });
 
                                 res = await _fw.Entity.Parse("application/json", await _unsub.IsUnsubList(isUnsubArgs));
                                 _ = sw.Restart(() => stats.Add("IsUnsub", sw.Elapsed.TotalSeconds));

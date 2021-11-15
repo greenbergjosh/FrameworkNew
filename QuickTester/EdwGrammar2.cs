@@ -822,7 +822,7 @@
 //                foreach (var (k, v) in values)
 //                {
 //                    if (v.ValueType == EntityValueType.Array)
-//                        ies[k] = ((await v.Get("")).GetEnumerator(), defs[k]);
+//                        ies[k] = ((await v.Get()).GetEnumerator(), defs[k]);
 //                    else
 //                        ies[k] = (v == Entity.Undefined) ? (null, defs[k]) : (null, v);
 //                }

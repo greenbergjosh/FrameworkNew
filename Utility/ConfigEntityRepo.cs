@@ -56,26 +56,19 @@ namespace Utility
 
             var entity = await _entity.Parse("application/json", result);
 
-            id = (await entity.GetS("Id")).ParseGuid();
-            type = await entity.GetS("Type");
-            name = await entity.GetS("Name");
+            id = await entity.GetGuid("$meta.id");
+            type = await entity.GetS("$meta.type");
+            name = await entity.GetS("$meta.name");
 
             if (!id.HasValue || type.IsNullOrWhitespace() || name.IsNullOrWhitespace())
             {
                 return null;
             }
 
-            entity = _entity.Create(new
-            {
-                Id = await entity.GetS("Id"),
-                Name = name,
-                Type = type,
-                Config = await _entity.Parse("application/json", await entity.GetS("Config"))
-            });
-
+#if !DEBUG
             _ = _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
             _ = _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
-
+#endif
             return entity;
         }
     }

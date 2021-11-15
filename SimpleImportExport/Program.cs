@@ -41,7 +41,7 @@ namespace SimpleImportExport
             {
                 _fw.LogMethodPrefix = $"{jobName}::";
 
-                var jobIdStr = await _fw.StartupConfiguration.GetS($"Config.Jobs.{jobName}");
+                var jobIdStr = await _fw.StartupConfiguration.GetS($"Jobs.{jobName}");
 
                 if (!Guid.TryParse(jobIdStr, out var jobId))
                 {
@@ -52,9 +52,9 @@ namespace SimpleImportExport
 
                 await _fw.Log($"{nameof(Program)}", $"Getting job config: {jobName}:{jobIdStr}");
 
-                var sqlTimeoutSec = await _fw.StartupConfiguration.GetI("Config.SqlTimeoutSec", 5);
-                ServicePointManager.DefaultConnectionLimit = await _fw.StartupConfiguration.GetI("Config.MaxConnections", 5);
-                var jobCfg = await (await _fw.Entities.GetEntity(jobId)).GetE("Config");
+                var sqlTimeoutSec = await _fw.StartupConfiguration.GetI("SqlTimeoutSec", 5);
+                ServicePointManager.DefaultConnectionLimit = await _fw.StartupConfiguration.GetI("MaxConnections", 5);
+                var jobCfg = await _fw.Entities.GetEntity(jobId);
 
                 var src = await GetEnpointConfig(jobCfg, "Source");
                 var dest = await GetEnpointConfig(jobCfg, "Destination");
@@ -323,7 +323,7 @@ namespace SimpleImportExport
 
             try
             {
-                var type = (EndpointType)Enum.Parse(typeof(EndpointType), await ge.GetS("Type"));
+                var type = (EndpointType)Enum.Parse(typeof(EndpointType), await ge.GetS("$meta.type"));
 
                 return type switch
                 {

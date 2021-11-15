@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -9,123 +8,77 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.Net.Http.Headers;
 
 namespace Utility
 {
-
-    public class StateWrapper : System.Dynamic.DynamicObject
+    internal class RoslynWrapper
     {
-        public dynamic r = new System.Dynamic.ExpandoObject();
-    }
-
-    public class RoslynWrapper : System.Dynamic.DynamicObject
-    {
-        public string DefaultDebugDir = null;
-        public ConcurrentDictionary<string, Lazy<ScriptDescriptor>> functions = new();
-
-        public RoslynWrapper(IEnumerable<ScriptDescriptor> initialScripts, string defaultDebugDir)
+        private class ScriptDescriptor
         {
-            DefaultDebugDir = defaultDebugDir;
-            foreach (var sd in initialScripts)
-            {
-                _ = CompileAndCache(sd);
-            }
-        }
+            public Guid? Id;
+            public string Code;
+            public bool Debug;
+            public string DebugDir;
 
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            if (functions.ContainsKey(binder.Name))
+            public ScriptRunner<object> Script;
+
+            public ScriptDescriptor(Guid? id, string code, bool debug = false, string debugDir = null)
             {
-                result = this[binder.Name];
-                return true;
+                Id = id;
+                Code = code;
+                Debug = debug;
+                DebugDir = debugDir;
+                Key = GetKey();
             }
 
-            return base.TryGetMember(binder, out result);
+            public string Key { get; }
+
+            private string GetKey() => Id?.ToString().ToLower() ?? Hashing.Utf8MD5HashAsHexString(Code);
         }
 
-        // Need a way to force a recompile even if the Key is already there
-        // Probably just a bool argument called forceRecompile
-        public ScriptDescriptor CompileAndCache(ScriptDescriptor sd, bool update = false)
-        {
-            Lazy<ScriptDescriptor> valueFactory(string __) => new(() =>
-                                                                            {
-                                                                                var dynamicAssemblies = Regex.Matches(sd.Code, @"#r\s+""([A-Za-z][^ \r\n]+)\.dll""\s*\r\n").Select(match => Assembly.Load(match.Groups[1].Value)).ToArray();
+        private readonly string _defaultDebugDir;
+        private readonly ConcurrentDictionary<string, Lazy<ScriptDescriptor>> _functions = new();
 
-                                                                                sd.Code = Regex.Replace(sd.Code, "(#r.+\r\n)", "//$1");
-                                                                                var scriptOptions = ScriptOptions.Default
-                                                                                    .AddReferences(
-                                                                                        Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
-                                                                                        Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
-                                                                                        Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
-                                                                                        Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
-                                                                                        GetType().Assembly
-                                                                                    )
-                                                                                    .AddReferences(dynamicAssemblies)
-                                                                                    .AddImports("System.Dynamic", "System.Xml", "System.Linq");
+        public RoslynWrapper(string defaultDebugDir) => _defaultDebugDir = defaultDebugDir;
 
-                                                                                if (sd.Debug)
-                                                                                {
-                                                                                    scriptOptions = scriptOptions
-                                                                                        .WithFilePath(GenerateDebugSourceFile(sd))
-                                                                                        .WithFileEncoding(System.Text.Encoding.UTF8)
-                                                                                        .WithEmitDebugInformation(true);
-                                                                                }
-
-                                                                                var scriptc = CSharpScript.Create<object>(sd.Code, scriptOptions, globalsType: typeof(Globals));
-                                                                                _ = scriptc.Compile();
-                                                                                sd.Script = scriptc.CreateDelegate();
-
-                                                                                return sd;
-                                                                            });
-
-            return functions.AddOrUpdate(sd.Key, valueFactory, (__, lazy) => update ? valueFactory(__) : lazy).Value;
-        }
-
-        public string GenerateDebugSourceFile(ScriptDescriptor sd)
-        {
-            string srcFile = null;
-            if (sd.Debug)
-            {
-                srcFile = (sd.DebugDir ?? DefaultDebugDir) + "\\" + sd.Key + ".csx";
-                File.WriteAllText(srcFile, sd.Code);
-            }
-
-            return srcFile;
-        }
-
-        public Task<object> Evaluate(string code, object parms, StateWrapper state)
+        public Task<object> Evaluate(Guid id, string code, object parms)
         {
             var (debug, debugDir) = GetDefaultDebugValues();
 
-            return Evaluate(Guid.NewGuid().ToString(), code, parms, state, debug, debugDir);
+            return Evaluate(id, code, parms, debug, debugDir);
         }
 
-        public Task<object> Evaluate(string name, string code, object parms, StateWrapper state, bool debug, string debugDir)
+        public Task<object> Evaluate(Guid id, string code, object parms, bool debug, string debugDir)
         {
-            var sd = new ScriptDescriptor(null, name, code, debug, debugDir);
+            var sd = new ScriptDescriptor(id, code, debug, debugDir);
             sd = CompileAndCache(sd);
-            return RunFunction(sd.Key, parms, state);
+            return RunFunction(sd.Key, parms);
         }
 
-        public void ClearCache() => functions.Clear();
-
-        public Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state)
+        public Task<object> Evaluate(string code, object parms)
         {
             var (debug, debugDir) = GetDefaultDebugValues();
-
-            return Evaluate(name.ToString().ToLower(), code, parms, state, debug, debugDir);
+            return Evaluate(code, parms, debug, debugDir);
         }
 
-        public (bool debug, string debugDir) GetDefaultDebugValues()
+        public Task<object> Evaluate(string code, object parms, bool debug, string debugDir)
+        {
+            var sd = new ScriptDescriptor(null, code, debug, debugDir);
+            sd = CompileAndCache(sd);
+            return RunFunction(sd.Key, parms);
+        }
+
+        public void ClearCache() => _functions.Clear();
+
+        private (bool debug, string debugDir) GetDefaultDebugValues()
         {
             var debug = false;
 
 #if DEBUG
-            if (System.Diagnostics.Debugger.IsAttached && !DefaultDebugDir.IsNullOrWhitespace())
+            if (System.Diagnostics.Debugger.IsAttached && !_defaultDebugDir.IsNullOrWhitespace())
             {
                 debug = true;
-                var di = new DirectoryInfo(DefaultDebugDir);
+                var di = new DirectoryInfo(_defaultDebugDir);
 
                 if (!di.Exists)
                 {
@@ -134,37 +87,67 @@ namespace Utility
             }
 #endif
 
-            return (debug, DefaultDebugDir);
+            return (debug, _defaultDebugDir);
         }
 
-        public Func<object, StateWrapper, Task<object>> this[string fn] => CreateFunction(fn);
-
-        public Func<object, StateWrapper, Task<object>> this[Guid fn] => CreateFunction(fn.ToString().ToLower());
-
-        public Func<object, StateWrapper, Task<object>> CreateFunction(string fname)
+        private async Task<object> RunFunction(string fname, object parms)
         {
-            var type = GetType();
-            var methodInfo = type.GetMethod("RunFunction");
-            var parameters = methodInfo.GetParameters();
-            var parametersArray = new object[3];
-            parametersArray[0] = fname;
-            return (object parms, StateWrapper sw) =>
-            {
-                parametersArray[1] = parms;
-                parametersArray[2] = sw;
-                var r = (Task<object>)methodInfo.Invoke(this, parametersArray);
-                return r;
-            };
-        }
-
-        public async Task<object> RunFunction(string fname, object parms, StateWrapper state)
-        {
-            var globals = (state == null) ? new Globals { f = this, s = new StateWrapper() }
-                                          : new Globals { f = this, s = state };
+            var globals = new Globals();
             globals.st.Push(StackFrame.CreateStackFrame(parms));
-            var result = await functions[fname].Value.Script(globals);
-            _ = globals.st.Pop();
+            var result = await _functions[fname].Value.Script(globals);
             return result;
+        }
+
+        private ScriptDescriptor CompileAndCache(ScriptDescriptor sd)
+        {
+            var update = false;
+#if DEBUG
+            update = true;
+#endif
+            Lazy<ScriptDescriptor> valueFactory(string _) => new(() =>
+            {
+                var runner = Compile(sd.Key, sd.Code, sd.Debug, sd.DebugDir);
+                sd.Script = runner;
+                return sd;
+            });
+
+            return _functions.AddOrUpdate(sd.Key, valueFactory, (_, lazy) => update ? valueFactory(_) : lazy).Value;
+        }
+
+        private ScriptRunner<object> Compile(string key, string code, bool debug = false, string debugDir = null)
+        {
+            var dynamicAssemblies = Regex.Matches(code, @"#r\s+""([A-Za-z][^ \r\n]+)\.dll""\s*\r\n").Select(match => Assembly.Load(match.Groups[1].Value)).ToArray();
+
+            code = Regex.Replace(code, "(#r.+\r\n)", "//$1");
+            var scriptOptions = ScriptOptions.Default
+                .AddReferences(
+                    Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
+                    Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
+                    Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
+                    Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
+                    GetType().Assembly
+                )
+                .AddReferences(dynamicAssemblies)
+                .AddImports("System.Dynamic", "System.Xml", "System.Linq");
+
+            if (debug)
+            {
+                scriptOptions = scriptOptions
+                    .WithFilePath(GenerateDebugSourceFile(key ?? Guid.NewGuid().ToString(), code, debugDir))
+                    .WithFileEncoding(System.Text.Encoding.UTF8)
+                    .WithEmitDebugInformation(true);
+            }
+
+            var scriptc = CSharpScript.Create<object>(code, scriptOptions, globalsType: typeof(Globals));
+            _ = scriptc.Compile();
+            return scriptc.CreateDelegate();
+        }
+
+        private string GenerateDebugSourceFile(string key, string code, string debugDir)
+        {
+            var srcFile = $"{debugDir ?? _defaultDebugDir}\\{key}.csx";
+            File.WriteAllText(srcFile, code);
+            return srcFile;
         }
     }
 }

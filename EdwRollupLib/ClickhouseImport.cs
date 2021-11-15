@@ -41,7 +41,7 @@ namespace EdwRollupLib
 
         public static async Task<ClickhouseImport> Create(Entity config, FrameworkWrapper fw)
         {
-            var rsConfigId = Guid.Parse(await config.GetS("Config.rs_config_id"));
+            var rsConfigId = Guid.Parse(await config.GetS("rs_config_id"));
             return new ClickhouseImport(config, fw, rsConfigId);
         }
 
@@ -76,10 +76,10 @@ namespace EdwRollupLib
             }
 
             var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = await _config.GetS("Name") }, _rsConfigId);
+            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = await _config.GetS("$meta.name") }, _rsConfigId);
             await _fw.EdwWriter.Write(edwBulkEvent);
 
-            await DropStartEvent(new Parameters(startDate, endDate, await _config.GetE("Config")), "ImportProcess", null);
+            await DropStartEvent(new Parameters(startDate, endDate, _config), "ImportProcess", null);
             var start = DateTime.Now;
 
             try
@@ -119,7 +119,7 @@ namespace EdwRollupLib
                 swapMergedTables.LinkTo(cleanupTempTables);
                 cleanupTempTables.LinkTo(cleanupFiles);
 
-                var clickhouseConfig = await _config.GetE("Config.clickhouse");
+                var clickhouseConfig = await _config.GetE("clickhouse");
                 var host = await clickhouseConfig.GetS("host");
                 var user = await clickhouseConfig.GetS("ssh.user");
                 var password = await clickhouseConfig.GetS("ssh.password");
@@ -131,7 +131,7 @@ namespace EdwRollupLib
                 {
                     _client.Connect();
 
-                    await createTargetTable.SendAsync(new Parameters(startDate, endDate, await _config.GetE("Config")));
+                    await createTargetTable.SendAsync(new Parameters(startDate, endDate, _config));
 
                     await _complete.Task;
                 }
@@ -139,7 +139,7 @@ namespace EdwRollupLib
             finally
             {
                 var end = DateTime.Now;
-                await DropEndEvent(new Parameters(startDate, endDate, await _config.GetE("Config")), end - start, "ImportProcess", null);
+                await DropEndEvent(new Parameters(startDate, endDate, _config), end - start, "ImportProcess", null);
                 _running = false;
 #if DEBUG
                 Console.WriteLine(end - start);
@@ -618,7 +618,7 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = await input.Config.GetS("Name"),
+                job = await input.Config.GetS("$meta.name"),
                 step,
                 stepContext,
                 eventType = "Start",
@@ -634,7 +634,7 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = await input.Config.GetS("Name"),
+                job = await input.Config.GetS("$meta.name"),
                 step,
                 stepContext,
                 eventType = "End",
@@ -651,7 +651,7 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = await input.Config.GetS("Name"),
+                job = await input.Config.GetS("$meta.name"),
                 step,
                 stepContext,
                 eventType = "Error",
@@ -665,7 +665,7 @@ from datasets.{mergedTableName};";
 
             if (alert)
             {
-                var text = $"Clickhouse Import - {await input.Config.GetS("Name")} - ";
+                var text = $"Clickhouse Import - {await input.Config.GetS("$meta.name")} - ";
 
                 void AddField(string fieldName, object field)
                 {
@@ -680,7 +680,7 @@ from datasets.{mergedTableName};";
                 AddField("PartitionIndex", input?.PartitionIndex);
                 AddField("Error", ex.Message);
 
-                _ = await ProtocolClient.HttpPostAsync(await _fw.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+                _ = await ProtocolClient.HttpPostAsync(await _fw.StartupConfiguration.GetS("SlackAlertUrl"), JsonSerializer.Serialize(new
                 {
                     text
                 }), "application/json");

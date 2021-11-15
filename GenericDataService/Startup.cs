@@ -101,7 +101,7 @@ namespace GenericDataService
 
                     if (context.Request.Query["m"] == "reinit")
                     {
-                        var success = await fw.ReInitialize();
+                        var success = await fw.Reinitialize();
 
                         if (success)
                         {

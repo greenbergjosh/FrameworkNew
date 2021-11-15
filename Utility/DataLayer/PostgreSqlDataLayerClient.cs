@@ -20,49 +20,6 @@ namespace Utility.DataLayer
             return builder.ToString();
         }
 
-        public async Task<List<Dictionary<string, object>>> CallStoredFunction(IDictionary<string, object> parameters, string sproc, string connectionString, int timeout = 120)
-        {
-            await using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
-            var results = new List<Dictionary<string, object>>();
-
-            cn.Open();
-            var sql = $"SELECT * from {sproc}({parameters.Select(p => $"{p.Key} := '{p.Value}'").Join(",")})";
-
-            await using (var cmd = new NpgsqlCommand(sql, cn) { CommandTimeout = timeout })
-            {
-                await using var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false);
-                var fields = new string[rdr.FieldCount];
-
-                for (var i = 0; i < rdr.FieldCount; i++)
-                {
-                    fields[i] = rdr.GetName(i);
-                }
-
-                while (await rdr.ReadAsync())
-                {
-                    var row = new Dictionary<string, object>();
-
-                    foreach (var f in fields)
-                    {
-                        var val = rdr[f];
-
-                        if (val == DBNull.Value)
-                        {
-                            val = null;
-                        }
-
-                        row.Add(f, val);
-                    }
-
-                    results.Add(row);
-                }
-            }
-
-            await cn.CloseAsync();
-
-            return results;
-        }
-
         // TODO: deal with SQL Nulls (cast doesn't work)
         public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
         {

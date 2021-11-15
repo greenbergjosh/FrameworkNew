@@ -5,7 +5,7 @@ using System.Dynamic;
 
 namespace Utility
 {
-    public class StackFrame : System.Dynamic.DynamicObject, IEnumerable<KeyValuePair<string, object>>
+    public class StackFrame : DynamicObject, IEnumerable<KeyValuePair<string, object>>
     {
         private readonly ExpandoObject sf = new();
 
@@ -38,7 +38,7 @@ namespace Utility
                     sf.Add(pi.Name, pi.GetValue(o));
                 }
             }
-            
+
             return sf;
         }
 

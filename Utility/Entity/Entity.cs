@@ -11,8 +11,11 @@ using Utility.Entity.QueryLanguage.Selectors;
 namespace Utility.Entity
 {
     public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
+
     public delegate Task<(IEnumerable<Entity> entities, string query)> EntityRetriever(Entity baseEntity, Uri uri);
+
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
+
     public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query);
 
     public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
@@ -20,6 +23,7 @@ namespace Utility.Entity
     public class EntityConverter : JsonConverter<Entity>
     {
         public override Entity Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+
         public override void Write(Utf8JsonWriter writer, Entity value, JsonSerializerOptions options) => value.Document?.SerializeToJson(writer, options);
     }
 
@@ -93,17 +97,29 @@ namespace Utility.Entity
 
         internal Task<IEnumerable<Entity>> Get(Query query) => Evaluate(new[] { this }, query);
 
-        public async Task<T> Get<T>(string query = "@") => (await Evaluate(query)).Single().Value<T>();
+        public async Task<T> Get<T>(string query = "@") => (await GetE(query)).Value<T>();
 
-        public async Task<Entity> GetE(string query = "@") => (await Evaluate(query)).SingleOrDefault();
+        public Task<T> Get<T>(string query = "@", T defaultValue = default) => GetWithDefault(query, defaultValue);
 
-        public async Task<bool> GetB(string query = "@") => (await GetE(query)).Value<bool>();
+        public async Task<Entity> GetE(string query = "@") => (await Evaluate(query)).Single();
+
+        public Task<bool> GetB(string query = "@") => Get<bool>(query);
 
         public Task<bool> GetB(string query = "@", bool defaultValue = false) => GetWithDefault(query, defaultValue);
 
         public Task<IEnumerable<Entity>> Get(string query = "@") => Evaluate(query);
 
-        public async Task<string> GetS(string query = "@") => (await GetE(query)).Value<string>();
+        public async Task<DateTime> GetDateTime(string query = "@") => DateTime.Parse(await Get<string>(query));
+
+        public Task<DateTime?> GetDateTime(string query = "@", DateTime? defaultValue = null) => ParseWithDefault(query, DateTime.TryParse, defaultValue);
+
+        public async Task<Guid> GetGuid(string query = "@") => Guid.Parse(await Get<string>(query));
+
+        public Task<Guid?> GetGuid(string query = "@", Guid? defaultValue = null) => ParseWithDefault(query, Guid.TryParse, defaultValue);
+
+        public delegate bool TryParser<T>(string input, out T result) where T : struct;
+
+        public Task<string> GetS(string query = "@") => Get<string>(query);
 
         public async Task<string> GetAsS(string query = "@", string defaultValue = null)
         {
@@ -121,25 +137,47 @@ namespace Utility.Entity
 
         public Task<IEnumerable<Entity>> GetL(string query = "@") => Get($"{query}.*");
 
-        public async Task<IEnumerable<T>> GetL<T>(string query = "@") => (await Get($"{query}.*")).Select(entity => entity.Value<T>());
+        public async Task<IEnumerable<T>> GetL<T>(string query = "@") => (await GetL(query)).Select(entity => entity.Value<T>());
 
-        public async Task<int> GetI(string query = "@") => (await GetE(query)).Value<int>();
+        public Task<int> GetI(string query = "@") => Get<int>(query);
 
         public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, defaultValue);
 
+        public Task<float> GetF(string query = "@") => Get<float>(query);
+
+        public Task<float> GetF(string query = "@", float defaultValue = 0) => GetWithDefault(query, defaultValue);
+
         public Task<Dictionary<string, Entity>> GetD(string query = "@") => GetD<Entity>(query);
 
-        public async Task<Dictionary<string, TValue>> GetD<TValue>(string query = "@")
+        public async Task<Dictionary<string, TValue>> GetD<TValue>(string query = "@", bool throwIfMissing = true)
         {
-            var entity = await GetE(query);
+            var entity = (await Evaluate(query)).SingleOrDefault();
+            if (entity is null && !throwIfMissing)
+            {
+                return new Dictionary<string, TValue>();
+            }
 
             return new Dictionary<string, TValue>(entity.Document.EnumerateObject().Select(item => new KeyValuePair<string, TValue>(item.name, item.value.Value<TValue>())));
         }
 
-        private async Task<T> GetWithDefault<T>(string query = "@", T defaultValue = default)
+        private async Task<T> GetWithDefault<T>(string query, T defaultValue = default)
         {
             var result = (await Get(query)).ToList();
             return result.Count == 1 ? result[0].Value<T>() : defaultValue;
+        }
+
+        private async Task<T?> ParseWithDefault<T>(string query, TryParser<T> parser, T? defaultValue) where T : struct
+        {
+            var value = await Get<string>(query, null);
+            if (value != null)
+            {
+                if (parser(value, out var result))
+                {
+                    return result;
+                }
+            }
+
+            return defaultValue;
         }
 
         public T Value<T>() => Document is null ? default : typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();

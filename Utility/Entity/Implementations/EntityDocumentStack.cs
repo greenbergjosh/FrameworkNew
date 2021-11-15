@@ -21,6 +21,7 @@ namespace Utility.Entity.Implementations
 
         public Entity Pop() => _entities.Pop();
 
+        #region EntityDocument Implementation
         public override EntityValueType ValueType => _entities.FirstOrDefault()?.ValueType ?? EntityValueType.Undefined;
 
         public override int Length => _entities.FirstOrDefault()?.Document.Length ?? throw new InvalidOperationException();
@@ -98,5 +99,8 @@ namespace Utility.Entity.Implementations
                 JsonSerializer.Serialize(writer, first, options);
             }
         }
+
+        public override string ToString() => JsonSerializer.Serialize(Entity);
+        #endregion
     }
 }

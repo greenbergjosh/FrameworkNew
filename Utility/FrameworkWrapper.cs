@@ -20,7 +20,7 @@ namespace Utility
 
         public string[] ConfigurationKeys { get; private set; }
         public ConfigEntityRepo Entities { get; private set; }
-        public RoslynWrapper RoslynWrapper { get; private set; }
+        private RoslynWrapper RoslynWrapper { get; set; }
         public Entity.Entity StartupConfiguration { get; private set; }
         public EdwSiloLoadBalancedWriter EdwWriter { get; private set; }
         public ErrorSiloLoadBalancedWriter ErrorWriter { get; private set; }
@@ -76,21 +76,20 @@ namespace Utility
                     commandLineArgs);
 
                 fw.Entities = new ConfigEntityRepo(fw.Entity, Data.GlobalConfigConnName);
-                var scripts = new List<ScriptDescriptor>();
-                var scriptsPath = await fw.StartupConfiguration.GetS("Config.RoslynScriptsPath");
+                var scriptsPath = await fw.StartupConfiguration.GetS("RoslynScriptsPath");
 
-                fw.TraceLogging = await fw.StartupConfiguration.GetB("Config.EnableTraceLogging", true);
-                fw.TraceToConsole = (await fw.StartupConfiguration.GetB("Config.TraceToConsole", false)) || Debugger.IsAttached;
+                fw.TraceLogging = await fw.StartupConfiguration.GetB("EnableTraceLogging", true);
+                fw.TraceToConsole = (await fw.StartupConfiguration.GetB("TraceToConsole", false)) || Debugger.IsAttached;
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
-                    fw.RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                    fw.RoslynWrapper = new RoslynWrapper(Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
                 }
 
                 fw.EdwWriter = await EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(fw.StartupConfiguration);
                 fw.ErrorWriter = await ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(fw.StartupConfiguration);
 
-                var appName = await fw.StartupConfiguration.GetS("Config.ErrorLogAppName", fw.ConfigurationKeys.Join("::"));
+                var appName = await fw.StartupConfiguration.GetS("ErrorLogAppName", fw.ConfigurationKeys.Join("::"));
 
                 fw.Err =
                     async (int severity, string method, string descriptor, string message) =>
@@ -125,9 +124,9 @@ namespace Utility
         {
         }
 
-        public async Task<bool> ReInitialize()
+        public async Task<bool> Reinitialize()
         {
-            var newConfig = await Data.ReInitialize(ConfigurationKeys);
+            var newConfig = await Data.Reinitialize(ConfigurationKeys);
 
             if (newConfig != null)
             {
@@ -166,17 +165,17 @@ namespace Utility
 
             var stackedParameters = new EntityDocumentStack();
 
-            var implementation = await entity.GetS("Config.Evaluate.EntityId", null);
+            var implementation = await entity.GetS("Evaluate.EntityId", null);
             if (!string.IsNullOrWhiteSpace(implementation))
             {
                 evaluatableId = Guid.Parse(implementation);
                 evaluatableEntity = await Entities.GetEntity(evaluatableId);
-                stackedParameters.Push(await entity.GetE("Config.Evaluate.ActualParameters"));
+                stackedParameters.Push(await entity.GetE("Evaluate.ActualParameters"));
             }
 
-            if (await evaluatableEntity.GetS("Type") != "LBM.CS")
+            if (await evaluatableEntity.GetS("$meta.type") != "LBM.CS")
             {
-                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, {entityId} has type {await evaluatableEntity.GetS("Type")}");
+                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, {entityId} has type {await evaluatableEntity.GetS("$meta.type")}");
             }
 
             if (parameters != null)
@@ -190,12 +189,26 @@ namespace Utility
                 parameters = parameters.Create(stackedParameters)
             };
 
-            var (debug, debugDir) = RoslynWrapper.GetDefaultDebugValues();
-            var result = await RoslynWrapper.Evaluate(evaluatableId.ToString(), await evaluatableEntity.GetS("Config"), evaluationParameters, new StateWrapper(), debug, debugDir);
+            var result = await RoslynWrapper.Evaluate(evaluatableId, await evaluatableEntity.GetS("Code"), evaluationParameters);
 
             return (T)result;
         }
 
         public Task EvaluateEntity(Guid entityId, Entity.Entity parameters = null) => EvaluateEntity<object>(entityId, parameters);
+
+        public async Task<T> EvaluateEntity<T>(string code, Entity.Entity parameters = null)
+        {
+            var evaluationParameters = new
+            {
+                fw = this,
+                parameters
+            };
+
+            var result = await RoslynWrapper.Evaluate(code, evaluationParameters);
+
+            return (T)result;
+        }
+
+        public Task EvaluateEntity(string code, Entity.Entity parameters = null) => EvaluateEntity<object>(code, parameters);
     }
 }

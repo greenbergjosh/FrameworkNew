@@ -23,7 +23,7 @@ namespace GenericDaemonLib
         {
             await _fw.Log($"{nameof(DaemonRunner)}.OnStart", "Starting...");
 
-            foreach (var daemonConfig in await _fw.StartupConfiguration.GetD("Config.Daemons"))
+            foreach (var daemonConfig in await _fw.StartupConfiguration.GetD("Daemons"))
             {
                 var daemonName = daemonConfig.Key;
                 var daemonEntityId = Guid.Parse(await daemonConfig.Value.GetS("EntityId"));

@@ -19,8 +19,8 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkId = await network.GetS("Id");
-            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("$meta.id");
+            var networkName = await network.GetS("$meta.name");
             var apiKey = await network.GetS($"Credentials.NetworkApiKey");
             var apiUrl = await network.GetS($"Credentials.NetworkApiUrl");
             var limit = await network.GetI("Credentials.RequestLimitCount");
@@ -103,7 +103,7 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string campaignId)
         {
-            var networkName = await network.GetS("Name");
+            var networkName = await network.GetS("$meta.name");
             var apiKey = await network.GetS("Credentials.NetworkApiKey");
             var apiUrl = await network.GetS("Credentials.NetworkApiSuppressionUrl");
             var url = $"{apiUrl}?key_id={apiKey}&campaign_id={campaignId}";

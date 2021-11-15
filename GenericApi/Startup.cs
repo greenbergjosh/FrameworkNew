@@ -83,12 +83,12 @@ namespace GenericApi
                 }
                 else if (context.IsLocal() && context.Request.Query["m"] == "config")
                 {
-                    await context.WriteSuccessRespAsync(_fw.StartupConfiguration.ToString());
+                    await context.WriteSuccessRespAsync(JsonSerializer.Serialize(_fw.StartupConfiguration));
                     return;
                 }
                 else if (context.Request.Query["m"] == "reinit")
                 {
-                    var success = await _fw.ReInitialize();
+                    var success = await _fw.Reinitialize();
 
                     if (success)
                     {
@@ -164,9 +164,9 @@ namespace GenericApi
                     ["requestInfo"] = new { r = 0, requestRsId, requestRsTimestamp }
                 };
 
-                var identity = await request.GetS("i");
+                var identity = await request.GetS("i", null);
 
-                foreach (var kvp in await request.GetD<Entity>(""))
+                foreach (var kvp in await request.GetD<Entity>())
                 {
                     if (kvp.Key == "i")
                     {
@@ -222,11 +222,11 @@ namespace GenericApi
                                     continue;
                                 }
 
-                                var args = (await kvp.Value.Get("args")).FirstOrDefault()?.ToString();
+                                var args = (await kvp.Value.Get("args")).FirstOrDefault();
                                 var payload = (await kvp.Value.Get("payload")).FirstOrDefault()?.ToString();
                                 if (args == null && payload == null)
                                 {
-                                    args = kvp.Value.ToString();
+                                    args = kvp.Value;
                                 }
 
                                 result = await Data.CallFn(connectionName, command, args, payload);
@@ -236,23 +236,22 @@ namespace GenericApi
 
                         if (!processed && Program.Lbms.TryGetValue(method, out var lbm))
                         {
-                            if (!await lbm.GetB("skipAuth") && !await CheckAuth())
+                            if (!await lbm.GetB("skipAuth", false) && !await CheckAuth())
                             {
                                 continue;
                             }
 
-                            result = (Entity)await _fw.RoslynWrapper.RunFunction(
-                                await lbm.GetS("id"),
-                                new
+                            result = await _fw.EvaluateEntity<Entity>(
+                                await lbm.GetGuid("id"),
+                                _fw.Entity.Create(new
                                 {
-                                    _httpContext = context,
+                                    httpContext = context,
                                     method,
                                     payload = kvp.Value,
-                                    _fw,
                                     requestRsId,
                                     requestRsTimestamp,
                                     dropEvent = (Func<object, Task<(Guid eventId, DateTime eventTimestamp)>>)(body => DropEvent(requestRsId, requestRsTimestamp, body))
-                                }, new StateWrapper()
+                                })
                             );
                             processed = true;
                         }

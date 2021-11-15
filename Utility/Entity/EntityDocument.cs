@@ -63,6 +63,7 @@ namespace Utility.Entity
         public static EntityDocument MapValue(object value) => value switch
         {
             null => new EntityDocumentConstant(null, EntityValueType.Null),
+            bool => new EntityDocumentConstant(value, EntityValueType.Boolean),
             string => new EntityDocumentConstant(value, EntityValueType.String),
             int => new EntityDocumentConstant(value, EntityValueType.Number),
             float => new EntityDocumentConstant(value, EntityValueType.Number),
@@ -71,7 +72,7 @@ namespace Utility.Entity
             IEnumerable array => EntityDocumentArray.Create(array),
             Utility.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
-            _ => EntityDocumentObject.Create(value),// throw new Exception($"Type {value.GetType().Name} is not supported")
+            _ => EntityDocumentObject.Create(value),
         };
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

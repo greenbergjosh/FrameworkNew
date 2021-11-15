@@ -17,8 +17,8 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkId = await network.GetS("Id");
-            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("$meta.id");
+            var networkName = await network.GetS("$meta.name");
             var baseUrl = await network.GetS("Credentials.BaseUrl");
             var apiKey = await network.GetS("Credentials.NetworkApiKey");
 

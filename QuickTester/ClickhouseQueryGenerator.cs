@@ -19,7 +19,7 @@ namespace QuickTester
         public static async Task<string> GenerateClickhouseWhere(Entity ge)
         {
             string r;
-            var op = (await ge.GetD("")).Single().Key;
+            var op = (await ge.GetD()).Single().Key;
             if (op is "and" or "or")
             {
                 r = await GenerateClickhouseNary(op, await ge.GetE(op));
@@ -40,7 +40,7 @@ namespace QuickTester
             return "(" + r + ")";
         }
 
-        public static async Task<string> GenerateClickhouseNary(string op, Entity ge) => (await (await ge.GetL("")).Select(async x => await GenerateClickhouseWhere(x))).Join(" " + op + " ");
+        public static async Task<string> GenerateClickhouseNary(string op, Entity ge) => (await (await ge.GetL()).Select(async x => await GenerateClickhouseWhere(x))).Join(" " + op + " ");
 
         public static async Task<string> GenerateClickhouseUnary(string op, Entity ge)
         {
@@ -51,7 +51,7 @@ namespace QuickTester
             }
             else if (op == "filter")
             {
-                var vars = (await (await ge.Get("[0]..var")).Select(var => var.GetAsS(""))).Distinct().ToArray();
+                var vars = (await (await ge.Get("[0]..var")).Select(var => var.GetAsS())).Distinct().ToArray();
                 var whereClause = await GenerateClickhouseWhere(await ge.GetE("[0]"));
                 for (var i = 0; i < vars.Length; i++)
                 {

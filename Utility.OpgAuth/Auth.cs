@@ -26,7 +26,7 @@ namespace Utility.OpgAuth
             {
                 _fw = fw;
                 var conf = await GetConfig(false);
-                var conn = (await conf?.GetS("Conn")).ParseGuid();
+                var conn = conf == null ? null : await conf.GetGuid("Conn", null);
 
                 if (conf != null)
                 {
@@ -41,28 +41,29 @@ namespace Utility.OpgAuth
 
                         SsoPlatforms.Clear();
 
-                        foreach (var sso in await conf.GetD<string>("Sso"))
+                        foreach (var sso in await conf.GetD<Entity.Entity>("Sso", throwIfMissing: false))
                         {
-                            var key = sso.Key;
+                            var ssoKey = sso.Key;
+                            var ssoConf = sso.Value;
 
                             try
                             {
-                                var typeName = await conf.GetS($"Sso.{key}.Type");
-                                var init = await conf.GetE($"Sso.{key}.Initialization");
+                                var typeName = await ssoConf.GetS($"Type");
+                                var init = await ssoConf.GetE($"Initialization");
 
                                 if (typeName.IsNullOrWhitespace())
                                 {
-                                    throw new AuthException($"Type not defined for SSO {key}");
+                                    throw new AuthException($"Type not defined for SSO {ssoKey}");
                                 }
 
                                 if (Assembly.GetExecutingAssembly().CreateInstance(typeName) is not Platform instance)
                                 {
-                                    throw new AuthException($"Invalid Type for SSO {key}");
+                                    throw new AuthException($"Invalid Type for SSO {ssoKey}");
                                 }
 
                                 await instance.Init(_fw, init);
 
-                                _ = SsoPlatforms.TryAdd(key, instance);
+                                _ = SsoPlatforms.TryAdd(ssoKey, instance);
                             }
                             catch (AuthException e)
                             {
@@ -72,7 +73,7 @@ namespace Utility.OpgAuth
                             }
                             catch (Exception e)
                             {
-                                _initError = $"Unhandled Auth SSO exception for {key}: {e.UnwrapForLog()}";
+                                _initError = $"Unhandled Auth SSO exception for {ssoKey}: {e.UnwrapForLog()}";
                                 ssoFailed = true;
                                 break;
                             }
@@ -110,7 +111,7 @@ namespace Utility.OpgAuth
                 : await platform.GetUserDetails(payload);
         }
 
-        public static async Task<UserDetails> Login(string ssoKey, Entity.Entity payload, Func<UserDetails, bool> registrationValidation = null)
+        public static async Task<UserDetails> Login(string ssoKey, Entity.Entity payload, Func<UserDetails, Task<bool>> registrationValidation = null)
         {
             if (!_initialized)
             {
@@ -128,16 +129,16 @@ namespace Utility.OpgAuth
 
             var res = await Data.CallFn(ConnName, "SsoLogin", JsonSerializer.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
 
-            if (res == null || await res.GetAsS() == null || !(await res.GetS("err")).IsNullOrWhitespace())
+            if (res == null || await res.GetAsS() == null || !(await res.GetS("err", null)).IsNullOrWhitespace())
             {
                 throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.ToString() ?? "[null]"}");
             }
 
-            if (!(await res.GetS("t")).IsNullOrWhitespace())
+            if (!(await res.GetS("t", null)).IsNullOrWhitespace())
             {
                 return new UserDetails(loginToken: await res.GetS("t"), name: await res.GetS("name"), email: await res.GetS("primaryemail"), phone: "", imageUrl: await res.GetS("image"), id: null, raw: res.ToString());
             }
-            else if (!(await res.GetS("uid")).IsNullOrWhitespace())
+            else if (!(await res.GetS("uid", null)).IsNullOrWhitespace())
             {
                 throw new AuthException($"SSO login failed: Unexpected error condition: Platform: {platform.PlatformType} Payload: {payload} Result: {res}");
             }
@@ -146,7 +147,7 @@ namespace Utility.OpgAuth
                 ? throw new AuthException("Failed to retrieve name from SSO")
                 : userDetails.Email.IsNullOrWhitespace()
                 ? throw new AuthException("Failed to retrieve email from SSO")
-                : registrationValidation == null || !registrationValidation(userDetails)
+                : registrationValidation == null || !await registrationValidation(userDetails)
                 ? throw new AuthException($"SSO login failed {nameof(registrationValidation)}: Platform: {platform.PlatformType} Payload: {payload} Result: {res}")
                 : await RegisterSsoUser(platform, userDetails, payload);
         }
@@ -193,7 +194,7 @@ namespace Utility.OpgAuth
             {
                 var divider = rootPath.IsNullOrWhitespace() ? "" : ".";
 
-                foreach (var branch in await tree.GetD<Entity.Entity>(""))
+                foreach (var branch in await tree.GetD())
                 {
                     var path = rootPath + divider + branch.Key;
 
@@ -206,7 +207,7 @@ namespace Utility.OpgAuth
                 }
             }
 
-            foreach (var item in await permissions.GetL<Entity.Entity>(""))
+            foreach (var item in await permissions.GetL())
             {
                 if (item.IsObject)
                 {
@@ -220,7 +221,7 @@ namespace Utility.OpgAuth
         public static async Task<bool> HasPermission(string token, string securable)
         {
             var res = await Data.CallFn(ConnName, "AllUserPermissions", JsonSerializer.Serialize(new { t = token }));
-            var err = await res.GetS("err");
+            var err = await res.GetS("err", null);
 
             if (!err.IsNullOrWhitespace())
             {
@@ -228,9 +229,9 @@ namespace Utility.OpgAuth
             }
 
             var permissions = new Dictionary<string, Entity.Entity>();
-            foreach (var permissionSet in await res.GetL<Entity.Entity>(""))
+            foreach (var permissionSet in await res.GetL())
             {
-                foreach (var kvp in await permissionSet.GetD<Entity.Entity>(""))
+                foreach (var kvp in await permissionSet.GetD())
                 {
                     permissions[kvp.Key] = kvp.Value;
                 }
@@ -323,7 +324,7 @@ namespace Utility.OpgAuth
 
         internal static async Task<Entity.Entity> GetConfig(bool throwOnNull = true)
         {
-            var conf = (await _fw?.StartupConfiguration.Get("Config.OpgAuth")).FirstOrDefault();
+            var conf = (await _fw?.StartupConfiguration.Get("OpgAuth")).FirstOrDefault();
 
             return conf == null && throwOnNull ? throw new Exception(_initError) : conf;
         }

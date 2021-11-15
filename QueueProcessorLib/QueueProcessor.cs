@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Utility;
 using Utility.DataLayer;
+using Utility.Entity;
 
 namespace QueueProcessorLib
 {
@@ -30,17 +31,17 @@ namespace QueueProcessorLib
             try
             {
                 _fw = fw;
-                _fw.TraceLogging = (await fw.StartupConfiguration.GetS("Config.Trace")).ParseBool() ?? false;
+                _fw.TraceLogging = (await fw.StartupConfiguration.GetS("Trace")).ParseBool() ?? false;
 
-                _discriminatorsInRetryRefreshCycleMilliseconds = int.Parse((await _fw.StartupConfiguration.GetS("Config.QueueProcessor.DiscriminatorsInRetryRefreshCycleMilliseconds")).IfNullOrWhitespace("1000"));
-                _maxRetries = int.Parse((await _fw.StartupConfiguration.GetS("Config.QueueProcessor.MaxRetries")).IfNullOrWhitespace("10"));
+                _discriminatorsInRetryRefreshCycleMilliseconds = int.Parse((await _fw.StartupConfiguration.GetS("QueueProcessor.DiscriminatorsInRetryRefreshCycleMilliseconds")).IfNullOrWhitespace("1000"));
+                _maxRetries = int.Parse((await _fw.StartupConfiguration.GetS("QueueProcessor.MaxRetries")).IfNullOrWhitespace("10"));
 
-                _runImmediateQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunImmediateQueue");
-                _runScheduledQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunScheduledQueue");
-                _runRestartQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunRestartQueue");
-                _runRetryQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunRetryQueue");
+                _runImmediateQueue = await _fw.StartupConfiguration.GetB("QueueProcessor.RunImmediateQueue");
+                _runScheduledQueue = await _fw.StartupConfiguration.GetB("QueueProcessor.RunScheduledQueue");
+                _runRestartQueue = await _fw.StartupConfiguration.GetB("QueueProcessor.RunRestartQueue");
+                _runRetryQueue = await _fw.StartupConfiguration.GetB("QueueProcessor.RunRetryQueue");
 
-                _queueItemProcessorLbmId = Guid.Parse(await _fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemProcessorLbmId"));
+                _queueItemProcessorLbmId = Guid.Parse(await _fw.StartupConfiguration.GetS("QueueProcessor.QueueItemProcessorLbmId"));
             }
             catch (Exception ex)
             {
@@ -139,7 +140,7 @@ namespace QueueProcessorLib
         {
             var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            foreach (var item in await data.GetL(""))
+            foreach (var item in await data.GetL())
             {
                 yield return new QueueItem(
                     long.Parse(await item.GetS("id")),
@@ -154,7 +155,7 @@ namespace QueueProcessorLib
         {
             var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            foreach (var item in await data.GetL(""))
+            foreach (var item in await data.GetL())
             {
                 yield return new QueueItem(
                     long.Parse(await item.GetS("id")),
@@ -170,12 +171,10 @@ namespace QueueProcessorLib
         {
             try
             {
-                // The lbm should handle the QueueItem and return true or false to represent success
-                var lbm = await (await _fw.Entities.GetEntity(_queueItemProcessorLbmId))?.GetS("Config");
-
+                // The lbm should handle the QueueItem and return an Entity containing true or false to represent success
                 var scope = new { fw = _fw, queueName, queueItem, WriteOutput = GetQueueItemOutputWriter(queueItem) };
 
-                var processedSuccessfully = (bool)await _fw.RoslynWrapper.Evaluate(_queueItemProcessorLbmId, lbm, scope, new StateWrapper());
+                var processedSuccessfully = (await _fw.EvaluateEntity<Entity>(_queueItemProcessorLbmId, _fw.Entity.Create(scope))).Value<bool>();
 
                 // If this was a retry and it succeeded, update the Retry Queue Progress to release
                 // the rest of the QueueItems for this Discriminator

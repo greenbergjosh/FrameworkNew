@@ -19,8 +19,8 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkId = await network.GetS("Id");
-            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("$meta.id");
+            var networkName = await network.GetS("$meta.name");
             var baseUrl = await network.GetS("Credentials.BaseUrl");
             var affiliateId = await network.GetS("Credentials.NetworkAffiliateId");
             var apiKey = await network.GetS("Credentials.NetworkApiKey");
@@ -99,13 +99,13 @@ namespace UnsubLib.NetworkProviders
 
             if (campaign == null)
             {
-                await _fw.Error(_logMethod, $"Failed to get {await network.GetS("Name")} campaign {unsubRelationshipId}");
+                await _fw.Error(_logMethod, $"Failed to get {await network.GetS("$meta.name")} campaign {unsubRelationshipId}");
             }
 
             var unsubFileDownloadUri = await campaign.GetS("UnsubFileDownloadUri");
             if (string.IsNullOrWhiteSpace(unsubFileDownloadUri))
             {
-                await _fw.Error(_logMethod, $"{await network.GetS("Name")} campaign {await campaign.GetS("NetworkCampaignName")} has no file download Uri");
+                await _fw.Error(_logMethod, $"{await network.GetS("$meta.name")} campaign {await campaign.GetS("NetworkCampaignName")} has no file download Uri");
                 return null;
             }
 
@@ -116,7 +116,7 @@ namespace UnsubLib.NetworkProviders
         {
             var enriched = new List<Entity>();
 
-            foreach (var campaign in await campaigns.GetL(""))
+            foreach (var campaign in await campaigns.GetL())
             {
                 var offerId = await campaign.GetS("NetworkCampaignId");
                 if (!tuneCampaigns.TryGetValue(offerId, out var tuneCampaign))
@@ -131,7 +131,7 @@ namespace UnsubLib.NetworkProviders
                     continue;
                 }
 
-                var serialized = await campaign.GetD<Entity>("");
+                var serialized = await campaign.GetD();
 
                 serialized["UnsubFileDownloadUri"] = campaigns.Create(unsubFileDownloadUri);
 

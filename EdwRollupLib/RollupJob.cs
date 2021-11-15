@@ -40,9 +40,9 @@ namespace EdwRollupLib
 
             if (exclusiveQueueNextId != exclusiveQueueCurrentRunningId)
             {
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("$meta.name")} {Period} aborting due to active exclusive maintenance task");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("$meta.name")} {Period} aborting due to active exclusive maintenance task");
 #endif
                 return;
             }
@@ -50,9 +50,9 @@ namespace EdwRollupLib
             _rsId = Guid.NewGuid();
             _rsTs = DateTime.UtcNow;
 
-            var threadGroupId = Guid.Parse(await ThreadGroup.GetS("Id"));
+            var threadGroupId = Guid.Parse(await ThreadGroup.GetS("$meta.id"));
 
-            var parameters = new Parameters(EdwConfigId, threadGroupId, await ThreadGroup.GetS("Name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
+            var parameters = new Parameters(EdwConfigId, threadGroupId, await ThreadGroup.GetS("$meta.name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
 
             try
             {
@@ -78,18 +78,18 @@ namespace EdwRollupLib
                 var end = DateTime.Now;
                 await DropEndEvent(parameters, end - start, "ThreadGroupProcess", null);
 
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Complete");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("$meta.name")} {Period} Complete");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} Complete");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("$meta.name")} {Period} Complete");
 #endif
             }
             catch (Exception ex)
             {
                 await DropErrorEvent(ex, parameters, "ThreadGroupProcess", null, false);
 
-                await FrameworkWrapper.Error($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Error: {ex}");
+                await FrameworkWrapper.Error($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("$meta.name")} {Period} Error: {ex}");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} Error: {ex}");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("$meta.name")} {Period} Error: {ex}");
 #endif
             }
         }
@@ -113,9 +113,9 @@ namespace EdwRollupLib
             var message = await prepareThreadGroupResult.GetS("message");
             if (!string.IsNullOrWhiteSpace(message))
             {
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{await ThreadGroup.GetS("Name")} {Period}: {message}");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{await ThreadGroup.GetS("$meta.name")} {Period}: {message}");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period}: {message}");
+                Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("$meta.name")} {Period}: {message}");
 #endif
                 return new[] { threadGroupParameters };
             }
@@ -253,7 +253,7 @@ namespace EdwRollupLib
             edwBulkEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid rsId, DateTime rsTs)> { [RsConfigId] = (_rsId, _rsTs) }, payload);
 
 #if DEBUG
-            Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")}_{Period} {JsonSerializer.Serialize(payload)}");
+            Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("$meta.name")}_{Period} {JsonSerializer.Serialize(payload)}");
 #endif
 
             await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
@@ -262,13 +262,13 @@ namespace EdwRollupLib
         private async Task DropReportingSequence()
         {
             var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = await ThreadGroup.GetS("Name"), period = Period }, RsConfigId);
+            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = await ThreadGroup.GetS("$meta.name"), period = Period }, RsConfigId);
 
             await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
 
-            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Start");
+            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("$meta.name")} {Period} Start");
 #if DEBUG
-            Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} Start");
+            Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("$meta.name")} {Period} Start");
 #endif
         }
 
@@ -337,7 +337,7 @@ namespace EdwRollupLib
 
         private async Task<ITargetBlock<Parameters>> PrepareDataflow(CancellationToken cancellationToken)
         {
-            var degreesOfParallelism = int.Parse(await FrameworkWrapper.StartupConfiguration.GetS("Config.Parallelism") ?? "16");
+            var degreesOfParallelism = int.Parse(await FrameworkWrapper.StartupConfiguration.GetS("Parallelism") ?? "16");
 
             var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = degreesOfParallelism, EnsureOrdered = false, BoundedCapacity = -1, CancellationToken = cancellationToken };
 
@@ -378,7 +378,7 @@ namespace EdwRollupLib
             AddField("RollupName", input?.RollupName);
             AddField("Error", ex.Message);
 
-            _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+            _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("SlackAlertUrl"), JsonSerializer.Serialize(new
             {
                 text
             }), "application/json");

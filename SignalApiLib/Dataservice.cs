@@ -23,7 +23,7 @@ namespace SignalApiLib
 
         public async Task Reinitialize()
         {
-            _genericSourceHandler = new Generic(_fw, await _fw.StartupConfiguration.GetE("Config.GenericHandlers"));
+            _genericSourceHandler = new Generic(_fw, await _fw.StartupConfiguration.GetE("GenericHandlers"));
             _sourceHandlers = new Dictionary<string, ISourceHandler>
             {
                 {"wadiya", new Wadiya(_fw)},

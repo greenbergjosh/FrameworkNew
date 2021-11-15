@@ -99,24 +99,12 @@ namespace EdwRollupLib
 
         private async Task RunImplementation(IJobExecutionContext context)
         {
-            var implementationLbmId = Guid.Parse(await Entity.GetS("Config.implementationLbmId"));
+            var implementationLbmId = Guid.Parse(await Entity.GetS("implementationLbmId"));
 
-            var lbm = await FrameworkWrapper.Entities.GetEntity(implementationLbmId);
-            if (lbm == null)
-            {
-                throw new InvalidOperationException($"No LBM with Id: {implementationLbmId}");
-            }
+            var lbmParameters = await Entity.GetE("implementationParameters");
+            var lbmContext = Entity.Create(new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs), lbmParameters));
 
-            if (await lbm.GetS("Type") != "LBM.CS")
-            {
-                throw new InvalidOperationException($"Only entities of type LBM.CS are supported, LBM {implementationLbmId} has type {await lbm.GetS("Type")}");
-            }
-
-            var lbmParameters = await Entity.GetE("Config.implementationParameters");
-            var lbmContext = new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs), lbmParameters);
-
-            var (debug, debugDir) = FrameworkWrapper.RoslynWrapper.GetDefaultDebugValues();
-            _ = await FrameworkWrapper.RoslynWrapper.Evaluate(implementationLbmId.ToString(), await lbm.GetS("Config"), lbmContext, null, debug, debugDir);
+            await FrameworkWrapper.EvaluateEntity(implementationLbmId, lbmContext);
         }
 
         private async Task AcquireExclusive(IJobExecutionContext context)
@@ -284,7 +272,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");
@@ -364,7 +352,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");

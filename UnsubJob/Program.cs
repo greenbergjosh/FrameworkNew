@@ -101,9 +101,9 @@ namespace UnsubJob
                         {
                             try
                             {
-                                await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.GetS("Name")}, {c})...");
+                                await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.GetS("$meta.name")}, {c})...");
                                 await unsub.ScheduledUnsubJob(n, c, skipQueuedCheck);
-                                await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.GetS("Name")}, {c})...");
+                                await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.GetS("$meta.name")}, {c})...");
                             }
                             catch (Exception e)
                             {
@@ -130,7 +130,7 @@ namespace UnsubJob
 
             foreach (var network in networks)
             {
-                var name = await network.GetS("Name");
+                var name = await network.GetS("$meta.name");
 
                 await Fw.Log(nameof(Main), $"Starting({name})...");
 

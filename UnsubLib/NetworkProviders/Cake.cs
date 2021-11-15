@@ -18,8 +18,8 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = await network.GetS("Name");
-            var networkId = await network.GetS("Id");
+            var networkName = await network.GetS("$meta.name");
+            var networkId = await network.GetS("$meta.id");
             var dataPath = await network.GetS("Credentials.CampaignDataPath");
             var relationshipPath = await network.GetS("Credentials.UnsubRelationshipPath");
             var campaignIdPath = await network.GetS("Credentials.CampaignIdPath");
@@ -88,7 +88,7 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = await network.GetS("Name");
+            var networkName = await network.GetS("$meta.name");
             var downloadUrlPath = await network.GetS("Credentials.DownloadUrlPath");
             var url = BuildUrl(await network.GetS("Credentials.BaseUrl"), await network.GetS("Credentials.GetSuppressionPath"), await network.GetS("Credentials.NetworkApiKey"), await network.GetS("Credentials.NetworkAffiliateId"), unsubRelationshipId);
             string respBody = null;

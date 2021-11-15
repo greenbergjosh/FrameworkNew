@@ -26,7 +26,7 @@ namespace Utility.EDW.Reporting
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.GetL("Config.EdwSilos"))
+            foreach (var silo in await config.GetL("EdwSilos"))
             {
                 endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
@@ -37,7 +37,7 @@ namespace Utility.EDW.Reporting
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.GetL("Config.EdwSilos"))
+            foreach (var silo in await config.GetL("EdwSilos"))
             {
                 endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
             }
@@ -95,16 +95,16 @@ namespace Utility.EDW.Reporting
 
         public static async Task<EdwSiloLoadBalancedWriter> InitializeEdwSiloLoadBalancedWriter(Entity.Entity config)
         {
-            var siloConns = await config.Get("Config.EdwSilos");
+            var siloConns = await config.Get("EdwSilos");
 
             if (!siloConns.Any())
             {
                 return null;
             }
 
-            var writeTimeoutSeconds = await config.GetI("Config.EdwWriteTimeout", 0);
-            var dataFilePath = Path.GetFullPath(await config.GetS("Config.EdwDataFilePath"));
-            var errorFilePath = Path.GetFullPath(await config.GetS("Config.EdwErrorFilePath"));
+            var writeTimeoutSeconds = await config.GetI("EdwWriteTimeout", 0);
+            var dataFilePath = Path.GetFullPath(await config.GetS("EdwDataFilePath"));
+            var errorFilePath = Path.GetFullPath(await config.GetS("EdwErrorFilePath"));
 
             return new EdwSiloLoadBalancedWriter(60,
                 writeTimeoutSeconds,

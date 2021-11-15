@@ -5,8 +5,8 @@ namespace Utility
     public class Globals
     {
         public Stack<StackFrame> st = new(); // Parms;
+#pragma warning disable IDE1006 // Naming Styles
         public dynamic p => st.Peek();
-        public dynamic s; // StateWrapper
-        public dynamic f; // RoslynWrapper
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

@@ -30,7 +30,7 @@ namespace SignalApiLib.SourceHandlers
 
         public static async Task<Fluent> Create(FrameworkWrapper fw)
         {
-            var traceLogRootPath = await fw.StartupConfiguration.GetS("Config.TraceLog");
+            var traceLogRootPath = await fw.StartupConfiguration.GetS("TraceLog");
             return new Fluent(fw, traceLogRootPath);
         }
 
@@ -66,7 +66,7 @@ namespace SignalApiLib.SourceHandlers
                 }
                 else if (token.IsArray)
                 {
-                    var mutations = await (await token.GetL<Entity>("")).Select(async p => await Mutate(p));
+                    var mutations = await (await token.GetL()).Select(async p => await Mutate(p));
                     payloads = mutations;
                 }
                 else
