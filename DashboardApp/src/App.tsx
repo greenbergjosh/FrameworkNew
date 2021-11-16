@@ -99,6 +99,8 @@ import pieLayoutDefinition from "@opg/interface-builder-plugins/lib/nivo/pie/lay
 import thermometerLayoutDefinition from "@opg/interface-builder-plugins/lib/nivo/thermometer/layoutDefinition"
 import Route from "@opg/interface-builder-plugins/lib/reach-router/route"
 import Router from "@opg/interface-builder-plugins/lib/reach-router/router"
+// import PivotTable from "@opg/interface-builder-plugins/lib/syncfusion/pivot-table"
+import pivotTableLayoutDefinition from "@opg/interface-builder-plugins/lib/syncfusion/pivot-table/layoutDefinition"
 // import Table from  "@opg/interface-builder-plugins/lib/syncfusion/table"
 import tableLayoutDefinition from "@opg/interface-builder-plugins/lib/syncfusion/table/layoutDefinition"
 
@@ -227,6 +229,13 @@ export function App(): JSX.Element {
       },
       route: Route,
       router: Router,
+      "pivot-table": {
+        component: (() =>
+          import(
+            "@opg/interface-builder-plugins/lib/syncfusion/pivot-table/PivotTableInterfaceComponent"
+          )) as unknown as ImportFactory,
+        layoutDefinition: pivotTableLayoutDefinition,
+      },
       // table: (() =>
       //   import(
       //     "@opg/interface-builder-plugins/lib/syncfusion/table/TableInterfaceComponent"

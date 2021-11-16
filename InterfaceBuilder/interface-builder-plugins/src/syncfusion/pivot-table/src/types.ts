@@ -1,36 +1,51 @@
+import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
+import { ProviderType } from "@syncfusion/ej2-react-pivotview"
 import {
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
-  JSONRecord,
-  UserInterfaceProps,
-  AbstractBaseInterfaceComponentType,
-} from "@opg/interface-builder"
-import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
+  CalculatedFieldSettingsModel,
+  FieldOptionsModel,
+  FormatSettingsModel,
+  FilterModel,
+} from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
 
-export interface IPivotTableInterfaceComponentProps extends ComponentDefinitionNamedProps {
+export interface DisplayModeProps {
+  // Mapping props
+  columns: FieldOptionsModel[]
+  rows: FieldOptionsModel[]
+  values: FieldOptionsModel[]
+  filters: FieldOptionsModel[]
+
+  // Mapping Settings props
+  formatSettings: FormatSettingsModel[]
+  calculatedFieldSettings: CalculatedFieldSettingsModel[]
+  filterSettings: FilterModel[]
+
+  // Datasource
+  catalog: string
+  cube: string
+  providerType: ProviderType
+  enableSorting: boolean
+  url: string
+  localeIdentifier: number
+
+  // Options
+  showFieldList: boolean
+  showGroupingBar: boolean
+  enableVirtualization: boolean
+
+  // Appearance props
+  height: number
+}
+
+export interface IPivotTableInterfaceComponentProps extends ComponentDefinitionNamedProps, DisplayModeProps {
   // Core props
   component: "table"
   components: ComponentDefinition[]
+  mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
-  valueKey: string
-  mode: UserInterfaceProps["mode"]
-
-  // Additional props
-  loadingKey?: string
-  columns: JSONRecord[]
-  dataSource: JSONRecord
-  expandAll: boolean
-  filters: JSONRecord[]
-  formatSettings: JSONRecord[]
-  rows: JSONRecord[]
-  values: JSONRecord[]
-  height?: number
 }
 
-export interface PivotTableInterfaceComponentState {
-  loading: boolean
-}
+export interface PivotTableInterfaceComponentState {}
 
 export interface PivotTableInterfaceComponentDisplayModeProps extends IPivotTableInterfaceComponentProps {
   mode: "display"
@@ -46,23 +61,9 @@ export type PivotTableInterfaceComponentProps =
   | PivotTableInterfaceComponentDisplayModeProps
   | PivotTableInterfaceComponentEditModeProps
 
-export interface DisplayModeProps {
-  columns: DataSourceSettingsModel["columns"]
-  data: DataSourceSettingsModel["dataSource"]
-  expandAll: DataSourceSettingsModel["expandAll"]
-  filters: DataSourceSettingsModel["filters"]
-  formatSettings: DataSourceSettingsModel["formatSettings"]
-  rows: DataSourceSettingsModel["rows"]
-  values: DataSourceSettingsModel["values"]
-  height?: number
-}
-
 export interface EditModeProps {
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  getValue: AbstractBaseInterfaceComponentType["prototype"]["getValue"]
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
-  setValue: AbstractBaseInterfaceComponentType["prototype"]["setValue"]
   userInterfaceSchema?: ComponentDefinition
-  valueKey: string
 }

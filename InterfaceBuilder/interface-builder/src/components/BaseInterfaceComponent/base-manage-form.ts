@@ -166,6 +166,7 @@ const baseComponentDefinition: ComponentDefinition[] = [
                 label: "SCSS",
                 defaultTheme: "vs-dark",
                 defaultLanguage: "scss",
+                defaultValue: "&.container {}",
                 hidden: false,
                 hideLabel: true,
                 component: "code-editor",

@@ -13,13 +13,14 @@ import { _getCustomEditorWillMount } from "../registerMonacoEditorMount"
 export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps): JSX.Element | null {
   const defaultedLanguage = props.language || "json"
   const editorRef = React.useRef<editor.IStandaloneCodeEditor | null>(null)
+  const formatDocumentPartial = (doc: CodeEditorProps["document"]) => formatDocument(doc, props.language)
   const [showDiff, setShowDiff] = React.useState(false)
   const [showMinimap, setShowMinimap] = React.useState<boolean>(
     isBoolean(props.showMinimap) ? props.showMinimap : false
   )
   const [draft, setDraft] = React.useState<string | undefined>()
 
-  // TODO: using this key might be used to allow the editor to update from external changes.
+  // TODO: using this React component key might allow the editor to update from external changes.
   //  would need a way to tell what is an external change from what is a change we pushed
   //  externally and is now propagating back into this component
   const [editorInstanceKey /*, setEditorInstanceKey*/] = React.useState<number>(0)
@@ -33,7 +34,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
    * Store original document version
    */
   const original = React.useMemo(() => {
-    return formatDocument(props.original, props.language)
+    return formatDocumentPartial(props.original)
   }, [props.document, props.original])
 
   /**
@@ -42,7 +43,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
   React.useEffect(() => {
     // TODO: see above note
     // setEditorInstanceKey(editorInstanceKey + 1)
-    setDraft(formatDocument(props.document, props.language))
+    setDraft(formatDocumentPartial(props.document))
   }, [props.document])
 
   /* ***********************************

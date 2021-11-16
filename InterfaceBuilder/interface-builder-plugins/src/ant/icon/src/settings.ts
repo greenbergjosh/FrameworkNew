@@ -49,7 +49,15 @@ export const iconManageFormDefinition: Partial<ComponentDefinition>[] = [
           },
           {
             key: "appearance",
-            components: [],
+            components: [
+              {
+                key: "tooltip",
+                valueKey: "tooltip",
+                label: "Tooltip",
+                component: "input",
+                size: "small",
+              },
+            ],
           },
           {
             key: "style",
