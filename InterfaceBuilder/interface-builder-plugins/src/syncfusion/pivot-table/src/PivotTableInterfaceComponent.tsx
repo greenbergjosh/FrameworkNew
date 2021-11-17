@@ -46,8 +46,6 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
     )
   }
 
-  componentDidUpdate(prevProps: Readonly<PivotTableInterfaceComponentProps>): void {}
-
   render(): JSX.Element {
     switch (this.props.mode) {
       case "display":
@@ -63,7 +61,9 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             url={this.props.url}
             //
             // Options
+            enableVirtualization={this.props.enableVirtualization}
             showFieldList={this.props.showFieldList}
+            showGroupingBar={this.props.showGroupingBar}
             //
             // Mapped props
             columns={this.props.columns}
