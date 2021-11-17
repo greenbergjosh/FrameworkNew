@@ -40,7 +40,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
             if (_query != null)
             {
-                var result = await entity.Get(_query);
+                var result = await entity.Eval(_query);
                 // don't set _value; need to always eval
                 return result.SingleOrDefault() ?? Entity.Undefined;
             }

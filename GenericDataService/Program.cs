@@ -21,9 +21,9 @@ namespace GenericDataService
             {
                 FrameworkWrapper = await FrameworkWrapper.Create();
 
-                var filePath = await FrameworkWrapper.StartupConfiguration.GetS("DataServiceAssemblyFilePath");
-                var assemblyDirs = await FrameworkWrapper.StartupConfiguration.GetL<string>("AssemblyDirs");
-                var typeName = await FrameworkWrapper.StartupConfiguration.GetS("DataServiceTypeName");
+                var filePath = await FrameworkWrapper.StartupConfiguration.EvalS("DataServiceAssemblyFilePath");
+                var assemblyDirs = await FrameworkWrapper.StartupConfiguration.EvalL<string>("AssemblyDirs");
+                var typeName = await FrameworkWrapper.StartupConfiguration.EvalS("DataServiceTypeName");
 
                 using (var dynamicContext = new AssemblyResolver(filePath, assemblyDirs))
                 {
@@ -37,7 +37,7 @@ namespace GenericDataService
 
                 await DataService.Config(FrameworkWrapper);
 
-                WwwRootPath = await FrameworkWrapper.StartupConfiguration.GetS("PhysicalFileProviderPath", null);
+                WwwRootPath = await FrameworkWrapper.StartupConfiguration.EvalS("PhysicalFileProviderPath", null);
 
                 await HealthCheckHandler.Initialize(FrameworkWrapper);
             }

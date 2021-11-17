@@ -26,7 +26,7 @@ namespace Utility.OpgAuth
             {
                 _fw = fw;
                 var conf = await GetConfig(false);
-                var conn = conf == null ? null : await conf.GetGuid("Conn", null);
+                var conn = conf == null ? null : await conf.EvalGuid("Conn", null);
 
                 if (conf != null)
                 {
@@ -41,15 +41,15 @@ namespace Utility.OpgAuth
 
                         SsoPlatforms.Clear();
 
-                        foreach (var sso in await conf.GetD<Entity.Entity>("Sso", throwIfMissing: false))
+                        foreach (var sso in await conf.EvalD<Entity.Entity>("Sso", throwIfMissing: false))
                         {
                             var ssoKey = sso.Key;
                             var ssoConf = sso.Value;
 
                             try
                             {
-                                var typeName = await ssoConf.GetS($"Type");
-                                var init = await ssoConf.GetE($"Initialization");
+                                var typeName = await ssoConf.EvalS($"Type");
+                                var init = await ssoConf.EvalE($"Initialization");
 
                                 if (typeName.IsNullOrWhitespace())
                                 {
@@ -104,7 +104,7 @@ namespace Utility.OpgAuth
                 throw new Exception(_initError);
             }
 
-            _ = SsoPlatforms.TryGetValue(await payload.GetS("sso"), out var platform);
+            _ = SsoPlatforms.TryGetValue(await payload.EvalS("sso"), out var platform);
 
             return platform == null
                 ? throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload}")
@@ -129,16 +129,16 @@ namespace Utility.OpgAuth
 
             var res = await Data.CallFn(ConnName, "SsoLogin", JsonSerializer.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
 
-            if (res == null || await res.GetAsS() == null || !(await res.GetS("err", null)).IsNullOrWhitespace())
+            if (res == null || await res.EvalAsS() == null || !(await res.EvalS("err", null)).IsNullOrWhitespace())
             {
                 throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.ToString() ?? "[null]"}");
             }
 
-            if (!(await res.GetS("t", null)).IsNullOrWhitespace())
+            if (!(await res.EvalS("t", null)).IsNullOrWhitespace())
             {
-                return new UserDetails(loginToken: await res.GetS("t"), name: await res.GetS("name"), email: await res.GetS("primaryemail"), phone: "", imageUrl: await res.GetS("image"), id: null, raw: res.ToString());
+                return new UserDetails(loginToken: await res.EvalS("t"), name: await res.EvalS("name"), email: await res.EvalS("primaryemail"), phone: "", imageUrl: await res.EvalS("image"), id: null, raw: res.ToString());
             }
-            else if (!(await res.GetS("uid", null)).IsNullOrWhitespace())
+            else if (!(await res.EvalS("uid", null)).IsNullOrWhitespace())
             {
                 throw new AuthException($"SSO login failed: Unexpected error condition: Platform: {platform.PlatformType} Payload: {payload} Result: {res}");
             }
@@ -165,9 +165,9 @@ namespace Utility.OpgAuth
             try
             {
                 var res = await Data.CallFn(ConnName, "RegisterSsoUser", JsonSerializer.Serialize(userDetails), JsonSerializer.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = loginPayload }));
-                return (await res.GetS("t")).IsNullOrWhitespace()
+                return (await res.EvalS("t")).IsNullOrWhitespace()
                     ? throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res}")
-                    : new UserDetails(loginToken: await res.GetS("t"), name: await res.GetS("name"), email: await res.GetS("primaryemail"), phone: "", imageUrl: await res.GetS("image"), id: null, raw: res.ToString());
+                    : new UserDetails(loginToken: await res.EvalS("t"), name: await res.EvalS("name"), email: await res.EvalS("primaryemail"), phone: "", imageUrl: await res.EvalS("image"), id: null, raw: res.ToString());
             }
             catch (Exception e)
             {
@@ -178,7 +178,7 @@ namespace Utility.OpgAuth
         public static async Task<Entity.Entity> GetTokenUserDetails(string token)
         {
             var res = await Data.CallFn(ConnName, "GetTokenUserDetails", JsonSerializer.Serialize(new { t = token }));
-            var err = await res.GetS("err");
+            var err = await res.EvalS("err");
 
             return !err.IsNullOrWhitespace()
                 ? throw new AuthException($"Failed to get user details from token: Token: {token} Error: {err}")
@@ -194,7 +194,7 @@ namespace Utility.OpgAuth
             {
                 var divider = rootPath.IsNullOrWhitespace() ? "" : ".";
 
-                foreach (var branch in await tree.GetD())
+                foreach (var branch in await tree.EvalD())
                 {
                     var path = rootPath + divider + branch.Key;
 
@@ -207,7 +207,7 @@ namespace Utility.OpgAuth
                 }
             }
 
-            foreach (var item in await permissions.GetL())
+            foreach (var item in await permissions.EvalL())
             {
                 if (item.IsObject)
                 {
@@ -221,7 +221,7 @@ namespace Utility.OpgAuth
         public static async Task<bool> HasPermission(string token, string securable)
         {
             var res = await Data.CallFn(ConnName, "AllUserPermissions", JsonSerializer.Serialize(new { t = token }));
-            var err = await res.GetS("err", null);
+            var err = await res.EvalS("err", null);
 
             if (!err.IsNullOrWhitespace())
             {
@@ -229,9 +229,9 @@ namespace Utility.OpgAuth
             }
 
             var permissions = new Dictionary<string, Entity.Entity>();
-            foreach (var permissionSet in await res.GetL())
+            foreach (var permissionSet in await res.EvalL())
             {
-                foreach (var kvp in await permissionSet.GetD())
+                foreach (var kvp in await permissionSet.EvalD())
                 {
                     permissions[kvp.Key] = kvp.Value;
                 }
@@ -239,7 +239,7 @@ namespace Utility.OpgAuth
 
             var mergedPermissions = _fw.Entity.Create(permissions);
 
-            if (await mergedPermissions.GetB(GOD_USER))
+            if (await mergedPermissions.EvalB(GOD_USER))
             {
                 return true;
             }
@@ -249,7 +249,7 @@ namespace Utility.OpgAuth
             for (var i = 1; i < steps.Length + 1; i++)
             {
                 var path = steps.Take(i).Join(".");
-                var val = (await mergedPermissions.Get(path)).FirstOrDefault();
+                var val = (await mergedPermissions.Eval(path)).FirstOrDefault();
 
                 if (val == null)
                 {
@@ -324,7 +324,7 @@ namespace Utility.OpgAuth
 
         internal static async Task<Entity.Entity> GetConfig(bool throwOnNull = true)
         {
-            var conf = (await _fw?.StartupConfiguration.Get("OpgAuth")).FirstOrDefault();
+            var conf = (await _fw?.StartupConfiguration.Eval("OpgAuth")).FirstOrDefault();
 
             return conf == null && throwOnNull ? throw new Exception(_initError) : conf;
         }

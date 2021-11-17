@@ -13,7 +13,7 @@ namespace QuickTester
         {
             var fw = await FrameworkWrapper.Create();
 
-            var config = await fw.Entities.GetEntity(Guid.Parse("f4de787b-2bd6-443d-9e57-e3930bb86a8c"));
+            var config = await fw.Entity.EvalE("config://f4de787b-2bd6-443d-9e57-e3930bb86a8c");
 
             var cacheResult = await Data.CallFn("appCache", "appCacheGet", JsonSerializer.Serialize(new
             {
@@ -22,9 +22,9 @@ namespace QuickTester
             }));
 
             DateTime nextStartDate = default;
-            foreach (var entry in await cacheResult.GetL("result"))
+            foreach (var entry in await cacheResult.EvalL("result"))
             {
-                nextStartDate = DateTime.Parse(await entry.GetS("payload")).Date;
+                nextStartDate = DateTime.Parse(await entry.EvalS("payload")).Date;
                 break;
             }
 

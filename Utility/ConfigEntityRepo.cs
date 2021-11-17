@@ -56,9 +56,9 @@ namespace Utility
 
             var entity = await _entity.Parse("application/json", result);
 
-            id = await entity.GetGuid("$meta.id");
-            type = await entity.GetS("$meta.type");
-            name = await entity.GetS("$meta.name");
+            id = await entity.EvalGuid("$meta.id");
+            type = await entity.EvalS("$meta.type");
+            name = await entity.EvalS("$meta.name");
 
             if (!id.HasValue || type.IsNullOrWhitespace() || name.IsNullOrWhitespace())
             {

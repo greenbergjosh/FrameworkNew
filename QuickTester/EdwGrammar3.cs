@@ -33,7 +33,7 @@ namespace QuickTester
                 var sb = new StringBuilder();
                 foreach (var child in Entities)
                 {
-                    _ = sb.Append(await child.GetAsS());
+                    _ = sb.Append(await child.EvalAsS());
                 }
 
                 var result = sb.ToString();
@@ -62,7 +62,7 @@ namespace QuickTester
             {
                 var hadResults = false;
 
-                var result = await entity.Get(Query);
+                var result = await entity.Eval(Query);
                 foreach (var resultEntity in result)
                 {
                     hadResults = true;
@@ -91,7 +91,7 @@ namespace QuickTester
 
             public async IAsyncEnumerable<Entity> Evaluate(Entity entity)
             {
-                yield return (await entity.Get(Query)).Any() ? TrueValue : FalseValue;
+                yield return (await entity.Eval(Query)).Any() ? TrueValue : FalseValue;
             }
         }
 
@@ -127,7 +127,7 @@ namespace QuickTester
                 {
                     foreach (var (k, v) in Scopes)
                     {
-                        ies[k] = (await v.Scope.Get()).GetEnumerator();
+                        ies[k] = (await v.Scope.Eval()).GetEnumerator();
                     }
 
                     bool done;
@@ -225,16 +225,16 @@ namespace QuickTester
             {
                 var parts = new List<string>();
 
-                foreach (var step in await Repeater.Get())
+                foreach (var step in await Repeater.Eval())
                 {
-                    var scope = await step.GetD();
+                    var scope = await step.EvalD();
 
                     foreach (var kvp in scope)
                     {
                         _contextSetter(kvp.Key, kvp.Value);
                     }
 
-                    var stepContent = await Template.GetAsS();
+                    var stepContent = await Template.EvalAsS();
 
                     foreach (var kvp in scope)
                     {
@@ -244,7 +244,7 @@ namespace QuickTester
                     parts.Add(stepContent);
                 }
 
-                yield return entity.Create(string.Join(await Separator.GetAsS(), parts));
+                yield return entity.Create(string.Join(await Separator.EvalAsS(), parts));
             }
         }
 
@@ -264,7 +264,7 @@ namespace QuickTester
                 {
                     "entity" => (await GetEntity(fw, uri.Host), UnescapeQueryString(uri)),
                     "entityType" => (await GetEntityType(uri.Host), UnescapeQueryString(uri)),
-                    "context" => (new[] { await contextEntity.GetE(uri.Host) }, UnescapeQueryString(uri)),
+                    "context" => (new[] { await contextEntity.EvalE(uri.Host) }, UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
                 MissingPropertyHandler: null,
@@ -328,18 +328,13 @@ namespace QuickTester
             }
         }
 
-        private static async Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, string entityId)
-        {
-            var id = Guid.Parse(entityId);
-            var entity = await fw.Entities.GetEntity(id);
-            return new[] { entity };
-        }
+        private static Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, string entityId) => fw.Entity.Eval($"config://{entityId}");
 
         private static async Task<IEnumerable<Entity>> GetEntityType(string entityType)
         {
             var entities = await Data.CallFn("config", "SelectConfigsByType", new { type = entityType });
 
-            return await entities.GetL();
+            return await entities.EvalL();
         }
 
         private static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
@@ -354,7 +349,7 @@ namespace QuickTester
                         if (entity.ValueType == EntityValueType.Array)
                         {
                             var index = 0;
-                            foreach (var child in await entity.Get("@.*"))
+                            foreach (var child in await entity.Eval("@.*"))
                             {
                                 yield return entity.Create(child.Value<string>().Replace(functionArguments[0].Value<string>(), functionArguments[1].Value<string>()), $"{entity.Query}[{index}].{query}");
                                 index++;

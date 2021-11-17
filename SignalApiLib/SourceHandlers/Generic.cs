@@ -21,14 +21,14 @@ namespace SignalApiLib.SourceHandlers
             _cfg = cfg;
         }
 
-        public async Task<bool> CanHandle(string sourceStr) => !sourceStr.IsNullOrWhitespace() && (await _cfg.Get(sourceStr.ToLower())).Any();
+        public async Task<bool> CanHandle(string sourceStr) => !sourceStr.IsNullOrWhitespace() && (await _cfg.Eval(sourceStr.ToLower())).Any();
 
         public Task<string> HandleRequest(string requestFromPost, HttpContext ctx) => throw new NotImplementedException();
 
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx, string sourceStr)
         {
             sourceStr = sourceStr.ToLower();
-            var cfg = (await _cfg.Get(sourceStr)).FirstOrDefault();
+            var cfg = (await _cfg.Eval(sourceStr)).FirstOrDefault();
 
             if (cfg == null)
             {
@@ -36,13 +36,13 @@ namespace SignalApiLib.SourceHandlers
                 throw new Exception("Could not process request");
             }
 
-            var func = await cfg.GetS("func");
+            var func = await cfg.EvalS("func");
 
             try
             {
                 var res = await Data.CallFn(Conn, func, requestFromPost);
 
-                if (await res?.GetS("result", null) != "success")
+                if (await res?.EvalS("result", null) != "success")
                 {
                     await _fw.Error($"{sourceStr}.{nameof(HandleRequest)}", $"DB write failed. Response: {res}\r\nBody: {requestFromPost}");
                 }

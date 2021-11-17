@@ -18,13 +18,13 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = await network.GetS("$meta.name");
-            var networkId = await network.GetS("$meta.id");
-            var dataPath = await network.GetS("Credentials.CampaignDataPath");
-            var relationshipPath = await network.GetS("Credentials.UnsubRelationshipPath");
-            var campaignIdPath = await network.GetS("Credentials.CampaignIdPath");
-            var campaignNamePath = await network.GetS("Credentials.CampaignNamePath");
-            var url = BuildUrl(await network.GetS("Credentials.BaseUrl"), await network.GetS("Credentials.GetCampaignsPath"), await network.GetS("Credentials.NetworkApiKey"), await network.GetS("Credentials.NetworkAffiliateId"));
+            var networkName = await network.EvalS("$meta.name");
+            var networkId = await network.EvalS("$meta.id");
+            var dataPath = await network.EvalS("Credentials.CampaignDataPath");
+            var relationshipPath = await network.EvalS("Credentials.UnsubRelationshipPath");
+            var campaignIdPath = await network.EvalS("Credentials.CampaignIdPath");
+            var campaignNamePath = await network.EvalS("Credentials.CampaignNamePath");
+            var url = BuildUrl(await network.EvalS("Credentials.BaseUrl"), await network.EvalS("Credentials.GetCampaignsPath"), await network.EvalS("Credentials.NetworkApiKey"), await network.EvalS("Credentials.NetworkAffiliateId"));
             string respBody = null;
 
             try
@@ -63,7 +63,7 @@ namespace UnsubLib.NetworkProviders
                         RelationshipPath = relationshipPath
                     }), respBody);
 
-                if (res == null || await res.GetS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{respBody ?? "[null]"}");
                     return null;
@@ -88,9 +88,9 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = await network.GetS("$meta.name");
-            var downloadUrlPath = await network.GetS("Credentials.DownloadUrlPath");
-            var url = BuildUrl(await network.GetS("Credentials.BaseUrl"), await network.GetS("Credentials.GetSuppressionPath"), await network.GetS("Credentials.NetworkApiKey"), await network.GetS("Credentials.NetworkAffiliateId"), unsubRelationshipId);
+            var networkName = await network.EvalS("$meta.name");
+            var downloadUrlPath = await network.EvalS("Credentials.DownloadUrlPath");
+            var url = BuildUrl(await network.EvalS("Credentials.BaseUrl"), await network.EvalS("Credentials.GetSuppressionPath"), await network.EvalS("Credentials.NetworkApiKey"), await network.EvalS("Credentials.NetworkAffiliateId"), unsubRelationshipId);
             string respBody = null;
 
             try
@@ -100,7 +100,7 @@ namespace UnsubLib.NetworkProviders
                 respBody = resp.body;
 
                 var rb = await network.Parse("application/json", respBody);
-                if (await rb?.GetS("message") == "Suppresion List Not Found")
+                if (await rb?.EvalS("message") == "Suppresion List Not Found")
                 {
                     return null;
                 }
@@ -110,7 +110,7 @@ namespace UnsubLib.NetworkProviders
                     throw new Exception($"Http request for suppression url failed for {networkName}: {url} {resp.body}", null);
                 }
 
-                var dlUrl = await (await network.Parse("application/json", respBody)).GetS(downloadUrlPath);
+                var dlUrl = await (await network.Parse("application/json", respBody)).EvalS(downloadUrlPath);
 
                 return dlUrl.IsNullOrWhitespace() ? null : new Uri(dlUrl);
             }

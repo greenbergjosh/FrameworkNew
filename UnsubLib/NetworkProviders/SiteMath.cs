@@ -17,14 +17,14 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkId = await network.GetS("$meta.id");
-            var networkName = await network.GetS("$meta.name");
-            var baseUrl = await network.GetS("Credentials.BaseUrl");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var networkId = await network.EvalS("$meta.id");
+            var networkName = await network.EvalS("$meta.name");
+            var baseUrl = await network.EvalS("Credentials.BaseUrl");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
 
-            var relationshipPath = await network.GetS("Credentials.UnsubRelationshipPath");
-            var campaignIdPath = await network.GetS("Credentials.CampaignIdPath");
-            var campaignNamePath = await network.GetS("Credentials.CampaignNamePath");
+            var relationshipPath = await network.EvalS("Credentials.UnsubRelationshipPath");
+            var campaignIdPath = await network.EvalS("Credentials.CampaignIdPath");
+            var campaignNamePath = await network.EvalS("Credentials.CampaignNamePath");
 
             var url = baseUrl.Replace("{apiKey}", apiKey);
 
@@ -56,7 +56,7 @@ namespace UnsubLib.NetworkProviders
                         RelationshipPath = relationshipPath
                     }), responseBody);
 
-                if (res == null || await res.GetS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{responseBody ?? "[null]"}");
                     return null;
@@ -79,6 +79,6 @@ namespace UnsubLib.NetworkProviders
             }
         }
 
-        public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId) => new Uri(await network.GetS("Credentials.GlobalSuppressionUrl"));
+        public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId) => new Uri(await network.EvalS("Credentials.GlobalSuppressionUrl"));
     }
 }

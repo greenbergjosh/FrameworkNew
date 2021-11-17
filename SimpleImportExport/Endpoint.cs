@@ -38,7 +38,7 @@ namespace SimpleImportExport
 
     public abstract class Endpoint
     {
-        protected async Task LoadPatterns(Entity ge) => Patterns = (await (await ge.GetL("Patterns")).Select(async p => await Pattern.Create(p))).ToArray();
+        protected async Task LoadPatterns(Entity ge) => Patterns = (await (await ge.EvalL("Patterns")).Select(async p => await Pattern.Create(p))).ToArray();
 
         public abstract EndpointType Type { get; }
         public abstract Task<Stream> GetStream(SourceFileInfo file);

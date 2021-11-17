@@ -41,7 +41,7 @@ namespace SimpleImportExport
             {
                 _fw.LogMethodPrefix = $"{jobName}::";
 
-                var jobIdStr = await _fw.StartupConfiguration.GetS($"Jobs.{jobName}");
+                var jobIdStr = await _fw.StartupConfiguration.EvalS($"Jobs.{jobName}");
 
                 if (!Guid.TryParse(jobIdStr, out var jobId))
                 {
@@ -52,16 +52,16 @@ namespace SimpleImportExport
 
                 await _fw.Log($"{nameof(Program)}", $"Getting job config: {jobName}:{jobIdStr}");
 
-                var sqlTimeoutSec = await _fw.StartupConfiguration.GetI("SqlTimeoutSec", 5);
-                ServicePointManager.DefaultConnectionLimit = await _fw.StartupConfiguration.GetI("MaxConnections", 5);
-                var jobCfg = await _fw.Entities.GetEntity(jobId);
+                var sqlTimeoutSec = await _fw.StartupConfiguration.EvalI("SqlTimeoutSec", 5);
+                ServicePointManager.DefaultConnectionLimit = await _fw.StartupConfiguration.EvalI("MaxConnections", 5);
+                var jobCfg = await _fw.Entity.EvalE($"config://{jobId}");
 
                 var src = await GetEnpointConfig(jobCfg, "Source");
                 var dest = await GetEnpointConfig(jobCfg, "Destination");
-                var commitAfterPost = await jobCfg.GetB("CommitAfterPostProcess", false);
-                var jobPost = await jobCfg.GetS("JobPostProcess");
-                var srcPost = await FilePostProcess(await jobCfg.GetS("Source.PostProcess"), jobName, commitAfterPost);
-                var destPost = await FilePostProcess(await jobCfg.GetS("Destination.PostProcess"), jobName, commitAfterPost);
+                var commitAfterPost = await jobCfg.EvalB("CommitAfterPostProcess", false);
+                var jobPost = await jobCfg.EvalS("JobPostProcess");
+                var srcPost = await FilePostProcess(await jobCfg.EvalS("Source.PostProcess"), jobName, commitAfterPost);
+                var destPost = await FilePostProcess(await jobCfg.EvalS("Destination.PostProcess"), jobName, commitAfterPost);
                 var srcFiles = (await src.GetFiles()).ToArray();
 
                 await _fw.Log($"{nameof(Program)}", $"{jobName}\tFound {srcFiles.Length} on {src}");
@@ -72,7 +72,7 @@ namespace SimpleImportExport
                     {
                         var shouldDownload = await Data.CallFn("SimpleImportExport", "shouldTransfer", JsonSerializer.Serialize(new { JobId = jobId, f.FileName }));
 
-                        if (await shouldDownload.GetAsS() == "1" || await shouldDownload.GetB("result", true))
+                        if (await shouldDownload.EvalAsS() == "1" || await shouldDownload.EvalB("result", true))
                         {
                             await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopying {f.FileName}:\n\tFrom: {src}\n\tTo: {dest}");
 
@@ -85,7 +85,7 @@ namespace SimpleImportExport
                             {
                                 var res = await Data.CallFn("SimpleImportExport", "logTransfer", sargs, "", timeout: sqlTimeoutSec);
 
-                                if (await res.GetS("result") != "Success")
+                                if (await res.EvalS("result") != "Success")
                                 {
                                     throw new Exception($"Sql exception logging download: {res} Args: {sargs}");
                                 }
@@ -104,9 +104,9 @@ namespace SimpleImportExport
                                 await Commit();
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(await shouldDownload.GetS("err")))
+                        else if (!string.IsNullOrWhiteSpace(await shouldDownload.EvalS("err")))
                         {
-                            await _fw.Error(nameof(SimpleImportExport), $"ShouldDownload failed: {await shouldDownload.GetS("err")}");
+                            await _fw.Error(nameof(SimpleImportExport), $"ShouldDownload failed: {await shouldDownload.EvalS("err")}");
                         }
                     }
                     catch (Exception e)
@@ -174,13 +174,13 @@ namespace SimpleImportExport
 
                 if (parsed && ppge != null)
                 {
-                    var cmd = await ppge.GetS("cmd");
+                    var cmd = await ppge.EvalS("cmd");
 
                     if (cmd == "Rename")
                     {
-                        var pattern = await ppge.GetS("pattern");
-                        var replace = await ppge.GetS("replace");
-                        var overwrite = await ppge.GetB("overwrite", false);
+                        var pattern = await ppge.EvalS("pattern");
+                        var replace = await ppge.EvalS("replace");
+                        var overwrite = await ppge.EvalB("overwrite", false);
 
                         if (!pattern.IsNullOrWhitespace() && !replace.IsNullOrWhitespace())
                         {
@@ -205,11 +205,11 @@ namespace SimpleImportExport
 
                     if (cmd == "CallFn")
                     {
-                        var argsTemplate = await ppge.GetS("args");
-                        var payloadTemplate = await ppge.GetS("payload");
-                        var connection = await ppge.GetS("connection");
-                        var function = await ppge.GetS("function");
-                        var errorJsonPath = await ppge.GetS("errorJsonPath");
+                        var argsTemplate = await ppge.EvalS("args");
+                        var payloadTemplate = await ppge.EvalS("payload");
+                        var connection = await ppge.EvalS("connection");
+                        var function = await ppge.EvalS("function");
+                        var errorJsonPath = await ppge.EvalS("errorJsonPath");
 
                         return async (file, directoryPath, endpoint, refId) =>
                         {
@@ -248,7 +248,7 @@ namespace SimpleImportExport
                             await _fw.Log($"{nameof(Program)}", $"{jobName}\tRunning post process. Ref: {refId} {endpoint}:\r\nConfig: {ppge}\r\nArgs: {args}\r\nPayload: {payload}");
                             var res = await Data.CallFn(connection, function, args.ToString(), payload);
 
-                            if ((await res?.GetAsS("@")).IsNullOrWhitespace() != false)
+                            if ((await res?.EvalAsS("@")).IsNullOrWhitespace() != false)
                             {
                                 var msg = $"Post Process CallFn failed. DB null response. Ref: {refId} {endpoint}\r\nConfig: {ppge}\r\nArgs: {args}\r\nPayload: {payload}";
 
@@ -262,7 +262,7 @@ namespace SimpleImportExport
                                 return;
                             }
 
-                            if ((await res.GetS(errorJsonPath)).IsNullOrWhitespace() == false)
+                            if ((await res.EvalS(errorJsonPath)).IsNullOrWhitespace() == false)
                             {
                                 var msg = $"Post Process CallFn failed ({endpoint}). DB response: Ref: {refId} {res}\r\nConfig: {ppge}\r\nArgs: {args}\r\nPayload: {payload}";
 
@@ -304,7 +304,7 @@ namespace SimpleImportExport
                 var matchResult = new Regex(@"{ptrn_(?<fieldName>[^}]+)}").Match(token);
 
                 var patternFieldName = matchResult.Success ? matchResult.Groups["fieldName"]?.Value : null;
-                var value = await pattern.TokenFields.GetS(patternFieldName, null);
+                var value = await pattern.TokenFields.EvalS(patternFieldName, null);
 
                 if (value == null)
                 {
@@ -319,11 +319,11 @@ namespace SimpleImportExport
 
         private static async Task<Endpoint> GetEnpointConfig(Entity jobCfg, string name)
         {
-            var ge = await jobCfg.GetE($"{name}");
+            var ge = await jobCfg.EvalE($"{name}");
 
             try
             {
-                var type = (EndpointType)Enum.Parse(typeof(EndpointType), await ge.GetS("$meta.type"));
+                var type = (EndpointType)Enum.Parse(typeof(EndpointType), await ge.EvalS("$meta.type"));
 
                 return type switch
                 {

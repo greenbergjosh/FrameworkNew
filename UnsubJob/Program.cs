@@ -67,7 +67,7 @@ namespace UnsubJob
             {
                 var res = await unsub.GetNetworks(singleNetworkName);
 
-                networks = await res.GetL();
+                networks = await res.EvalL();
 
                 if (networks == null)
                 {
@@ -101,9 +101,9 @@ namespace UnsubJob
                         {
                             try
                             {
-                                await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.GetS("$meta.name")}, {c})...");
+                                await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.EvalS("$meta.name")}, {c})...");
                                 await unsub.ScheduledUnsubJob(n, c, skipQueuedCheck);
-                                await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.GetS("$meta.name")}, {c})...");
+                                await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.EvalS("$meta.name")}, {c})...");
                             }
                             catch (Exception e)
                             {
@@ -130,7 +130,7 @@ namespace UnsubJob
 
             foreach (var network in networks)
             {
-                var name = await network.GetS("$meta.name");
+                var name = await network.EvalS("$meta.name");
 
                 await Fw.Log(nameof(Main), $"Starting({name})...");
 
@@ -165,7 +165,7 @@ namespace UnsubJob
                     continue;
                 }
 
-                var unsubMethod = await network.GetS("Credentials.UnsubMethod");
+                var unsubMethod = await network.EvalS("Credentials.UnsubMethod");
 
                 if (unsubMethod == "ScheduledUnsubJob")
                 {
@@ -189,7 +189,7 @@ namespace UnsubJob
                         }
                     }
 
-                    if (await network.GetB("Credentials.IgnoreManualDirectory", false) != false)
+                    if (await network.EvalB("Credentials.IgnoreManualDirectory", false) != false)
                     {
                         try
                         {

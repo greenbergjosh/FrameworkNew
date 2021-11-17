@@ -29,18 +29,18 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = await network.GetS("$meta.name");
-            var networkId = await network.GetS("$meta.id");
-            var dataPath = await network.GetS("Credentials.CampaignDataPath");
-            var relationshipPath = await network.GetS("Credentials.UnsubRelationshipPath");
-            var campaignIdPath = await network.GetS("Credentials.CampaignIdPath");
-            var campaignNamePath = await network.GetS("Credentials.CampaignNamePath");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var networkName = await network.EvalS("$meta.name");
+            var networkId = await network.EvalS("$meta.id");
+            var dataPath = await network.EvalS("Credentials.CampaignDataPath");
+            var relationshipPath = await network.EvalS("Credentials.UnsubRelationshipPath");
+            var campaignIdPath = await network.EvalS("Credentials.CampaignIdPath");
+            var campaignNamePath = await network.EvalS("Credentials.CampaignNamePath");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
 
             const int PAGESIZE = 100;
             var currentPage = 1;
 
-            var url = new Uri(new Uri(await network.GetS("Credentials.BaseUrl")), await network.GetS("Credentials.GetCampaignsPath")).ToString() + $"?page_size={PAGESIZE}&page={currentPage}";
+            var url = new Uri(new Uri(await network.EvalS("Credentials.BaseUrl")), await network.EvalS("Credentials.GetCampaignsPath")).ToString() + $"?page_size={PAGESIZE}&page={currentPage}";
 
             string respBody = null;
 
@@ -84,16 +84,16 @@ namespace UnsubLib.NetworkProviders
                             RelationshipPath = relationshipPath
                         }), respBody);
 
-                    if (res == null || await res.GetS("result", null) == "failed")
+                    if (res == null || await res.EvalS("result", null) == "failed")
                     {
                         await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{respBody ?? "[null]"}");
                         return null;
                     }
 
-                    var paging = await campaigns.GetE("paging");
-                    var page = await paging.GetI("page");
-                    var pageSize = await paging.GetI("page_size");
-                    var totalCount = await paging.GetI("total_count");
+                    var paging = await campaigns.EvalE("paging");
+                    var page = await paging.EvalI("page");
+                    var pageSize = await paging.EvalI("page_size");
+                    var totalCount = await paging.EvalI("total_count");
 
                     if (page * pageSize >= totalCount)
                     {
@@ -123,10 +123,10 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = await network.GetS("$meta.name");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var networkName = await network.EvalS("$meta.name");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
 
-            var url = new Uri(new Uri(await network.GetS("Credentials.BaseUrl")), await network.GetS("Credentials.GetSuppressionPath")).ToString().Replace("{unsubRelationshipId}", unsubRelationshipId);
+            var url = new Uri(new Uri(await network.EvalS("Credentials.BaseUrl")), await network.EvalS("Credentials.GetSuppressionPath")).ToString().Replace("{unsubRelationshipId}", unsubRelationshipId);
 
             string respBody = null;
 
@@ -137,7 +137,7 @@ namespace UnsubLib.NetworkProviders
                 respBody = resp.body;
                 var rb = await network.Parse("application/json", respBody);
 
-                if ((await rb?.GetS("message", null))?.Contains("Can't find entry in the database") == true)
+                if ((await rb?.EvalS("message", null))?.Contains("Can't find entry in the database") == true)
                 {
                     return null;
                 }
@@ -148,9 +148,9 @@ namespace UnsubLib.NetworkProviders
                 }
 
                 var response = await network.Parse("application/json", respBody);
-                foreach (var downloadUrlPath in await network.GetL<string>("Credentials.DownloadUrlPaths"))
+                foreach (var downloadUrlPath in await network.EvalL<string>("Credentials.DownloadUrlPaths"))
                 {
-                    var (found, dlUrl) = await response.TryGetS(downloadUrlPath.Replace("/", "."));
+                    var (found, dlUrl) = await response.TryEvalS(downloadUrlPath.Replace("/", "."));
 
                     if (!found || dlUrl.IsNullOrWhitespace())
                     {

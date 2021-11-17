@@ -19,11 +19,11 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = await network.GetS("$meta.name");
-            var networkId = await network.GetS("$meta.id");
+            var networkName = await network.EvalS("$meta.name");
+            var networkId = await network.EvalS("$meta.id");
 
-            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var apiUrl = await network.EvalS("Credentials.NetworkApiUrl");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
 
             var requestHeaders = new[] { ("Accept", "application/json"), ("API-Key", apiKey) };
 
@@ -67,7 +67,7 @@ namespace UnsubLib.NetworkProviders
                     campaigns.ToString()
                 );
 
-                if (res == null || await res.GetS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{campaigns}");
                     return null;
@@ -88,10 +88,10 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = await network.GetS("$meta.name");
-            var networkId = await network.GetS("$meta.id");
-            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var networkName = await network.EvalS("$meta.name");
+            var networkId = await network.EvalS("$meta.id");
+            var apiUrl = await network.EvalS("Credentials.NetworkApiUrl");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
 
             var requestHeaders = new[] { ("Accept", "application/json"), ("API-Key", apiKey) };
 
@@ -120,20 +120,20 @@ namespace UnsubLib.NetworkProviders
                     return null;
                 }
 
-                if (await offer.GetI("status") != 1)
+                if (await offer.EvalI("status") != 1)
                 {
                     await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} was invalid.\r\nResponse:\r\n{result.body}");
                     return null;
                 }
 
-                var description = await offer.GetS("offers[0].description_lang.en");
+                var description = await offer.EvalS("offers[0].description_lang.en");
                 if (string.IsNullOrWhiteSpace(description))
                 {
                     await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} missing or empty description.\r\nResponse:\r\n{result.body}");
                     return null;
                 }
 
-                var urlMatchRegex = await network.GetS("Credentials.SuppressionDownloadLinkRegex");
+                var urlMatchRegex = await network.EvalS("Credentials.SuppressionDownloadLinkRegex");
 
                 var match = Regex.Match(description, urlMatchRegex);
                 if (!match.Success)

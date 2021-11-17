@@ -73,34 +73,34 @@ namespace SignalApiLib.SourceHandlers
                 var lead = await _fw.Entity.Parse("application/json", request);
 
                 DateTime? dob = null;
-                var dobYear = await lead.GetI("dob_year", 0);
-                var dobMonth = await lead.GetI("dob_month", 0);
-                var dobDay = await lead.GetI("dob_day");
+                var dobYear = await lead.EvalI("dob_year", 0);
+                var dobMonth = await lead.EvalI("dob_month", 0);
+                var dobDay = await lead.EvalI("dob_day");
 
                 if (dobYear != 0 && dobMonth != 0 && dobDay != 0)
                 {
                     dob = DateTime.Parse($"{dobMonth}/{dobDay}/{dobYear}");
                 }
 
-                var dateAcquired = await lead.GetE("datetime_collected");
+                var dateAcquired = await lead.EvalE("datetime_collected");
 
                 var payload = new
                 {
-                    email = await lead.GetS("email", null),
-                    date_acquired = dateAcquired.ValueType == EntityValueType.Object ? await dateAcquired.GetS("$date") : await dateAcquired.GetAsS(),
-                    first_name = await lead.GetS("first_name", null),
-                    last_name = await lead.GetS("last_name", null),
-                    gender = await lead.GetS("gender", null),
+                    email = await lead.EvalS("email", null),
+                    date_acquired = dateAcquired.ValueType == EntityValueType.Object ? await dateAcquired.EvalS("$date") : await dateAcquired.EvalAsS(),
+                    first_name = await lead.EvalS("first_name", null),
+                    last_name = await lead.EvalS("last_name", null),
+                    gender = await lead.EvalS("gender", null),
                     dob,
-                    zip = await lead.GetS("zip_code", null),
-                    address1 = await lead.GetS("address1", null),
-                    city = await lead.GetS("city", null),
-                    state = await lead.GetS("state", null),
-                    opt_in_ip = await lead.GetS("user_ip", null),
-                    opt_in_domain = Regex.Replace(await lead.GetS("domain"), "^(www\\.)?", ""),
-                    user_agent = await lead.GetS("user_agent", null),
-                    phone = await lead.GetS("phone_home", null),
-                    household_income = await lead.GetS("household_income", null),
+                    zip = await lead.EvalS("zip_code", null),
+                    address1 = await lead.EvalS("address1", null),
+                    city = await lead.EvalS("city", null),
+                    state = await lead.EvalS("state", null),
+                    opt_in_ip = await lead.EvalS("user_ip", null),
+                    opt_in_domain = Regex.Replace(await lead.EvalS("domain"), "^(www\\.)?", ""),
+                    user_agent = await lead.EvalS("user_agent", null),
+                    phone = await lead.EvalS("phone_home", null),
+                    household_income = await lead.EvalS("household_income", null),
                     attribution_id = 3,
                     record_type_id = 4
                 };
@@ -126,7 +126,7 @@ namespace SignalApiLib.SourceHandlers
             {
                 var lead = await _fw.Entity.Parse("application/json", request);
 
-                var key = ((await lead.GetS("type")).ToLower(), await lead.GetB("valid"));
+                var key = ((await lead.EvalS("type")).ToLower(), await lead.EvalB("valid"));
 
                 var recordTypeId = key switch
                 {
@@ -144,7 +144,7 @@ namespace SignalApiLib.SourceHandlers
 
                 var payload = new
                 {
-                    email = await lead.GetS("email", null),
+                    email = await lead.EvalS("email", null),
                     date_acquired = DateTime.UtcNow,
                     attribution_id = 3,
                     record_type_id = recordTypeId

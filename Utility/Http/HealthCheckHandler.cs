@@ -10,7 +10,7 @@ namespace Utility.Http
 
         public static async Task Initialize(FrameworkWrapper fw)
         {
-            if (Guid.TryParse(await fw.StartupConfiguration.GetS("HealthCheckHandler", null), out var healthCheckHandlerLbmId))
+            if (Guid.TryParse(await fw.StartupConfiguration.EvalS("HealthCheckHandler", null), out var healthCheckHandlerLbmId))
             {
                 _healthCheckHandlerLbmId = healthCheckHandlerLbmId;
             }
@@ -24,7 +24,7 @@ namespace Utility.Http
             {
                 if (_healthCheckHandlerLbmId != default)
                 {
-                    var result = await fw.EvaluateEntity<Entity.Entity>(_healthCheckHandlerLbmId, fw.Entity.Create(new { context, fw }));
+                    var result = await fw.EvaluateEntity(_healthCheckHandlerLbmId, fw.Entity.Create(new { context, fw }));
                     return result.Value<bool>();
                 }
                 else

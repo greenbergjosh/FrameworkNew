@@ -65,18 +65,18 @@ namespace EdwRollupLib
             _scheduler.Context["exclusiveQueueCurrentlyRunningId"] = 0;
             _scheduler.Context["exclusiveLock"] = new object();
 
-            var rsConfigId = _fw.StartupConfiguration.GetS("RsConfigId");
+            var rsConfigId = _fw.StartupConfiguration.EvalS("RsConfigId");
 
             var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonSerializer.Serialize(new
             {
                 ConfigType = "EDW.ThreadGroup"
             }), "");
 
-            foreach (var threadGroup in await threadGroups.GetL(""))
+            foreach (var threadGroup in await threadGroups.EvalL(""))
             {
-                var threadGroupName = await threadGroup.GetS("Name");
+                var threadGroupName = await threadGroup.EvalS("Name");
 
-                if (await threadGroup.GetB("paused"))
+                if (await threadGroup.EvalB("paused"))
                 {
                     await _fw.Log("EdwRollupService.InitScheduler", $"{threadGroupName} is paused.");
 #if DEBUG
@@ -92,10 +92,10 @@ namespace EdwRollupLib
                     ["RsConfigId"] = rsConfigId
                 };
 
-                foreach (var rollupGroupPeriod in await threadGroup.GetL("rollup_group_periods"))
+                foreach (var rollupGroupPeriod in await threadGroup.EvalL("rollup_group_periods"))
                 {
-                    var period = await rollupGroupPeriod.GetS("period");
-                    var rollupFrequency = await rollupGroupPeriod.GetS("rollup_frequency") ?? period;
+                    var period = await rollupGroupPeriod.EvalS("period");
+                    var rollupFrequency = await rollupGroupPeriod.EvalS("rollup_frequency") ?? period;
 
                     var jobDetail = JobBuilder.Create<RollupJob>()
                         .WithIdentity($"{threadGroupName}_{period}", "RollupJob")
@@ -127,17 +127,17 @@ namespace EdwRollupLib
                 ConfigType = "EDW.MaintenanceTask"
             }), "");
 
-            foreach (var maintenanceTask in await maintenanceTasks.GetL(""))
+            foreach (var maintenanceTask in await maintenanceTasks.EvalL(""))
             {
-                var enabled = await maintenanceTask.GetB("enabled");
+                var enabled = await maintenanceTask.EvalB("enabled");
                 if (!enabled)
                 {
                     continue;
                 }
 
-                var name = await maintenanceTask.GetS("Name");
-                var cronExpression = await maintenanceTask.GetS("cron_expression");
-                var exclusive = await maintenanceTask.GetB("exclusive");
+                var name = await maintenanceTask.EvalS("Name");
+                var cronExpression = await maintenanceTask.EvalS("cron_expression");
+                var exclusive = await maintenanceTask.EvalB("exclusive");
 
                 IDictionary<string, object> parameters = new Dictionary<string, object>
                 {

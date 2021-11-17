@@ -99,9 +99,9 @@ namespace EdwRollupLib
 
         private async Task RunImplementation(IJobExecutionContext context)
         {
-            var implementationLbmId = Guid.Parse(await Entity.GetS("implementationLbmId"));
+            var implementationLbmId = Guid.Parse(await Entity.EvalS("implementationLbmId"));
 
-            var lbmParameters = await Entity.GetE("implementationParameters");
+            var lbmParameters = await Entity.EvalE("implementationParameters");
             var lbmContext = Entity.Create(new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs), lbmParameters));
 
             await FrameworkWrapper.EvaluateEntity(implementationLbmId, lbmContext);
@@ -272,7 +272,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("SlackAlertUrl"), JsonSerializer.Serialize(new
+                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.EvalS("SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");
@@ -352,7 +352,7 @@ namespace EdwRollupLib
                     AddField("Step", step);
                     AddField("Error", e.Message);
 
-                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("SlackAlertUrl"), JsonSerializer.Serialize(new
+                    _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.EvalS("SlackAlertUrl"), JsonSerializer.Serialize(new
                     {
                         text
                     }), "application/json");

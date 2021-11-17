@@ -7,7 +7,7 @@ namespace Utility.OpgAuth
 {
     public class RegistrationValidation
     {
-        public static async Task<bool> DefaultAutoRegister(UserDetails details) => (await (await Auth.GetConfig()).GetL<string>("AutoRegisterDomains")).Any(d =>
+        public static async Task<bool> DefaultAutoRegister(UserDetails details) => (await (await Auth.GetConfig()).EvalL<string>("AutoRegisterDomains")).Any(d =>
         {
             try
             {

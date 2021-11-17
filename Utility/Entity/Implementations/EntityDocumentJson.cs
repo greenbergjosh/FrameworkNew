@@ -64,7 +64,7 @@ namespace Utility.Entity.Implementations
         {
             if (_value.ValueKind == JsonValueKind.Object && _value.TryGetProperty("$ref", out var refProperty))
             {
-                foreach (var entity in await Entity.Get(refProperty.GetString()))
+                foreach (var entity in await Entity.Eval(refProperty.GetString()))
                 {
                     yield return entity;
                 }

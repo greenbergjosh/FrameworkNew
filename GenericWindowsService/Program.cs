@@ -55,7 +55,7 @@ namespace GenericWindowsService
         {
             try
             {
-                var listenerUrl = await Fw.StartupConfiguration.GetS("HttpListenerUrl");
+                var listenerUrl = await Fw.StartupConfiguration.EvalS("HttpListenerUrl");
 
                 if (listenerUrl.IsNullOrWhitespace())
                 {
@@ -87,12 +87,12 @@ namespace GenericWindowsService
             {
                 var fw = await FrameworkWrapper.Create(args);
 
-                using (var dynamicContext = new AssemblyResolver(await fw.StartupConfiguration.GetS("DataServiceAssemblyFilePath"), await fw.StartupConfiguration.GetL<string>("AssemblyDirs")))
+                using (var dynamicContext = new AssemblyResolver(await fw.StartupConfiguration.EvalS("DataServiceAssemblyFilePath"), await fw.StartupConfiguration.EvalL<string>("AssemblyDirs")))
                 {
-                    Service = (IGenericWindowsService)dynamicContext.Assembly.CreateInstance(await fw.StartupConfiguration.GetS("DataServiceTypeName"));
+                    Service = (IGenericWindowsService)dynamicContext.Assembly.CreateInstance(await fw.StartupConfiguration.EvalS("DataServiceTypeName"));
                 }
 
-                WwwRootPath = await fw.StartupConfiguration.GetS("PhysicalFileProviderPath", null);
+                WwwRootPath = await fw.StartupConfiguration.EvalS("PhysicalFileProviderPath", null);
 
                 return fw;
             }

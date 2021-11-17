@@ -164,9 +164,9 @@ namespace GenericApi
                     ["requestInfo"] = new { r = 0, requestRsId, requestRsTimestamp }
                 };
 
-                var identity = await request.GetS("i", null);
+                var identity = await request.EvalS("i", null);
 
-                foreach (var kvp in await request.GetD<Entity>())
+                foreach (var kvp in await request.EvalD<Entity>())
                 {
                     if (kvp.Key == "i")
                     {
@@ -222,8 +222,8 @@ namespace GenericApi
                                     continue;
                                 }
 
-                                var args = (await kvp.Value.Get("args")).FirstOrDefault();
-                                var payload = (await kvp.Value.Get("payload")).FirstOrDefault()?.ToString();
+                                var args = (await kvp.Value.Eval("args")).FirstOrDefault();
+                                var payload = (await kvp.Value.Eval("payload")).FirstOrDefault()?.ToString();
                                 if (args == null && payload == null)
                                 {
                                     args = kvp.Value;
@@ -236,13 +236,13 @@ namespace GenericApi
 
                         if (!processed && Program.Lbms.TryGetValue(method, out var lbm))
                         {
-                            if (!await lbm.GetB("skipAuth", false) && !await CheckAuth())
+                            if (!await lbm.EvalB("skipAuth", false) && !await CheckAuth())
                             {
                                 continue;
                             }
 
-                            result = await _fw.EvaluateEntity<Entity>(
-                                await lbm.GetGuid("id"),
+                            result = await _fw.EvaluateEntity(
+                                await lbm.EvalGuid("id"),
                                 _fw.Entity.Create(new
                                 {
                                     httpContext = context,
@@ -261,7 +261,7 @@ namespace GenericApi
                             throw new InvalidOperationException($"Unknown method {method}");
                         }
 
-                        var r = (await result?.Get("r")).FirstOrDefault();
+                        var r = (await result?.Eval("r")).FirstOrDefault();
                         results[kvp.Key] = r != null
                             ? result
                             : (object)(new

@@ -19,15 +19,15 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkId = await network.GetS("$meta.id");
-            var networkName = await network.GetS("$meta.name");
-            var baseUrl = await network.GetS("Credentials.BaseUrl");
-            var affiliateId = await network.GetS("Credentials.NetworkAffiliateId");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var networkId = await network.EvalS("$meta.id");
+            var networkName = await network.EvalS("$meta.name");
+            var baseUrl = await network.EvalS("Credentials.BaseUrl");
+            var affiliateId = await network.EvalS("Credentials.NetworkAffiliateId");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
 
-            var relationshipPath = await network.GetS("Credentials.UnsubRelationshipPath");
-            var campaignIdPath = await network.GetS("Credentials.CampaignIdPath");
-            var campaignNamePath = await network.GetS("Credentials.CampaignNamePath");
+            var relationshipPath = await network.EvalS("Credentials.UnsubRelationshipPath");
+            var campaignIdPath = await network.EvalS("Credentials.CampaignIdPath");
+            var campaignNamePath = await network.EvalS("Credentials.CampaignNamePath");
 
             var url = baseUrl.Replace("{affiliateId}", affiliateId).Replace("{apiKey}", apiKey);
 
@@ -48,9 +48,9 @@ namespace UnsubLib.NetworkProviders
                 await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
                 var flattened = new Dictionary<string, Entity>();
-                foreach (var (key, value) in await campaigns.GetD("response.data"))
+                foreach (var (key, value) in await campaigns.EvalD("response.data"))
                 {
-                    flattened[key] = await value.GetE("Offer");
+                    flattened[key] = await value.EvalE("Offer");
                 }
 
                 var converted = JsonSerializer.Serialize(new { body = flattened });
@@ -66,7 +66,7 @@ namespace UnsubLib.NetworkProviders
                         RelationshipPath = relationshipPath
                     }), converted);
 
-                if (res == null || await res.GetS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{responseBody ?? "[null]"}");
                     return null;
@@ -95,17 +95,17 @@ namespace UnsubLib.NetworkProviders
         {
             var campaigns = await GetCampaigns(network);
 
-            var campaign = (await campaigns.Get($"[NetworkCampaignId='{unsubRelationshipId}']")).SingleOrDefault();
+            var campaign = (await campaigns.Eval($"[NetworkCampaignId='{unsubRelationshipId}']")).SingleOrDefault();
 
             if (campaign == null)
             {
-                await _fw.Error(_logMethod, $"Failed to get {await network.GetS("$meta.name")} campaign {unsubRelationshipId}");
+                await _fw.Error(_logMethod, $"Failed to get {await network.EvalS("$meta.name")} campaign {unsubRelationshipId}");
             }
 
-            var unsubFileDownloadUri = await campaign.GetS("UnsubFileDownloadUri");
+            var unsubFileDownloadUri = await campaign.EvalS("UnsubFileDownloadUri");
             if (string.IsNullOrWhiteSpace(unsubFileDownloadUri))
             {
-                await _fw.Error(_logMethod, $"{await network.GetS("$meta.name")} campaign {await campaign.GetS("NetworkCampaignName")} has no file download Uri");
+                await _fw.Error(_logMethod, $"{await network.EvalS("$meta.name")} campaign {await campaign.EvalS("NetworkCampaignName")} has no file download Uri");
                 return null;
             }
 
@@ -116,22 +116,22 @@ namespace UnsubLib.NetworkProviders
         {
             var enriched = new List<Entity>();
 
-            foreach (var campaign in await campaigns.GetL())
+            foreach (var campaign in await campaigns.EvalL())
             {
-                var offerId = await campaign.GetS("NetworkCampaignId");
+                var offerId = await campaign.EvalS("NetworkCampaignId");
                 if (!tuneCampaigns.TryGetValue(offerId, out var tuneCampaign))
                 {
                     continue;
                 }
 
-                var unsubFileDownloadUri = await tuneCampaign.GetS("dne_download_url");
+                var unsubFileDownloadUri = await tuneCampaign.EvalS("dne_download_url");
 
                 if (string.IsNullOrWhiteSpace(unsubFileDownloadUri))
                 {
                     continue;
                 }
 
-                var serialized = await campaign.GetD();
+                var serialized = await campaign.EvalD();
 
                 serialized["UnsubFileDownloadUri"] = campaigns.Create(unsubFileDownloadUri);
 

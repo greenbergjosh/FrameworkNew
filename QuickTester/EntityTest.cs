@@ -126,7 +126,7 @@ namespace QuickTester
                     {
                         var index = 0;
                         var yielded = false;
-                        foreach (var child in await entity.Get("@.*"))
+                        foreach (var child in await entity.Eval("@.*"))
                         {
                             if (tryInvokeStringMethod(child, functionName, functionArguments, out var value))
                             {
@@ -189,7 +189,7 @@ namespace QuickTester
                         "reftestchilddocument" => (new[] { await entity.Parse("application/json", refTestChildDocument) }, UnescapeQueryString(uri)),
                         "reftestchilddocument2" => (new[] { await entity.Parse("application/json", refTestChildDocument2) }, UnescapeQueryString(uri)),
                         "testclass" => (new[] { entity.Create(EntityDocumentObject.Create(testClass)) }, UnescapeQueryString(uri)),
-                        _ => (new[] { await GetEntity(fw, uri.Host) }, UnescapeQueryString(uri))
+                        _ => (await GetEntity(fw, uri.Host), UnescapeQueryString(uri))
                     },
                     "memory" => (new[] {entity.Create(uri.Host switch
                     {
@@ -256,7 +256,7 @@ namespace QuickTester
                 Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", jsonPathResult.Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
                 Console.WriteLine("Entity:");
 
-                foreach (var result in await testEntity.Get(query))
+                foreach (var result in await testEntity.Eval(query))
                 {
                     Console.WriteLine($"\t{result?.ToString() ?? "null"}");
                 }
@@ -266,15 +266,15 @@ namespace QuickTester
 
             var valueQueries = new (string query, Func<string, Entity, Task<object>> getter)[]
             {
-                ("$.a.b.c", async (query, entity) => await entity.GetS(query)),
-                ("$.a.b.e", async (query, entity) => await entity.GetI(query)),
-                ("$.a.b.d.length", async (query, entity) => await entity.GetI(query)),
-                ("a.b", async (query, entity) => await entity.GetE(query)),
-                ("$..[?(@.color=='blue')]", async (query, entity) => await entity.GetE(query)),
-                ("entity://testClass", async (query, entity) => (await entity.GetE(query)).Value<TestClass>()),
-                ("entity://testClass?Field1", async (query, entity) => await entity.GetS(query)),
-                ("entity://testClass?Property1", async (query, entity) => await entity.GetS(query)),
-                ("entity://testClass?Property2", async (query, entity) => await entity.GetI(query)),
+                ("$.a.b.c", async (query, entity) => await entity.EvalS(query)),
+                ("$.a.b.e", async (query, entity) => await entity.EvalI(query)),
+                ("$.a.b.d.length", async (query, entity) => await entity.EvalI(query)),
+                ("a.b", async (query, entity) => await entity.EvalE(query)),
+                ("$..[?(@.color=='blue')]", async (query, entity) => await entity.EvalE(query)),
+                ("entity://testClass", async (query, entity) => (await entity.EvalE(query)).Value<TestClass>()),
+                ("entity://testClass?Field1", async (query, entity) => await entity.EvalS(query)),
+                ("entity://testClass?Property1", async (query, entity) => await entity.EvalS(query)),
+                ("entity://testClass?Property2", async (query, entity) => await entity.EvalI(query)),
             };
 
             foreach (var valueQuery in valueQueries)
@@ -290,9 +290,9 @@ namespace QuickTester
             Console.WriteLine($"JsonPath:");
             Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", JsonPath.Parse(arrayQuery).Evaluate(testJsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
             Console.WriteLine("Entity:");
-            foreach (var result in await testEntity.Get(arrayQuery))
+            foreach (var result in await testEntity.Eval(arrayQuery))
             {
-                Console.WriteLine($"\t{result} GetS: {await result.GetS("@")}");
+                Console.WriteLine($"\t{result} GetS: {await result.EvalS("@")}");
             }
 
             Console.WriteLine();
@@ -327,7 +327,7 @@ namespace QuickTester
             {
                 Console.WriteLine($"Query: {absoluteQuery}");
                 Console.WriteLine("Entity:");
-                foreach (var result in await E.Get(absoluteQuery))
+                foreach (var result in await E.Eval(absoluteQuery))
                 {
                     Console.WriteLine($"\t{result?.ToString() ?? "null"}");
                 }
@@ -336,11 +336,6 @@ namespace QuickTester
             }
         }
 
-        private static async Task<Entity> GetEntity(FrameworkWrapper fw, string entityId)
-        {
-            var id = Guid.Parse(entityId);
-            var entity = await fw.Entities.GetEntity(id);
-            return entity;
-        }
+        private static Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, string entityId) => fw.Entity.Eval($"config://{entityId}");
     }
 }

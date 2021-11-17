@@ -49,7 +49,7 @@ namespace Utility.DataLayer
 
                 TraceLog(nameof(Initialize), $"{nameof(config)}\r\n{config}");
 
-                await AddConnectionStrings(await config.GetE("ConnectionStrings"));
+                await AddConnectionStrings(await config.EvalE("ConnectionStrings"));
 
                 return config;
             }
@@ -67,7 +67,7 @@ namespace Utility.DataLayer
             {
                 var config = await GetConfigs(configKeys, _commandLineArgs);
 
-                await AddConnectionStrings(await config.GetE("ConnectionStrings"), true);
+                await AddConnectionStrings(await config.EvalE("ConnectionStrings"), true);
 
                 return config;
             }
@@ -92,7 +92,7 @@ namespace Utility.DataLayer
         {
             if (connectionStrings != null && connectionStrings.IsObject)
             {
-                foreach (var o in await connectionStrings.GetD<string>())
+                foreach (var o in await connectionStrings.EvalD<string>())
                 {
                     if (Connections.ContainsKey(o.Key) && Connections[o.Key].Id == o.Value && !merge)
                     {
@@ -106,11 +106,11 @@ namespace Utility.DataLayer
 
                     var conf = await GetConfigRecordValue(o.Value, _configConn, _configFunction);
 
-                    var dataLayerType = await conf.GetS("DataLayerType");
-                    var connectionString = await conf.GetS("ConnectionString");
+                    var dataLayerType = await conf.EvalS("DataLayerType");
+                    var connectionString = await conf.EvalS("ConnectionString");
                     var conn = Connections.GetOrAdd(o.Key, s => new Connection(o.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType), connectionString));
 
-                    foreach (var sp in await conf.GetD<string>("DataLayer"))
+                    foreach (var sp in await conf.EvalD<string>("DataLayer"))
                     {
                         _ = conn.Functions.AddOrUpdate(sp.Key, sp.Value, (key, current) => current != sp.Value && !merge
                                   ? throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Key}, with existing value: {current}, new value: {sp.Value}")
@@ -149,24 +149,24 @@ namespace Utility.DataLayer
                 try
                 {
                     var current = await GetConfigRecordValue(key, configConn, configFunc);
-                    var usings = (await current.Get("using")).FirstOrDefault();
+                    var usings = (await current.Eval("using")).FirstOrDefault();
                     var mergeConfig = current;
 
                     if (usings != null)
                     {
                         TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usings}");
 
-                        foreach (var u in (await usings.GetL<string>()).Select(u => u.Trim()))
+                        foreach (var u in (await usings.EvalL<string>()).Select(u => u.Trim()))
                         {
                             await LoadConfig(config, u);
                         }
 
                         mergeConfig = _entity.Create(new
                         {
-                            Id = await current.GetS("$meta.id"),
-                            Name = await current.GetS("$meta.name"),
-                            Type = await current.GetS("$meta.type"),
-                            Config = await current.GetE("config")
+                            Id = await current.EvalS("$meta.id"),
+                            Name = await current.EvalS("$meta.name"),
+                            Type = await current.EvalS("$meta.type"),
+                            Config = await current.EvalE("config", null)
                         });
                     }
 

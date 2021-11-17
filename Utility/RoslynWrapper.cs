@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Scripting;
 
 namespace Utility
 {
-    internal class RoslynWrapper
+    internal class RoslynWrapper<TGlobals, TOutput>
     {
         private class ScriptDescriptor
         {
@@ -20,7 +20,7 @@ namespace Utility
             public bool Debug;
             public string DebugDir;
 
-            public ScriptRunner<object> Script;
+            public ScriptRunner<TOutput> Script;
 
             public ScriptDescriptor(Guid? id, string code, bool debug = false, string debugDir = null)
             {
@@ -41,31 +41,31 @@ namespace Utility
 
         public RoslynWrapper(string defaultDebugDir) => _defaultDebugDir = defaultDebugDir;
 
-        public Task<object> Evaluate(Guid id, string code, object parms)
+        public Task<TOutput> Evaluate(Guid id, string code, TGlobals globals)
         {
             var (debug, debugDir) = GetDefaultDebugValues();
 
-            return Evaluate(id, code, parms, debug, debugDir);
+            return Evaluate(id, code, globals, debug, debugDir);
         }
 
-        public Task<object> Evaluate(Guid id, string code, object parms, bool debug, string debugDir)
+        public Task<TOutput> Evaluate(Guid id, string code, TGlobals globals, bool debug, string debugDir)
         {
             var sd = new ScriptDescriptor(id, code, debug, debugDir);
             sd = CompileAndCache(sd);
-            return RunFunction(sd.Key, parms);
+            return RunFunction(sd.Key, globals);
         }
 
-        public Task<object> Evaluate(string code, object parms)
+        public Task<TOutput> Evaluate(string code, TGlobals parms)
         {
             var (debug, debugDir) = GetDefaultDebugValues();
             return Evaluate(code, parms, debug, debugDir);
         }
 
-        public Task<object> Evaluate(string code, object parms, bool debug, string debugDir)
+        public Task<TOutput> Evaluate(string code, TGlobals globals, bool debug, string debugDir)
         {
             var sd = new ScriptDescriptor(null, code, debug, debugDir);
             sd = CompileAndCache(sd);
-            return RunFunction(sd.Key, parms);
+            return RunFunction(sd.Key, globals);
         }
 
         public void ClearCache() => _functions.Clear();
@@ -90,10 +90,8 @@ namespace Utility
             return (debug, _defaultDebugDir);
         }
 
-        private async Task<object> RunFunction(string fname, object parms)
+        private async Task<TOutput> RunFunction(string fname, TGlobals globals)
         {
-            var globals = new Globals();
-            globals.st.Push(StackFrame.CreateStackFrame(parms));
             var result = await _functions[fname].Value.Script(globals);
             return result;
         }
@@ -114,21 +112,17 @@ namespace Utility
             return _functions.AddOrUpdate(sd.Key, valueFactory, (_, lazy) => update ? valueFactory(_) : lazy).Value;
         }
 
-        private ScriptRunner<object> Compile(string key, string code, bool debug = false, string debugDir = null)
+        private ScriptRunner<TOutput> Compile(string key, string code, bool debug = false, string debugDir = null)
         {
             var dynamicAssemblies = Regex.Matches(code, @"#r\s+""([A-Za-z][^ \r\n]+)\.dll""\s*\r\n").Select(match => Assembly.Load(match.Groups[1].Value)).ToArray();
 
             code = Regex.Replace(code, "(#r.+\r\n)", "//$1");
             var scriptOptions = ScriptOptions.Default
                 .AddReferences(
-                    Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
-                    Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
-                    Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
-                    Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
+                    //                    Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
                     GetType().Assembly
                 )
-                .AddReferences(dynamicAssemblies)
-                .AddImports("System.Dynamic", "System.Xml", "System.Linq");
+                .AddReferences(dynamicAssemblies);
 
             if (debug)
             {
@@ -138,7 +132,7 @@ namespace Utility
                     .WithEmitDebugInformation(true);
             }
 
-            var scriptc = CSharpScript.Create<object>(code, scriptOptions, globalsType: typeof(Globals));
+            var scriptc = CSharpScript.Create<TOutput>(code, scriptOptions, globalsType: typeof(TGlobals));
             _ = scriptc.Compile();
             return scriptc.CreateDelegate();
         }

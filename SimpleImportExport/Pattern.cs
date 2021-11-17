@@ -20,10 +20,10 @@ namespace SimpleImportExport
 
         public static async Task<Pattern> Create(Entity ge)
         {
-            var rx = new Regex(await ge.GetS("Pattern"), RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            var destinationRelativePath = await ge.GetS("DestinationPath");
-            var tokenFields = await ge.GetE("TokenFields");
-            var fileDateFormat = await ge.GetS("FileDateFormat");
+            var rx = new Regex(await ge.EvalS("Pattern"), RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var destinationRelativePath = await ge.EvalS("DestinationPath");
+            var tokenFields = await ge.EvalE("TokenFields");
+            var fileDateFormat = await ge.EvalS("FileDateFormat");
             var additionalFields = rx.GetGroupNames().Where(g => !g.IsNullOrWhitespace() && !g.ParseInt().HasValue && g != "fileDate").ToArray();
 
             return new Pattern(rx, destinationRelativePath, tokenFields, fileDateFormat, additionalFields);

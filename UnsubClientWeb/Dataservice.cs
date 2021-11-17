@@ -47,7 +47,7 @@ namespace UnsubClientWeb
 
                 var dtv = await _fw.Entity.Parse("application/json", requestFromPost);
 
-                method = await dtv.GetS("m");
+                method = await dtv.EvalS("m");
 
                 _ = _fw.Trace($"Router:{method} RequestId: {requestId}", dtv.ToString());
 
@@ -92,7 +92,7 @@ namespace UnsubClientWeb
 
                             _ = sw.Restart(() => stats.Add("GetCampaigns", sw.Elapsed.TotalSeconds));
 
-                            var resArr = await res?.GetL();
+                            var resArr = await res?.EvalL();
 
                             if (!resArr.Any())
                             {
@@ -100,13 +100,13 @@ namespace UnsubClientWeb
                             }
                             else
                             {
-                                var latestCampaign = resArr.OrderByDescending(async c => (await c.GetS("MostRecentUnsubFileDate")).ParseDate()).First();
-                                var testEmails = await _fw.StartupConfiguration.GetL<string>("TestEmails");
-                                var isUnsubArgs = _fw.Entity.Create(new { m = "IsUnsubList", CampaignId = await latestCampaign.GetS("$meta.id"), GlobalSuppression = true, EmailMd5 = testEmails });
+                                var latestCampaign = resArr.OrderByDescending(async c => (await c.EvalS("MostRecentUnsubFileDate")).ParseDate()).First();
+                                var testEmails = await _fw.StartupConfiguration.EvalL<string>("TestEmails");
+                                var isUnsubArgs = _fw.Entity.Create(new { m = "IsUnsubList", CampaignId = await latestCampaign.EvalS("$meta.id"), GlobalSuppression = true, EmailMd5 = testEmails });
 
                                 res = await _fw.Entity.Parse("application/json", await _unsub.IsUnsubList(isUnsubArgs));
                                 _ = sw.Restart(() => stats.Add("IsUnsub", sw.Elapsed.TotalSeconds));
-                                resArr = await res.GetL("NotUnsub");
+                                resArr = await res.EvalL("NotUnsub");
                                 if (!resArr.Any())
                                 {
                                     errors.Add($"{nameof(_unsub.IsUnsubList)} returned null or empty array. Result: {res}");

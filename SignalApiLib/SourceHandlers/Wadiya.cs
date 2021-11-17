@@ -30,7 +30,7 @@ namespace SignalApiLib.SourceHandlers
             {
                 var res = await Data.CallFn(Conn, "saveWadiya", requestFromPost);
 
-                if (await res?.GetS("result", null) != "success")
+                if (await res?.EvalS("result", null) != "success")
                 {
                     await _fw.Error(_logCtx, $"DB write failed. Response: {res}\r\nBody: {requestFromPost}");
                     throw new Exception($"{nameof(Wadiya)} signal insert failed");

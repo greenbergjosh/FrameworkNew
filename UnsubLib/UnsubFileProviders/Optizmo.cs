@@ -24,7 +24,7 @@ namespace UnsubLib.UnsubFileProviders
 
         public static async Task<Optizmo> Create(FrameworkWrapper fw)
         {
-            var fileTokenRxs = (await fw.StartupConfiguration.GetL("OptizmoFilePatterns")).Select(ge =>
+            var fileTokenRxs = (await fw.StartupConfiguration.EvalL("OptizmoFilePatterns")).Select(ge =>
             {
                 string rxStr = null;
 
@@ -66,8 +66,8 @@ namespace UnsubLib.UnsubFileProviders
                 return (uri.ToString(), null);
             }
 
-            var useApi = await network.GetB("Credentials.UseOptizmoApi", false);
-            var authToken = await network.GetS($"Credentials.OptizmoToken");
+            var useApi = await network.EvalB("Credentials.UseOptizmoApi", false);
+            var authToken = await network.EvalS($"Credentials.OptizmoToken");
 
             await _fw.Trace(_logMethod, $"Getting Unsub location: UseApi: {useApi} {uri}");
 
@@ -108,7 +108,7 @@ namespace UnsubLib.UnsubFileProviders
                         {
                             var resGE = await network.Parse("application/json", res.body);
 
-                            if (string.Equals(await resGE?.GetS("error"), "You do not have access to MD5 downloads", StringComparison.CurrentCultureIgnoreCase))
+                            if (string.Equals(await resGE?.EvalS("error"), "You do not have access to MD5 downloads", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 res = await ProtocolClient.HttpGetAsync(baseUrl.Replace("{format}", "plain"), timeoutSeconds: 300);
 
@@ -118,7 +118,7 @@ namespace UnsubLib.UnsubFileProviders
                                 }
                             }
 
-                            var download = await resGE?.GetS("download_link");
+                            var download = await resGE?.EvalS("download_link");
 
                             if (!download.IsNullOrWhitespace())
                             {
@@ -177,7 +177,7 @@ namespace UnsubLib.UnsubFileProviders
                         }
 
                         var te = await network.Parse("application/json", body);
-                        var (found, downloadLink) = await te.TryGetS("download_link");
+                        var (found, downloadLink) = await te.TryEvalS("download_link");
                         if (found && downloadLink != null)
                         {
                             return downloadLink;

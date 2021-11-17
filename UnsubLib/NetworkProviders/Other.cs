@@ -19,10 +19,10 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = await network.GetS("$meta.name");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
-            var networkId = await network.GetS("$meta.id");
-            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
+            var networkName = await network.EvalS("$meta.name");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
+            var networkId = await network.EvalS("$meta.id");
+            var apiUrl = await network.EvalS("Credentials.NetworkApiUrl");
             string campaignXml = null;
 
             try
@@ -61,7 +61,7 @@ namespace UnsubLib.NetworkProviders
                     }),
                     campaignXml);
 
-                if (res == null || await res.GetS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{campaignXml ?? "null"}");
                     return null;
@@ -82,10 +82,10 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = await network.GetS("$meta.name");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
-            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
-            var parallelism = await network.GetI("Credentials.Parallelism", 5);
+            var networkName = await network.EvalS("$meta.name");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
+            var apiUrl = await network.EvalS("Credentials.NetworkApiUrl");
+            var parallelism = await network.EvalI("Credentials.Parallelism", 5);
 
             IDictionary<string, string> parms = new Dictionary<string, string>()
                 {
