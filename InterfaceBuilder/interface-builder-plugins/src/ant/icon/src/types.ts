@@ -14,4 +14,5 @@ export interface IconInterfaceComponentProps extends ComponentDefinitionNamedPro
   valueKey: string
   icon?: string
   cssPrefix: string
+  tooltip?: string
 }

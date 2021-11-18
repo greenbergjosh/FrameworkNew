@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
-using Utility.GenericEntity;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity;
 
 namespace UnsubLib.NetworkProviders
 {
@@ -16,15 +16,15 @@ namespace UnsubLib.NetworkProviders
 
         public Cake(FrameworkWrapper fw) => _fw = fw;
 
-        public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
+        public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = network.GetS("Name");
-            var networkId = network.GetS("Id");
-            var dataPath = network.GetS("Credentials/CampaignDataPath");
-            var relationshipPath = network.GetS("Credentials/UnsubRelationshipPath");
-            var campaignIdPath = network.GetS("Credentials/CampaignIdPath");
-            var campaignNamePath = network.GetS("Credentials/CampaignNamePath");
-            var url = BuildUrl(network.GetS("Credentials/BaseUrl"), network.GetS("Credentials/GetCampaignsPath"), network.GetS("Credentials/NetworkApiKey"), network.GetS("Credentials/NetworkAffiliateId"));
+            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("Id");
+            var dataPath = await network.GetS("Credentials.CampaignDataPath");
+            var relationshipPath = await network.GetS("Credentials.UnsubRelationshipPath");
+            var campaignIdPath = await network.GetS("Credentials.CampaignIdPath");
+            var campaignNamePath = await network.GetS("Credentials.CampaignNamePath");
+            var url = BuildUrl(await network.GetS("Credentials.BaseUrl"), await network.GetS("Credentials.GetCampaignsPath"), await network.GetS("Credentials.NetworkApiKey"), await network.GetS("Credentials.NetworkAffiliateId"));
             string respBody = null;
 
             try
@@ -33,17 +33,27 @@ namespace UnsubLib.NetworkProviders
                 await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
                 var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
 
-                if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
-                var jbody = Jw.TryParseObject(resp.body);
+                if (resp.success == false)
+                {
+                    throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
+                }
 
-                if (jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
+                Entity campaigns;
+                try
+                {
+                    campaigns = await network.Parse("application/json", resp.body);
+                }
+                catch (Exception ex)
+                {
+                    throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", ex);
+                }
 
                 await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
                 respBody = resp.body;
 
                 var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
-                    Jw.Json(new
+                    JsonSerializer.Serialize(new
                     {
                         NetworkId = networkId,
                         PayloadType = "json",
@@ -53,15 +63,18 @@ namespace UnsubLib.NetworkProviders
                         RelationshipPath = relationshipPath
                     }), respBody);
 
-                if (res == null || res.GetS("result") == "failed")
+                if (res == null || await res.GetS("result", null) == "failed")
                 {
-                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{respBody ?? "[null]"}");
+                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{respBody ?? "[null]"}");
                     return null;
                 }
 
                 return res;
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting campaigns from {networkName}: {url}", e);
@@ -73,12 +86,11 @@ namespace UnsubLib.NetworkProviders
             }
         }
 
-        public async Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
+        public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = network.GetS("Name");
-            var downloadUrlPath = network.GetS("Credentials/DownloadUrlPath");
-            var url = BuildUrl(network.GetS("Credentials/BaseUrl"), network.GetS("Credentials/GetSuppressionPath"),
-                network.GetS("Credentials/NetworkApiKey"), network.GetS("Credentials/NetworkAffiliateId"), unsubRelationshipId);
+            var networkName = await network.GetS("Name");
+            var downloadUrlPath = await network.GetS("Credentials.DownloadUrlPath");
+            var url = BuildUrl(await network.GetS("Credentials.BaseUrl"), await network.GetS("Credentials.GetSuppressionPath"), await network.GetS("Credentials.NetworkApiKey"), await network.GetS("Credentials.NetworkAffiliateId"), unsubRelationshipId);
             string respBody = null;
 
             try
@@ -86,17 +98,26 @@ namespace UnsubLib.NetworkProviders
                 var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
 
                 respBody = resp.body;
-                var rb = Jw.JsonToGenericEntity(respBody);
 
-                if (rb?.GetS("message") == "Suppresion List Not Found") return null;
+                var rb = await network.Parse("application/json", respBody);
+                if (await rb?.GetS("message") == "Suppresion List Not Found")
+                {
+                    return null;
+                }
 
-                if (resp.success == false) throw new Exception($"Http request for suppression url failed for {networkName}: {url} {resp.body}", null);
+                if (resp.success == false)
+                {
+                    throw new Exception($"Http request for suppression url failed for {networkName}: {url} {resp.body}", null);
+                }
 
-                var dlUrl = Jw.JsonToGenericEntity(respBody).GetS(downloadUrlPath);
+                var dlUrl = await (await network.Parse("application/json", respBody)).GetS(downloadUrlPath);
 
                 return dlUrl.IsNullOrWhitespace() ? null : new Uri(dlUrl);
             }
-            catch (HaltingException) { throw; }
+            catch (HaltingException)
+            {
+                throw;
+            }
             catch (HttpRequestException e)
             {
                 throw new HaltingException($"Halting exception getting unsub from {networkName}: {url}", e);
@@ -116,7 +137,10 @@ namespace UnsubLib.NetworkProviders
 
             var url = INetworkProvider.BuildUrl(baseUrl, path, qs);
 
-            if (unsubRelationshipId != null) url = url.Replace("{unsubRelationshipId}", unsubRelationshipId);
+            if (unsubRelationshipId != null)
+            {
+                url = url.Replace("{unsubRelationshipId}", unsubRelationshipId);
+            }
 
             return url;
         }

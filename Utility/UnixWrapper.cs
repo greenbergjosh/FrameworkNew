@@ -12,7 +12,7 @@ namespace Utility
     public static class UnixWrapper
     {
         // Should allow location of unix utilities to be configured
-        public static string exeUnzip = @"C:\Program Files\Git\usr\bin\unzip";
+        public const string exeUnzip = @"C:\Program Files\Git\usr\bin\unzip";
 
         public static async Task UnzipZip(string ZipFileDirectory, string zipFileName,
             string UnzippedDirectory, int timeout = 1000 * 60 * 5)
@@ -22,7 +22,7 @@ namespace Utility
             {
                 using var outs = new StringWriter();
                 using var errs = new StringWriter();
-                
+
                 var exitCode = await ProcessWrapper.StartProcess(
                     exeUnzip,
                     $"\"{zipFileName}\" -d \"{UnzippedDirectory}\"",
@@ -33,7 +33,10 @@ namespace Utility
 
                 var err = errs.ToString();
 
-                if (!err.IsNullOrWhitespace()) throw new Exception($"Unzip failed: {err}");
+                if (!err.IsNullOrWhitespace())
+                {
+                    throw new Exception($"Unzip failed: {err}");
+                }
             }
             catch (TaskCanceledException)
             {
@@ -41,7 +44,7 @@ namespace Utility
             }
         }
 
-        public static string exeSort = @"C:\Program Files\Git\usr\bin\sort";
+        public const string exeSort = @"C:\Program Files\Git\usr\bin\sort";
 
         public static async Task SortFile(string sourcePath, string inputFile, string outputFile, bool caseSensitive, bool unique, int timeout = 1000 * 60 * 5, int parallel = 4, string mem = "") => _ = await ProcessWrapper.StartProcess(
                         exeSort,
@@ -54,26 +57,10 @@ namespace Utility
                         null,
                         null).ConfigureAwait(continueOnCapturedContext: false);
 
-        public static string exeTr = @"C:\Program Files\Git\usr\bin\tr";
+        public const string exeTr = @"C:\Program Files\Git\usr\bin\tr";
 
         public static async Task RemoveNonAsciiFromFile(string sourcePath, string inputFile, string outputFile)
         {
-            // This version is too slow
-            //using (var inf = new FileStream(sourcePath + "\\" + inputFile, FileMode.Open))
-            //{
-            //    using (var outf = File.CreateText(sourcePath + "\\" + outputFile))
-            //    {
-            //          var exitCode = await ProcessWrapper.StartProcess(
-            //            exeTr,
-            //            $"-cd '\\11\\12\\15\\40-\\176'",
-            //            sourcePath,
-            //            timeout,
-            //            outf,
-            //            null,
-            //            inf).ConfigureAwait(continueOnCapturedContext: false);
-            //    }
-            //}
-
             var inf = sourcePath + "\\" + inputFile;
             var outf = sourcePath + "\\" + outputFile;
             var pProcess = new Process();
@@ -89,26 +76,10 @@ namespace Utility
             pProcess.Close();
         }
 
-        public static string exeSed = @"C:\Program Files\Git\usr\bin\sed";
+        public const string exeSed = @"C:\Program Files\Git\usr\bin\sed";
 
         public static async Task RemoveFirstLine(string sourcePath, string inputFile)
         {
-            // This version is too slow
-            //using (var inf = new FileStream(sourcePath + "\\" + inputFile, FileMode.Open))
-            //{
-            //    using (var outf = File.CreateText(sourcePath + "\\" + outputFile))
-            //    {
-            //          var exitCode = await ProcessWrapper.StartProcess(
-            //            exeTr,
-            //            $"-cd '\\11\\12\\15\\40-\\176'",
-            //            sourcePath,
-            //            timeout,
-            //            outf,
-            //            null,
-            //            inf).ConfigureAwait(continueOnCapturedContext: false);
-            //    }
-            //}
-
             var inf = sourcePath + "\\" + inputFile;
             var pProcess = new Process();
             pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
@@ -123,7 +94,7 @@ namespace Utility
             pProcess.Close();
         }
 
-        public static string exeGrep = @"C:\Program Files\Git\usr\bin\grep";
+        public const string exeGrep = @"C:\Program Files\Git\usr\bin\grep";
 
         public static async Task RemoveNonPatternLinesFromFile(string sourcePath, string inputFile, string outputFile, string pattern)
         {
@@ -142,7 +113,7 @@ namespace Utility
             pProcess.Close();
         }
 
-        public static string exeFile = @"C:\Program Files\Git\usr\bin\file";
+        public const string exeFile = @"C:\Program Files\Git\usr\bin\file";
 
         public static async Task<bool> IsZip(string file, FrameworkWrapper fw)
         {
@@ -158,25 +129,24 @@ namespace Utility
             process.Close();
 
             var result = await File.ReadAllTextAsync(resultFileName);
-            Fs.TryDeleteFile(resultFileName);
+            _ = Fs.TryDeleteFile(resultFileName);
 
             await fw.Log(nameof(IsZip), $"File {file}: {result}");
             return result?.Contains("zip", StringComparison.OrdinalIgnoreCase) == true;
         }
 
         public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "[0-9a-f]{32}");
-        // regex is tightened up from the one above (not sure if it would break existing checks, so leaving it alone)
-        // 1. check from the beginning of the line to the end
-        // 2. allow possible "0x" (case-insensitive) leading string in front of hex digest string
-        // 3. include possible carriage return & linefeed as line termination characters
+
         public static async Task RemoveNonSHA512LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "^(?:0[xX])?[0-9a-f]{128}[\\r\\n]?$");
 
-        private static void OutputRedirection(object sendingProcess,
-                              DataReceivedEventArgs outLine)
+        private static void OutputRedirection(object sendingProcess, DataReceivedEventArgs outLine)
         {
             try
             {
-                if (outLine.Data != null) Console.WriteLine(outLine.Data);
+                if (outLine.Data != null)
+                {
+                    Console.WriteLine(outLine.Data);
+                }
                 // or collect the data, etc
             }
             catch (Exception ex)
@@ -186,13 +156,12 @@ namespace Utility
             }
         }
 
-
         public static async Task<bool> BinarySearchSortedFile(string filePath, int baseLineLength, string key) => (await BinarySearchSortedFile(filePath, baseLineLength, new List<string>() { key })).found.Count > 0;
 
         public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedFile(string filePath, int baseLineLength, List<string> keys)
         {
-            int minLineLength = baseLineLength + 1;
-            int maxLineLength = baseLineLength + 2;
+            var minLineLength = baseLineLength + 1;
+            var maxLineLength = baseLineLength + 2;
 
             const int LF = 10;
             const int CR = 13;
@@ -207,15 +176,20 @@ namespace Utility
                 var buffer = new byte[maxLineLength];
                 var end = fs.Length;
 
-                await fs.ReadAsync(buffer, 0, maxLineLength);
+                _ = await fs.ReadAsync(buffer.AsMemory(0, maxLineLength));
 
-                if (buffer[baseLineLength] == LF) lineLength = minLineLength;
-                else if (buffer[baseLineLength] == CR && buffer[minLineLength] == LF) lineLength = maxLineLength;
-                else throw new Exception($"Unexpected line termination character on line with expected length of: {baseLineLength} with data: {Encoding.UTF8.GetString(buffer, 0, buffer.Length)}");
+                lineLength = buffer[baseLineLength] == LF
+                    ? minLineLength
+                    : buffer[baseLineLength] == CR && buffer[minLineLength] == LF
+                        ? maxLineLength
+                        : throw new Exception($"Unexpected line termination character on line with expected length of: {baseLineLength} with data: {Encoding.UTF8.GetString(buffer, 0, buffer.Length)}");
 
                 var lineCount = end / (decimal)lineLength;
 
-                if (lineCount != Math.Ceiling(lineCount)) throw new Exception("Inconsistent line length in file");
+                if (lineCount != Math.Ceiling(lineCount))
+                {
+                    throw new Exception("Inconsistent line length in file");
+                }
 
                 var fLength = unsubFile.Length;
 
@@ -233,14 +207,20 @@ namespace Utility
                     {
                         var cur = (top + bottom) / 2;
 
-                        fs.Seek(lineLength * cur, SeekOrigin.Begin);
+                        _ = fs.Seek(lineLength * cur, SeekOrigin.Begin);
 
-                        await fs.ReadAsync(buffer, 0, baseLineLength);
+                        _ = await fs.ReadAsync(buffer.AsMemory(0, baseLineLength));
 
                         var cmp = Encoding.UTF8.GetString(buffer, 0, buffer.Length).ToLower().CompareTo(keyLower);
 
-                        if (cmp < 0) bottom = cur + 1;
-                        else if (cmp > 0) top = cur - 1;
+                        if (cmp < 0)
+                        {
+                            bottom = cur + 1;
+                        }
+                        else if (cmp > 0)
+                        {
+                            top = cur - 1;
+                        }
                         else
                         {
                             f = true;
@@ -248,16 +228,21 @@ namespace Utility
                         }
                     }
 
-                    if (f) found.Add(key);
-                    else notFound.Add(key);
+                    if (f)
+                    {
+                        found.Add(key);
+                    }
+                    else
+                    {
+                        notFound.Add(key);
+                    }
                 }
             }
 
             return (found, notFound);
         }
 
-
-        public static string exeDiff = @"C:\Program Files\Git\usr\bin\diff";
+        public const string exeDiff = @"C:\Program Files\Git\usr\bin\diff";
 
         public static async Task<bool> DiffFiles(string oldFile, string newFile, string sourcePath,
             string diffFile, int timeout = 1000 * 60 * 5)
@@ -288,7 +273,7 @@ namespace Utility
             return timedOut;
         }
 
-        public static string exeUniq = @"C:\Program Files\Git\usr\bin\uniq";
+        public const string exeUniq = @"C:\Program Files\Git\usr\bin\uniq";
 
         public static async Task<bool> Unique(string oldFile, string newFile, string sourcePath, int timeout = 1000 * 60 * 5)
         {
@@ -316,7 +301,7 @@ namespace Utility
             return timedOut;
         }
 
-        public static async Task<int> LineCount(string fileName) => (await File.ReadAllLinesAsync(fileName)).Count();
+        public static async Task<int> LineCount(string fileName) => (await File.ReadAllLinesAsync(fileName)).Length;
 
         public static void DiffManual(string curFile, string newFile, string diffFile)
         {
@@ -334,11 +319,33 @@ namespace Utility
             var newLine = string.Empty;
             while (!newRdr.EndOfStream && !oldRdr.EndOfStream)
             {
-                if (readOld) { oldLine = oldRdr.ReadLine(); curFileLineCount++; }
-                if (readNew) { newLine = newRdr.ReadLine(); newFileLineCount++; }
+                if (readOld)
+                {
+                    oldLine = oldRdr.ReadLine();
+                    curFileLineCount++;
+                }
+
+                if (readNew)
+                {
+                    newLine = newRdr.ReadLine();
+                    newFileLineCount++;
+                }
+
                 var cmp = newLine.ToLower().CompareTo(oldLine.ToLower());
-                if (cmp == 0) { readOld = true; readNew = true; continue; }
-                if (cmp > 0) { readOld = true; readNew = false; continue; }
+                if (cmp == 0)
+                {
+                    readOld = true;
+                    readNew = true;
+                    continue;
+                }
+
+                if (cmp > 0)
+                {
+                    readOld = true;
+                    readNew = false;
+                    continue;
+                }
+
                 {
                     diff.WriteLine();
                     deltaLineCount++;
@@ -346,6 +353,7 @@ namespace Utility
                     readNew = true;
                 }
             }
+
             while (!newRdr.EndOfStream)
             {
                 diff.WriteLine();

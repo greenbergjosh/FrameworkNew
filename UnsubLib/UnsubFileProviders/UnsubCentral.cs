@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using Utility;
-using Utility.GenericEntity;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity;
 
 namespace UnsubLib.UnsubFileProviders
 {
@@ -17,19 +15,19 @@ namespace UnsubLib.UnsubFileProviders
 
         public UnsubCentralV2(FrameworkWrapper fw) => _fw = fw;
 
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public Task<bool> CanHandle(Entity network, string unsubRelationshipId, Uri uri)
         {
             if (uri.ToString().Contains("go.unsubcentral.com"))
             {
                 var qs = HttpUtility.ParseQueryString(uri.Query);
 
-                return qs["key"] != null && qs["s"] != null || qs["keyID"] != null;
+                return Task.FromResult((qs["key"] != null && qs["s"] != null) || qs["keyID"] != null);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
-        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(Entity network, string unsubRelationshipId, Uri uri)
         {
             var uriStr = uri.ToString();
 
@@ -80,7 +78,7 @@ namespace UnsubLib.UnsubFileProviders
                 }
 
                 // Try new style API first
-                var authInfo = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, "api.unsubcentral.com", StringComparison.CurrentCultureIgnoreCase))?.Item2;
+                var authInfo = await network.GetS("Credentials.DomainAuthStrings[@=\"api.unsubcentral.com\"]", null);
 
                 if (!authInfo.IsNullOrWhitespace())
                 {
@@ -99,11 +97,11 @@ namespace UnsubLib.UnsubFileProviders
                 await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} before login");
 
                 resp = await client.PostAsync(loginUrl, new FormUrlEncodedContent(data));
-                var res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+                var res = await network.Parse("application/json", await resp.Content.ReadAsStringAsync());
 
-                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after login {res.GetS("")}");
+                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after login {res}");
 
-                var token = res.GetS("payload");
+                var token = await res.GetS("payload");
 
                 if (token.IsNullOrWhitespace())
                 {
@@ -115,20 +113,20 @@ namespace UnsubLib.UnsubFileProviders
                 await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} before get {fileIdUrl}");
 
                 resp = await client.GetAsync(fileIdUrl);
-                res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+                res = await network.Parse("application/json", await resp.Content.ReadAsStringAsync());
 
-                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {fileIdUrl} response: {res.GetS("")}");
+                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {fileIdUrl} response: {res}");
 
-                var unsubListId = res.GetS("unsubList/id");
+                var unsubListId = await res.GetS("unsubList.id");
                 var dlUrl = $"https://go.unsubcentral.com/backend/api/export/list/{unsubListId}/download?token={token}&type=DOWNLOAD_GRP_ENC_TEXT";
 
                 await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} before get {dlUrl}");
                 resp = await client.GetAsync(dlUrl);
-                res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+                res = await network.Parse("application/json", await resp.Content.ReadAsStringAsync());
 
-                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {dlUrl} response: {res.GetS("")}");
+                await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} after get {dlUrl} response: {res}");
 
-                var dl = res.GetS("payload");
+                var dl = await res.GetS("payload");
                 await _fw.Trace("UV2C", $"{unsubRelationshipId} payload value: {(!dl.IsNullOrWhitespace() ? dl : $"empty, will use default Url: {defaultUrl}")}");
 
                 var result = string.IsNullOrWhiteSpace(dl) ? defaultUrl : dl;

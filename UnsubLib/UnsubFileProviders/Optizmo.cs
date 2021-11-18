@@ -4,11 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Utility;
-using Utility.GenericEntity;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity;
 
 namespace UnsubLib.UnsubFileProviders
 {
@@ -19,43 +16,58 @@ namespace UnsubLib.UnsubFileProviders
         private const string fileTempl = "https://mailer-api.optizmo.net/accesskey/download/{fileToken}?token={authToken}&format={format}&deltas=0";
         private readonly Regex[] _fileTokenRxs = null;
 
-        public Optizmo(FrameworkWrapper fw)
+        private Optizmo(FrameworkWrapper fw, Regex[] fileTokenRxs)
         {
             _fw = fw;
-            _fileTokenRxs = _fw.StartupConfiguration.GetL("Config/OptizmoFilePatterns").Select(ge =>
+            _fileTokenRxs = fileTokenRxs;
+        }
+
+        public static async Task<Optizmo> Create(FrameworkWrapper fw)
+        {
+            var fileTokenRxs = (await fw.StartupConfiguration.GetL("Config.OptizmoFilePatterns")).Select(ge =>
             {
                 string rxStr = null;
 
                 try
                 {
-                    rxStr = ge.GetS("");
+                    rxStr = ge.ToString();
 
-                    if (rxStr.IsNullOrWhitespace()) return null;
+                    if (rxStr.IsNullOrWhitespace())
+                    {
+                        return null;
+                    }
 
                     var rx = new Regex(rxStr, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
 
-                    if (rx.GetGroupNames().Any(g => g == "token")) return rx;
+                    if (rx.GetGroupNames().Any(g => g == "token"))
+                    {
+                        return rx;
+                    }
 
-                    _fw.Error(nameof(Optizmo), $"Failed to load Optizmo file pattern, missing token group {rxStr}").Wait();
+                    _ = fw.Error(nameof(Optizmo), $"Failed to load Optizmo file pattern, missing token group {rxStr}");
                 }
                 catch (Exception e)
                 {
-                    _fw.Error(nameof(Optizmo), $"Failed to load Optizmo file pattern {rxStr} {e.UnwrapForLog()}").Wait();
+                    _ = fw.Error(nameof(Optizmo), $"Failed to load Optizmo file pattern {rxStr} {e.UnwrapForLog()}");
                 }
 
                 return null;
             }).Where(rx => rx != null).ToArray();
+
+            return new Optizmo(fw, fileTokenRxs);
         }
 
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || uri.ToString().Contains("mailer.optizmo.net") || uri.ToString().Contains("affiliateaccesskey.com");
+        public Task<bool> CanHandle(Entity network, string unsubRelationshipId, Uri uri) => Task.FromResult(uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || uri.ToString().Contains("mailer.optizmo.net") || uri.ToString().Contains("affiliateaccesskey.com"));
 
-        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(Entity network, string unsubRelationshipId, Uri uri)
         {
             if (uri.ToString().Contains("mailer-api.optizmo.net/accesskey/getfile/"))
+            {
                 return (uri.ToString(), null);
+            }
 
-            var useApi = network.GetS("Credentials/UseOptizmoApi").ParseBool() ?? false;
-            var authToken = network.GetS($"Credentials/OptizmoToken");
+            var useApi = await network.GetB("Credentials.UseOptizmoApi", false);
+            var authToken = await network.GetS($"Credentials.OptizmoToken");
 
             await _fw.Trace(_logMethod, $"Getting Unsub location: UseApi: {useApi} {uri}");
 
@@ -66,7 +78,7 @@ namespace UnsubLib.UnsubFileProviders
 
                 var path = $"accesskey/download/{mak}";
 
-                return (await GetOptizmoUnsubFileUri(path, authToken), null);
+                return (await GetOptizmoUnsubFileUri(network, path, authToken), null);
             }
             else if (useApi)
             {
@@ -94,23 +106,27 @@ namespace UnsubLib.UnsubFileProviders
 
                         if (res.success)
                         {
-                            var resGE = Jw.JsonToGenericEntity(res.body);
+                            var resGE = await network.Parse("application/json", res.body);
 
-                            if (string.Equals(resGE?.GetS("error"), "You do not have access to MD5 downloads", StringComparison.CurrentCultureIgnoreCase))
+                            if (string.Equals(await resGE?.GetS("error"), "You do not have access to MD5 downloads", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 res = await ProtocolClient.HttpGetAsync(baseUrl.Replace("{format}", "plain"), timeoutSeconds: 300);
 
-                                if (res.success) resGE = Jw.JsonToGenericEntity(res.body);
+                                if (res.success)
+                                {
+                                    resGE = await network.Parse("application/json", res.body);
+                                }
                             }
-                            var download = resGE?.GetS("download_link");
+
+                            var download = await resGE?.GetS("download_link");
 
                             if (!download.IsNullOrWhitespace())
                             {
                                 return download;
                             }
 
-                            await _fw.Error(_logMethod, $"Optizmo API get file url call failed: {baseUrl} derived from: {uri} Response: {resGE?.GetS("")}");
-                            throw new InvalidOperationException($"Optizmo API get file url call failed: {baseUrl} derived from: {uri} Response: {resGE?.GetS("")}");
+                            await _fw.Error(_logMethod, $"Optizmo API get file url call failed: {baseUrl} derived from: {uri} Response: {resGE}");
+                            throw new InvalidOperationException($"Optizmo API get file url call failed: {baseUrl} derived from: {uri} Response: {resGE}");
                         }
                         else
                         {
@@ -122,7 +138,7 @@ namespace UnsubLib.UnsubFileProviders
             }
 
             // Fallback if API failed
-            var optizmoUnsubUrl = await GetOptizmoUnsubFileUri(uri.AbsolutePath, authToken);
+            var optizmoUnsubUrl = await GetOptizmoUnsubFileUri(network, uri.AbsolutePath, authToken);
 
             await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {optizmoUnsubUrl}");
 
@@ -136,7 +152,7 @@ namespace UnsubLib.UnsubFileProviders
             return default;
         }
 
-        private async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)
+        private async Task<string> GetOptizmoUnsubFileUri(Entity network, string url, string optizmoToken)
         {
             try
             {
@@ -144,8 +160,8 @@ namespace UnsubLib.UnsubFileProviders
                 var pathParts = url.Split('/');
                 //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
                 var optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
-                optizmoUrl.Append(pathParts[^1]);
-                optizmoUrl.Append($"?token={optizmoToken}");
+                _ = optizmoUrl.Append(pathParts[^1]);
+                _ = optizmoUrl.Append($"?token={optizmoToken}");
                 //503 Service Unavailable
                 var retryCount = 0;
                 var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
@@ -156,14 +172,15 @@ namespace UnsubLib.UnsubFileProviders
                     if (success && !string.IsNullOrEmpty(body))
                     {
                         if (body.Contains("503 Service Unavailable"))
-                            throw new InvalidOperationException("503 Service Unavailable");
-
-                        var te = new GenericEntityJson();
-                        var ts = (JObject)JsonConvert.DeserializeObject(body);
-                        te.InitializeEntity(null, null, ts);
-                        if (te.GetS("download_link") != null)
                         {
-                            return te.GetS("download_link");
+                            throw new InvalidOperationException("503 Service Unavailable");
+                        }
+
+                        var te = await network.Parse("application/json", body);
+                        var (found, downloadLink) = await te.TryGetS("download_link");
+                        if (found && downloadLink != null)
+                        {
+                            return downloadLink;
                         }
                         else
                         {

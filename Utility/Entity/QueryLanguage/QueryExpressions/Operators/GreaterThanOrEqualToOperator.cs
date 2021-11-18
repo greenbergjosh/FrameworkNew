@@ -8,20 +8,14 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
     {
         public int OrderOfOperation => 4;
 
-        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            if (left.OutputType != right.OutputType)
-            {
-                return QueryExpressionType.Invalid;
-            }
-
-            return left.OutputType switch
-            {
-                QueryExpressionType.Number => QueryExpressionType.Boolean,
-                QueryExpressionType.String => QueryExpressionType.Boolean,
-                _ => QueryExpressionType.Invalid
-            };
-        }
+        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right) => left.OutputType != right.OutputType
+                ? QueryExpressionType.Invalid
+                : left.OutputType switch
+                {
+                    QueryExpressionType.Number => QueryExpressionType.Boolean,
+                    QueryExpressionType.String => QueryExpressionType.Boolean,
+                    _ => QueryExpressionType.Invalid
+                };
 
         public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
         {

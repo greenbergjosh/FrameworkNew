@@ -2,11 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
 
 namespace Utility.Entity
 {
+    public class EntityDocumentConverter : JsonConverter<EntityDocument>
+    {
+        public override EntityDocument Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+        public override void Write(Utf8JsonWriter writer, EntityDocument value, JsonSerializerOptions options) => value.SerializeToJson(writer, options);
+    }
+
+    [JsonConverter(typeof(EntityDocumentConverter))]
     public abstract class EntityDocument : IEquatable<EntityDocument>
     {
         public Entity Entity { get; internal set; }
@@ -46,6 +55,8 @@ namespace Utility.Entity
                 yield return (name, Entity.Create(value, $"{Entity.Query}.{name}"));
             }
         }
+
+        public abstract void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options);
 
         protected internal abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
@@ -100,35 +111,20 @@ namespace Utility.Entity
 
         public abstract T Value<T>();
 
-        public bool Equals(EntityDocument other)
-        {
-            if (ValueType == EntityValueType.Undefined || other?.ValueType == EntityValueType.Undefined)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
-            if (other is null || ValueType != other.ValueType)
-            {
-                return false;
-            }
-
-            return ValueType switch
-            {
-                EntityValueType.Array => Length == other.Length && EnumerateArrayCore().SequenceEqual(other.EnumerateArrayCore()),
-                EntityValueType.Boolean => Value<bool>() == other.Value<bool>(),
-                EntityValueType.Null => true,
-                EntityValueType.Number => Value<decimal>() == other.Value<decimal>(),
-                EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
-                EntityValueType.String => Value<string>() == other.Value<string>(),
-                EntityValueType.Undefined => false,
-                _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")
-            };
-        }
+        public bool Equals(EntityDocument other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
+            && (ReferenceEquals(this, other)
+                || (other is not null && ValueType == other.ValueType && ValueType switch
+                {
+                    EntityValueType.Array => Length == other.Length && EnumerateArrayCore().SequenceEqual(other.EnumerateArrayCore()),
+                    EntityValueType.Boolean => Value<bool>() == other.Value<bool>(),
+                    EntityValueType.Null => true,
+                    EntityValueType.Number => Value<decimal>() == other.Value<decimal>(),
+                    EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
+                    EntityValueType.String => Value<string>() == other.Value<string>(),
+                    EntityValueType.Undefined => false,
+                    _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")
+                })
+        );
 
         public override bool Equals(object obj) => Equals(obj as EntityDocument);
 

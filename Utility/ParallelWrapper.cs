@@ -15,8 +15,12 @@ namespace Utility
                 select Task.Run(async delegate
                 {
                     using (partition)
+                    {
                         while (partition.MoveNext())
+                        {
                             await body(partition.Current);
+                        }
+                    }
                 }));
 
         public static Task ForEachAsync<T>(this IEnumerable<T> source, int dop, Func<T, Task> body, CancellationToken token) => Task.WhenAll(
@@ -24,8 +28,12 @@ namespace Utility
                 select Task.Run(async delegate
                 {
                     using (partition)
+                    {
                         while (partition.MoveNext())
+                        {
                             await body(partition.Current);
+                        }
+                    }
                 }, token));
 
     }

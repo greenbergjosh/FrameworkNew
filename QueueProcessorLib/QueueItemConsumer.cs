@@ -11,7 +11,7 @@ namespace QueueProcessorLib
     {
         private readonly FrameworkWrapper _fw;
         private bool _started = false;
-        private readonly ConcurrentDictionary<QueueItem, QueueItem> _itemsInFlight = new ConcurrentDictionary<QueueItem, QueueItem>();
+        private readonly ConcurrentDictionary<QueueItem, QueueItem> _itemsInFlight = new();
 
         public QueueItemConsumerConfig Config { get; }
 
@@ -31,6 +31,7 @@ namespace QueueProcessorLib
             {
                 throw new InvalidOperationException($"{Config.Name} consumer is already started.");
             }
+
             _started = true;
 
             try
@@ -41,15 +42,15 @@ namespace QueueProcessorLib
                 {
                     while (_itemsInFlight.Count >= Config.ItemsInFlightMaxCount && !cancellationToken.IsCancellationRequested)
                     {
-                        await Task.Delay(Config.SleepInterval);
+                        await Task.Delay(Config.SleepInterval, cancellationToken);
                     }
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
                         var queueItem = Config.Queue.Take(cancellationToken);
-                        _itemsInFlight.TryAdd(queueItem, queueItem);
+                        _ = _itemsInFlight.TryAdd(queueItem, queueItem);
 
-                        _ = Task.Run(async () => await Process(queueItem));
+                        _ = Task.Run(async () => await Process(queueItem), cancellationToken);
                     }
                 }
             }
@@ -66,9 +67,9 @@ namespace QueueProcessorLib
 
             await _fw.Log(LogMethod, $"Waiting up to {Config.DrainInterval / 1000.0} seconds for in-flight request to complete.");
             var waitLimit = DateTime.UtcNow.AddMilliseconds(Config.DrainInterval);
-            while (_itemsInFlight.Count > 0)
+            while (!_itemsInFlight.IsEmpty)
             {
-                await Task.Delay(Config.DrainSleepInterval);
+                await Task.Delay(Config.DrainSleepInterval, CancellationToken.None);
                 if (DateTime.UtcNow >= waitLimit)
                 {
                     break;
@@ -90,7 +91,7 @@ namespace QueueProcessorLib
             }
             finally
             {
-                _itemsInFlight.TryRemove(queueItem, out var _);
+                _ = _itemsInFlight.TryRemove(queueItem, out _);
             }
         }
     }

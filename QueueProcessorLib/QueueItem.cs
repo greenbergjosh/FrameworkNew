@@ -1,5 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace QueueProcessorLib
 {
@@ -20,6 +20,6 @@ namespace QueueProcessorLib
             RetryNumber = retryNumber;
         }
 
-        public override string ToString() => JsonConvert.SerializeObject(this);
+        public override string ToString() => JsonSerializer.Serialize(this);
     }
 }

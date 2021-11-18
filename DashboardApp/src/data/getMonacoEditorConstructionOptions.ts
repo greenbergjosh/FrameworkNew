@@ -69,7 +69,7 @@ export default function getMonacoEditorConstructionOptions(
       const endColumnNumber = startColumnNumber + match[0].length
       const guid = match[0]
       const range = new Range(lineNumber, startColumnNumber, lineNumber, endColumnNumber)
-      const url = `${window.location.origin}/dashboard/global-config/${guid}`
+      const url = `${window.location.origin}/app/admin/global-config/${guid}`
 
       items.push({ link: { range, url }, guid })
     }

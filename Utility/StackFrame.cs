@@ -7,7 +7,7 @@ namespace Utility
 {
     public class StackFrame : System.Dynamic.DynamicObject, IEnumerable<KeyValuePair<string, object>>
     {
-        private readonly ExpandoObject sf = new ExpandoObject();
+        private readonly ExpandoObject sf = new();
 
         public void Add(string s, object o) => ((IDictionary<string, object>)sf).Add(s, o);
 
@@ -19,18 +19,24 @@ namespace Utility
         {
             var sf = new StackFrame();
             if (o == null)
-                throw new ArgumentNullException();
+            {
+                throw new ArgumentNullException(nameof(o));
+            }
 
             if (o is IDictionary<string, object> d)
             {
                 foreach (var (key, value) in d)
+                {
                     sf.Add(key, value);
+                }
             }
             else
             {
                 var t = o.GetType();
                 foreach (var pi in t.GetProperties())
+                {
                     sf.Add(pi.Name, pi.GetValue(o));
+                }
             }
             
             return sf;
@@ -43,6 +49,7 @@ namespace Utility
                 result = ((IDictionary<string, object>)sf)[binder.Name];
                 return true;
             }
+
             return base.TryGetMember(binder, out result);
         }
     }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace SimpleImportExport
 {
@@ -14,25 +14,46 @@ namespace SimpleImportExport
         private readonly bool _isSFtp = false;
         private readonly bool _isFtps = false;
 
-        public FtpEndPoint(IGenericEntity ge) : base(ge)
+        private FtpEndPoint(string host, string basePath, string user, string password, string keyPath, int? port, int maxDepth, bool isSftp, bool isFtps)
         {
-            Host = ge.GetS("Host");
-            BasePath = ge.GetS("BasePath");
-            User = ge.GetS("User");
-            Password = ge.GetS("Password");
-            KeyPath = ge.GetS("KeyPath");
-            MaxDepth = ge.GetS("MaxDepth").ParseInt() ?? 0;
-            _isSFtp = ge.GetB("isSftp");
-            _isFtps = ge.GetB("IsFtps");
+            Host = host;
+            BasePath = basePath;
+            User = user;
+            Password = password;
+            KeyPath = keyPath;
+            Port = port;
+            MaxDepth = maxDepth;
 
-            if (Password.IsNullOrWhitespace())
+            _isSFtp = isSftp;
+            _isFtps = isFtps;
+        }
+
+        public static async Task<FtpEndPoint> Create(Entity ge)
+        {
+            var host = await ge.GetS("Host");
+            var basePath = await ge.GetS("BasePath");
+            var user = await ge.GetS("User");
+            var password = await ge.GetS("Password", null);
+            var keyPath = await ge.GetS("KeyPath", null);
+            var maxDepth = await ge.GetI("MaxDepth", 0);
+            var isSFtp = await ge.GetB("isSftp", false);
+            var isFtps = await ge.GetB("IsFtps", false);
+
+            if (password.IsNullOrWhitespace())
             {
-                if (KeyPath.IsNullOrWhitespace() || !File.Exists(KeyPath)) throw new Exception($"Invalid FTP config, if Password not set SFTP KeyPath must point to existing file");
+                if (keyPath.IsNullOrWhitespace() || !File.Exists(keyPath))
+                {
+                    throw new Exception($"Invalid FTP config, if Password not set SFTP KeyPath must point to existing file");
+                }
 
-                _isSFtp = true;
+                isSFtp = true;
             }
 
-            Port = ge.GetS("Port").ParseInt();
+            var port = (await ge.GetS("Port", null)).ParseInt();
+
+            var endpoint = new FtpEndPoint(host, basePath, user, password, keyPath, port, maxDepth, isSFtp, isFtps);
+            await endpoint.LoadPatterns(ge);
+            return endpoint;
         }
 
         public string Host { get; }
@@ -62,25 +83,26 @@ namespace SimpleImportExport
             var destPath = CombineUrl(BasePath, file.Pattern?.DestinationRelativePath.IfNullOrWhitespace(""), file.FileName);
             var destinationDirectoryPath = CombineUrl(BasePath, file.Pattern?.DestinationRelativePath.IfNullOrWhitespace(""));
 
-            using (var srcStream = await source.GetStream(file))
-            using (var ms = new MemoryStream())
+            using var srcStream = await source.GetStream(file);
+            using var ms = new MemoryStream();
+            await srcStream.CopyToAsync(ms);
+
+            ms.Position = 0;
+
+            if (_isSFtp && Password.IsNullOrWhitespace())
             {
-                await srcStream.CopyToAsync(ms);
-
-                ms.Position = 0;
-
-                if (_isSFtp && Password.IsNullOrWhitespace())
-                {
-                    await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, keyFilePath: KeyPath);
-                }
-                else if (_isSFtp && !Password.IsNullOrWhitespace())
-                {
-                    await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, password: Password);
-                }
-                else await ProtocolClient.UploadStream(destPath, ms, Host, User, Password, _isFtps);
-
-                return (size: ms.Length, records: null, destinationDirectoryPath);
+                await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, keyFilePath: KeyPath);
             }
+            else if (_isSFtp && !Password.IsNullOrWhitespace())
+            {
+                await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, password: Password);
+            }
+            else
+            {
+                await ProtocolClient.UploadStream(destPath, ms, Host, User, Password, _isFtps);
+            }
+
+            return (size: ms.Length, records: null, destinationDirectoryPath);
         }
 
         public override async Task<IEnumerable<SourceFileInfo>> GetFiles()

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace Utility.Http
 {
@@ -43,7 +43,7 @@ namespace Utility.Http
         {
             var cacheKey = BuildKey(key);
 
-            var chunks = JsonConvert.DeserializeObject<Dictionary<int, byte[]>>(await _cache.GetStringAsync(cacheKey) ?? "{}");
+            var chunks = JsonSerializer.Deserialize<Dictionary<int, byte[]>>(await _cache.GetStringAsync(cacheKey) ?? "{}");
 
             if (chunkIndex > 0 && chunks.Count == 0)
             {
@@ -52,11 +52,11 @@ namespace Utility.Http
 
             var buffer = new byte[chunk.Length];
 
-            await chunk.ReadAsync(buffer);
+            _ = await chunk.ReadAsync(buffer);
 
             chunks[chunkIndex] = buffer;
 
-            await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(chunks), new DistributedCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(chunks), new DistributedCacheEntryOptions() { SlidingExpiration = TimeSpan.FromMinutes(5) });
 
             if (chunks.Count == totalChunks)
             {
@@ -67,19 +67,20 @@ namespace Utility.Http
             return null;
         }
 
-        private string BuildKey(string key) => $"{_cacheKeyPrefix}{key}";
+        private static string BuildKey(string key) => $"{_cacheKeyPrefix}{key}";
 
-        private Stream Complete(IDictionary<int, byte[]> chunks)
+        private static Stream Complete(IDictionary<int, byte[]> chunks)
         {
             var result = new byte[chunks.Sum(chunk => chunk.Value.Length)];
 
-            int offset = 0;
-            for (int i = 0; i < chunks.Count; i++)
+            var offset = 0;
+            for (var i = 0; i < chunks.Count; i++)
             {
                 var chunk = chunks[i];
                 chunk.CopyTo(result, offset);
                 offset += chunk.Length;
             }
+
             return new MemoryStream(result);
         }
     }

@@ -2,7 +2,6 @@ import React from "react"
 import { Alert, Empty, Icon } from "antd"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   getMergedData,
   UserInterfaceContext,
   UserInterfaceContextManager,

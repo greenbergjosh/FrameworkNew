@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@babel/polyfill": "7.12.1",
-    "@craco/craco": "6.2.0",
+    "@craco/craco": "6.4.0",
     "@dbeining/react-atom": "4.1.21",
     "@devexperts/remote-data-ts": "0.6.0",
     "@loadable/component": "5.15.0",
@@ -17,7 +17,7 @@
     "@rematch/persist": "2.0.1",
     "@rematch/select": "3.0.1",
     "antd": "3.26.20",
-    "axios": "0.21.1",
+    "axios": "0.24.0",
     "classnames": "2.3.1",
     "core-js": "2.6.12",
     "flatted": "2.0.2",
@@ -39,9 +39,9 @@
     "react-copy-to-clipboard": "5.0.4",
     "react-dom": "17.0.2",
     "react-helmet": "6.1.0",
-    "react-redux": "7.2.4",
+    "react-redux": "7.2.6",
     "react-scripts": "4.0.3",
-    "redux": "4.1.1",
+    "redux": "4.1.2",
     "web-vitals": "1.0.1"
   },
   "scripts": {

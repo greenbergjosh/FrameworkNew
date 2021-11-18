@@ -10,13 +10,6 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
   PivotTableInterfaceComponentProps,
   PivotTableInterfaceComponentState
 > {
-  constructor(props: PivotTableInterfaceComponentProps) {
-    super(props)
-
-    this.state = {
-      loading: false,
-    }
-  }
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "data",
@@ -35,10 +28,19 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
     return (
       <>
         <div>
-          <strong>API Key:</strong> {props.valueKey}
+          <strong>Catalog:</strong> {props.catalog}
         </div>
         <div>
-          <strong>Loading Key:</strong> {props.loadingKey}
+          <strong>Cube:</strong> {props.cube}
+        </div>
+        <div>
+          <strong>Provider Type:</strong> {props.providerType}
+        </div>
+        <div>
+          <strong>URL:</strong> {props.url}
+        </div>
+        <div>
+          <strong>Locale:</strong> {props.localeIdentifier}
         </div>
       </>
     )
@@ -47,32 +49,44 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
   componentDidUpdate(prevProps: Readonly<PivotTableInterfaceComponentProps>): void {}
 
   render(): JSX.Element {
-    const data = this.getValue(this.props.valueKey)
-
     switch (this.props.mode) {
       case "display":
         return (
           <DisplayMode
+            //
+            // Datasource props
+            catalog={this.props.catalog}
+            cube={this.props.cube}
+            enableSorting={this.props.enableSorting}
+            localeIdentifier={this.props.localeIdentifier}
+            providerType={this.props.providerType}
+            url={this.props.url}
+            //
+            // Options
+            showFieldList={this.props.showFieldList}
+            //
+            // Mapped props
             columns={this.props.columns}
-            data={data}
-            expandAll={this.props.expandAll}
             filters={this.props.filters}
-            formatSettings={this.props.formatSettings}
             rows={this.props.rows}
             values={this.props.values}
+            //
+            // Mapped Settings props
+            calculatedFieldSettings={this.props.calculatedFieldSettings}
+            filterSettings={this.props.filterSettings}
+            formatSettings={this.props.formatSettings}
+            //
+            // Appearance props
             height={this.props.height}
           />
         )
       case "edit":
         return (
           <EditMode
-            onChangeSchema={this.props.onChangeSchema}
             getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             onChangeRootData={this.props.onChangeRootData}
-            getValue={this.getValue.bind(this)}
-            setValue={this.setValue.bind(this)}
+            onChangeSchema={this.props.onChangeSchema}
             userInterfaceSchema={this.props.userInterfaceSchema}
-            valueKey={this.props.valueKey}
           />
         )
     }

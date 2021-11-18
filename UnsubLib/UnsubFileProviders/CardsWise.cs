@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace UnsubLib.UnsubFileProviders
 {
@@ -14,9 +14,9 @@ namespace UnsubLib.UnsubFileProviders
 
         public CardsWise(FrameworkWrapper fw) => _fw = fw;
 
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("cardswise.com");
+        public Task<bool> CanHandle(Entity network, string unsubRelationshipId, Uri uri) => Task.FromResult(uri.ToString().Contains("cardswise.com"));
 
-        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
+        public async Task<(string url, IDictionary<string, string> postData)> GetFileUrl(Entity network, string unsubRelationshipId, Uri uri)
         {
             var downloadPage = await ProtocolClient.HttpGetAsync(uri.ToString());
 

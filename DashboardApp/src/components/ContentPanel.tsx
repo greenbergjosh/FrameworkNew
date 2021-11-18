@@ -45,7 +45,7 @@ function RouteRenderer(
 
 export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
-    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
+    globalConfigPath: appState.navigation.routes.globalConfig.abs,
     appPageConfig: store.select.apps.appPageConfig(appState),
     appPaths: appState.apps.appPaths,
   }))

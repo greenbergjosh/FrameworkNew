@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Utility.LongRunningWorkflow
 {
@@ -15,7 +15,7 @@ namespace Utility.LongRunningWorkflow
 
         private record Signal(Guid Id, DateTime Ts, string Discriminator, object Payload);
 
-        public override string ToString() => JsonConvert.SerializeObject(new
+        public override string ToString() => JsonSerializer.Serialize(new
         {
             LRW = new[] { new { payload = new { signals = _signals.Select(s => new { id = s.Id, ts = s.Ts, discriminator = s.Discriminator, payload = s.Payload }) } } }
         });

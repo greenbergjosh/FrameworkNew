@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.EDW.Reporting;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity;
 
 namespace SignalApiLib.SourceHandlers
 {
@@ -15,17 +15,17 @@ namespace SignalApiLib.SourceHandlers
         private readonly FrameworkWrapper _fw;
         private const string Conn = "Signal";
         private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
-        private readonly string _defaultFailureResponse = Jw.Serialize(new { Result = "Failure" });
+        private readonly string _defaultFailureResponse = JsonSerializer.Serialize(new { Result = "Failure" });
 
         public ConsoleFeed(FrameworkWrapper fw) => _fw = fw;
 
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
         {
-            var result = Jw.Json(new { Error = "SeeLogs" });
+            var result = JsonSerializer.Serialize(new { Error = "SeeLogs" });
 
             requestFromPost = requestFromPost.Replace("\u0000", "");
 
-            if (Jw.TryParseObject(requestFromPost) == null)
+            if (await _fw.Entity.TryParse("application/json", requestFromPost) == (false, null))
             {
                 var body = requestFromPost ?? "<null>";
                 if (string.IsNullOrWhiteSpace(body))
@@ -68,45 +68,39 @@ namespace SignalApiLib.SourceHandlers
         {
             var result = _defaultFailureResponse;
 
-            //try
-            //{
-            //    var res = await Data.CallFn(Conn, "consoleLiveFeed", payload: request);
-
-            //    if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"DB write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
-            //    else result = Jw.Serialize(new { Result = "Success" });
-            //}
-            //catch (Exception e)
-            //{
-            //    await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"DB write failed {e.UnwrapForLog()}\r\nBody: {request}");
-            //}
-
             try
             {
-                var lead = JObject.Parse(request);
+                var lead = await _fw.Entity.Parse("application/json", request);
 
                 DateTime? dob = null;
-                if (lead["dob_year"] != null && lead["dob_month"] != null && lead["dob_day"] != null)
+                var dobYear = await lead.GetI("dob_year", 0);
+                var dobMonth = await lead.GetI("dob_month", 0);
+                var dobDay = await lead.GetI("dob_day");
+
+                if (dobYear != 0 && dobMonth != 0 && dobDay != 0)
                 {
-                    dob = DateTime.Parse($"{lead["dob_month"]}/{lead["dob_day"]}/{lead["dob_year"]}");
+                    dob = DateTime.Parse($"{dobMonth}/{dobDay}/{dobYear}");
                 }
+
+                var dateAcquired = await lead.GetE("datetime_collected");
 
                 var payload = new
                 {
-                    email = lead["email"],
-                    date_acquired = lead["datetime_collected"].Type == JTokenType.Object ? lead["datetime_collected"]["$date"] : lead["datetime_collected"],
-                    first_name = lead["first_name"],
-                    last_name = lead["last_name"],
-                    gender = lead["gender"],
+                    email = await lead.GetS("email", null),
+                    date_acquired = dateAcquired.ValueType == EntityValueType.Object ? await dateAcquired.GetS("$date") : await dateAcquired.GetAsS(),
+                    first_name = await lead.GetS("first_name", null),
+                    last_name = await lead.GetS("last_name", null),
+                    gender = await lead.GetS("gender", null),
                     dob,
-                    zip = lead["zip_code"],
-                    address1 = lead["address1"],
-                    city = lead["city"],
-                    state = lead["state"],
-                    opt_in_ip = lead["user_ip"],
-                    opt_in_domain = Regex.Replace(lead["domain"].Value<string>(), "^(www\\.)?", ""),
-                    user_agent = lead["user_agent"],
-                    phone = lead["phone_home"],
-                    household_income = lead["household_income"],
+                    zip = await lead.GetS("zip_code", null),
+                    address1 = await lead.GetS("address1", null),
+                    city = await lead.GetS("city", null),
+                    state = await lead.GetS("state", null),
+                    opt_in_ip = await lead.GetS("user_ip", null),
+                    opt_in_domain = Regex.Replace(await lead.GetS("domain"), "^(www\\.)?", ""),
+                    user_agent = await lead.GetS("user_agent", null),
+                    phone = await lead.GetS("phone_home", null),
+                    household_income = await lead.GetS("household_income", null),
                     attribution_id = 3,
                     record_type_id = 4
                 };
@@ -114,9 +108,7 @@ namespace SignalApiLib.SourceHandlers
                 var consoleEvent = new EdwBulkEvent();
                 consoleEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid, DateTime)>() { [_rsConfigId] = (default, default) }, payload);
 
-                System.Diagnostics.Debug.WriteLine(consoleEvent.ToString());
-
-                await _fw.EdwWriter.Write(consoleEvent);
+                _ = await _fw.EdwWriter.Write(consoleEvent);
             }
             catch (Exception e)
             {
@@ -130,23 +122,11 @@ namespace SignalApiLib.SourceHandlers
         {
             var result = _defaultFailureResponse;
 
-            //try
-            //{
-            //    var res = await Data.CallFn(Conn, "consoleEvent", payload: request);
-
-            //    if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"DB write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
-            //    else result = Jw.Serialize(new { Result = "Success" });
-            //}
-            //catch (Exception e)
-            //{
-            //    await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"DB write failed {e.UnwrapForLog()}\r\nBody: {request}");
-            //}
-
             try
             {
-                var lead = JObject.Parse(request);
+                var lead = await _fw.Entity.Parse("application/json", request);
 
-                var key = (lead["type"].Value<string>().ToLower(), lead["valid"]?.Value<bool>());
+                var key = ((await lead.GetS("type")).ToLower(), await lead.GetB("valid"));
 
                 var recordTypeId = key switch
                 {
@@ -164,7 +144,7 @@ namespace SignalApiLib.SourceHandlers
 
                 var payload = new
                 {
-                    email = lead["email"],
+                    email = await lead.GetS("email", null),
                     date_acquired = DateTime.UtcNow,
                     attribution_id = 3,
                     record_type_id = recordTypeId
@@ -173,15 +153,13 @@ namespace SignalApiLib.SourceHandlers
                 var consoleEvent = new EdwBulkEvent();
                 consoleEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid, DateTime)>() { [_rsConfigId] = (default, default) }, payload);
 
-                System.Diagnostics.Debug.WriteLine(consoleEvent.ToString());
-
-                await _fw.EdwWriter.Write(consoleEvent);
+                _ = await _fw.EdwWriter.Write(consoleEvent);
             }
             catch (Exception e)
             {
                 await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"EDW event write failed {e.UnwrapForLog()}\r\nBody: {request}");
             }
-            
+
             return result;
         }
     }

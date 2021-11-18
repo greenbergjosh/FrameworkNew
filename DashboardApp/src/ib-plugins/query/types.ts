@@ -1,13 +1,8 @@
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../data/Report"
-import {
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
-  ComponentRenderMetaProps,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
-import { QueryProps } from "../../components/query/types"
+import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
+import { QueryProps } from "../_shared/query/types"
 
 export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"

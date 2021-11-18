@@ -12,7 +12,7 @@ import { RouteComponentProps } from "@reach/router"
 export function Shell(props: RouteComponentProps<ThemeProps>): JSX.Element | null {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
     loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
-    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
+    globalConfigPath: appState.navigation.routes.globalConfig.abs,
   }))
 
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)

@@ -42,14 +42,19 @@ namespace Utility
             {
                 assemblyDirs.AddRange(additionalAssemblyPaths.Select(p =>
                 {
-                    try { return new DirectoryInfo(Path.GetFullPath(p)); }
-                    catch (Exception) { return null; }
+                    try
+                    {
+                        return new DirectoryInfo(Path.GetFullPath(p));
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
                 }).Where(p => p != null));
             }
 
             AppDomain.CurrentDomain.AssemblyResolve += (_, args) => ResolveAssemblyFromPath(args, assemblyDirs);
         }
-
 
         // Modified From: https://stackoverflow.com/questions/5260404/resolve-assembly-references-from-another-folder
         private static Assembly ResolveAssemblyFromPath(ResolveEventArgs args, IEnumerable<DirectoryInfo> assemblyDirs)
@@ -58,7 +63,10 @@ namespace Utility
             {
                 var referencedAssembly = Array.Find(Assembly.GetExecutingAssembly().GetReferencedAssemblies(), a => a.Name == args.Name);
 
-                if (referencedAssembly != null) return Assembly.LoadFrom(referencedAssembly.CodeBase);
+                if (referencedAssembly != null)
+                {
+                    return Assembly.LoadFrom(referencedAssembly.CodeBase);
+                }
 
                 var libFileName = args.Name.Substring(0, args.Name.IndexOf(",")) + ".dll";
 
@@ -68,7 +76,10 @@ namespace Utility
                     {
                         var copiedDependencyAssemblyPath = Path.Combine(d.FullName, libFileName);
 
-                        if (File.Exists(copiedDependencyAssemblyPath)) return Assembly.LoadFrom(copiedDependencyAssemblyPath);
+                        if (File.Exists(copiedDependencyAssemblyPath))
+                        {
+                            return Assembly.LoadFrom(copiedDependencyAssemblyPath);
+                        }
                     }
                     catch
                     {
@@ -82,7 +93,6 @@ namespace Utility
                 return null;
             }
         }
-
 
         public Assembly Assembly { get; }
 
@@ -110,7 +120,7 @@ namespace Utility
                     library.Serviceable);
 
                 var assemblies = new List<string>();
-                assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblies);
+                _ = assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblies);
                 if (assemblies.Count > 0)
                 {
                     return loadContext.LoadFromAssemblyPath(assemblies[0]);
@@ -135,6 +145,7 @@ namespace Utility
                     {
                         Console.WriteLine("    [{0}]", attributes);
                     }
+
                     Console.WriteLine("    {0} {1}", property.PropertyType.Name, property.Name);
                 }
             }
@@ -143,7 +154,10 @@ namespace Utility
         public static MethodInfo GetMethod(string dllPath, string className, string methodName, IEnumerable<string> assemblyPaths)
         {
             var t = new Tuple<string, string, string>(dllPath, className, methodName);
-            if (_cache.TryGetValue(t, out var mi)) return mi;
+            if (_cache.TryGetValue(t, out var mi))
+            {
+                return mi;
+            }
 
             Assembly a;
             lock (_dllCacheLock)
@@ -155,10 +169,7 @@ namespace Utility
                 });
             }
 
-            return _cache.GetOrAdd(t, _ =>
-            {
-                return a.GetType(className).GetMethod(methodName);
-            });
+            return _cache.GetOrAdd(t, _ => a.GetType(className).GetMethod(methodName));
         }
     }
 }

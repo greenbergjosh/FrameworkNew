@@ -7,20 +7,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
     {
         public int OrderOfOperation => 2;
 
-        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            if (left.OutputType != right.OutputType)
-            {
-                return QueryExpressionType.Invalid;
-            }
-
-            if (left.OutputType == QueryExpressionType.Number)
-            {
-                return QueryExpressionType.Number;
-            }
-
-            return QueryExpressionType.Invalid;
-        }
+        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right) => left.OutputType != right.OutputType
+                ? QueryExpressionType.Invalid
+                : left.OutputType == QueryExpressionType.Number ? QueryExpressionType.Number : QueryExpressionType.Invalid;
 
         public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
         {
@@ -31,12 +20,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             }
 
             var rightEntity = await right.Evaluate(entity);
-            if (rightEntity.ValueType != EntityValueType.Number)
-            {
-                return default;
-            }
-
-            return new EntityDocumentConstant(leftEntity.Value<decimal>() * rightEntity.Value<decimal>(), EntityValueType.Number);
+            return rightEntity.ValueType != EntityValueType.Number
+                ? default
+                : (EntityDocument)new EntityDocumentConstant(leftEntity.Value<decimal>() * rightEntity.Value<decimal>(), EntityValueType.Number);
         }
 
         public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}*{right.MaybeAddParentheses(OrderOfOperation)}";

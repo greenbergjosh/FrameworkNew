@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using Utility.GenericEntity;
+using System.Text.Json;
 
 namespace Utility.LongRunningWorkflow
 {
@@ -16,11 +15,11 @@ namespace Utility.LongRunningWorkflow
         public Guid ThreadId { get; init; }
         public Guid ApartmentId { get; set; }
         public bool Exclusive { get; set; }
-        public IGenericEntity Payload { get; init; }
+        public Entity.Entity Payload { get; init; }
         public Guid PayloadRunnerEntityId { get; set; }
         public bool HasWaits => _waits.Any();
 
-        public WaitWriter(Guid processId, Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, IGenericEntity payload = null)
+        public WaitWriter(Guid processId, Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, Entity.Entity payload = null)
         {
             ProcessId = processId;
             ThreadId = threadId;
@@ -30,13 +29,13 @@ namespace Utility.LongRunningWorkflow
             PayloadRunnerEntityId = payloadRunnerEntityId;
         }
 
-        public WaitWriter(Guid id, DateTime timestamp, Guid processId, Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, IGenericEntity payload = null) : this(processId, threadId, apartmentId, exclusive, payloadRunnerEntityId, payload)
+        public WaitWriter(Guid id, DateTime timestamp, Guid processId, Guid threadId, Guid apartmentId, bool exclusive, Guid payloadRunnerEntityId, Entity.Entity payload = null) : this(processId, threadId, apartmentId, exclusive, payloadRunnerEntityId, payload)
         {
             Id = id;
             Timestamp = timestamp;
         }
 
-        public override string ToString() => JsonConvert.SerializeObject(new
+        public override string ToString() => JsonSerializer.Serialize(new
         {
             LRW = new[] {new
             {

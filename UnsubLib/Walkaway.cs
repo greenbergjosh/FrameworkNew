@@ -22,6 +22,7 @@ namespace UnsubLib
                     {
                         throw;
                     }
+
                     await Task.Delay(delaysInMilliseconds[i++]);
                 }
             }
@@ -42,6 +43,7 @@ namespace UnsubLib
                     {
                         throw;
                     }
+
                     await Task.Delay(delaysInMilliseconds[i++]);
                 }
             }

@@ -31,7 +31,7 @@ namespace Utility.Crypto
         #region Statics
 
         // ReSharper disable BuiltInTypeReferenceStyle
-        private static readonly Dictionary<Type, NumericTypeMap> NumericTypes = new Dictionary<Type, NumericTypeMap>
+        private static readonly Dictionary<Type, NumericTypeMap> NumericTypes = new()
         {
             {typeof(long), new NumericTypeMap(8, b => BitConverter.ToInt64(b, 0))},
             {typeof(int), new NumericTypeMap(4, b => BitConverter.ToInt32(b, 0))},
@@ -65,7 +65,10 @@ namespace Utility.Crypto
 
         public static string GenerateRandomString(int minLength, int maxLength, char[] chars)
         {
-            if (minLength > maxLength || minLength < 1) throw new Exception($"Invalid number range: {minLength} to {maxLength}");
+            if (minLength > maxLength || minLength < 1)
+            {
+                throw new Exception($"Invalid number range: {minLength} to {maxLength}");
+            }
 
             var sb = new StringBuilder();
 
@@ -81,8 +84,11 @@ namespace Utility.Crypto
 
             for (var bi = maxLengthByteCount; bi < randomBytes.Length; bi++)
             {
-                sb.Append(chars[randomBytes[bi] % chars.Length]);
-                if (sb.Length >= randomLength) break;
+                _ = sb.Append(chars[randomBytes[bi] % chars.Length]);
+                if (sb.Length >= randomLength)
+                {
+                    break;
+                }
             }
 
             return sb.ToString();
@@ -101,7 +107,10 @@ namespace Utility.Crypto
         {
             var t = typeof(T);
 
-            if (!NumericTypes.ContainsKey(t)) throw new NotImplementedException($"{typeof(Random).FullName}.{nameof(Number)}<{t.Name}>() not supported");
+            if (!NumericTypes.ContainsKey(t))
+            {
+                throw new NotImplementedException($"{typeof(Random).FullName}.{nameof(Number)}<{t.Name}>() not supported");
+            }
 
             var map = NumericTypes[typeof(T)];
             var randomBytes = new byte[map.ByteLength];
@@ -115,7 +124,10 @@ namespace Utility.Crypto
         {
             var randomInt = BitConverter.ToInt32(bytes);
 
-            if (min >= 0) return (Math.Abs(randomInt) % (max - min)) + min;
+            if (min >= 0)
+            {
+                return (Math.Abs(randomInt) % (max - min)) + min;
+            }
 
             var uMin = ConvertIntToUIntRange(min);
             var uMax = ConvertIntToUIntRange(max);
@@ -127,7 +139,10 @@ namespace Utility.Crypto
 
         public static int Number(int min, int max)
         {
-            if (min == max) return min;
+            if (min == max)
+            {
+                return min;
+            }
 
             if (min > max)
             {
@@ -146,12 +161,20 @@ namespace Utility.Crypto
 
         public static int[] Numbers(int min, int max, int count)
         {
-            if (count < 1) throw new ArgumentException("count must be greater than 0");
+            if (count < 1)
+            {
+                throw new ArgumentException("count must be greater than 0");
+            }
+
             var res = new List<int>();
 
             if (min == max)
             {
-                for (int i = 0; i < count; i++) res.Add(min);
+                for (var i = 0; i < count; i++)
+                {
+                    res.Add(min);
+                }
+
                 return res.ToArray();
             }
 
@@ -167,7 +190,7 @@ namespace Utility.Crypto
 
             RNG().GetBytes(randomBytes);
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var bytes = randomBytes.Skip(i * 4).Take(4).ToArray();
 
@@ -179,7 +202,10 @@ namespace Utility.Crypto
 
         public static byte Number(byte min, byte max)
         {
-            if (min == max) return min;
+            if (min == max)
+            {
+                return min;
+            }
 
             if (min > max)
             {
@@ -198,7 +224,10 @@ namespace Utility.Crypto
 
         public static short Number(short min, short max)
         {
-            if (min == max) return min;
+            if (min == max)
+            {
+                return min;
+            }
 
             if (min > max)
             {
@@ -219,11 +248,7 @@ namespace Utility.Crypto
 
         private static int ConvertUIntToIntRange(uint i) => int.MaxValue - Convert.ToInt32(uint.MaxValue - i);
 
-        private static uint ConvertIntToUIntRange(int i)
-        {
-            if (i < 0) return uint.MinValue + Convert.ToUInt32(i - int.MinValue);
-            else return uint.MaxValue - Convert.ToUInt32(int.MaxValue - i);
-        }
+        private static uint ConvertIntToUIntRange(int i) => i < 0 ? uint.MinValue + Convert.ToUInt32(i - int.MinValue) : uint.MaxValue - Convert.ToUInt32(int.MaxValue - i);
 
         #endregion
 
@@ -239,15 +264,15 @@ namespace Utility.Crypto
 
         public string GenerateString(int minLength, int maxLength) => GenerateRandomString(minLength, maxLength, _characterList);
 
-        public byte[] RandomBytes(long byteLength) => Bytes(byteLength);
+        public static byte[] RandomBytes(long byteLength) => Bytes(byteLength);
 
-        public T Next<T>() where T : IComparable => Number<T>();
+        public static T Next<T>() where T : IComparable => Number<T>();
 
-        public int Next(int min, int max) => Number(min, max);
+        public static int Next(int min, int max) => Number(min, max);
 
-        public short Next(short min, short max) => Number(min, max);
+        public static short Next(short min, short max) => Number(min, max);
 
-        public byte Next(byte min, byte max) => Number(min, max);
+        public static byte Next(byte min, byte max) => Number(min, max);
 
         private class NumericTypeMap
         {

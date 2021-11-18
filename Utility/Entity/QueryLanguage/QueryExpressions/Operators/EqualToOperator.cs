@@ -7,15 +7,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
     {
         public int OrderOfOperation => 4;
 
-        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            if (left.OutputType == QueryExpressionType.Invalid || right.OutputType == QueryExpressionType.Invalid)
-            {
-                return QueryExpressionType.Invalid;
-            }
-
-            return QueryExpressionType.Boolean;
-        }
+        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right) => left.OutputType == QueryExpressionType.Invalid || right.OutputType == QueryExpressionType.Invalid
+                ? QueryExpressionType.Invalid
+                : QueryExpressionType.Boolean;
 
         public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
         {

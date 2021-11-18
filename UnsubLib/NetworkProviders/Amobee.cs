@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
-using Utility.GenericEntity;
+using Utility.Entity;
 
 namespace UnsubLib.NetworkProviders
 {
@@ -17,13 +16,13 @@ namespace UnsubLib.NetworkProviders
 
         public Amobee(FrameworkWrapper fw) => _fw = fw;
 
-        public async Task<IGenericEntity> GetCampaigns(IGenericEntity network)
+        public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkName = network.GetS("Name");
-            var networkId = network.GetS("Id");
-            var apiUrl = network.GetS("Credentials/NetworkApiUrl");
-            var apiKey = network.GetS("Credentials/NetworkApiKey");
-            var campaignsPath = network.GetS("Credentials/GetCampaignsPath");
+            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("Id");
+            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
+            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var campaignsPath = await network.GetS("Credentials.GetCampaignsPath");
 
             var requestHeaders = new[] { ("Accept", "application/json"), ("Authorization", $"Bearer {apiKey}") };
 
@@ -42,20 +41,20 @@ namespace UnsubLib.NetworkProviders
                     return null;
                 }
 
-                JObject campaigns;
+                Entity campaigns;
                 try
                 {
-                    campaigns = JObject.Parse(result.body);
+                    campaigns = await network.Parse("application/json", result.body);
                     await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
                 }
-                catch (JsonReaderException)
+                catch (Exception ex)
                 {
-                    await _fw.Error(_logMethod, $"Campaign response from {networkName} was invalid json.\r\nResponse:\r\n{result.body}");
+                    await _fw.Error(_logMethod, $"Campaign response from {networkName} was invalid json.\r\nResponse:\r\n{result.body}\r\nException:{ex}");
                     return null;
                 }
 
                 var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
-                    JsonConvert.SerializeObject(new
+                    JsonSerializer.Serialize(new
                     {
                         NetworkId = networkId,
                         PayloadType = "json",
@@ -67,9 +66,9 @@ namespace UnsubLib.NetworkProviders
                     campaigns.ToString()
                 );
 
-                if (res == null || res.GetS("result") == "failed")
+                if (res == null || await res.GetS("result", null) == "failed")
                 {
-                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{campaigns}");
+                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{campaigns}");
                     return null;
                 }
 
@@ -86,13 +85,13 @@ namespace UnsubLib.NetworkProviders
             }
         }
 
-        public async Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
+        public async Task<Uri> GetSuppressionLocationUrl(Entity network, string unsubRelationshipId)
         {
-            var networkName = network.GetS("Name");
-            var networkId = network.GetS("Id");
-            var apiUrl = network.GetS("Credentials/NetworkApiUrl");
-            var apiKey = network.GetS("Credentials/NetworkApiKey");
-            var campaignSuppressionUrlPath = network.GetS("Credentials/CampaignSuppressionUrlPath");
+            var networkName = await network.GetS("Name");
+            var networkId = await network.GetS("Id");
+            var apiUrl = await network.GetS("Credentials.NetworkApiUrl");
+            var apiKey = await network.GetS("Credentials.NetworkApiKey");
+            var campaignSuppressionUrlPath = await network.GetS("Credentials.CampaignSuppressionUrlPath");
 
             var requestHeaders = new[] { ("Accept", "application/json"), ("Authorization", $"Bearer {apiKey}") };
 
@@ -110,18 +109,18 @@ namespace UnsubLib.NetworkProviders
                     return null;
                 }
 
-                JObject info;
+                Entity info;
                 try
                 {
-                    info = JObject.Parse(result.body);
+                    info = await network.Parse("application/json", result.body);
                 }
-                catch (JsonReaderException)
+                catch (Exception ex)
                 {
-                    await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} was invalid json.\r\nResponse:\r\n{result.body}");
+                    await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} was invalid json.\r\nResponse:\r\n{result.body}\r\nException:{ex}");
                     return null;
                 }
 
-                var downloadUrl = info["data"]?["download_url"]?.Value<string>();
+                var downloadUrl = await info.GetS("data.download_url");
                 if (string.IsNullOrWhiteSpace(downloadUrl))
                 {
                     await _fw.Error(_logMethod, $"Campaign suppression response from {networkName} {unsubRelationshipId} missing or empty download url.\r\nResponse:\r\n{result.body}");

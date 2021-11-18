@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using Utility;
 using Utility.DataLayer;
 
 namespace QueueProcessorLib
 {
-    public sealed class QueueProcessor
+    public sealed class QueueProcessor : IGenericWindowsService
     {
         private FrameworkWrapper _fw;
         private readonly IList<QueueRunner> _runners = new List<QueueRunner>();
-        private readonly HashSet<string> _discriminatorsInRetry = new HashSet<string>();
+        private readonly HashSet<string> _discriminatorsInRetry = new();
 
         private int _discriminatorsInRetryRefreshCycleMilliseconds;
         private int _maxRetries;
@@ -25,39 +25,39 @@ namespace QueueProcessorLib
 
         private Guid _queueItemProcessorLbmId;
 
-        public void Config(FrameworkWrapper fw)
+        public async Task Config(FrameworkWrapper fw)
         {
             try
             {
                 _fw = fw;
-                _fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
+                _fw.TraceLogging = (await fw.StartupConfiguration.GetS("Config.Trace")).ParseBool() ?? false;
 
-                _discriminatorsInRetryRefreshCycleMilliseconds = int.Parse(_fw.StartupConfiguration.GetS("Config/QueueProcessor/DiscriminatorsInRetryRefreshCycleMilliseconds").IfNullOrWhitespace("1000"));
-                _maxRetries = int.Parse(_fw.StartupConfiguration.GetS("Config/QueueProcessor/MaxRetries").IfNullOrWhitespace("10"));
+                _discriminatorsInRetryRefreshCycleMilliseconds = int.Parse((await _fw.StartupConfiguration.GetS("Config.QueueProcessor.DiscriminatorsInRetryRefreshCycleMilliseconds")).IfNullOrWhitespace("1000"));
+                _maxRetries = int.Parse((await _fw.StartupConfiguration.GetS("Config.QueueProcessor.MaxRetries")).IfNullOrWhitespace("10"));
 
-                _runImmediateQueue = _fw.StartupConfiguration.GetB("Config/QueueProcessor/RunImmediateQueue");
-                _runScheduledQueue = _fw.StartupConfiguration.GetB("Config/QueueProcessor/RunScheduledQueue");
-                _runRestartQueue = _fw.StartupConfiguration.GetB("Config/QueueProcessor/RunRestartQueue");
-                _runRetryQueue = _fw.StartupConfiguration.GetB("Config/QueueProcessor/RunRetryQueue");
+                _runImmediateQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunImmediateQueue");
+                _runScheduledQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunScheduledQueue");
+                _runRestartQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunRestartQueue");
+                _runRetryQueue = await _fw.StartupConfiguration.GetB("Config.QueueProcessor.RunRetryQueue");
 
-                _queueItemProcessorLbmId = Guid.Parse(_fw.StartupConfiguration.GetS("Config/QueueProcessor/QueueItemProcessorLbmId"));
+                _queueItemProcessorLbmId = Guid.Parse(await _fw.StartupConfiguration.GetS("Config.QueueProcessor.QueueItemProcessorLbmId"));
             }
             catch (Exception ex)
             {
-                _fw?.Error(nameof(Config), ex.UnwrapForLog());
+                _ = (_fw?.Error(nameof(Config), ex.UnwrapForLog()));
                 throw;
             }
         }
 
         public void OnStart()
         {
-            _ = _fw.Log("QueueProcessor.OnStart", "Starting...");
+            _ = _fw.Log("QueueProcessor.OnStart", "Starting///");
 
             _ = Task.Run(async () =>
             {
                 if (_runRestartQueue)
                 {
-                    var restartQueueRunner = new QueueRunner(
+                    var restartQueueRunner = await QueueRunner.Create(
                         _fw,
                         "RestartQueue",
                         (batchSize) => ListPending("RestartQueue", batchSize),
@@ -72,7 +72,7 @@ namespace QueueProcessorLib
 
                 if (_runImmediateQueue)
                 {
-                    var immediateQueueRunner = new QueueRunner(
+                    var immediateQueueRunner = await QueueRunner.Create(
                         _fw,
                         "ImmediateQueue",
                         (batchSize) => ListPending("ImmediateQueue", batchSize),
@@ -87,7 +87,7 @@ namespace QueueProcessorLib
 
                 if (_runScheduledQueue)
                 {
-                    var scheduledQueueRunner = new QueueRunner(
+                    var scheduledQueueRunner = await QueueRunner.Create(
                         _fw,
                         "ScheduledQueue",
                         (batchSize) => ListPending("ScheduledQueue", batchSize),
@@ -102,7 +102,7 @@ namespace QueueProcessorLib
 
                 if (_runRetryQueue)
                 {
-                    var retryQueueRunner = new QueueRunner(
+                    var retryQueueRunner = await QueueRunner.Create(
                         _fw,
                         "RetryQueue",
                         (batchSize) => RetryQueueListPending("RetryQueue", batchSize),
@@ -121,7 +121,7 @@ namespace QueueProcessorLib
 
         public void OnStop()
         {
-            _ = _fw.Log("QueueProcessor.OnStop", "Stopping...");
+            _ = _fw.Log("QueueProcessor.OnStop", "Stopping///");
 
             var tasks = new List<Task>();
 
@@ -135,29 +135,35 @@ namespace QueueProcessorLib
             _ = _fw.Log("QueueProcessor.OnStop", "Stopped");
         }
 
-        private async Task<IEnumerable<QueueItem>> ListPending(string queue, int batchSize)
+        private static async IAsyncEnumerable<QueueItem> ListPending(string queue, int batchSize)
         {
-            var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonConvert.SerializeObject(new { batchSize }));
+            var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            return data.GetL("").Select(item => new QueueItem(
-                long.Parse(item.GetS("id")),
-                item.GetS("discriminator"),
-                item.GetS("payload"),
-                DateTime.Parse(item.GetS("ts"))
-            )).ToList();
+            foreach (var item in await data.GetL(""))
+            {
+                yield return new QueueItem(
+                    long.Parse(await item.GetS("id")),
+                    await item.GetS("discriminator"),
+                    await item.GetS("payload"),
+                    DateTime.Parse(await item.GetS("ts"))
+                );
+            }
         }
 
-        private async Task<IEnumerable<QueueItem>> RetryQueueListPending(string queue, int batchSize)
+        private static async IAsyncEnumerable<QueueItem> RetryQueueListPending(string queue, int batchSize)
         {
-            var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonConvert.SerializeObject(new { batchSize }));
+            var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            return data.GetL("").Select(item => new QueueItem(
-                long.Parse(item.GetS("id")),
-                item.GetS("discriminator"),
-                item.GetS("payload"),
-                DateTime.Parse(item.GetS("ts")),
-                int.Parse(item.GetS("retry_number"))
-            )).ToList();
+            foreach (var item in await data.GetL(""))
+            {
+                yield return new QueueItem(
+                    long.Parse(await item.GetS("id")),
+                    await item.GetS("discriminator"),
+                    await item.GetS("payload"),
+                    DateTime.Parse(await item.GetS("ts")),
+                    int.Parse(await item.GetS("retry_number"))
+                );
+            }
         }
 
         private async Task<bool> ProcessItem(string queueName, QueueItem queueItem)
@@ -165,7 +171,7 @@ namespace QueueProcessorLib
             try
             {
                 // The lbm should handle the QueueItem and return true or false to represent success
-                var lbm = (await _fw.Entities.GetEntity(_queueItemProcessorLbmId))?.GetS("Config");
+                var lbm = await (await _fw.Entities.GetEntity(_queueItemProcessorLbmId))?.GetS("Config");
 
                 var scope = new { fw = _fw, queueName, queueItem, WriteOutput = GetQueueItemOutputWriter(queueItem) };
 
@@ -175,7 +181,7 @@ namespace QueueProcessorLib
                 // the rest of the QueueItems for this Discriminator
                 if (processedSuccessfully && queueItem.RetryNumber > -1)
                 {
-                    await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", JsonConvert.SerializeObject(new
+                    _ = await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", JsonSerializer.Serialize(new
                     {
                         queueItem.Discriminator
                     }));
@@ -190,7 +196,7 @@ namespace QueueProcessorLib
             }
         }
 
-        private Task SendToRestartQueue(IEnumerable<long> queueItemIds) => Data.CallFn("QueueProcessor", "RestartQueueAddBulk", JsonConvert.SerializeObject(queueItemIds));
+        private static Task SendToRestartQueue(IEnumerable<long> queueItemIds) => Data.CallFn("QueueProcessor", "RestartQueueAddBulk", JsonSerializer.Serialize(queueItemIds));
 
         private async Task SendToRetryQueue(QueueItem queueItem)
         {
@@ -203,7 +209,7 @@ namespace QueueProcessorLib
                 await _fw.Log("QueueProcessor.SendToRetryQueue", $"Discriminator {queueItem.Discriminator} has exhausted retries and will no longer be processed.  QueueItem.Id: {queueItem.Id}");
             }
 
-            await Data.CallFn("QueueProcessor", "RetryQueueMerge", JsonConvert.SerializeObject(new
+            _ = await Data.CallFn("QueueProcessor", "RetryQueueMerge", JsonSerializer.Serialize(new
             {
                 QueueItemId = queueItem.Id,
                 queueItem.Discriminator,
@@ -217,27 +223,26 @@ namespace QueueProcessorLib
         /// Uses an exponential function to provide the next retry date.
         /// 
         /// The function is delaySeconds = e^n * 10 where e = euler's number and n = retry number.
-        /// </summary>
-        private DateTime GetNextRetryDate(int retryNumber, DateTime timeFrom) => timeFrom.Add(TimeSpan.FromSeconds(Math.Exp(retryNumber) * 10));
+        /// <.summary>
+        private static DateTime GetNextRetryDate(int retryNumber, DateTime timeFrom) => timeFrom.Add(TimeSpan.FromSeconds(Math.Exp(retryNumber) * 10));
 
-        private Func<object, Task> GetQueueItemOutputWriter(QueueItem queueItem) => (output) =>
-                                                                                              {
-                                                                                                  return Data.CallFn("QueueProcessor", "QueueItemOutputAdd", JsonConvert.SerializeObject(new
-                                                                                                  {
-                                                                                                      QueueItemId = queueItem.Id,
-                                                                                                      Output = output
-                                                                                                  }));
-                                                                                              };
-
-        public async Task HandleHttpRequest(HttpContext context)
+        private static Func<object, Task> GetQueueItemOutputWriter(QueueItem queueItem) => (output) => Data.CallFn("QueueProcessor", "QueueItemOutputAdd", JsonSerializer.Serialize(new
         {
-            context.Response.ContentType = "application/json";
+            QueueItemId = queueItem.Id,
+            Output = output
+        }));
+
+        public async Task ProcessRequest(HttpContext context)
+        {
+            context.Response.ContentType = "application.json";
             var statuses = _runners.Select(runner => new
             {
                 status = runner.GetStatus()
             });
 
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(statuses));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(statuses));
         }
+
+        public Task Reinitialize() => Task.CompletedTask;
     }
 }

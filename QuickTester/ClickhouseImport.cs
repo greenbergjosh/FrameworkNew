@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using EdwRollupLib;
-using Newtonsoft.Json;
 using Utility;
 using Utility.DataLayer;
 
@@ -11,20 +11,20 @@ namespace QuickTester
     {
         public static async Task ImportTest()
         {
-            var fw = new FrameworkWrapper();
+            var fw = await FrameworkWrapper.Create();
 
             var config = await fw.Entities.GetEntity(Guid.Parse("f4de787b-2bd6-443d-9e57-e3930bb86a8c"));
 
-            var cacheResult = await Data.CallFn("appCache", "appCacheGet", JsonConvert.SerializeObject(new
+            var cacheResult = await Data.CallFn("appCache", "appCacheGet", JsonSerializer.Serialize(new
             {
                 cacheScopeId = "d046030e-ea51-4647-a18d-447ef14a682a",
                 x1 = "NextStartDate"
             }));
 
             DateTime nextStartDate = default;
-            foreach (var entry in cacheResult.GetL("result"))
+            foreach (var entry in await cacheResult.GetL("result"))
             {
-                nextStartDate = DateTime.Parse(entry.GetS("payload")).Date;
+                nextStartDate = DateTime.Parse(await entry.GetS("payload")).Date;
                 break;
             }
 
@@ -45,9 +45,9 @@ namespace QuickTester
             {
                 var endDate = startDate.AddDays(1);
 
-                await new ClickhouseImport(config, fw).RunAsync(startDate, endDate);
+                await (await ClickhouseImport.Create(config, fw)).RunAsync(startDate, endDate);
 
-                await Data.CallFn("appCache", "appCacheSet", JsonConvert.SerializeObject(new
+                _ = await Data.CallFn("appCache", "appCacheSet", JsonSerializer.Serialize(new
                 {
                     cacheScopeId = "d046030e-ea51-4647-a18d-447ef14a682a",
                     x1 = "NextStartDate",

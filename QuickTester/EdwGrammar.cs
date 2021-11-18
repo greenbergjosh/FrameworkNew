@@ -15,12 +15,7 @@ namespace Utility.Entity
         public static async Task<string> GetS(this Entity e, string query, string defaultValue)
         {
             var entity = await e.GetE(query);
-            if (entity == null)
-            {
-                return defaultValue;
-            }
-
-            return entity.Value<string>();
+            return entity == null ? defaultValue : entity.Value<string>();
         }
     }
 }
@@ -101,8 +96,6 @@ namespace Utility.Entity
 //            ["tg_multiton_cols2"] = (", rs_id ", null),
 //            ["tg_multiton_index"] = ("CREATE INDEX IF NOT EXISTS ix_<<context://tg_tables>>_rs ON <<tg_schema_name>>.<<context://tg_tables>>(rs_id, rs_ts);", null),
 
-
-
 //            // end: add_thread_group
 
 //            ["process_constants"] = ("'<<context://constant?value>>'::<<context://constant?data_type>>", "<<context://constant?name>>"),
@@ -127,7 +120,6 @@ namespace Utility.Entity
 //                                            UNION
 //                                            SELECT id, ts FROM warehouse_report_sequence.""<<context://tbl?$>>_long_term"" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>",
 //                                            null),
-
 
 //            //period=(period)
 //            // period('period', entity)
@@ -419,12 +411,11 @@ namespace Utility.Entity
 //            {
 //                entity.Set("/Config/$id", entity.GetS("/Id"));
 //                entity.Set("/Config/$name", entity.GetS("/Name"));
-//                var convertedEntity = await root.Parse("application/json", entity.GetS(""));
+//                var convertedEntity = await root.Parse("application/json", entity.GetS("@"));
 //                convertedEntities.Add(convertedEntity);
 //            }
 //            return root.Create(EntityDocumentArray.Create(convertedEntities));
 //        }
-
 
 //        public static async Task<Dictionary<string, string>> GenerateSql()  // Guid g
 //        {
@@ -491,14 +482,12 @@ namespace Utility.Entity
 //                FunctionHandler: functionHandler)
 //            );
 
-
 //            context = new Dictionary<string, Entity>
 //            {
 //                ["sym"] = E.Create(symbolTable)
 //            };
 
 //            ContextEntity = E.Create(context);
-
 
 //            // add_thread_group
 //            Entity e1 = await E.GetE("entity://e97f0bac-2640-448c-b6f2-2a9a5510cc76");
@@ -508,13 +497,9 @@ namespace Utility.Entity
 
 //            // end add_thread_group
 
-
-
 //            string s = await E.GetS("entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId");
 
 //            Entity e = await E.GetE("entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
-
-
 
 //            context["g"] = e;  // "g", Entity(g)
 //            // context://g?path    g.Get(path).Value<bool>()
@@ -527,7 +512,6 @@ namespace Utility.Entity
 //            //Production p = new Production();
 //            //p.InstructionBody = @"context://g?thread_group_id.thread_group_type[?(@!=""multiton"")]->'multiton_cols';context://g?thread_group_id.thread_group_type[?(@!=""multiton"")]->multiton_cols;bob";
 //            //await ConditionInstruction(p);
-
 
 //            foreach (Entity rlp in await e.Get("rollups.*"))
 //            {
@@ -556,7 +540,6 @@ namespace Utility.Entity
 //        //            yield return (previous, previous = it.Current);
 //        //    }
 //        //}
-
 
 //        public static IEnumerable<Dictionary<string, Entity>> EnumerateParallel(Dictionary<string, IEnumerable<Entity>> es)
 //        {

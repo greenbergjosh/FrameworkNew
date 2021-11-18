@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
-using Utility.GenericEntity;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity;
+using Utility.Entity.Implementations;
 
 namespace SimpleImportExport
 {
@@ -19,13 +20,16 @@ namespace SimpleImportExport
 
         public static async Task Main(string[] args)
         {
-            if (!args.Any()) throw new Exception("Job name parameter not provided");
+            if (!args.Any())
+            {
+                throw new Exception("Job name parameter not provided");
+            }
 
             var jobName = args[0];
 
             try
             {
-                _fw = new FrameworkWrapper();
+                _fw = await FrameworkWrapper.Create(args);
             }
             catch (Exception e)
             {
@@ -37,7 +41,7 @@ namespace SimpleImportExport
             {
                 _fw.LogMethodPrefix = $"{jobName}::";
 
-                var jobIdStr = _fw.StartupConfiguration.GetS("Config/Jobs/" + jobName);
+                var jobIdStr = await _fw.StartupConfiguration.GetS($"Config.Jobs.{jobName}");
 
                 if (!Guid.TryParse(jobIdStr, out var jobId))
                 {
@@ -48,16 +52,16 @@ namespace SimpleImportExport
 
                 await _fw.Log($"{nameof(Program)}", $"Getting job config: {jobName}:{jobIdStr}");
 
-                var sqlTimeoutSec = _fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
-                ServicePointManager.DefaultConnectionLimit = _fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
-                var jobCfg = (await _fw.Entities.GetEntity(jobId)).GetE("Config");
+                var sqlTimeoutSec = await _fw.StartupConfiguration.GetI("Config.SqlTimeoutSec", 5);
+                ServicePointManager.DefaultConnectionLimit = await _fw.StartupConfiguration.GetI("Config.MaxConnections", 5);
+                var jobCfg = await (await _fw.Entities.GetEntity(jobId)).GetE("Config");
 
                 var src = await GetEnpointConfig(jobCfg, "Source");
                 var dest = await GetEnpointConfig(jobCfg, "Destination");
-                var commitAfterPost = jobCfg.GetS("CommitAfterPostProcess").ParseBool() ?? false;
-                var jobPost = jobCfg.GetS("JobPostProcess");
-                var srcPost = await FilePostProcess(jobCfg.GetS("Source/PostProcess"), jobName, commitAfterPost);
-                var destPost = await FilePostProcess(jobCfg.GetS("Destination/PostProcess"), jobName, commitAfterPost);
+                var commitAfterPost = await jobCfg.GetB("CommitAfterPostProcess", false);
+                var jobPost = await jobCfg.GetS("JobPostProcess");
+                var srcPost = await FilePostProcess(await jobCfg.GetS("Source.PostProcess"), jobName, commitAfterPost);
+                var destPost = await FilePostProcess(await jobCfg.GetS("Destination.PostProcess"), jobName, commitAfterPost);
                 var srcFiles = (await src.GetFiles()).ToArray();
 
                 await _fw.Log($"{nameof(Program)}", $"{jobName}\tFound {srcFiles.Length} on {src}");
@@ -66,31 +70,44 @@ namespace SimpleImportExport
                 {
                     try
                     {
-                        var shouldDownload = await Data.CallFn("SimpleImportExport", "shouldTransfer", Jw.Serialize(new { JobId = jobId, f.FileName }));
+                        var shouldDownload = await Data.CallFn("SimpleImportExport", "shouldTransfer", JsonSerializer.Serialize(new { JobId = jobId, f.FileName }));
 
-                        if (shouldDownload.GetS("") == "1" || shouldDownload?.GetS("result")?.ParseBool() == true)
+                        if (await shouldDownload.GetAsS() == "1" || await shouldDownload.GetB("result", true))
                         {
                             await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopying {f.FileName}:\n\tFrom: {src}\n\tTo: {dest}");
 
                             var refId = Guid.NewGuid();
                             var (size, records, destinationDirectoryPath) = await dest.SendStream(f, src);
                             await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopy complete {f.FileName}:\n\tFrom: {src}\n\tTo: {dest}");
-                            var sargs = Jw.Serialize(new { JobId = jobId, f.FileName, FileSize = size, Records = records, Ref = refId, f.FileDate });
+                            var sargs = JsonSerializer.Serialize(new { JobId = jobId, f.FileName, FileSize = size, Records = records, Ref = refId, f.FileDate });
+
                             async Task Commit()
                             {
                                 var res = await Data.CallFn("SimpleImportExport", "logTransfer", sargs, "", timeout: sqlTimeoutSec);
 
-                                if (res.GetS("result") != "Success") throw new Exception($"Sql exception logging download: {res.GetS("").IfNullOrWhitespace("null response")} Args: {sargs}");
-                            };
+                                if (await res.GetS("result") != "Success")
+                                {
+                                    throw new Exception($"Sql exception logging download: {res} Args: {sargs}");
+                                }
+                            }
 
-                            if (!commitAfterPost) await Commit();
+                            if (!commitAfterPost)
+                            {
+                                await Commit();
+                            }
 
                             await srcPost(f, f.SourceDirectory, src, refId);
                             await destPost(f, destinationDirectoryPath, dest, refId);
 
-                            if (commitAfterPost) await Commit();
+                            if (commitAfterPost)
+                            {
+                                await Commit();
+                            }
                         }
-                        else if (!shouldDownload.GetS("err").IsNullOrWhitespace()) await _fw.Error(nameof(SimpleImportExport), $"ShouldDownload failed: {shouldDownload.GetS("err")}");
+                        else if (!string.IsNullOrWhiteSpace(await shouldDownload.GetS("err")))
+                        {
+                            await _fw.Error(nameof(SimpleImportExport), $"ShouldDownload failed: {await shouldDownload.GetS("err")}");
+                        }
                     }
                     catch (Exception e)
                     {
@@ -122,10 +139,10 @@ namespace SimpleImportExport
         {
             if (postProcessCmd?.StartsWith("Http:Get:") == true)
             {
-                var url = postProcessCmd.Substring(9);
+                var url = postProcessCmd[9..];
 
                 await _fw.Log($"{nameof(JobPostProcess)}:JobPostProcess:Http:Get", $"{jobName}\t{url}");
-                await ProtocolClient.HttpGetAsync(url, null, 30);
+                _ = await ProtocolClient.HttpGetAsync(url, null, 30);
             }
         }
 
@@ -144,7 +161,7 @@ namespace SimpleImportExport
 
                 if (postProcessCmd.StartsWith("Move:"))
                 {
-                    var toRelativePath = postProcessCmd.Substring(5);
+                    var toRelativePath = postProcessCmd[5..];
 
                     return async (file, directoryPath, endpoint, refId) =>
                     {
@@ -153,17 +170,17 @@ namespace SimpleImportExport
                     };
                 }
 
-                var ppge = Jw.JsonToGenericEntity(postProcessCmd);
+                var (parsed, ppge) = await _fw.Entity.TryParse("application/json", postProcessCmd);
 
-                if (ppge != null)
+                if (parsed && ppge != null)
                 {
-                    var cmd = ppge.GetS("cmd");
+                    var cmd = await ppge.GetS("cmd");
 
                     if (cmd == "Rename")
                     {
-                        var pattern = ppge.GetS("pattern");
-                        var replace = ppge.GetS("replace");
-                        var overwrite = ppge.GetS("overwrite").ParseBool() ?? false;
+                        var pattern = await ppge.GetS("pattern");
+                        var replace = await ppge.GetS("replace");
+                        var overwrite = await ppge.GetB("overwrite", false);
 
                         if (!pattern.IsNullOrWhitespace() && !replace.IsNullOrWhitespace())
                         {
@@ -175,90 +192,91 @@ namespace SimpleImportExport
                                 await endpoint.Rename(directoryPath, file.FileName, rx, replace, overwrite);
                             };
                         }
+
                         var msg = $"Invalid config for Rename: {postProcessCmd}";
 
-                        if (commitAfterPost) throw new Exception(msg);
+                        if (commitAfterPost)
+                        {
+                            throw new Exception(msg);
+                        }
 
                         await _fw.Error($"{nameof(FilePostProcess)}:Rename", msg);
                     }
 
                     if (cmd == "CallFn")
                     {
-                        var argsTemplate = ppge.GetS("args");
-                        var payloadTemplate = ppge.GetS("payload");
-                        var connection = ppge.GetS("connection");
-                        var function = ppge.GetS("function");
-                        var errorJsonPath = ppge.GetS("errorJsonPath");
+                        var argsTemplate = await ppge.GetS("args");
+                        var payloadTemplate = await ppge.GetS("payload");
+                        var connection = await ppge.GetS("connection");
+                        var function = await ppge.GetS("function");
+                        var errorJsonPath = await ppge.GetS("errorJsonPath");
 
                         return async (file, directoryPath, endpoint, refId) =>
                         {
-                            if (endpoint is FtpEndPoint) throw new NotImplementedException();
-
-                            var args = Jw.TryParseObject(ReplacePatternTokens(argsTemplate, file.Pattern)?
-                                .Replace("{fileName}", file.FileName)
-                                .Replace("{fileSourceDirectory}", file.SourceDirectory)
-                                .Replace("{fileDate}", (file.FileDate?.ToString()).IfNullOrWhitespace(""))
-                                .Replace("{directoryPath}", directoryPath)
-                                .Replace("{ref}",
-                                    refId.ToString()));
-
-                            if (file.FileDate.HasValue) args["file_date"] = file.FileDate;
-
-                            bool SearchForAdditionalFields(JObject jo)
+                            if (endpoint is FtpEndPoint)
                             {
-                                if (jo.ContainsKey("__additionalFields__"))
-                                {
-                                    jo.Remove("__additionalFields__");
-                                    foreach (var f in file.AdditionalFields)
-                                    {
-                                        jo.Add(f.Key, f.Value);
-                                    }
-                                    return true;
-                                }
-
-                                foreach (var p in jo.Properties())
-                                {
-                                    if (p.Value.Type == JTokenType.Object && SearchForAdditionalFields(p.Value as JObject)) return true;
-                                }
-
-                                return false;
+                                throw new NotImplementedException();
                             }
 
-                            SearchForAdditionalFields(args);
+                            var argsStack = new EntityDocumentStack();
+                            var args = _fw.Entity.Create(argsStack);
 
-                            var payload = ReplacePatternTokens(payloadTemplate, file.Pattern)?
+                            var (parsed, baseArgs) = await _fw.Entity.TryParse("application/json", (await ReplacePatternTokens(argsTemplate, file.Pattern))?
                                 .Replace("{fileName}", file.FileName)
                                 .Replace("{fileSourceDirectory}", file.SourceDirectory)
                                 .Replace("{fileDate}", (file.FileDate?.ToString()).IfNullOrWhitespace(""))
                                 .Replace("{directoryPath}", directoryPath)
-                                .Replace("{ref}",
-                                    refId.ToString());
-                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tRunning post process. Ref: {refId} {endpoint}:\r\nConfig: {ppge.GetS("")}\r\nArgs: {args}\r\nPayload: {payload}");
+                                .Replace("{ref}", refId.ToString()));
+
+                            if (parsed)
+                            {
+                                argsStack.Push(baseArgs);
+                            }
+
+                            if (file.FileDate.HasValue)
+                            {
+                                argsStack.Push(_fw.Entity.Create(new Dictionary<string, DateTime?> { ["file_date"] = file.FileDate }));
+                            }
+
+                            var payload = (await ReplacePatternTokens(payloadTemplate, file.Pattern))?
+                                .Replace("{fileName}", file.FileName)
+                                .Replace("{fileSourceDirectory}", file.SourceDirectory)
+                                .Replace("{fileDate}", (file.FileDate?.ToString()).IfNullOrWhitespace(""))
+                                .Replace("{directoryPath}", directoryPath)
+                                .Replace("{ref}", refId.ToString());
+
+                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tRunning post process. Ref: {refId} {endpoint}:\r\nConfig: {ppge}\r\nArgs: {args}\r\nPayload: {payload}");
                             var res = await Data.CallFn(connection, function, args.ToString(), payload);
 
-                            if (res?.GetS("").IsNullOrWhitespace() != false)
+                            if ((await res?.GetAsS("@")).IsNullOrWhitespace() != false)
                             {
-                                var msg = $"Post Process CallFn failed. DB null response. Ref: {refId} {endpoint}\r\nConfig: {ppge.GetS("")}\r\nArgs: {args}\r\nPayload: {payload}";
+                                var msg = $"Post Process CallFn failed. DB null response. Ref: {refId} {endpoint}\r\nConfig: {ppge}\r\nArgs: {args}\r\nPayload: {payload}";
 
-                                if (commitAfterPost) throw new Exception(msg);
+                                if (commitAfterPost)
+                                {
+                                    throw new Exception(msg);
+                                }
 
                                 await _fw.Error($"{nameof(FilePostProcess)}:{cmd}", msg);
 
                                 return;
                             }
 
-                            if (res.GetS(errorJsonPath).IsNullOrWhitespace() == false)
+                            if ((await res.GetS(errorJsonPath)).IsNullOrWhitespace() == false)
                             {
-                                var msg = $"Post Process CallFn failed ({endpoint}). DB response: Ref: {refId} {res.GetS("")}\r\nConfig: {ppge.GetS("")}\r\nArgs: {args}\r\nPayload: {payload}";
+                                var msg = $"Post Process CallFn failed ({endpoint}). DB response: Ref: {refId} {res}\r\nConfig: {ppge}\r\nArgs: {args}\r\nPayload: {payload}";
 
-                                if (commitAfterPost) throw new Exception(msg);
+                                if (commitAfterPost)
+                                {
+                                    throw new Exception(msg);
+                                }
 
                                 await _fw.Error($"{nameof(FilePostProcess)}:{cmd}", msg);
 
                                 return;
                             }
 
-                            await _fw.Log($"{nameof(FilePostProcess)}:{cmd}", $"Completed CallFn: \r\nArgs: {args}\r\nPayload: {payload}\r\nResult: {res.GetS("")}");
+                            await _fw.Log($"{nameof(FilePostProcess)}:{cmd}", $"Completed CallFn: \r\nArgs: {args}\r\nPayload: {payload}\r\nResult: {res}");
                         };
                     }
                 }
@@ -267,11 +285,14 @@ namespace SimpleImportExport
             return (file, directoryPath, endpoint, refId) => Task.CompletedTask;
         }
 
-        private static string ReplacePatternTokens(string str, Pattern pattern)
+        private static async Task<string> ReplacePatternTokens(string str, Pattern pattern)
         {
-            if (str.IsNullOrWhitespace() || pattern.TokenFields == null) return str;
+            if (str.IsNullOrWhitespace() || pattern.TokenFields == null)
+            {
+                return str;
+            }
 
-            int start = 0;
+            var start = 0;
 
             int GetNextIndex() => str.IndexOf("{ptrn_", start, StringComparison.CurrentCulture);
 
@@ -279,10 +300,16 @@ namespace SimpleImportExport
             {
                 var end = str.IndexOf("}", start, StringComparison.CurrentCulture);
                 var token = str.Substring(start, end - start + 1);
-                var patternFieldName = token.Match(new Regex(@"{ptrn_(?<fieldName>[^}]+)}"), "fieldName");
-                var value = pattern.TokenFields.GetS(patternFieldName);
 
-                if (value == null) continue;
+                var matchResult = new Regex(@"{ptrn_(?<fieldName>[^}]+)}").Match(token);
+
+                var patternFieldName = matchResult.Success ? matchResult.Groups["fieldName"]?.Value : null;
+                var value = await pattern.TokenFields.GetS(patternFieldName, null);
+
+                if (value == null)
+                {
+                    continue;
+                }
 
                 str = str.Replace(token, value);
             }
@@ -290,30 +317,26 @@ namespace SimpleImportExport
             return str;
         }
 
-        private static async Task<Endpoint> GetEnpointConfig(IGenericEntity jobCfg, string name)
+        private static async Task<Endpoint> GetEnpointConfig(Entity jobCfg, string name)
         {
-            var ge = jobCfg.GetE($"{name}");
+            var ge = await jobCfg.GetE($"{name}");
 
             try
             {
-                var type = (EndpointType)Enum.Parse(typeof(EndpointType), ge.GetS("Type"));
+                var type = (EndpointType)Enum.Parse(typeof(EndpointType), await ge.GetS("Type"));
 
-                switch (type)
+                return type switch
                 {
-                    case EndpointType.Local:
-                        return new LocalEndPoint(ge, _fw);
-                    case EndpointType.Ftp:
-                        return new FtpEndPoint(ge);
-                    default:
-                        throw new ArgumentOutOfRangeException($"Invalid Endpoint Type {type}. Must be {EndpointType.Local} or {EndpointType.Ftp}");
-                }
+                    EndpointType.Local => await LocalEndPoint.Create(ge, _fw),
+                    EndpointType.Ftp => await FtpEndPoint.Create(ge),
+                    _ => throw new ArgumentOutOfRangeException($"Invalid Endpoint Type {type}. Must be {EndpointType.Local} or {EndpointType.Ftp}"),
+                };
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(GetEnpointConfig), $"Failed to load endpoint: {ge.GetS("")} ex: ${e.UnwrapForLog()}");
+                await _fw.Error(nameof(GetEnpointConfig), $"Failed to load endpoint: {ge} ex: ${e.UnwrapForLog()}");
                 throw;
             }
         }
-
     }
 }

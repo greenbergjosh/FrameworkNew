@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Utility.GenericEntity;
 
 namespace Utility.Dataflow
 {
@@ -50,9 +49,7 @@ namespace Utility.Dataflow
         #endregion
 
         #region Public Static Methods
-        public static Task<DynamicDataflow> Create(string config, FrameworkWrapper fw = null) => Create(JsonWrapper.JsonToGenericEntity(config), fw);
-
-        public static async Task<DynamicDataflow> Create(IGenericEntity config, FrameworkWrapper fw = null)
+        public static async Task<DynamicDataflow> Create(Entity.Entity config, FrameworkWrapper fw = null)
         {
             var rw = fw?.RoslynWrapper;
             if (rw == null)
@@ -62,20 +59,20 @@ namespace Utility.Dataflow
                 rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
             }
 
-            var defaultDataflowBlockOptions = config.GetE("/defaultBlockOptions");
-            var defaultDataflowLinkOptions = config.GetE("/defaultLinkOptions");
+            var defaultDataflowBlockOptions = await config.GetE("defaultBlockOptions");
+            var defaultDataflowLinkOptions = await config.GetE("defaultLinkOptions");
 
-            var blocks = config.GetL("/blocks");
+            var blocks = await config.GetL("blocks");
 
             var dataflowBlocks = new Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)>();
 
             foreach (var block in blocks)
             {
-                int.TryParse(block.GetS("id"), out var id);
+                var id = int.Parse(await block.GetS("id"));
                 dataflowBlocks.Add(id, await CreateDataflowBlock(block, defaultDataflowBlockOptions, fw, rw));
             }
 
-            var links = config.GetL("/links");
+            var links = await config.GetL("links");
 
             foreach (var link in links)
             {
@@ -88,30 +85,30 @@ namespace Utility.Dataflow
 
         #region Private Static Methods
         #region DataflowBlock Methods
-        private static Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateDataflowBlock(IGenericEntity block, IGenericEntity defaultDataflowBlockOptions, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateDataflowBlock(Entity.Entity block, Entity.Entity defaultDataflowBlockOptions, FrameworkWrapper fw, RoslynWrapper rw)
         {
-            var blockType = block.GetS("/blockType");
+            var blockType = await block.GetS("blockType");
 
             switch (blockType)
             {
                 case "Transform":
-                    var transformOptions = GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
-                    return CreateTransformBlock(block, transformOptions, fw, rw);
+                    var transformOptions = await GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
+                    return await CreateTransformBlock(block, transformOptions, fw, rw);
                 case "Action":
-                    var actionOptions = GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
-                    return CreateActionBlock(block, actionOptions, fw, rw);
+                    var actionOptions = await GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
+                    return await CreateActionBlock(block, actionOptions, fw, rw);
                 default:
                     throw new Exception($"Unsupported block type {blockType}");
             }
         }
 
-        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateActionBlock(IGenericEntity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateActionBlock(Entity.Entity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
         {
-            var inputType = Type.GetType(block.GetS("/inputType"));
+            var inputType = Type.GetType(await block.GetS("inputType"));
 
             var funcMaker = typeof(DynamicDataflow).GetMethod(nameof(CreateAction), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(inputType);
 
-            var behaviorCode = await GetCode(block.GetE("/behavior"), fw);
+            var behaviorCode = await GetCode(await block.GetE("behavior"), fw);
 
             var behavior = funcMaker.Invoke(null, new object[] { behaviorCode, rw });
 
@@ -122,16 +119,16 @@ namespace Utility.Dataflow
             return (actionBlock, inputType, null);
         }
 
-        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateTransformBlock(IGenericEntity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateTransformBlock(Entity.Entity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
         {
-            var inputType = Type.GetType(block.GetS("/inputType"));
-            var outputType = Type.GetType(block.GetS("/outputType"));
+            var inputType = Type.GetType(await block.GetS("inputType"));
+            var outputType = Type.GetType(await block.GetS("outputType"));
 
             var funcType = typeof(Func<,>).MakeGenericType(inputType, outputType);
 
             var funcMaker = typeof(DynamicDataflow).GetMethod(nameof(CreateFunction), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(inputType, outputType);
 
-            var behaviorCode = await GetCode(block.GetE("/behavior"), fw);
+            var behaviorCode = await GetCode(await block.GetE("behavior"), fw);
 
             var behavior = funcMaker.Invoke(null, new object[] { behaviorCode, rw });
 
@@ -158,29 +155,29 @@ namespace Utility.Dataflow
             return async (TInput input) => (TOutput)await rw[sd.Key](new { Input = input }, new StateWrapper());
         }
 
-        private static ExecutionDataflowBlockOptions GetExecutionDataflowBlockOptions(IGenericEntity options, IGenericEntity defaultDataflowBlockOptions)
+        private static async Task<ExecutionDataflowBlockOptions> GetExecutionDataflowBlockOptions(Entity.Entity options, Entity.Entity defaultDataflowBlockOptions)
         {
             var executionDataflowBlockOptions = new ExecutionDataflowBlockOptions();
 
-            executionDataflowBlockOptions.BoundedCapacity = GetOption("/boundedCapacity", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.BoundedCapacity);
-            executionDataflowBlockOptions.EnsureOrdered = GetOption("/ensureOrdered", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.EnsureOrdered);
-            executionDataflowBlockOptions.MaxDegreeOfParallelism = GetOption("/maxDegreeOfParallelism", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.MaxDegreeOfParallelism);
-            executionDataflowBlockOptions.MaxMessagesPerTask = GetOption("/maxMessagesPerTask", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.MaxMessagesPerTask);
-            executionDataflowBlockOptions.SingleProducerConstrained = GetOption("/singleProducerConstrained", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.SingleProducerConstrained);
+            executionDataflowBlockOptions.BoundedCapacity = await GetOption("boundedCapacity", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.BoundedCapacity);
+            executionDataflowBlockOptions.EnsureOrdered = await GetOption("ensureOrdered", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.EnsureOrdered);
+            executionDataflowBlockOptions.MaxDegreeOfParallelism = await GetOption("maxDegreeOfParallelism", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.MaxDegreeOfParallelism);
+            executionDataflowBlockOptions.MaxMessagesPerTask = await GetOption("maxMessagesPerTask", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.MaxMessagesPerTask);
+            executionDataflowBlockOptions.SingleProducerConstrained = await GetOption("singleProducerConstrained", options, defaultDataflowBlockOptions, executionDataflowBlockOptions.SingleProducerConstrained);
 
             return executionDataflowBlockOptions;
         }
         #endregion
 
         #region Link Methods
-        private static async Task CreateLink(IGenericEntity edge, Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)> dataflowBlocks, IGenericEntity defaultDataflowLinkOptions, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task CreateLink(Entity.Entity edge, Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)> dataflowBlocks, Entity.Entity defaultDataflowLinkOptions, FrameworkWrapper fw, RoslynWrapper rw)
         {
             var dataflowLinkOptions = GetDataflowLinkOptions(edge, defaultDataflowLinkOptions);
 
-            var fromId = int.Parse(edge.GetS("/from"));
-            var toId = int.Parse(edge.GetS("/to"));
+            var fromId = int.Parse(await edge.GetS("from"));
+            var toId = int.Parse(await edge.GetS("to"));
 
-            var predicateCode = await GetCode(edge.GetE("/predicate"), fw);
+            var predicateCode = await GetCode(await edge.GetE("predicate"), fw);
 
             var source = dataflowBlocks[fromId];
             var target = dataflowBlocks[toId];
@@ -205,12 +202,12 @@ namespace Utility.Dataflow
                 var predicate = predicateMaker.Invoke(null, new object[] { predicateCode, rw });
 
                 var linkTo = typeof(DataflowBlock).GetMethods(BindingFlags.Public | BindingFlags.Static).Where(mi => mi.Name == nameof(DataflowBlock.LinkTo) && mi.GetParameters().Length == 4).Single().MakeGenericMethod(source.outputType);
-                linkTo.Invoke(null, new object[] { source.block, target.block, dataflowLinkOptions, predicate });
+                _ = linkTo.Invoke(null, new object[] { source.block, target.block, dataflowLinkOptions, predicate });
             }
             else
             {
                 var linkTo = sourceBlockType.GetMethod(nameof(DataflowBlock.LinkTo), new[] { targetBlockType, typeof(DataflowLinkOptions) });
-                linkTo.Invoke(source.block, new object[] { target.block, dataflowLinkOptions });
+                _ = linkTo.Invoke(source.block, new object[] { target.block, dataflowLinkOptions });
             }
         }
 
@@ -221,24 +218,24 @@ namespace Utility.Dataflow
             return (TOutput input) => (bool)rw[sd.Key](new { Input = input }, new StateWrapper()).GetAwaiter().GetResult();
         }
 
-        private static DataflowLinkOptions GetDataflowLinkOptions(IGenericEntity options, IGenericEntity defaultDataflowLinkOptions)
+        private static async Task<DataflowLinkOptions> GetDataflowLinkOptions(Entity.Entity options, Entity.Entity defaultDataflowLinkOptions)
         {
             var dataflowLinkOptions = new DataflowLinkOptions();
 
-            dataflowLinkOptions.Append = GetOption("/append", options, defaultDataflowLinkOptions, dataflowLinkOptions.Append);
-            dataflowLinkOptions.MaxMessages = GetOption("/maxMessages", options, defaultDataflowLinkOptions, dataflowLinkOptions.MaxMessages);
-            dataflowLinkOptions.PropagateCompletion = GetOption("/propagateCompletion", options, defaultDataflowLinkOptions, dataflowLinkOptions.PropagateCompletion);
+            dataflowLinkOptions.Append = await GetOption("append", options, defaultDataflowLinkOptions, dataflowLinkOptions.Append);
+            dataflowLinkOptions.MaxMessages = await GetOption("maxMessages", options, defaultDataflowLinkOptions, dataflowLinkOptions.MaxMessages);
+            dataflowLinkOptions.PropagateCompletion = await GetOption("propagateCompletion", options, defaultDataflowLinkOptions, dataflowLinkOptions.PropagateCompletion);
 
             return dataflowLinkOptions;
         }
         #endregion
 
         #region Option Methods
-        private static int GetOption(string name, IGenericEntity options, IGenericEntity defaultOptions, int defaultValue)
+        private static async Task<int> GetOption(string name, Entity.Entity options, Entity.Entity defaultOptions, int defaultValue)
         {
-            if (!int.TryParse(options.GetS(name), out var value))
+            if (!int.TryParse(await options.GetS(name), out var value))
             {
-                if (!int.TryParse(defaultOptions.GetS(name), out value))
+                if (!int.TryParse(await defaultOptions.GetS(name), out value))
                 {
                     value = defaultValue;
                 }
@@ -247,11 +244,11 @@ namespace Utility.Dataflow
             return value;
         }
 
-        private static bool GetOption(string name, IGenericEntity options, IGenericEntity defaultOptions, bool defaultValue)
+        private static async Task<bool> GetOption(string name, Entity.Entity options, Entity.Entity defaultOptions, bool defaultValue)
         {
-            if (!bool.TryParse(options.GetS(name), out var value))
+            if (!bool.TryParse(await options.GetS(name), out var value))
             {
-                if (!bool.TryParse(defaultOptions.GetS(name), out value))
+                if (!bool.TryParse(await defaultOptions.GetS(name), out value))
                 {
                     value = defaultValue;
                 }
@@ -261,20 +258,20 @@ namespace Utility.Dataflow
         }
         #endregion
 
-        public static async Task<(Guid id, string code)> GetCode(IGenericEntity entity, FrameworkWrapper fw)
+        public static async Task<(Guid id, string code)> GetCode(Entity.Entity entity, FrameworkWrapper fw)
         {
             if (entity == null)
             {
                 return (Guid.Empty, null);
             }
 
-            if (Guid.TryParse(entity.GetS("entityId") ?? string.Empty, out var entityId))
+            if (Guid.TryParse(await entity.GetS("entityId") ?? string.Empty, out var entityId))
             {
                 var lbm = await fw.Entities.GetEntity(entityId);
-                return (entityId, lbm.GetS("Config"));
+                return (entityId, await lbm.GetS("Config"));
             }
 
-            return (Guid.NewGuid(), entity.GetS("code"));
+            return (Guid.NewGuid(), await entity.GetS("code"));
         }
         #endregion
     }

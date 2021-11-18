@@ -61,6 +61,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                         op = EqualTo;
                         return true;
                     }
+
                     break;
                 case '!':
                     if (index + 1 >= query.Length)
@@ -74,6 +75,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                         op = NotEqualTo;
                         return true;
                     }
+
                     break;
                 case '<':
                     if (index + 1 < query.Length && query[index + 1] == '=')
@@ -109,6 +111,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                         op = And;
                         return true;
                     }
+
                     break;
                 case '|':
                     if (index + 1 >= query.Length)
@@ -122,8 +125,10 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                         op = Or;
                         return true;
                     }
+
                     break;
             }
+
             return false;
         }
     }

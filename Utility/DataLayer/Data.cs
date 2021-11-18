@@ -2,12 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Utility.GenericEntity;
-using Jw = Utility.JsonWrapper;
+using Utility.Entity.Implementations;
 
 namespace Utility.DataLayer
 {
@@ -16,65 +15,61 @@ namespace Utility.DataLayer
         public const string GlobalConfigConnName = "GlobalConfig";
         public const string ConfigFunctionName = "SelectConfig";
 
-        // TODO: This should all be ConcurrentDictionary to become thread-safe
         private static readonly ConcurrentDictionary<string, Connection> Connections = new();
         private static Connection _configConn;
         private static string _configFunction;
         private static string[] _commandLineArgs;
         private static readonly List<(DateTime logTime, string location, string log)> _traceLog = new();
+        private static Entity.Entity _entity;
 
         private static void TraceLog(string location, string log) => _traceLog.Add((DateTime.Now, location, log));
 
         public static IEnumerable<(DateTime logTime, string location, string log)> GetTrace() => _traceLog.AsEnumerable();
 
-        public static async Task<IGenericEntity> Initialize(string connStr, string dataLayerType, string[] configKeys, string configFunction, string[] commandLineArgs)
+        public static async Task<Entity.Entity> Initialize(Entity.Entity entity, string connStr, string dataLayerType, string[] configKeys, string configFunction, string[] commandLineArgs)
         {
-            string configStr = null;
+            TraceLog(nameof(Initialize), "Initializing");
 
+            _entity = entity;
             _configFunction = configFunction;
 
-            TraceLog(nameof(Initialize), "Initializing");
+            Entity.Entity config = null;
 
             try
             {
                 _configConn = new Connection(GlobalConfigConnName, DataLayerClientFactory.DataStoreInstance(dataLayerType), connStr);
                 _commandLineArgs = commandLineArgs;
 
-                _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
-                Connections.AddOrUpdate(GlobalConfigConnName, _configConn, (key, current) => current);
+                _ = _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
+                _ = Connections.AddOrUpdate(GlobalConfigConnName, _configConn, (key, current) => current);
 
-                TraceLog(nameof(Initialize), $"{nameof(_configConn)}\r\n{Jw.Serialize(_configConn)}");
+                TraceLog(nameof(Initialize), $"{nameof(_configConn)}\r\n{JsonSerializer.Serialize(_configConn)}");
 
-                configStr = await GetConfigs(configKeys, commandLineArgs);
+                config = await GetConfigs(configKeys, commandLineArgs);
 
-                TraceLog(nameof(Initialize), $"{nameof(configStr)}\r\n{configStr}");
+                TraceLog(nameof(Initialize), $"{nameof(config)}\r\n{config}");
 
-                var gc = Jw.JsonToGenericEntity(Jw.Serialize(new { Config = Jw.TryParseObject(configStr) }));
+                await AddConnectionStrings(await config.GetE("Config.ConnectionStrings"));
 
-                if (!gc.GetS("Config/ConnectionStrings").IsNullOrWhitespace()) await AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
-
-                return gc;
+                return config;
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKeys?.Join("::") ?? "No instance key(s) defined"} Config: {configStr ?? "No Config Found"} Original Exception: {e.Message}", e);
+                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKeys?.Join("::") ?? "No instance key(s) defined"} Config: {config?.ToString() ?? "No Config Found"} Original Exception: {e.Message}", e);
             }
         }
 
-        public static async Task<IGenericEntity> ReInitialize(string[] configKeys)
+        public static async Task<Entity.Entity> ReInitialize(string[] configKeys)
         {
-            string configStr = null;
-
             TraceLog(nameof(Initialize), "Reinitializing");
 
             try
             {
-                configStr = await GetConfigs(configKeys, _commandLineArgs);
-                var gc = Jw.JsonToGenericEntity(Jw.Serialize(new { Config = Jw.TryParseObject(configStr) }));
+                var config = await GetConfigs(configKeys, _commandLineArgs);
 
-                if (!gc.GetS("Config/ConnectionStrings").IsNullOrWhitespace()) await AddConnectionStrings(gc.GetD("Config/ConnectionStrings"), true);
+                await AddConnectionStrings(await config.GetE("Config.ConnectionStrings"), true);
 
-                return gc;
+                return config;
             }
             catch (Exception e)
             {
@@ -83,55 +78,55 @@ namespace Utility.DataLayer
             }
         }
 
-        public static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings) => await AddConnectionStrings(connectionStrings, false);
+        public static async Task AddConnectionStrings(Entity.Entity connectionStrings) => await AddConnectionStrings(connectionStrings, false);
 
-        private static async Task<JObject> GetConfigRecordValue(string id, Connection configConn, string configFunc)
+        private static async Task<Entity.Entity> GetConfigRecordValue(string id, Connection configConn, string configFunc)
         {
-            var confStr = await configConn.Client.CallStoredFunction(Jw.Serialize(new { InstanceId = id }), "{}", configFunc, configConn.ConnStr);
-            var c = JObject.Parse(confStr);
+            var confStr = await configConn.Client.CallStoredFunction(JsonSerializer.Serialize(new { InstanceId = id }), "{}", configFunc, configConn.ConnStr);
+            var entity = await _entity.Parse("application/json", confStr);
 
-            if (c.ContainsKey("Config") && c.ContainsKey("Id") && c.ContainsKey("Name") && c.ContainsKey("Type"))
+            return entity.Create(new
             {
-                c = Jw.TryParseObject(c["Config"].ToString());
-            }
-
-            return c;
+                Id = await entity.GetS("Id"),
+                Name = await entity.GetS("Name"),
+                Type = await entity.GetS("Type"),
+                Config = await _entity.Parse("application/json", await entity.GetS("Config"))
+            });
         }
 
-        private static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings, bool merge)
+        private static async Task AddConnectionStrings(Entity.Entity connectionStrings, bool merge)
         {
-            foreach (var o in connectionStrings)
+            if (connectionStrings != null && connectionStrings.IsObject)
             {
-                if (Connections.ContainsKey(o.Item1) && Connections[o.Item1].Id == o.Item2 && !merge)
+                foreach (var o in await connectionStrings.GetD<string>())
                 {
-                    continue;
-                }
-
-                if (Connections.ContainsKey(o.Item1) && !merge)
-                {
-                    throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Item1}");
-                }
-
-                var conf = Jw.ToGenericEntity(await GetConfigRecordValue(o.Item2, _configConn, _configFunction));
-
-                var conn = Connections.GetOrAdd(o.Item1, s => new Connection(o.Item2, DataLayerClientFactory.DataStoreInstance(conf.GetS("DataLayerType")), conf.GetS("ConnectionString")));
-
-                foreach (var sp in conf.GetD("DataLayer"))
-                {
-                    conn.Functions.AddOrUpdate(sp.Item1, sp.Item2, (key, current) =>
+                    if (Connections.ContainsKey(o.Key) && Connections[o.Key].Id == o.Value && !merge)
                     {
-                        if (current != sp.Item2 && !merge)
-                        {
-                            throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Item1}, with existing value: {current}, new value: {sp.Item2}");
-                        }
+                        continue;
+                    }
 
-                        return sp.Item2;
-                    });
+                    if (Connections.ContainsKey(o.Key) && !merge)
+                    {
+                        throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Key}");
+                    }
+
+                    var conf = await GetConfigRecordValue(o.Value, _configConn, _configFunction);
+
+                    var dataLayerType = await conf.GetS("Config.DataLayerType");
+                    var connectionString = await conf.GetS("Config.ConnectionString");
+                    var conn = Connections.GetOrAdd(o.Key, s => new Connection(o.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType), connectionString));
+
+                    foreach (var sp in await conf.GetD<string>("Config.DataLayer"))
+                    {
+                        _ = conn.Functions.AddOrUpdate(sp.Key, sp.Value, (key, current) => current != sp.Value && !merge
+                                  ? throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Key}, with existing value: {current}, new value: {sp.Value}")
+                                  : sp.Value);
+                    }
                 }
             }
         }
 
-        public static async Task<string> GetConfigs(IEnumerable<string> configKeys, string[] commandLineArgs = null, string confConnName = null, string confFuncName = null)
+        public static async Task<Entity.Entity> GetConfigs(IEnumerable<string> configKeys, string[] commandLineArgs = null, string confConnName = null, string confFuncName = null)
         {
             var loaded = new HashSet<string>();
             var configConn = confConnName == null ? _configConn : Connections.GetValueOrDefault(confConnName);
@@ -144,50 +139,48 @@ namespace Utility.DataLayer
 
             TraceLog(nameof(GetConfigs), $"Loading configs from {configConn}.{configFunc}");
 
-            async Task<JObject> LoadConfig(JObject config, string key)
+            async Task LoadConfig(EntityDocumentStack config, string key)
             {
-                // this is not important for the DB, but it is for the local cache.
-                // ToDo: We should change it to GUID and that would solve it but not sure if that might break something
                 key = key.ToLower();
 
                 if (loaded.Contains(key))
                 {
-                    return config;
+                    return;
                 }
 
                 TraceLog(nameof(GetConfigs), $"Loading config {key}");
 
-                loaded.Add(key);
+                _ = loaded.Add(key);
 
                 try
                 {
-                    var c = await GetConfigRecordValue(key, configConn, configFunc);
+                    var current = await GetConfigRecordValue(key, configConn, configFunc);
+                    var usings = (await current.Get("Config.using")).FirstOrDefault();
+                    var mergeConfig = current;
 
-                    JObject mergeConfig = null;
-
-                    if (c != null && c["using"] is JArray usng)
+                    if (usings != null)
                     {
+                        TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usings}");
 
-                        TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usng}");
+                        foreach (var u in (await usings.GetL<string>()).Select(u => u.Trim()))
+                        {
+                            await LoadConfig(config, u);
+                        }
 
-                        await usng.Select(u => ((string)u).Trim())
-                            .Where(u => !loaded.Contains(u))
-                            .AggregateAsync(config, async (cf, k) => await LoadConfig(cf, k));
-
-                        mergeConfig = c["config"] as JObject;
-                    }
-                    else
-                    {
-                        mergeConfig = c;
+                        mergeConfig = _entity.Create(new
+                        {
+                            Id = await current.GetS("Id"),
+                            Name = await current.GetS("Name"),
+                            Type = await current.GetS("Type"),
+                            Config = await current.GetE("Config.config")
+                        });
                     }
 
                     TraceLog(nameof(GetConfigs), $"Merging configs\r\nCurrent\r\n{config}\r\n\r\n{key}\r\n{mergeConfig}");
 
-                    MergeConfigs(config, mergeConfig);
+                    config.Push(mergeConfig);
 
                     TraceLog(nameof(GetConfigs), $"Merged configs into\r\n{config}");
-
-                    return config;
                 }
                 catch (Exception ex)
                 {
@@ -195,87 +188,23 @@ namespace Utility.DataLayer
                 }
             }
 
-            var resolvedConfig = await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k));
+            var resolvedConfig = new EntityDocumentStack();
+            foreach (var configKey in configKeys)
+            {
+                await LoadConfig(resolvedConfig, configKey);
+            }
 
             if (commandLineArgs?.Any() == true)
             {
-                TraceLog(nameof(GetConfigs), $"Overriding configs from command line:\r\n{Jw.Serialize(commandLineArgs)}");
+                TraceLog(nameof(GetConfigs), $"Overriding configs from command line:\r\n{JsonSerializer.Serialize(commandLineArgs)}");
                 var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs).Build();
 
-                foreach (var kvp in commandLineConfig.AsEnumerable())
-                {
-                    resolvedConfig[kvp.Key] = kvp.Value;
-                }
+                var commandLineDictionary = new Dictionary<string, string>(commandLineConfig.AsEnumerable());
+
+                resolvedConfig.Push(_entity.Create(commandLineDictionary));
             }
 
-            return resolvedConfig.ToString();
-        }
-
-        private static void MergeConfigs(JObject config, JObject mergeConfig)
-        {
-            if (mergeConfig == null)
-            {
-                return;
-            }
-
-            var mergeRoot = mergeConfig.Parent == null ? mergeConfig : (JObject)mergeConfig.DeepClone();
-
-            var paths = FindRemovePaths(mergeRoot);
-
-            paths.ForEach(p =>
-            {
-                var prop = ((JObject)mergeRoot.SelectToken(p.path)).Property(p.propName);
-                var newToken = new JProperty(prop.Name.Remove(0, 1), prop.Value);
-
-                prop.Value.Parent.Replace(newToken);
-            });
-
-            paths.ForEach(p => ((JObject)config.SelectToken(p.path))?.Remove(p.propName.Remove(0, 1)));
-
-            config.Merge(mergeRoot);
-        }
-
-        private static IEnumerable<(string path, string propName)> FindRemovePaths(JObject root)
-        {
-            var paths = new List<(string path, string propName)>();
-
-            foreach (var prop in root.Properties())
-            {
-                if (prop.Name.StartsWith("~"))
-                {
-                    paths.Add((prop.Parent.Path, prop.Name));
-                }
-
-                if (prop.Value is JObject jo)
-                {
-                    paths.AddRange(FindRemovePaths(jo));
-                }
-                else if (prop.Value is JArray ja)
-                {
-                    paths.AddRange(FindRemovePaths(ja));
-                }
-            }
-
-            return paths;
-        }
-
-        private static IEnumerable<(string path, string propName)> FindRemovePaths(JArray root)
-        {
-            var paths = new List<(string path, string propName)>();
-
-            foreach (var jai in root.Children())
-            {
-                if (jai is JObject jo)
-                {
-                    paths.AddRange(FindRemovePaths(jo));
-                }
-                else if (jai is JArray ja)
-                {
-                    paths.AddRange(FindRemovePaths(ja));
-                }
-            }
-
-            return paths;
+            return _entity.Create(resolvedConfig);
         }
 
         public static Task<List<Dictionary<string, object>>> CallFn(string conName, string method, Dictionary<string, object> parameters, int timeout = 120)
@@ -285,35 +214,32 @@ namespace Utility.DataLayer
                 var conn = Connections.GetValueOrDefault(conName);
                 var sp = conn?.Functions.GetValueOrDefault(method);
 
-                if (sp.IsNullOrWhitespace())
-                {
-                    return Task.FromResult<List<Dictionary<string, object>>>(null);
-                }
-
-                return conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
+                return sp.IsNullOrWhitespace()
+                    ? Task.FromResult<List<Dictionary<string, object>>>(null)
+                    : conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed {nameof(CallFnString)}({conName}, {method}, {Jw.Serialize(parameters)})", e);
+                throw new Exception($"Failed {nameof(CallFnString)}({conName}, {method}, {JsonSerializer.Serialize(parameters)})", e);
             }
         }
 
-        public static async Task<IGenericEntity> CallFn(string conName, string method, object args, string payload = null, int timeout = 120)
+        public static async Task<Entity.Entity> CallFn(string conName, string method, object args, string payload = null, int timeout = 120)
         {
-            var argsString = JsonConvert.SerializeObject(args ?? new object());
-            payload = payload.IfNullOrWhitespace(Jw.Empty);
+            var argsString = JsonSerializer.Serialize(args ?? new object());
+            payload = payload.IfNullOrWhitespace("{}");
             var res = await CallFnString(conName, method, argsString, payload, timeout);
 
-            return res.IsNullOrWhitespace() ? null : Jw.JsonToGenericEntity(res);
+            return res.IsNullOrWhitespace() ? null : await _entity.Parse("application/json", res);
         }
 
-        public static async Task<IGenericEntity> CallFn(string conName, string method, string args = null, string payload = null, int timeout = 120)
+        public static async Task<Entity.Entity> CallFn(string conName, string method, string args = null, string payload = null, int timeout = 120)
         {
-            args = args.IfNullOrWhitespace(Jw.Empty);
-            payload = payload.IfNullOrWhitespace(Jw.Empty);
+            args = args.IfNullOrWhitespace("{}");
+            payload = payload.IfNullOrWhitespace("{}");
             var res = await CallFnString(conName, method, args, payload, timeout);
 
-            return res.IsNullOrWhitespace() ? null : Jw.JsonToGenericEntity(res);
+            return res.IsNullOrWhitespace() ? null : await _entity.Parse("application/json", res);
         }
 
         public static Task<string> CallFnString(string conName, string method, string args, string payload, int timeout = 120)
@@ -324,12 +250,9 @@ namespace Utility.DataLayer
 
                 var sp = conn.Functions.GetValueOrDefault(method);
 
-                if (sp.IsNullOrWhitespace())
-                {
-                    return Task.FromResult<string>(null);
-                }
-
-                return conn.Client.CallStoredFunction(args, payload, sp, conn.ConnStr, timeout);
+                return sp.IsNullOrWhitespace()
+                    ? Task.FromResult<string>(null)
+                    : conn.Client.CallStoredFunction(args, payload, sp, conn.ConnStr, timeout);
             }
             catch (Exception e)
             {

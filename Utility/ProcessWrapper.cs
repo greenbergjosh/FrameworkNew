@@ -93,22 +93,22 @@ namespace Utility
             void handler(object sender, EventArgs args)
             {
                 process.Exited -= handler;
-                taskCompletionSource.TrySetResult(null);
+                _ = taskCompletionSource.TrySetResult(null);
             }
 
             process.Exited += handler;
 
             if (cancellationToken != default)
             {
-                cancellationToken.Register(
+                _ = cancellationToken.Register(
                     () =>
                     {
                         process.Exited -= handler;
-                        taskCompletionSource.TrySetCanceled();
+                        _ = taskCompletionSource.TrySetCanceled();
                     });
             }
 
-            process.Start();
+            _ = process.Start();
             return taskCompletionSource.Task;
         }
 
@@ -136,7 +136,7 @@ namespace Utility
                     if (e.Data == null)
                     {
                         removeHandler(handler);
-                        taskCompletionSource.TrySetResult(null);
+                        _ = taskCompletionSource.TrySetResult(null);
                     }
                     else
                     {
@@ -148,11 +148,11 @@ namespace Utility
 
             if (cancellationToken != default)
             {
-                cancellationToken.Register(
+                _ = cancellationToken.Register(
                     () =>
                     {
                         removeHandler(handler);
-                        taskCompletionSource.TrySetCanceled();
+                        _ = taskCompletionSource.TrySetCanceled();
                     });
             }
 

@@ -5,19 +5,25 @@ import { CodeEditorProps, CustomEditorWillMount, EditorLang } from "../types"
 import Editor, { DiffEditor, EditorProps } from "@monaco-editor/react"
 import { activeEditorSettings, diffEditorSettings } from "./constants"
 import { editor, IDisposable, languages, MarkerSeverity, Range } from "monaco-editor"
-import { isNull, isString, isUndefined, isBoolean } from "lodash/fp"
+import { isBoolean, isEmpty, isNull, isString, isUndefined } from "lodash/fp"
 import { none, some, tryCatch } from "fp-ts/lib/Option"
 import { UserInterfaceDataType } from "@opg/interface-builder"
 import { _getCustomEditorWillMount } from "../registerMonacoEditorMount"
 
-export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps): JSX.Element {
+export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps): JSX.Element | null {
   const defaultedLanguage = props.language || "json"
   const editorRef = React.useRef<editor.IStandaloneCodeEditor | null>(null)
+  const formatDocumentPartial = (doc: CodeEditorProps["document"]) => formatDocument(doc, props.language)
   const [showDiff, setShowDiff] = React.useState(false)
   const [showMinimap, setShowMinimap] = React.useState<boolean>(
     isBoolean(props.showMinimap) ? props.showMinimap : false
   )
-  const [draft, setDraft] = React.useState<string | undefined>("")
+  const [draft, setDraft] = React.useState<string | undefined>()
+
+  // TODO: using this React component key might allow the editor to update from external changes.
+  //  would need a way to tell what is an external change from what is a change we pushed
+  //  externally and is now propagating back into this component
+  const [editorInstanceKey /*, setEditorInstanceKey*/] = React.useState<number>(0)
 
   /* ***********************************
    *
@@ -25,19 +31,20 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
    */
 
   /**
-   * Store original version and watch for external changes
+   * Store original document version
    */
   const original = React.useMemo(() => {
-    const originalString: string | undefined = isString(props.original)
-      ? props.original
-      : formatDocument(props.original, props.language)
-    const documentString: string | undefined = isString(props.document)
-      ? props.document
-      : formatDocument(props.document, props.language)
-
-    setDraft(documentString)
-    return originalString
+    return formatDocumentPartial(props.original)
   }, [props.document, props.original])
+
+  /**
+   * Watch for external document changes
+   */
+  React.useEffect(() => {
+    // TODO: see above note
+    // setEditorInstanceKey(editorInstanceKey + 1)
+    setDraft(formatDocumentPartial(props.document))
+  }, [props.document])
 
   /* ***********************************
    *
@@ -137,6 +144,13 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
    * RENDER
    */
 
+  // The editor will only load external documents once,
+  // so make sure we have a draft to edit.
+  // TODO: see note above about editorInstanceKey
+  if (!draft && props.mode === "display") {
+    return null
+  }
+
   return (
     <div style={{ lineHeight: "initial" }}>
       <Button.Group size="small" style={{ lineHeight: "initial" }}>
@@ -187,6 +201,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
             willUnmount={({ state }) => state.disposables.forEach((f: IDisposable) => f.dispose())}>
             {(args) => (
               <Editor
+                key={editorInstanceKey}
                 onMount={(editor /*, monaco*/) => {
                   handleEditorDidMount(editor.getValue, editor, args.setState)
                 }}
@@ -213,9 +228,24 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
  * @param doc
  * @param language
  */
-function formatDocument(doc: CodeEditorProps["document"], language: EditorLang) {
-  const defaultValue = language === "json" ? "{}" : ""
-  return JSON.stringify(doc, null, 2) || defaultValue
+function formatDocument(doc: CodeEditorProps["document"], language: EditorLang): string {
+  if (isEmpty(doc)) {
+    return isString(doc) ? doc : ""
+  }
+
+  /* Stringfiy json */
+  if (language === "json" && isString(doc)) {
+    const value = tryCatch(() => JSON.parse(doc)).getOrElse({})
+    return JSON.stringify(value, null, 2)
+  }
+
+  /* Don't stringify strings. For instance the language may be csharp or some text */
+  if (isString(doc)) {
+    return doc
+  }
+
+  /* Stringify anything else */
+  return JSON.stringify(doc, null, 2) || ""
 }
 
 /**

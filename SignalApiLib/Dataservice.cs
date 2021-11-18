@@ -1,29 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using SignalApiLib.SourceHandlers;
 using Utility;
-using Jw = Utility.JsonWrapper;
 
 namespace SignalApiLib
 {
-    public class DataService
+    public class DataService : IGenericDataService
     {
         private FrameworkWrapper _fw;
         private Dictionary<string, ISourceHandler> _sourceHandlers;
-        private SourceHandlers.Generic _genericSourceHandler;
-        private readonly string _defaultFailureResponse = Jw.Serialize(new { Result = "Failure" });
+        private Generic _genericSourceHandler;
+        private readonly string _defaultFailureResponse = JsonSerializer.Serialize(new { Result = "Failure" });
 
-        public void Config(FrameworkWrapper fw)
+        public async Task Config(FrameworkWrapper fw)
         {
             _fw = fw;
-            ReInitialize();
+            await Reinitialize();
         }
 
-        public void ReInitialize()
+        public async Task Reinitialize()
         {
-            _genericSourceHandler = new Generic(_fw, _fw.StartupConfiguration.GetE("Config/GenericHandlers"));
+            _genericSourceHandler = new Generic(_fw, await _fw.StartupConfiguration.GetE("Config.GenericHandlers"));
             _sourceHandlers = new Dictionary<string, ISourceHandler>
             {
                 {"wadiya", new Wadiya(_fw)},
@@ -31,7 +31,7 @@ namespace SignalApiLib
             };
         }
 
-        public async Task Run(HttpContext context)
+        public async Task ProcessRequest(HttpContext context)
         {
             var requestFromPost = "";
             var sourceStr = context.Request.Path.Value.Trim('/').ToLower();
@@ -39,7 +39,7 @@ namespace SignalApiLib
             if (sourceStr.StartsWith("setTrace"))
             {
                 _fw.TraceLogging = sourceStr.EndsWith("true");
-                await context.WriteSuccessRespAsync(JsonWrapper.Serialize(new { trace = _fw.TraceLogging }));
+                await context.WriteSuccessRespAsync(JsonSerializer.Serialize(new { trace = _fw.TraceLogging }));
                 return;
             }
 
@@ -47,12 +47,18 @@ namespace SignalApiLib
             {
                 requestFromPost = await context.GetRawBodyStringAsync();
 
-                await _fw.Trace($"{nameof(Run)}:{sourceStr}", requestFromPost);
+                await _fw.Trace($"{nameof(ProcessRequest)}:{sourceStr}", requestFromPost);
 
                 var res = await HandleRequest(sourceStr, requestFromPost, context);
 
-                if (res.IsNullOrWhitespace()) await context.WriteFailureRespAsync(_defaultFailureResponse);
-                else await context.WriteSuccessRespAsync(res);
+                if (res.IsNullOrWhitespace())
+                {
+                    await context.WriteFailureRespAsync(_defaultFailureResponse);
+                }
+                else
+                {
+                    await context.WriteSuccessRespAsync(res);
+                }
             }
             catch (Exception ex)
             {
@@ -63,14 +69,19 @@ namespace SignalApiLib
 
         private async Task<string> HandleRequest(string sourceStr, string requestFromPost, HttpContext ctx)
         {
-            if (_sourceHandlers.ContainsKey(sourceStr)) return await _sourceHandlers[sourceStr.ToLower()].HandleRequest(requestFromPost, ctx);
+            if (_sourceHandlers.ContainsKey(sourceStr))
+            {
+                return await _sourceHandlers[sourceStr.ToLower()].HandleRequest(requestFromPost, ctx);
+            }
 
-            if (_genericSourceHandler.CanHandle(sourceStr)) return await _genericSourceHandler.HandleRequest(requestFromPost, ctx, sourceStr);
+            if (await _genericSourceHandler.CanHandle(sourceStr))
+            {
+                return await _genericSourceHandler.HandleRequest(requestFromPost, ctx, sourceStr);
+            }
 
             await _fw.Error(nameof(HandleRequest), $"Invalid source name {sourceStr}");
 
             return null;
         }
-
     }
 }

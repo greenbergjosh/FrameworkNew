@@ -7,20 +7,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
     {
         public int OrderOfOperation => 5;
 
-        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right)
-        {
-            if (left.OutputType != right.OutputType)
-            {
-                return QueryExpressionType.Invalid;
-            }
-
-            if (left.OutputType == QueryExpressionType.Boolean)
-            {
-                return QueryExpressionType.Boolean;
-            }
-
-            return QueryExpressionType.Invalid;
-        }
+        public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right) => left.OutputType != right.OutputType
+                ? QueryExpressionType.Invalid
+                : left.OutputType == QueryExpressionType.Boolean ? QueryExpressionType.Boolean : QueryExpressionType.Invalid;
 
         public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
         {
@@ -31,12 +20,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
             }
 
             var rightEntity = await right.Evaluate(entity);
-            if (rightEntity.ValueType != EntityValueType.Boolean)
-            {
-                return default;
-            }
-
-            return new EntityDocumentConstant(leftEntity.Value<bool>() || rightEntity.Value<bool>(), EntityValueType.Boolean);
+            return rightEntity.ValueType != EntityValueType.Boolean
+                ? default
+                : (EntityDocument)new EntityDocumentConstant(leftEntity.Value<bool>() || rightEntity.Value<bool>(), EntityValueType.Boolean);
         }
 
         public string ToString(QueryExpressionNode left, QueryExpressionNode right) => $"{left.MaybeAddParentheses(OrderOfOperation)}||{right.MaybeAddParentheses(OrderOfOperation)}";

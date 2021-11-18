@@ -33,7 +33,7 @@ namespace QuickTester
                 var sb = new StringBuilder();
                 foreach (var child in Body)
                 {
-                    sb.Append(await child.GetAsS("@"));
+                    _ = sb.Append(await child.GetAsS());
                 }
 
                 var body = sb.ToString();
@@ -167,7 +167,7 @@ namespace QuickTester
                 {
                     foreach (var (k, v) in Scopes)
                     {
-                        ies[k] = (await v.Scope.Get("@")).GetEnumerator();
+                        ies[k] = (await v.Scope.Get()).GetEnumerator();
                     }
 
                     bool done;
@@ -182,7 +182,7 @@ namespace QuickTester
                         {
                             var scopeConfig = Scopes[k];
 
-                            bool repeatCountMet = scopeConfig.RepeatCount > 0 && repeatCount >= scopeConfig.RepeatCount;
+                            var repeatCountMet = scopeConfig.RepeatCount > 0 && repeatCount >= scopeConfig.RepeatCount;
 
                             if (!repeatCountMet && v.MoveNext())
                             {
@@ -190,15 +190,16 @@ namespace QuickTester
                                 {
                                     anyProduced = true;
                                 }
+
                                 result[k] = v.Current;
                                 if (scopeConfig.RepeatCount > 0 && repeatCount == scopeConfig.RepeatCount)
                                 {
-                                    finished.Add(k);
+                                    _ = finished.Add(k);
                                 }
                             }
                             else
                             {
-                                finished.Add(k);
+                                _ = finished.Add(k);
 
                                 if (!repeatCountMet)
                                 {
@@ -210,13 +211,9 @@ namespace QuickTester
                                             result[k] = v.Current;
                                         }
                                     }
-                                    else if (scopeConfig.ExhaustionBehavior == ExhaustionBehavior.DefaultValue)
-                                    {
-                                        result[k] = scopeConfig.DefaultValue;
-                                    }
                                     else
                                     {
-                                        result[k] = null;
+                                        result[k] = scopeConfig.ExhaustionBehavior == ExhaustionBehavior.DefaultValue ? scopeConfig.DefaultValue : null;
                                     }
                                 }
                                 else
@@ -268,16 +265,16 @@ namespace QuickTester
             {
                 var parts = new List<string>();
 
-                foreach (var step in await Repeater.Get("@"))
+                foreach (var step in await Repeater.Get())
                 {
-                    var scope = await step.GetD("@");
+                    var scope = await step.GetD();
 
                     foreach (var kvp in scope)
                     {
                         _contextSetter(kvp.Key, kvp.Value);
                     }
 
-                    var stepContent = await Template.GetAsS("@");
+                    var stepContent = await Template.GetAsS();
 
                     foreach (var kvp in scope)
                     {
@@ -287,13 +284,13 @@ namespace QuickTester
                     parts.Add(stepContent);
                 }
 
-                yield return entity.Create(string.Join(await Separator.GetAsS("@"), parts));
+                yield return entity.Create(string.Join(await Separator.GetAsS(), parts));
             }
         }
 
         public static async Task Run()
         {
-            var fw = new FrameworkWrapper();
+            var fw = await FrameworkWrapper.Create();
 
             Entity contextEntity = null;
 
@@ -305,8 +302,8 @@ namespace QuickTester
                 },
                 Retriever: async (entity, uri) => uri.Scheme switch
                 {
-                    "entity" => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
-                    "entityType" => (await GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
+                    "entity" => (await GetEntity(fw, uri.Host), UnescapeQueryString(uri)),
+                    "entityType" => (await GetEntityType(uri.Host), UnescapeQueryString(uri)),
                     "context" => (new[] { await contextEntity.GetE(uri.Host) }, UnescapeQueryString(uri)),
                     _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
                 },
@@ -855,28 +852,18 @@ DO NOTHING
             }
         }
 
-        private static async Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, Entity root, string entityId)
+        private static async Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, string entityId)
         {
             var id = Guid.Parse(entityId);
             var entity = await fw.Entities.GetEntity(id);
-            entity.Set("/Config/$id", id);
-            entity.Set("/Config/$name", entity.GetS("/Name"));
-            return new[] { await root.Parse("application/json", entity.GetS("/Config")) };
+            return new[] { entity };
         }
 
-        private static async Task<IEnumerable<Entity>> GetEntityType(Entity root, string entityType)
+        private static async Task<IEnumerable<Entity>> GetEntityType(string entityType)
         {
             var entities = await Data.CallFn("config", "SelectConfigsByType", new { type = entityType });
 
-            var convertedEntities = new List<Entity>();
-            foreach (var entity in entities.GetL("result"))
-            {
-                entity.Set("/Config/$id", entity.GetS("/Id"));
-                entity.Set("/Config/$name", entity.GetS("/Name"));
-                var convertedEntity = await root.Parse("application/json", entity.GetS(""));
-                convertedEntities.Add(convertedEntity);
-            }
-            return convertedEntities;
+            return await entities.GetL();
         }
 
         private static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
@@ -901,18 +888,21 @@ DO NOTHING
                         {
                             yield return entity.Create(entity.Value<string>().Replace(functionArguments[0].Value<string>(), functionArguments[1].Value<string>()), $"{entity.Query}.{query}");
                         }
+
                         break;
                     case "repeat":
                         for (var i = 0; i < functionArguments[0].Value<int>(); i++)
                         {
                             yield return entity.Clone($"{entity.Query}.{query}[{i}]");
                         }
+
                         break;
                     case "suppress":
                         if (!functionArguments[0].Value<bool>())
                         {
                             yield return entity;
                         }
+
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown function {functionName}");
