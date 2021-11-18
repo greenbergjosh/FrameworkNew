@@ -33,7 +33,17 @@ namespace QuickTester
                 var sb = new StringBuilder();
                 foreach (var child in Body)
                 {
-                    _ = sb.Append(await child.GetAsS());
+                    var suppress = await child.GetB("Suppress");
+                    var childBody = await child.GetAsS("Instruction");
+                    if (!suppress)
+                    {
+                        var prepend = await child.GetS("Prepend");
+                        if (string.IsNullOrEmpty(prepend) && string.IsNullOrEmpty(childBody))
+                        {
+                            _ = sb.Append(prepend);
+                        }
+                        _ = sb.Append(childBody);
+                    }
                 }
 
                 var body = sb.ToString();
@@ -52,7 +62,7 @@ namespace QuickTester
                     {
                         _symbolSetter(symbol, body);
                     }
-                }                
+                }
 
                 yield return entity.Create(body);
             }
@@ -101,7 +111,7 @@ namespace QuickTester
                     {
                         yield return DefaultValue;
                     }
-                }                
+                }
             }
         }
 
@@ -336,7 +346,7 @@ namespace QuickTester
 
             var subProduction = new Production(new[]
             {
-                E.Create("I am repeating: a: "),
+                E.Create(new { Instruction = "I am repeating: a: ", Suppress = false, Prepend = "" }),
                 E.Create(new GetterInstruction("context://a", E.Create("***NOT FOUND A***"))),
                 E.Create(" b: "),
                 E.Create(new GetterInstruction("context://b", E.Create("***NOT FOUND B***"))),
@@ -398,7 +408,7 @@ namespace QuickTester
 
             var union_query = new Production(new[]
             {
-                E.Create(new RepetitionInstruction(E.Create(union_select), E.Create(" UNION "), 
+                E.Create(new RepetitionInstruction(E.Create(union_select), E.Create(" UNION "),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["tbl"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("context://sym?tg_table_names.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)))
@@ -531,7 +541,7 @@ DO NOTHING
             //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
             var checked_transform_rs_elements = new Production(new[]
             {
-                E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {  
+                E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
                     (E.Create(new GetterInstruction("context://col?data_type[?(@=='BOOLEAN')]", null, true)), E.Create("BOOL_OR")),
                     (null, E.Create("MAX")) })),
                 E.Create(@"("""),
@@ -736,12 +746,12 @@ DO NOTHING
 
                 // AND "root_campaign_id" IS NOT NULL
                 // AND COALESCE("is_repeat_user", CASE WHEN satisfaction_expires < NOW() THEN 'f'::BOOLEAN END) IS NOT NULL
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND \r\n"),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("entity://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@"AND EXISTS(SELECT 1
+                E.Create(@" AND EXISTS(SELECT 1
                         FROM ""<target_schema>""."""),
 
                 // reuse again (comma sep list of quoted columns)
@@ -855,7 +865,7 @@ DO NOTHING
         private static async Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, string entityId)
         {
             var id = Guid.Parse(entityId);
-            var entity = await fw.Entities.GetEntity(id);
+            var entity = await (await fw.Entities.GetEntity(id)).GetE("Config");
             return new[] { entity };
         }
 
