@@ -52,6 +52,7 @@ namespace Utility.Entity
         public static EntityDocument MapValue(object value) => value switch
         {
             null => new EntityDocumentConstant(null, EntityValueType.Null),
+            bool => new EntityDocumentConstant(value, EntityValueType.Boolean),
             string => new EntityDocumentConstant(value, EntityValueType.String),
             int => new EntityDocumentConstant(value, EntityValueType.Number),
             float => new EntityDocumentConstant(value, EntityValueType.Number),

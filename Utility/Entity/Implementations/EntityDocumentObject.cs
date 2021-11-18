@@ -81,13 +81,26 @@ namespace Utility.Entity.Implementations
 
         public override async IAsyncEnumerable<Entity> ProcessEvaluatable()
         {
-            if (_value is IEvaluatable evaluatable)
+            var cur = _value;
+
+            while (cur is IEvaluatable evaluatable)
             {
                 await foreach (var entity in evaluatable.Evaluate(Entity))
                 {
                     yield return entity;
                 }
             }
+        }
+
+        private static async IAsyncEnumerable<Entity> InnerEvaluate(Entity e)
+        {
+            if (e is IEvaluatable evaluatable)
+            {
+            }
+            else
+            {
+            }
+            yield return null;
         }
 
         public override string ToString() => _value?.ToString();
