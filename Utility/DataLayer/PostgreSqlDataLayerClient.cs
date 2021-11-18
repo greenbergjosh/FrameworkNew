@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 
@@ -14,7 +12,7 @@ namespace Utility.DataLayer
             var builder = new NpgsqlConnectionStringBuilder(connectionString);
             if (string.IsNullOrWhiteSpace(builder.ApplicationName))
             {
-                builder.ApplicationName = Path.GetFileName(Directory.GetCurrentDirectory());
+                builder.ApplicationName = DataLayerClientFactory.AppName ?? Path.GetFileName(Directory.GetCurrentDirectory());
             }
 
             return builder.ToString();

@@ -51,6 +51,9 @@ namespace Utility.DataLayer
 
                 await AddConnectionStrings(await config.EvalE("ConnectionStrings"));
 
+                var appName = await config.EvalS("AppName");
+                DataLayerClientFactory.AppName = appName;
+
                 return config;
             }
             catch (Exception e)
@@ -92,23 +95,23 @@ namespace Utility.DataLayer
         {
             if (connectionStrings != null && connectionStrings.IsObject)
             {
-                foreach (var o in await connectionStrings.EvalD<string>())
+                foreach (var item in await connectionStrings.EvalD<string>())
                 {
-                    if (Connections.ContainsKey(o.Key) && Connections[o.Key].Id == o.Value && !merge)
+                    if (Connections.ContainsKey(item.Key) && Connections[item.Key].Id == item.Value && !merge)
                     {
                         continue;
                     }
 
-                    if (Connections.ContainsKey(o.Key) && !merge)
+                    if (Connections.ContainsKey(item.Key) && !merge)
                     {
-                        throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Key}");
+                        throw new Exception($"Caught attempt to replace existing connection config with different value for {item.Key}");
                     }
 
-                    var conf = await GetConfigRecordValue(o.Value, _configConn, _configFunction);
+                    var conf = await GetConfigRecordValue(item.Value, _configConn, _configFunction);
 
                     var dataLayerType = await conf.EvalS("DataLayerType");
                     var connectionString = await conf.EvalS("ConnectionString");
-                    var conn = Connections.GetOrAdd(o.Key, s => new Connection(o.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType), connectionString));
+                    var conn = Connections.GetOrAdd(item.Key, s => new Connection(item.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType), connectionString));
 
                     foreach (var sp in await conf.EvalD<string>("DataLayer"))
                     {

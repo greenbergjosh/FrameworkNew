@@ -8,6 +8,8 @@ namespace Utility.DataLayer
         public const string SqlServer = "SqlServer";
         public const string PostgreSQL = "PostgreSQL";
 
+        public static string AppName { get; set; }
+
         private static readonly Dictionary<string, Func<IDataLayerClient>> _supportedClients = new()
         {
             { SqlServer, () => new SqlServerDataLayerClient() },

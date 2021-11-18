@@ -90,7 +90,7 @@ namespace Utility
                 fw.EdwWriter = await EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(fw.StartupConfiguration);
                 fw.ErrorWriter = await ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(fw.StartupConfiguration);
 
-                var appName = await fw.StartupConfiguration.EvalS("ErrorLogAppName", fw.ConfigurationKeys.Join("::"));
+                var appName = await fw.StartupConfiguration.EvalS("AppName");
 
                 fw.Err =
                     async (int severity, string method, string descriptor, string message) =>

@@ -387,7 +387,7 @@ namespace UnsubLib
                         {
                             var res = await Data.CallFn(Conn, "SelectNetworkCampaign", JsonSerializer.Serialize(new { ncid = networkCampaignId, nid = networkId }));
 
-                            if ((await res?.EvalS("$meta.id")).ParseGuid().HasValue != true)
+                            if ((await res?.EvalGuid("$meta.id", null)).HasValue != true)
                             {
                                 await _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to retrieve campaign details from db: NetworkCampaignId:{networkCampaignId} NetworkId:{networkId} Response: {res}");
                                 continue;
@@ -1106,7 +1106,7 @@ namespace UnsubLib
                 try
                 {
                     var refreshPeriod = (await c.EvalS("UnsubRefreshPeriod")).ParseInt() ?? (await _fw.StartupConfiguration.EvalS("DefaultUnsubRefreshPeriod")).ParseInt() ?? 10;
-                    if (!string.IsNullOrWhiteSpace(await c.EvalS("MostRecentUnsubFileId")) && (DateTime.Now - DateTime.Parse(await c.EvalS("MostRecentUnsubFileDate"))).TotalDays <= refreshPeriod)
+                    if (!string.IsNullOrWhiteSpace(await c.EvalS("MostRecentUnsubFileId")) && (DateTime.Now - (await c.EvalDateTime("MostRecentUnsubFileDate"))).TotalDays <= refreshPeriod)
                     {
                         refdFiles.Add((await c.EvalS("MostRecentUnsubFileId")).ToLower());
                     }

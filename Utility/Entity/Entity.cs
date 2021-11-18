@@ -140,6 +140,10 @@ namespace Utility.Entity
 
         public Task<int> EvalI(string query = "@", int defaultValue = 0) => GetWithDefault(query, defaultValue);
 
+        public Task<long> EvalLong(string query = "@") => Eval<long>(query);
+
+        public Task<long> EvalLong(string query = "@", long defaultValue = 0) => GetWithDefault(query, defaultValue);
+
         public Task<IEnumerable<Entity>> EvalL(string query = "@") => Eval($"{query}.*");
 
         public async Task<IEnumerable<T>> EvalL<T>(string query = "@") => (await EvalL(query)).Select(entity => entity.Value<T>());
