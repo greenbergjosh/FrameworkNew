@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -119,7 +118,6 @@ namespace Utility
             code = Regex.Replace(code, "(#r.+\r\n)", "//$1");
             var scriptOptions = ScriptOptions.Default
                 .AddReferences(
-                    //                    Assembly.GetAssembly(typeof(Enumerable)),  // System.Linq
                     GetType().Assembly
                 )
                 .AddReferences(dynamicAssemblies);
