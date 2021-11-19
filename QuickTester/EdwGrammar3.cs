@@ -49,7 +49,7 @@ namespace QuickTester
                     if (!suppress)
                     {
                         var prepend = await child.EvalS("Prepend", null);
-                        if (string.IsNullOrEmpty(prepend) && string.IsNullOrEmpty(childBody))
+                        if (!string.IsNullOrEmpty(prepend) && !string.IsNullOrEmpty(childBody))
                         {
                             _ = sb.Append(prepend);
                         }
@@ -115,7 +115,7 @@ namespace QuickTester
                         hadResults = true;
                         if (resultEntity.ValueType == EntityValueType.String)
                         {
-                            yield return entity.Create(Prefix + (await resultEntity.EvalAsS("@")) + Suffix);
+                            yield return entity.Create(Prefix + (await resultEntity.EvalS("@")) + Suffix);
                         }
                         else
                         {
@@ -543,6 +543,8 @@ DO NOTHING
              ***************************************************************************************************************************
              */
 
+            
+
             //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
             var checked_transform_rs_elements = new Production(new[]
             {
@@ -623,8 +625,7 @@ DO NOTHING
             var checked_transform_all_keys = new Production(new[]
             {
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
-                    //(E.Create(new GetterInstruction("context://col?satisfaction_default_value[?(@)]", null, true)), E.Create(checked_transform_all_keys_with_satisfaction)),
-                    (E.Create(false), E.Create(checked_transform_all_keys_with_satisfaction)),
+                    (E.Create(new GetterInstruction("context://col?satisfaction_default_value[?(@)]", null, true)), E.Create(checked_transform_all_keys_with_satisfaction)),
                     (null, E.Create(checked_transform_all_keys_without_satisfaction))
                 })),
             }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
@@ -635,178 +636,176 @@ DO NOTHING
                 E.Create(@" IS NOT NULL")
             }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
 
+
+
+
             // If singleton then this one is not created at all - it is null.
             var report_sequence_checked_transform_sql = new Production(new[]
             {
-                //E.Create(@"DROP TABLE IF EXISTS tmp_checked_pending_set;
-                //    CREATE TABLE tmp_checked_pending_set AS
-                //        (SELECT id,
-                //                MIN(ts)                           ts,
-                //                MIN(satisfaction_expires)         satisfaction_expires,
-                //                MIN(expires_interval)             expires_interval,"),
+                E.Create(@"DROP TABLE IF EXISTS tmp_checked_pending_set;
+                    CREATE TABLE tmp_checked_pending_set AS
+                        (SELECT id,
+                                MIN(ts)                           ts,
+                                MIN(satisfaction_expires)         satisfaction_expires,
+                                MIN(expires_interval)             expires_interval"),
 
-                ////MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_rs_elements), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_rs_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
 
-                //E.Create(@" FROM (
-                //          SELECT rs.id,
-                //                 rs.ts,
-                //                 NOW() +
-                //                 COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
-                //                 COALESCE(payload ->> 'agg_ttl_interval', '30d')                                            expires_interval,"),
+                E.Create(@" FROM (
+                          SELECT rs.id,
+                                 rs.ts,
+                                 NOW() +
+                                 COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
+                                 COALESCE(payload ->> 'agg_ttl_interval', '30d')                                            expires_interval"),
 
-                ////util.try_parse(CASE
-                ////                        WHEN payload -> 'body' -> 'PathStyleVerticalTypeId' IS NULL THEN NULL
-                ////                        ELSE COALESCE(payload -> 'body' ->> 'PathStyleVerticalTypeId', '0') END, 'INT',
-                ////                    NULL)::INT                                                                  "pathstyle_vertical_type_id",
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                //util.try_parse(CASE
+                //                        WHEN payload -> 'body' -> 'PathStyleVerticalTypeId' IS NULL THEN NULL
+                //                        ELSE COALESCE(payload -> 'body' ->> 'PathStyleVerticalTypeId', '0') END, 'INT',
+                //                    NULL)::INT                                                                  "pathstyle_vertical_type_id",
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
 
-                //E.Create(@"FROM tmp_staging_report_sequence_checked rs
-                //      WHERE staging_ts < <max_ts_to_move>
-                //      UNION
-                //      SELECT rs.id,
-                //             rs.ts,
-                //             NOW() +
-                //             COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
-                //             NULL::TEXT                                                                                 expires_interval,"),
+                E.Create(@"FROM tmp_staging_report_sequence_checked rs
+                      WHERE staging_ts < <max_ts_to_move>
+                      UNION
+                      SELECT rs.id,
+                             rs.ts,
+                             NOW() +
+                             COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
+                             NULL::TEXT                                                                                 expires_interval"),
 
-                //// same as above repetition
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // same as above repetition
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
 
-                //E.Create(@"FROM tmp_staging_report_sequence_checked_detail rs
-                //      WHERE staging_ts < < max_ts_to_move >
-                //      UNION
-                //      SELECT pnd.id,
-                //             pnd.ts,
-                //             satisfaction_expires,
-                //             expires_interval,"),
+                E.Create(@" FROM tmp_staging_report_sequence_checked_detail rs
+                      WHERE staging_ts < <max_ts_to_move>
+                      UNION
+                      SELECT pnd.id,
+                             pnd.ts,
+                             satisfaction_expires,
+                             expires_interval"),
 
-                //// reusing a template from another template
-                //E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // reusing a template from another template
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
 
-                //E.Create(@"FROM ""<pending_target_schema>""."""),
+                E.Create(@"FROM ""<pending_target_schema>""."),
 
-                //E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                //E.Create(@""" pnd
-                //                   JOIN tmp_staging_report_sequence_checked rsc
-                //                        ON (pnd.id = rsc.id AND pnd.ts = rsc.ts)
-                //                   JOIN tmp_staging_report_sequence_checked_detail rscd
-                //                        ON (pnd.id = rscd.id AND pnd.ts = rscd.ts)
-                //          WHERE rsc.staging_ts < <max_ts_to_move>
-                //            AND rscd.staging_ts < <max_ts_to_move>
-                //                    <partition_where_clause>
-                //      ) src
-                // GROUP BY id);
+                E.Create(@" pnd
+                                   JOIN tmp_staging_report_sequence_checked rsc
+                                        ON (pnd.id = rsc.id AND pnd.ts = rsc.ts)
+                                   JOIN tmp_staging_report_sequence_checked_detail rscd
+                                        ON (pnd.id = rscd.id AND pnd.ts = rscd.ts)
+                          WHERE rsc.staging_ts < <max_ts_to_move>
+                            AND rscd.staging_ts < <max_ts_to_move>
+                                    <partition_where_clause>
+                      ) src
+                 GROUP BY id);
 
-                //        CREATE UNIQUE INDEX uix_tmp_checked_pending_set ON tmp_checked_pending_set(id, ts);
+                        CREATE UNIQUE INDEX uix_tmp_checked_pending_set ON tmp_checked_pending_set(id, ts);
 
-                //        INSERT INTO ""<pending_target_schema>""."""),
+                        INSERT INTO ""<pending_target_schema>""."),
 
-                //E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                //E.Create(@""" AS tgt (id, ts, satisfaction_expires, expires_interval,"),
+                E.Create(@" AS tgt (id, ts, satisfaction_expires, expires_interval"),
 
-                //// again reusing
-                //E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // again reusing
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
 
-                //E.Create(@")
-                //    SELECT *
-                //    FROM tmp_checked_pending_set
-                //    ON CONFLICT (id, ts) DO UPDATE
-                //        SET ts                           = COALESCE(tgt.ts, excluded.ts),"),
+                E.Create(@")
+                    SELECT *
+                    FROM tmp_checked_pending_set
+                    ON CONFLICT (id, ts) DO UPDATE
+                        SET ts                           = COALESCE(tgt.ts, excluded.ts)"),
 
-                //// "pathstyle_id"               = COALESCE(tgt."pathstyle_id", excluded."pathstyle_id"),
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_tgt_and_excluded), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // "pathstyle_id"               = COALESCE(tgt."pathstyle_id", excluded."pathstyle_id"),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_tgt_and_excluded), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
 
-                //E.Create(@";
+                E.Create(@";
 
-                //    INSERT INTO warehouse.report_sequence_duplicates(id, ts)
-                //    SELECT id,
-                //           ts
-                //    FROM ""<pending_target_schema>""."""),
+                    INSERT INTO warehouse.report_sequence_duplicates(id, ts)
+                    SELECT id,
+                           ts
+                    FROM ""<pending_target_schema>""."),
 
-                //E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                //E.Create(@""" p
-                //        WHERE ts IS NOT NULL"),
+                E.Create(@" p
+                        WHERE ts IS NOT NULL"),
 
                 // AND "root_campaign_id" IS NOT NULL
                 // AND COALESCE("is_repeat_user", CASE WHEN satisfaction_expires < NOW() THEN 'f'::BOOLEAN END) IS NOT NULL
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND \r\n"),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " AND "}),
 
                 E.Create(@" AND EXISTS(SELECT 1
-                        FROM ""<target_schema>""."""),
+                        FROM ""<target_schema>""."),
 
-                // reuse again (comma sep list of quoted columns)
-                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
-                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                E.Create(@""" tgt
+                E.Create(@" tgt
                      WHERE p.id = tgt.id <dups_partition_where_clause>);
 
                     WITH inserted AS(
-                        INSERT INTO ""<target_schema>""."""),
+                        INSERT INTO ""<target_schema>""."),
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                E.Create(@""" (id, ts, "),
+                E.Create(@" (id, ts "),
 
-                // same as two above but without not null
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_all_keys), E.Create(" AND "),
+                // reuse again (comma sep list of quoted columns)
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(" , "),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " , "}),
+
 
                 E.Create(@", expires)
                     SELECT id,
-                           ts,"),
+                           ts"),
+
+                // same as two above but without not null
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys), E.Create(" , "),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " , "}),
+
+                E.Create(@" , NOW() + expires_interval::INTERVAL
+                    FROM ""<pending_target_schema>""."),
+
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
+
+                E.Create(@" WHERE ts IS NOT NULL"),
 
                 // again with the not null
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " AND "}),
 
-                E.Create(@",
-                           NOW() + expires_interval::INTERVAL
-                    FROM ""<pending_target_schema>""."""),
-
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
-
-                E.Create(@"""
-                    WHERE ts IS NOT NULL"),
-
-                // again with the not null
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
-                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
-
-                E.Create(@"ON CONFLICT DO NOTHING
+                E.Create(@" ON CONFLICT DO NOTHING
                                 RETURNING 1
                         )
                         INSERT
@@ -818,21 +817,19 @@ DO NOTHING
                         ;
 
                         WITH deleted AS (
-                            DELETE FROM ""<pending_target_schema>""."""),
+                            DELETE FROM ""<pending_target_schema>""."),
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                E.Create(@"""
+                E.Create(@"
                     WHERE ts IS NOT NULL "),
 
-                // Prepend the AND if there are columns after here
-
-                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name_with_coalesce), E.Create(","),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " AND "}),
 
-                E.Create(@"RETURNING 1
+                E.Create(@" RETURNING 1
                     )
                     INSERT
                     INTO log.general(ts, reporter, message)
@@ -842,16 +839,175 @@ DO NOTHING
                     FROM deleted;
 
                     DELETE
-                    FROM ""<pending_target_schema>""."""),
+                    FROM ""<pending_target_schema>""."),
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                E.Create(@"""
-                    WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); ")
+                E.Create(@" WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); ")               
+            }, (key, value) => symbolTable[key] = E.Create(value), null);
+
+
+            ///////////*************************** report_sequence_select.sql 
+            ///
+
+            /*
+            ["process_constants"] = 
+                "'<<g|context://constant?value>>'::<<g|context://constant?data_type>>"
+                "<<g|context://constant?name>>"
+
+            ["event_elements"] = 
+                "<<event_element>> \"<<g|context://evt?alias>>\""
+
+            ["event_element"] = 
+                "(coalesce(event_payload -> 'body' <<g|context://evt?json_path>>, ''))::<<g|context://evt?data_type>>"  
+                "<<g|context://evt?alias>>",
+
+            ["derived_elements"] =
+                "<<derived_element>> \"<<g|context://der?alias>>\""
+
+            ["derived_element"] 
+                "<<g|context://der?col_value>>::<<g|context://der?data_type>>"
+                "<<g|context://der?alias>>"
+
+            ["rs_elements"]
+                "<<rs_element>> \"<<g|context://rs?alias>>\""
+
+            ["rs_element"] = 
+                "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
+            */
+
+            
+            
+
+            var process_constants = new Production(new[]
+            {
+                E.Create(new GetterInstruction("context://col?value", E.Create(""), false, @"'", @"'")),
+                E.Create(@"::"),
+                E.Create(new GetterInstruction("context://col?data_type")),
+                E.Create(@" "),
+                E.Create(new GetterInstruction("context://col?name")),
+            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create(new GetterInstruction("context://col?name")) });
+
+            //["rs_element"] =
+            //    "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
+            var rs_element = new Production(new[]
+            {
+                E.Create(@"rs."),
+                E.Create(new GetterInstruction("context://col?alias")),
+            }, (key, value) => symbolTable[key] = E.Create(value),
+                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
+
+            //["rs_elements"]
+            //    "<<rs_element>> \"<<g|context://rs?alias>>\""
+            var rs_elements = new Production(new[]
+            {
+                E.Create(rs_element),
+                E.Create(@"  "),
+                E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
+            }, (key, value) => symbolTable[key] = E.Create(value), null );
+
+            //["event_element"] =
+            //    "(coalesce(event_payload -> 'body' <<g|context://evt?json_path>>, ''))::<<g|context://evt?data_type>>"
+            //    "<<g|context://evt?alias>>",
+            var event_element = new Production(new[]
+            {
+                E.Create(@"COALESCE(event_payload -> 'body' "),
+                E.Create(new GetterInstruction("context://col?json_path")),
+                E.Create(@", "),
+                E.Create(new GetterInstruction("context://col?satisfaction_default_value", E.Create("''"), false, "'", "'")),
+                E.Create(@"))::"),
+                E.Create(new GetterInstruction("context://col?data_type"))
+            }, (key, value) => symbolTable[key] = E.Create(value), 
+                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
+
+            //["event_elements"] =
+            //    "<<event_element>> \"<<g|context://evt?alias>>\""
+            var event_elements = new Production(new[]
+            {
+                E.Create(event_element),
+                E.Create(@"  "),
+                E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
+            }, (key, value) => symbolTable[key] = E.Create(value), null );
+
+            //["derived_element"]
+            //    "<<g|context://der?col_value>>::<<g|context://der?data_type>>"
+            //    "<<g|context://der?alias>>"
+            var derived_element = new Production(new[]
+            {
+                E.Create(new GetterInstruction("context://col?col_value")),
+                E.Create(@"::"),
+                E.Create(new GetterInstruction("context://col?data_type")),
+            }, (key, value) => symbolTable[key] = E.Create(value),
+                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
+
+            //["derived_elements"] =
+            //    "<<derived_element>> \"<<g|context://der?alias>>\""
+            var derived_elements = new Production(new[]
+            {
+                E.Create(derived_element),
+                E.Create(@"  "),
+                E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
+            }, (key, value) => symbolTable[key] = E.Create(value), null);
+
+            //JOIN warehouse_report_sequence."PathDmSn" rs ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)
+            var select_sql_multiton_join = new Production(new[]
+            {
+                E.Create(@" JOIN warehouse_report_sequence."),
+                E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.name", E.Create(""), false, @"""", @"""")),
+                E.Create(@" rs ON  (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)")
+            }, (key, value) => symbolTable[key] = E.Create(value), null );
+
+
+            var report_sequence_select_sql = new Production(new[]
+            {
+                //["process_constants"] =
+                //"'<<g|context://constant?value>>'::<<g|context://constant?data_type>>"
+                //"<<g|context://constant?name>>"
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(process_constants), E.Create(""),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?constants.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = true }),
+
+                E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
+                    (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
+                        E.Create(@"SELECT event_id,
+                                   event_ts,
+                                   rs.id    rs_id,
+                                   rs.ts    rs_ts")),
+                    (null, E.Create(@"SELECT event_id,
+                                             event_ts"))
+                })),
+
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?event_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
+
+                E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
+                    (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
+                        E.Create(new Production( new [] { E.Create(new { Instruction = new RepetitionInstruction(E.Create(rs_elements), E.Create(","),
+                            E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                                ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                        })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}) }))),
+                    (null, E.Create(@""))
+                })),
+
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(derived_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?derived_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
+
+                E.Create(@"FROM satisfied_set ws"),
+
+                E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
+                    (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
+                        E.Create(select_sql_multiton_join)),
+                    (null, E.Create(@""))
+                }))
 
             }, (key, value) => symbolTable[key] = E.Create(value), null);
 
-            var cur_prod = report_sequence_checked_transform_sql;
+            var cur_prod = report_sequence_select_sql;
 
             await foreach (var output in cur_prod.Evaluate(E.Create(cur_prod)))
             {
@@ -870,7 +1026,7 @@ DO NOTHING
         private static async IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query)
         {
             foreach (var entity in entities)
-            {
+            { //$meta.id  // EvalL()
                 switch (functionName)
                 {
                     case "replace":
@@ -889,6 +1045,22 @@ DO NOTHING
                         }
 
                         break;
+
+                    case "distinct":
+                        var d = new HashSet<string>();
+                        foreach (var child in await entity.EvalL())
+                        {
+                            var s = await child.EvalS("$meta.id");
+                            if (d.Contains(s)) {
+                                continue;
+                            }
+                            else {
+                                d.Add(s);
+                                yield return child;
+                            }
+                        }
+                        break;
+
                     case "repeat":
                         for (var i = 0; i < functionArguments[0].Value<int>(); i++)
                         {
