@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Utility.DataLayer;
 using Utility.EDW.Logging;
 using Utility.EDW.Reporting;
+using Utility.Entity;
 using Utility.Entity.Implementations;
 
 namespace Utility
@@ -31,7 +32,7 @@ namespace Utility
         public IDistributedCache Cache { get; private set; }
         public Entity.Entity Entity { get; private set; }
 
-        public static async Task<FrameworkWrapper> Create(string[] commandLineArgs = null, IDistributedCache cache = null)
+        public static async Task<FrameworkWrapper> Create(EntityConfig entityConfig = null, string[] commandLineArgs = null, IDistributedCache cache = null)
         {
             try
             {
@@ -54,18 +55,20 @@ namespace Utility
 
                 static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
-                fw.Entity = Utility.Entity.Entity.Initialize(new Entity.EntityConfig
+                fw.Entity = Utility.Entity.Entity.Initialize(new EntityConfig
                 (
                     Parser: (entity, contentType, content) => contentType switch
                     {
                         "application/json" => EntityDocumentJson.Parse(content),
-                        _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
+                        _ => entityConfig?.Parser == null ? throw new InvalidOperationException($"Unknown contentType: {contentType}") : entityConfig.Parser(entity, contentType, content)
                     },
                     Retriever: async (entity, uri) => uri.Scheme switch
                     {
                         "config" => (new[] { await fw._entities.GetEntity(Guid.Parse(uri.Host)) }, UnescapeQueryString(uri)),
-                        _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
-                    }
+                        _ => entityConfig?.Retriever == null ? throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}") : await entityConfig.Retriever(entity, uri)
+                    },
+                   MissingPropertyHandler: entityConfig?.MissingPropertyHandler,
+                   FunctionHandler: entityConfig?.FunctionHandler
                 ));
 
                 fw.StartupConfiguration = await Data.Initialize(

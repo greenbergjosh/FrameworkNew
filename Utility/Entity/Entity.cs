@@ -156,6 +156,11 @@ namespace Utility.Entity
 
         public async Task<Entity> Parse(string contentType, string content)
         {
+            if (_config.Parser == null)
+            {
+                throw new InvalidOperationException("No parser was provided when initializing Entity");
+            }
+
             var entityDocument = await _config.Parser(this, contentType, content);
 
             return new Entity(entityDocument, null, _config, "$");
@@ -317,5 +322,5 @@ namespace Utility.Entity
         #endregion
     }
 
-    public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
+    public record EntityConfig(EntityParser Parser = null, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 }

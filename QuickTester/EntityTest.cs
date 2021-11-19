@@ -87,7 +87,35 @@ namespace QuickTester
                 ["processVariable1"] = "Hello there"
             });
 
-            var fw = await FrameworkWrapper.Create();
+            var testClass = new TestClass { Field1 = "Field string", Property1 = "Test string", Property2 = 100 };
+
+            var fw = await FrameworkWrapper.Create(new EntityConfig(
+                Retriever: async (entity, uri) => uri.Scheme switch
+                {
+                    "entity" => uri.Host switch
+                    {
+                        "testdocument" => (new[] { await entity.Parse("application/json", testDocument) }, UnescapeQueryString(uri)),
+                        "reftestparentdocument" => (new[] { await entity.Parse("application/json", refTestParentDocument) }, UnescapeQueryString(uri)),
+                        "reftestchilddocument" => (new[] { await entity.Parse("application/json", refTestChildDocument) }, UnescapeQueryString(uri)),
+                        "reftestchilddocument2" => (new[] { await entity.Parse("application/json", refTestChildDocument2) }, UnescapeQueryString(uri)),
+                        "testclass" => (new[] { entity.Create(EntityDocumentObject.Create(testClass)) }, UnescapeQueryString(uri)),
+                        _ => throw new InvalidOperationException($"Unknown entity: {uri.Host}")
+                    },
+                    "memory" => (new[] {entity.Create(uri.Host switch
+                    {
+                        "thread" => threadState,
+                        "process" => processState,
+                        _ => throw new Exception($"Unknown memory location {uri.Host}"),
+                    })}, UnescapeQueryString(uri)),
+                    _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
+                },
+                MissingPropertyHandler: (entity, propertyName) =>
+                {
+                    Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
+                    return Task.FromResult<EntityDocument>(null);
+                },
+                FunctionHandler: functionHandler
+            ));
 
             static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
@@ -172,40 +200,7 @@ namespace QuickTester
                 }
             }
 
-            var testClass = new TestClass { Field1 = "Field string", Property1 = "Test string", Property2 = 100 };
-
-            var E = Entity.Initialize(new EntityConfig(
-                Parser: (entity, contentType, content) => contentType switch
-                {
-                    "application/json" => EntityDocumentJson.Parse(content),
-                    _ => throw new InvalidOperationException($"Unknown contentType: {contentType}")
-                },
-                Retriever: async (entity, uri) => uri.Scheme switch
-                {
-                    "entity" => uri.Host switch
-                    {
-                        "testdocument" => (new[] { await entity.Parse("application/json", testDocument) }, UnescapeQueryString(uri)),
-                        "reftestparentdocument" => (new[] { await entity.Parse("application/json", refTestParentDocument) }, UnescapeQueryString(uri)),
-                        "reftestchilddocument" => (new[] { await entity.Parse("application/json", refTestChildDocument) }, UnescapeQueryString(uri)),
-                        "reftestchilddocument2" => (new[] { await entity.Parse("application/json", refTestChildDocument2) }, UnescapeQueryString(uri)),
-                        "testclass" => (new[] { entity.Create(EntityDocumentObject.Create(testClass)) }, UnescapeQueryString(uri)),
-                        _ => (await GetEntity(fw, uri.Host), UnescapeQueryString(uri))
-                    },
-                    "memory" => (new[] {entity.Create(uri.Host switch
-                    {
-                        "thread" => threadState,
-                        "process" => processState,
-                        _ => throw new Exception($"Unknown memory location {uri.Host}"),
-                    })}, UnescapeQueryString(uri)),
-                    _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
-                },
-                MissingPropertyHandler: (entity, propertyName) =>
-                {
-                    Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
-                    return Task.FromResult<EntityDocument>(null);
-                },
-                FunctionHandler: functionHandler
-            ));
+            var E = fw.Entity;
 
             var testEntity = await E.Parse("application/json", testDocument);
             var testJsonDocument = JsonDocument.Parse(testDocument);
@@ -299,14 +294,14 @@ namespace QuickTester
 
             var absoluteQueries = new[]
             {
-                "entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@!=\"multiton\")]",
-                "entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$id",
+                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@!=\"multiton\")]",
+                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$id",
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?a.x",
                 "entity://refTestParentDocument?a.$ref",
                 "memory://thread?$.threadVariable1",
                 "entity://refTestParentDocument?c",
-                "entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId",
+                "config://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId",
                 "entity://refTestParentDocument?d",
                 "entity://testDocument?$.a.b.c",
                 "entity://testDocument?$.a.b.c.Replace(\"string\", \"COOL STRING\")",

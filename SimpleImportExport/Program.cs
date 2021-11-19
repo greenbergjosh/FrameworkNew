@@ -29,7 +29,7 @@ namespace SimpleImportExport
 
             try
             {
-                _fw = await FrameworkWrapper.Create(args);
+                _fw = await FrameworkWrapper.Create(commandLineArgs: args);
             }
             catch (Exception e)
             {

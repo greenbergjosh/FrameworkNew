@@ -20,7 +20,7 @@ namespace GenericApi
 
         public static async Task Main(string[] args)
         {
-            FrameworkWrapper = await FrameworkWrapper.Create(args);
+            FrameworkWrapper = await FrameworkWrapper.Create(commandLineArgs: args);
             if (Guid.TryParse(await FrameworkWrapper.StartupConfiguration.EvalS("RsConfigId", null), out var rsConfigId))
             {
                 RsConfigId = rsConfigId;

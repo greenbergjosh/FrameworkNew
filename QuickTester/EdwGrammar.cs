@@ -490,16 +490,16 @@ namespace Utility.Entity
 //            ContextEntity = E.Create(context);
 
 //            // add_thread_group
-//            Entity e1 = await E.GetE("entity://e97f0bac-2640-448c-b6f2-2a9a5510cc76");
+//            Entity e1 = await E.GetE("config://e97f0bac-2640-448c-b6f2-2a9a5510cc76");
 //            context["g"] = e1;
 //            string sql1 = await CallProduction("insert_thread_group_records");
 //            string sql2 = await CallProduction("create_tg_tables_and_indexes");
 
 //            // end add_thread_group
 
-//            string s = await E.GetS("entity://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId");
+//            string s = await E.GetS("config://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId");
 
-//            Entity e = await E.GetE("entity://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
+//            Entity e = await E.GetE("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
 
 //            context["g"] = e;  // "g", Entity(g)
 //            // context://g?path    g.Get(path).Value<bool>()

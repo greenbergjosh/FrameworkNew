@@ -85,7 +85,7 @@ namespace GenericWindowsService
         {
             try
             {
-                var fw = await FrameworkWrapper.Create(args);
+                var fw = await FrameworkWrapper.Create(commandLineArgs: args);
 
                 using (var dynamicContext = new AssemblyResolver(await fw.StartupConfiguration.EvalS("DataServiceAssemblyFilePath"), await fw.StartupConfiguration.EvalL<string>("AssemblyDirs")))
                 {
