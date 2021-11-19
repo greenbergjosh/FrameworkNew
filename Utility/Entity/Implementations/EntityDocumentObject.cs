@@ -84,9 +84,27 @@ namespace Utility.Entity.Implementations
         {
             if (_value is IEvaluatable evaluatable)
             {
-                await foreach (var entity in evaluatable.Evaluate(Entity))
+                await foreach (var entity in InnerEvaluate(evaluatable, Entity))
                 {
                     yield return entity;
+                }
+            }
+        }
+
+        private static async IAsyncEnumerable<Entity> InnerEvaluate(IEvaluatable evaluatable, Entity entity)
+        {
+            await foreach (var child in evaluatable.Evaluate(entity))
+            {
+                var hadChildren = false;
+                await foreach (var innerChild in child.Document.ProcessEvaluatable())
+                {
+                    hadChildren = true;
+                    yield return innerChild;
+                }
+
+                if (!hadChildren)
+                {
+                    yield return child;
                 }
             }
         }
