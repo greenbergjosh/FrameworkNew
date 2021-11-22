@@ -1122,7 +1122,7 @@ DO NOTHING
                         throw new Exception($"Unclosed token starting at index {nextTokenStartIndex}");
                     }
 
-                    var query = tokenizedInput[(nextTokenStartIndex + tokenStart.Length)..nextTokenEndIndex];
+                    var query = tokenizedInput[(nextTokenStartIndex + tokenStart.Length)..nextTokenEndIndex].Trim();
                     var value = await entity.EvalS(query);
                     _ = result.Append(value);
 
