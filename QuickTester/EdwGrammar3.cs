@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
@@ -366,14 +367,34 @@ namespace QuickTester
         {
             Entity contextEntity = null;
 
-            var fw = await FrameworkWrapper.Create(new EntityConfig(
-                Retriever: async (entity, uri) => uri.Scheme switch
+            static async IAsyncEnumerable<Entity> ReplaceTemplates(Entity entity)
+            {
+                if (entity.ValueType == EntityValueType.String)
                 {
-                    "context" => (new[] { await contextEntity.EvalE(uri.Host) }, UnescapeQueryString(uri)),
-                    _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
-                },
-                FunctionHandler: FunctionHandler
-            ));
+                    var value = await entity.EvalS("@");
+
+                    var (hadTokens, tokenReplacedValue) = await ReplaceTokens(entity, value);
+
+                    if (hadTokens)
+                    {
+                        yield return entity.Create(tokenReplacedValue, entity.Query);
+                    }
+                }
+            }
+
+            var fw = await FrameworkWrapper.Create(
+                entityConfig: new EntityConfig(
+                    Retriever: async (entity, uri) => uri.Scheme switch
+                    {
+                        "context" => (new[] { await contextEntity.EvalE(uri.Host) }, UnescapeQueryString(uri)),
+                        _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
+                    },
+                    FunctionHandler: FunctionHandler
+                ),
+                evaluatorConfig: new EvaluatorConfig(
+                    EntityMutator: ReplaceTemplates
+                )
+            );
 
             var E = fw.Entity;
 
@@ -594,7 +615,7 @@ DO NOTHING
              ***************************************************************************************************************************
              */
 
-            
+
 
             //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
             var checked_transform_rs_elements = new Production(new[]
@@ -894,7 +915,7 @@ DO NOTHING
 
                 E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
 
-                E.Create(@" WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); ")               
+                E.Create(@" WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); ")
             }, (key, value) => symbolTable[key] = E.Create(value), null);
 
 
@@ -927,8 +948,8 @@ DO NOTHING
                 "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
             */
 
-            
-            
+
+
 
             var process_constants = new Production(new[]
             {
@@ -952,33 +973,35 @@ DO NOTHING
             //    "<<rs_element>> \"<<g|context://rs?alias>>\""
             var rs_elements = new Production(new[]
             {
+                E.Create(@"    "),
                 E.Create(rs_element),
                 E.Create(@"  "),
                 E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
-            }, (key, value) => symbolTable[key] = E.Create(value), null );
+            }, (key, value) => symbolTable[key] = E.Create(value), null);
 
             //["event_element"] =
             //    "(coalesce(event_payload -> 'body' <<g|context://evt?json_path>>, ''))::<<g|context://evt?data_type>>"
             //    "<<g|context://evt?alias>>",
             var event_element = new Production(new[]
             {
-                E.Create(@"COALESCE(event_payload -> 'body' "),
+                E.Create("COALESCE(event_payload -> 'body' "),
                 E.Create(new GetterInstruction("context://col?json_path")),
                 E.Create(@", "),
                 E.Create(new GetterInstruction("context://col?satisfaction_default_value", E.Create("''"), false, "'", "'")),
-                E.Create(@"))::"),
+                E.Create(@")::"),
                 E.Create(new GetterInstruction("context://col?data_type"))
-            }, (key, value) => symbolTable[key] = E.Create(value), 
+            }, (key, value) => symbolTable[key] = E.Create(value),
                     new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
 
             //["event_elements"] =
             //    "<<event_element>> \"<<g|context://evt?alias>>\""
             var event_elements = new Production(new[]
             {
+                E.Create(@"    "),
                 E.Create(event_element),
                 E.Create(@"  "),
                 E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
-            }, (key, value) => symbolTable[key] = E.Create(value), null );
+            }, (key, value) => symbolTable[key] = E.Create(value), null);
 
             //["derived_element"]
             //    "<<g|context://der?col_value>>::<<g|context://der?data_type>>"
@@ -995,18 +1018,19 @@ DO NOTHING
             //    "<<derived_element>> \"<<g|context://der?alias>>\""
             var derived_elements = new Production(new[]
             {
+                E.Create(@"    "),
                 E.Create(derived_element),
-                E.Create(@"  "),
+                E.Create(@" "),
                 E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
             }, (key, value) => symbolTable[key] = E.Create(value), null);
 
             //JOIN warehouse_report_sequence."PathDmSn" rs ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)
             var select_sql_multiton_join = new Production(new[]
             {
-                E.Create(@" JOIN warehouse_report_sequence."),
+                E.Create($"{Environment.NewLine}    JOIN warehouse_report_sequence."),
                 E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.name", E.Create(""), false, @"""", @"""")),
-                E.Create(@" rs ON  (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)")
-            }, (key, value) => symbolTable[key] = E.Create(value), null );
+                E.Create($" rs{Environment.NewLine}    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)")
+            }, (key, value) => symbolTable[key] = E.Create(value), null);
 
 
             var report_sequence_select_sql = new Production(new[]
@@ -1022,33 +1046,36 @@ DO NOTHING
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
                     (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
                         E.Create(@"SELECT event_id,
-                                   event_ts,
-                                   rs.id    rs_id,
-                                   rs.ts    rs_ts")),
+    event_ts,
+    rs.id    rs_id,
+    rs.ts    rs_ts")),
                     (null, E.Create(@"SELECT event_id,
-                                             event_ts"))
+    event_ts"))
                 })),
 
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), E.Create(","),
+                E.Create($"{Environment.NewLine}    -- Event elements"),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), E.Create($",{Environment.NewLine}"),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?event_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}),
 
+                E.Create($"{Environment.NewLine}    -- RS elements"),
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
                     (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
-                        E.Create(new Production( new [] { E.Create(new { Instruction = new RepetitionInstruction(E.Create(rs_elements), E.Create(","),
+                        E.Create(new Production( new [] { E.Create(new { Instruction = new RepetitionInstruction(E.Create(rs_elements), E.Create($",{Environment.NewLine}"),
                             E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                                 ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                        })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}) }))),
+                        })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}) }))),
                     (null, E.Create(@""))
                 })),
 
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(derived_elements), E.Create(","),
+                E.Create($"{Environment.NewLine}    -- Derived elements"),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(derived_elements), E.Create($",{Environment.NewLine}"),
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?derived_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = ","}),
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}),
 
-                E.Create(@"FROM satisfied_set ws"),
+                E.Create($"{Environment.NewLine}FROM satisfied_set ws"),
 
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
                     (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
@@ -1070,6 +1097,43 @@ DO NOTHING
             {
                 Console.WriteLine($"{kvp.Key}: {kvp.Value}");
             }
+        }
+
+        const string tokenStart = "<<";//[=";
+        const string tokenEnd = ">>";//=]";
+
+        private static async Task<(bool hadTokens, string tokenReplaced)> ReplaceTokens(Entity entity, string tokenizedInput)
+        {
+            var result = new StringBuilder();
+
+            var currentIndex = 0;
+
+            while (currentIndex < tokenizedInput.Length)
+            {
+                var nextTokenStartIndex = tokenizedInput.IndexOf(tokenStart, currentIndex);
+                if (nextTokenStartIndex == -1)
+                {
+                    _ = result.Append(tokenizedInput[currentIndex..]);
+                    break;
+                }
+                else
+                {
+                    _ = result.Append(tokenizedInput[currentIndex..(nextTokenStartIndex)]);
+                    var nextTokenEndIndex = tokenizedInput.IndexOf(tokenEnd, nextTokenStartIndex);
+                    if (nextTokenStartIndex == -1)
+                    {
+                        throw new Exception($"Unclosed token starting at index {nextTokenStartIndex}");
+                    }
+
+                    var query = tokenizedInput[(nextTokenStartIndex + tokenStart.Length)..nextTokenEndIndex];
+                    var value = await entity.EvalS(query);
+                    _ = result.Append(value);
+
+                    currentIndex = nextTokenEndIndex + tokenEnd.Length;
+                }
+            }
+
+            return (currentIndex != 0, result.ToString());
         }
 
         private static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
@@ -1102,10 +1166,12 @@ DO NOTHING
                         foreach (var child in await entity.EvalL())
                         {
                             var s = await child.EvalS("$meta.id");
-                            if (d.Contains(s)) {
+                            if (d.Contains(s))
+                            {
                                 continue;
                             }
-                            else {
+                            else
+                            {
                                 d.Add(s);
                                 yield return child;
                             }
