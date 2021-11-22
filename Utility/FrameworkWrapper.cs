@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,6 +11,7 @@ using Utility.EDW.Logging;
 using Utility.EDW.Reporting;
 using Utility.Entity;
 using Utility.Entity.Implementations;
+using Utility.Evaluatable;
 
 namespace Utility
 {
@@ -31,8 +31,9 @@ namespace Utility
         public bool TraceToConsole { get; private set; } = false;
         public IDistributedCache Cache { get; private set; }
         public Entity.Entity Entity { get; private set; }
+        public Evaluator Evaluator { get; private set; }
 
-        public static async Task<FrameworkWrapper> Create(EntityConfig entityConfig = null, string[] commandLineArgs = null, IDistributedCache cache = null)
+        public static async Task<FrameworkWrapper> Create(EntityConfig entityConfig = null, EvaluatorConfig evaluatorConfig = null, string[] commandLineArgs = null, IDistributedCache cache = null)
         {
             try
             {
@@ -53,10 +54,13 @@ namespace Utility
                     fw.ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
                 }
 
+                fw.Evaluator = Evaluator.Create(evaluatorConfig ?? new EvaluatorConfig());
+
                 static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
                 fw.Entity = Utility.Entity.Entity.Initialize(new EntityConfig
                 (
+                    Evaluator: fw.Evaluator,
                     Parser: (entity, contentType, content) => contentType switch
                     {
                         "application/json" => EntityDocumentJson.Parse(content),

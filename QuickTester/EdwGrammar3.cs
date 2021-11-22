@@ -27,7 +27,7 @@ namespace QuickTester
                 _symbolSetter = symbolSetter;
             }
 
-            public async IAsyncEnumerable<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity)
             {
                 // TODO: Seperate evaluation order from concat order
                 var sb = new StringBuilder();
@@ -76,8 +76,14 @@ namespace QuickTester
                     }
                 }
 
-                yield return entity.Create(body);
+                return entity.Create(new
+                {
+                    Entity = body,
+                    Complete = true
+                });
             }
+
+            public override string ToString() => string.Join("", Body);
         }
 
         public class GetterInstruction : IEvaluatable
@@ -97,38 +103,65 @@ namespace QuickTester
                 Suffix = suffix;
             }
 
-            public async IAsyncEnumerable<Entity> Evaluate(Entity entity)
-            {
-                var hadResults = false;
+            private IList<Entity> _result;
+            private int _index = 0;
 
-                var result = await entity.Eval(Query);
+            public async Task<Entity> Evaluate(Entity entity)
+            {
+                if (_index == 0)
+                {
+                    _result = (await entity.Eval(Query)).ToList();
+                }
 
                 if (TreatAsPredicate)
                 {
-                    var res = result.Any();
-                    yield return entity.Create(res);
+                    var res = _result.Any();
+                    return entity.Create(new
+                    {
+                        Entity = res,
+                        Complete = true
+                    });
                 }
                 else
                 {
-                    foreach (var resultEntity in result)
+                    if (_index == 0 && _result.Count == 0)
                     {
-                        hadResults = true;
-                        if (resultEntity.ValueType == EntityValueType.String)
+                        return entity.Create(new
                         {
-                            yield return entity.Create(Prefix + (await resultEntity.EvalAsS("@")) + Suffix);
+                            Entity = DefaultValue,
+                            Complete = true
+                        });
+                    }
+                    else
+                    {
+                        var current = _result[_index++];
+                        var complete = _index == _result.Count;
+                        if (complete)
+                        {
+                            _index = 0; // Reset for now until we add post-completion behavior
+                        }
+
+                        if (current.ValueType == EntityValueType.String)
+                        {
+                            return entity.Create(new
+                            {
+                                Entity = Prefix + (await current.EvalAsS("@")) + Suffix,
+                                Complete = complete
+                            });
                         }
                         else
                         {
-                            yield return resultEntity;
+                            return entity.Create(new
+                            {
+                                Entity = current,
+                                Complete = complete
+                            });
                         }
-                    }
-
-                    if (!hadResults && DefaultValue != null)
-                    {
-                        yield return DefaultValue;
                     }
                 }
             }
+
+            public override string ToString() => $"<<g|{Query}>>";
         }
 
         public class ConditionInstruction : IEvaluatable
@@ -137,25 +170,38 @@ namespace QuickTester
 
             public ConditionInstruction(List<(Entity Antecedent, Entity Consequent)> cases) => Cases = cases;
 
-            public async IAsyncEnumerable<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity)
             {
                 foreach (var c in Cases)
                 {
                     if ((c.Antecedent != null) && (await c.Antecedent.EvalB("@")))
                     {
-                        yield return c.Consequent;
-                        yield break;
+                        return entity.Create(new
+                        {
+                            Entity = c.Consequent,
+                            Complete = true
+                        });
                     }
                     else if (c.Antecedent == null)
                     {
                         if (c.Consequent != null)
                         {
-                            yield return c.Consequent;
-                            yield break;
+                            return entity.Create(new
+                            {
+                                Entity = c.Consequent,
+                                Complete = true
+                            });
                         }
                     }
                 }
+
+                return entity.Create(new
+                {
+                    Complete = true
+                });
             }
+
+            public override string ToString() => $"<<iif|{string.Join('|', Cases.Select(c => $"{c.Antecedent}=>{c.Consequent}"))}>>";
         }
 
         // <<s|abc|config://5>>
@@ -174,94 +220,95 @@ namespace QuickTester
 
             public ParallelGetInstruction(Dictionary<string, ParallelGetInstructionScope> scopes) => Scopes = scopes;
 
-            public async IAsyncEnumerable<Entity> Evaluate(Entity entity)
+            private readonly Dictionary<string, IEnumerator<Entity>> _ies = new();
+            private List<string> _dominants;
+            private bool _initialized = false;
+            private int _repeatCount = 0;
+            private readonly HashSet<string> _finished = new();
+
+            public async Task<Entity> Evaluate(Entity entity)
             {
-                var ies = new Dictionary<string, IEnumerator<Entity>>();
-
-                var dominants = Scopes.Where(scope => scope.Value.Dominant).Select(scope => scope.Key).ToList();
-                if (!dominants.Any())
+                if (!_initialized)
                 {
-                    dominants = Scopes.Keys.ToList();
-                }
-
-                var finished = new HashSet<string>();
-
-                try
-                {
-                    foreach (var (k, v) in Scopes)
+                    _dominants = Scopes.Where(scope => scope.Value.Dominant).Select(scope => scope.Key).ToList();
+                    if (!_dominants.Any())
                     {
-                        ies[k] = (await v.Scope.Eval()).GetEnumerator();
+                        _dominants = Scopes.Keys.ToList();
                     }
 
-                    bool done;
-                    var repeatCount = 0;
-                    do
+                    foreach (var (k, v) in Scopes)
                     {
-                        done = true;
-                        var result = new Dictionary<string, Entity>();
+                        _ies[k] = (await v.Scope.Eval()).GetEnumerator();
+                    }
 
-                        var anyProduced = false;
-                        foreach (var (k, v) in ies)
+                    _initialized = true;
+                }
+
+                var result = new Dictionary<string, Entity>();
+
+                var anyProduced = false;
+                foreach (var (k, v) in _ies)
+                {
+                    var scopeConfig = Scopes[k];
+
+                    var repeatCountMet = scopeConfig.RepeatCount > 0 && _repeatCount >= scopeConfig.RepeatCount;
+
+                    if (!repeatCountMet && v.MoveNext())
+                    {
+                        if (_dominants.Contains(k) && !_finished.Contains(k))
                         {
-                            var scopeConfig = Scopes[k];
+                            anyProduced = true;
+                        }
 
-                            var repeatCountMet = scopeConfig.RepeatCount > 0 && repeatCount >= scopeConfig.RepeatCount;
+                        result[k] = v.Current;
+                        if (scopeConfig.RepeatCount > 0 && _repeatCount == scopeConfig.RepeatCount)
+                        {
+                            _ = _finished.Add(k);
+                        }
+                    }
+                    else
+                    {
+                        _ = _finished.Add(k);
 
-                            if (!repeatCountMet && v.MoveNext())
+                        if (!repeatCountMet)
+                        {
+                            if (scopeConfig.ExhaustionBehavior == ExhaustionBehavior.Restart)
                             {
-                                if (dominants.Contains(k) && !finished.Contains(k))
+                                v.Reset();
+                                if (v.MoveNext())
                                 {
-                                    anyProduced = true;
-                                }
-
-                                result[k] = v.Current;
-                                if (scopeConfig.RepeatCount > 0 && repeatCount == scopeConfig.RepeatCount)
-                                {
-                                    _ = finished.Add(k);
+                                    result[k] = v.Current;
                                 }
                             }
                             else
                             {
-                                _ = finished.Add(k);
-
-                                if (!repeatCountMet)
-                                {
-                                    if (scopeConfig.ExhaustionBehavior == ExhaustionBehavior.Restart)
-                                    {
-                                        v.Reset();
-                                        if (v.MoveNext())
-                                        {
-                                            result[k] = v.Current;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        result[k] = scopeConfig.ExhaustionBehavior == ExhaustionBehavior.DefaultValue ? scopeConfig.DefaultValue : null;
-                                    }
-                                }
-                                else
-                                {
-                                    result[k] = null;
-                                }
+                                result[k] = scopeConfig.ExhaustionBehavior == ExhaustionBehavior.DefaultValue ? scopeConfig.DefaultValue : null;
                             }
                         }
-
-                        if (anyProduced)
+                        else
                         {
-                            yield return entity.Create(result);
+                            result[k] = null;
                         }
-
-                        done = finished.Intersect(dominants).Count() == dominants.Count;
-
-                        repeatCount++;
-                    } while (!done);
-                }
-                finally
-                {
-                    foreach (var (_, v) in ies)
-                    {
-                        v.Dispose();
                     }
+                }
+
+                var complete = _finished.Intersect(_dominants).Count() == _dominants.Count;
+                _repeatCount++;
+
+                if (anyProduced)
+                {
+                    return entity.Create(new
+                    {
+                        Entity = result,
+                        Complete = complete
+                    });
+                }
+                else
+                {
+                    return entity.Create(new
+                    {
+                        Complete = true
+                    });
                 }
             }
         }
@@ -284,7 +331,7 @@ namespace QuickTester
                 _contextRemover = contextRemover;
             }
 
-            public async IAsyncEnumerable<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity)
             {
                 var parts = new List<string>();
 
@@ -307,7 +354,11 @@ namespace QuickTester
                     parts.Add(stepContent);
                 }
 
-                yield return entity.Create(string.Join(await Separator.EvalAsS(), parts));
+                return entity.Create(new
+                {
+                    Entity = string.Join(await Separator.EvalAsS(), parts),
+                    Complete = true
+                });
             }
         }
 
@@ -638,116 +689,116 @@ DO NOTHING
             // If singleton then this one is not created at all - it is null.
             var report_sequence_checked_transform_sql = new Production(new[]
             {
-                //E.Create(@"DROP TABLE IF EXISTS tmp_checked_pending_set;
-                //    CREATE TABLE tmp_checked_pending_set AS
-                //        (SELECT id,
-                //                MIN(ts)                           ts,
-                //                MIN(satisfaction_expires)         satisfaction_expires,
-                //                MIN(expires_interval)             expires_interval,"),
+                E.Create(@"DROP TABLE IF EXISTS tmp_checked_pending_set;
+                    CREATE TABLE tmp_checked_pending_set AS
+                        (SELECT id,
+                                MIN(ts)                           ts,
+                                MIN(satisfaction_expires)         satisfaction_expires,
+                                MIN(expires_interval)             expires_interval,"),
 
-                ////MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_rs_elements), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_rs_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                //E.Create(@" FROM (
-                //          SELECT rs.id,
-                //                 rs.ts,
-                //                 NOW() +
-                //                 COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
-                //                 COALESCE(payload ->> 'agg_ttl_interval', '30d')                                            expires_interval,"),
+                E.Create(@" FROM (
+                          SELECT rs.id,
+                                 rs.ts,
+                                 NOW() +
+                                 COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
+                                 COALESCE(payload ->> 'agg_ttl_interval', '30d')                                            expires_interval,"),
 
-                ////util.try_parse(CASE
-                ////                        WHEN payload -> 'body' -> 'PathStyleVerticalTypeId' IS NULL THEN NULL
-                ////                        ELSE COALESCE(payload -> 'body' ->> 'PathStyleVerticalTypeId', '0') END, 'INT',
-                ////                    NULL)::INT                                                                  "pathstyle_vertical_type_id",
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                //util.try_parse(CASE
+                //                        WHEN payload -> 'body' -> 'PathStyleVerticalTypeId' IS NULL THEN NULL
+                //                        ELSE COALESCE(payload -> 'body' ->> 'PathStyleVerticalTypeId', '0') END, 'INT',
+                //                    NULL)::INT                                                                  "pathstyle_vertical_type_id",
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                //E.Create(@"FROM tmp_staging_report_sequence_checked rs
-                //      WHERE staging_ts < <max_ts_to_move>
-                //      UNION
-                //      SELECT rs.id,
-                //             rs.ts,
-                //             NOW() +
-                //             COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
-                //             NULL::TEXT                                                                                 expires_interval,"),
+                E.Create(@"FROM tmp_staging_report_sequence_checked rs
+                      WHERE staging_ts < <max_ts_to_move>
+                      UNION
+                      SELECT rs.id,
+                             rs.ts,
+                             NOW() +
+                             COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
+                             NULL::TEXT                                                                                 expires_interval,"),
 
-                //// same as above repetition
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // same as above repetition
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                //E.Create(@"FROM tmp_staging_report_sequence_checked_detail rs
-                //      WHERE staging_ts < < max_ts_to_move >
-                //      UNION
-                //      SELECT pnd.id,
-                //             pnd.ts,
-                //             satisfaction_expires,
-                //             expires_interval,"),
+                E.Create(@"FROM tmp_staging_report_sequence_checked_detail rs
+                      WHERE staging_ts < < max_ts_to_move >
+                      UNION
+                      SELECT pnd.id,
+                             pnd.ts,
+                             satisfaction_expires,
+                             expires_interval,"),
 
-                //// reusing a template from another template
-                //E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // reusing a template from another template
+                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                //E.Create(@"FROM ""<pending_target_schema>""."""),
+                E.Create(@"FROM ""<pending_target_schema>""."""),
 
-                //E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
 
-                //E.Create(@""" pnd
-                //                   JOIN tmp_staging_report_sequence_checked rsc
-                //                        ON (pnd.id = rsc.id AND pnd.ts = rsc.ts)
-                //                   JOIN tmp_staging_report_sequence_checked_detail rscd
-                //                        ON (pnd.id = rscd.id AND pnd.ts = rscd.ts)
-                //          WHERE rsc.staging_ts < <max_ts_to_move>
-                //            AND rscd.staging_ts < <max_ts_to_move>
-                //                    <partition_where_clause>
-                //      ) src
-                // GROUP BY id);
+                E.Create(@""" pnd
+                                   JOIN tmp_staging_report_sequence_checked rsc
+                                        ON (pnd.id = rsc.id AND pnd.ts = rsc.ts)
+                                   JOIN tmp_staging_report_sequence_checked_detail rscd
+                                        ON (pnd.id = rscd.id AND pnd.ts = rscd.ts)
+                          WHERE rsc.staging_ts < <max_ts_to_move>
+                            AND rscd.staging_ts < <max_ts_to_move>
+                                    <partition_where_clause>
+                      ) src
+                 GROUP BY id);
 
-                //        CREATE UNIQUE INDEX uix_tmp_checked_pending_set ON tmp_checked_pending_set(id, ts);
+                        CREATE UNIQUE INDEX uix_tmp_checked_pending_set ON tmp_checked_pending_set(id, ts);
 
-                //        INSERT INTO ""<pending_target_schema>""."""),
+                        INSERT INTO ""<pending_target_schema>""."""),
 
-                //E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
 
-                //E.Create(@""" AS tgt (id, ts, satisfaction_expires, expires_interval,"),
+                E.Create(@""" AS tgt (id, ts, satisfaction_expires, expires_interval,"),
 
-                //// again reusing
-                //E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // again reusing
+                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                //E.Create(@")
-                //    SELECT *
-                //    FROM tmp_checked_pending_set
-                //    ON CONFLICT (id, ts) DO UPDATE
-                //        SET ts                           = COALESCE(tgt.ts, excluded.ts),"),
+                E.Create(@")
+                    SELECT *
+                    FROM tmp_checked_pending_set
+                    ON CONFLICT (id, ts) DO UPDATE
+                        SET ts                           = COALESCE(tgt.ts, excluded.ts),"),
 
-                //// "pathstyle_id"               = COALESCE(tgt."pathstyle_id", excluded."pathstyle_id"),
-                //E.Create(new RepetitionInstruction(E.Create(checked_transform_tgt_and_excluded), E.Create(","),
-                //    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
-                //        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                //})), (key, value) => context[key] = value, (key) => context.Remove(key))),
+                // "pathstyle_id"               = COALESCE(tgt."pathstyle_id", excluded."pathstyle_id"),
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_tgt_and_excluded), E.Create(","),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
+                })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                //E.Create(@";
+                E.Create(@";
 
-                //    INSERT INTO warehouse.report_sequence_duplicates(id, ts)
-                //    SELECT id,
-                //           ts
-                //    FROM ""<pending_target_schema>""."""),
+                    INSERT INTO warehouse.report_sequence_duplicates(id, ts)
+                    SELECT id,
+                           ts
+                    FROM ""<pending_target_schema>""."""),
 
-                //E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
 
-                //E.Create(@""" p
-                //        WHERE ts IS NOT NULL"),
+                E.Create(@""" p
+                        WHERE ts IS NOT NULL"),
 
                 // AND "root_campaign_id" IS NOT NULL
                 // AND COALESCE("is_repeat_user", CASE WHEN satisfaction_expires < NOW() THEN 'f'::BOOLEAN END) IS NOT NULL
@@ -853,7 +904,7 @@ DO NOTHING
 
             var cur_prod = report_sequence_checked_transform_sql;
 
-            await foreach (var output in cur_prod.Evaluate(E.Create(cur_prod)))
+            await foreach (var output in fw.Evaluator.Evaluate(E.Create(cur_prod)))
             {
                 Console.WriteLine(output.Value<string>());
             }

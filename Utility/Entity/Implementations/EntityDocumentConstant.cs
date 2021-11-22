@@ -45,6 +45,18 @@ namespace Utility.Entity.Implementations
 
         public override T Value<T>() => (T)_value;
 
+        public override bool Equals(EntityDocument other)
+        {
+            if (other is EntityDocumentConstant otherConstant)
+            {
+                return _value.Equals(otherConstant._value);
+            }
+            else
+            {
+                return base.Equals(other);
+            }
+        }
+
         public override string ToString() => _value?.ToString();
 
         public override int GetHashCode() => _value?.GetHashCode() ?? base.GetHashCode();

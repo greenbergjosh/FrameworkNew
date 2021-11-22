@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Utility.Entity.Implementations;
 using Utility.Entity.QueryLanguage;
 using Utility.Entity.QueryLanguage.Selectors;
+using Utility.Evaluatable;
 
 namespace Utility.Entity
 {
@@ -61,6 +62,8 @@ namespace Utility.Entity
 
         public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
 
+        public bool IsEvaluatable => Document?.IsEvaluatable ?? false;
+
         public bool IsArray => Document?.IsArray ?? false;
 
         public bool IsObject => Document?.IsObject ?? false;
@@ -74,6 +77,8 @@ namespace Utility.Entity
         internal EntityDocument Document { get; }
 
         internal FunctionHandler FunctionHandler => _config.FunctionHandler;
+
+        internal Evaluator Evaluator => _config.Evaluator;
 
         internal MissingPropertyHandler MissingPropertyHandler => _config.MissingPropertyHandler;
 
@@ -221,28 +226,11 @@ namespace Utility.Entity
                 var next = new List<Entity>();
                 await foreach (var child in selector.Process(current))
                 {
-                    var hadReference = false;
-                    if (i == query.Selectors.Count - 1 || query.Selectors[i + 1] is not RefSelector)
-                    {
-                        await foreach (var referenceChild in child.Document.ProcessReference())
-                        {
-                            referenceChild.Query = referenceChild.Query.Replace("$", child.Query);
-                            next.Add(referenceChild);
-                            hadReference = true;
-                        }
-                    }
+                    var processReference = i == query.Selectors.Count - 1 || query.Selectors[i + 1] is not RefSelector;
 
-                    var hadEvaluatable = false;
-                    await foreach (var evaluatableChild in child.Document.ProcessEvaluatable())
+                    await foreach (var handledChild in HandleChild(child, processReference))
                     {
-                        evaluatableChild.Query = evaluatableChild.Query.Replace("$", child.Query);
-                        next.Add(evaluatableChild);
-                        hadEvaluatable = true;
-                    }
-
-                    if (!hadReference && !hadEvaluatable)
-                    {
-                        next.Add(child);
+                        next.Add(handledChild);
                     }
                 }
 
@@ -250,6 +238,46 @@ namespace Utility.Entity
             }
 
             return current;
+
+            static async IAsyncEnumerable<Entity> HandleChild(Entity child, bool processReference)
+            {
+                var hadReference = false;
+                if (processReference)
+                {
+                    await foreach (var referenceChild in child.Document.ProcessReference())
+                    {
+                        hadReference = true;
+                        referenceChild.Query = referenceChild.Query.Replace("$", child.Query);
+                        await foreach (var handledChild in HandleChild(referenceChild, processReference))
+                        {
+                            yield return handledChild;
+                        }
+                    }
+
+                    if (hadReference)
+                    {
+                        yield break;
+                    }
+                }
+
+                var wasEvaluatable = false;
+                await foreach (var evaluatableChild in child.Document.ProcessEvaluatable())
+                {
+                    wasEvaluatable = true;
+                    evaluatableChild.Query = evaluatableChild.Query.Replace("$", child.Query);
+                    await foreach (var handledChild in HandleChild(evaluatableChild, processReference))
+                    {
+                        yield return handledChild;
+                    }
+                }
+
+                if (wasEvaluatable)
+                {
+                    yield break;
+                }
+
+                yield return child;
+            }
         }
 
         private async Task<IEnumerable<Entity>> Evaluate(string query)
@@ -308,6 +336,8 @@ namespace Utility.Entity
             return defaultValue;
         }
 
+        internal Task<Entity> Evaluate() => Document?.Evaluate();
+
         #endregion
     }
 
@@ -322,5 +352,5 @@ namespace Utility.Entity
         #endregion
     }
 
-    public record EntityConfig(EntityParser Parser = null, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
+    public record EntityConfig(EntityParser Parser = null, EntityRetriever Retriever = null, Evaluator Evaluator = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 }

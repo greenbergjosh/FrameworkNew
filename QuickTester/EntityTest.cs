@@ -330,7 +330,5 @@ namespace QuickTester
                 Console.WriteLine();
             }
         }
-
-        private static Task<IEnumerable<Entity>> GetEntity(FrameworkWrapper fw, string entityId) => fw.Entity.Eval($"config://{entityId}");
     }
 }

@@ -22,6 +22,8 @@ namespace Utility.Entity
 
         public abstract EntityValueType ValueType { get; }
 
+        public virtual bool IsEvaluatable { get; } = false;
+
         public bool IsArray => ValueType == EntityValueType.Array;
 
         public bool IsObject => ValueType == EntityValueType.Object;
@@ -59,6 +61,8 @@ namespace Utility.Entity
         public abstract void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options);
 
         protected internal abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
+
+        public virtual Task<Entity> Evaluate() => throw new NotImplementedException();
 
         public static EntityDocument MapValue(object value) => value switch
         {
@@ -111,7 +115,7 @@ namespace Utility.Entity
 
         public abstract T Value<T>();
 
-        public bool Equals(EntityDocument other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
+        public virtual bool Equals(EntityDocument other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
             && (ReferenceEquals(this, other)
                 || (other is not null && ValueType == other.ValueType && ValueType switch
                 {
@@ -119,7 +123,7 @@ namespace Utility.Entity
                     EntityValueType.Boolean => Value<bool>() == other.Value<bool>(),
                     EntityValueType.Null => true,
                     EntityValueType.Number => Value<decimal>() == other.Value<decimal>(),
-                    EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
+                    EntityValueType.Object => Length == other.Length && EnumerateObjectCore().OrderBy(p => p.name).SequenceEqual(other.EnumerateObjectCore().OrderBy(p => p.name)),
                     EntityValueType.String => Value<string>() == other.Value<string>(),
                     EntityValueType.Undefined => false,
                     _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")

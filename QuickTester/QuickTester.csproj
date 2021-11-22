@@ -26,6 +26,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.37" />
     <PackageReference Include="JsonPath.Net" Version="0.1.13" />
     <PackageReference Include="MailKit" Version="2.15.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.7" />
     <PackageReference Include="SSH.NET" Version="2020.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
     <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
