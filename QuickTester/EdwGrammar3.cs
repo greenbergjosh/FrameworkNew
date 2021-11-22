@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
-using Utility.DataLayer;
 using Utility.Entity;
-using Utility.Entity.Implementations;
 using Utility.Evaluatable;
 
 namespace QuickTester
@@ -1099,8 +1096,8 @@ DO NOTHING
             }
         }
 
-        const string tokenStart = "<<";//[=";
-        const string tokenEnd = ">>";//=]";
+        const string tokenStart = "[=";
+        const string tokenEnd = "=]";
 
         private static async Task<(bool hadTokens, string tokenReplaced)> ReplaceTokens(Entity entity, string tokenizedInput)
         {
