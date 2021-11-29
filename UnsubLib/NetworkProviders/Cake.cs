@@ -63,7 +63,7 @@ namespace UnsubLib.NetworkProviders
                         RelationshipPath = relationshipPath
                     }), respBody);
 
-                if (res == null || await res.EvalS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{respBody ?? "[null]"}");
                     return null;

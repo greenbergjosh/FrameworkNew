@@ -93,7 +93,7 @@ namespace Utility.EDW.Logging
         public static async Task<ErrorSiloLoadBalancedWriter> InitializeErrorSiloLoadBalancedWriter(Entity.Entity config)
         {
             var writeTimeoutSeconds = await config.EvalI("ErrorWriteTimeout", 0);
-            var path = await config.EvalS("ErrorFilePath", null);
+            var path = await config.EvalS("ErrorFilePath", defaultValue: null);
             var errorFilePath = path.IsNullOrWhitespace() ? null : Path.GetFullPath(path);
 
             return new ErrorSiloLoadBalancedWriter(60,

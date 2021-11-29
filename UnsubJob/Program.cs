@@ -67,7 +67,7 @@ namespace UnsubJob
             {
                 var res = await unsub.GetNetworks(singleNetworkName);
 
-                networks = await res.EvalL();
+                networks = await res.EvalL("@");
 
                 if (networks == null)
                 {

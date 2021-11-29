@@ -11,7 +11,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public PropertySelector(string name) => _name = name;
 
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
+        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
         {
             foreach (var entity in entities)
             {

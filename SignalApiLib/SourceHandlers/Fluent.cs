@@ -66,7 +66,7 @@ namespace SignalApiLib.SourceHandlers
                 }
                 else if (token.IsArray)
                 {
-                    var mutations = await (await token.EvalL()).Select(async p => await Mutate(p));
+                    var mutations = await (await token.EvalL("@")).Select(async p => await Mutate(p));
                     payloads = mutations;
                 }
                 else

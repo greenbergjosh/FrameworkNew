@@ -95,7 +95,7 @@ namespace Utility.DataLayer
         {
             if (connectionStrings != null && connectionStrings.IsObject)
             {
-                foreach (var item in await connectionStrings.EvalD<string>())
+                foreach (var item in await connectionStrings.EvalD<string>("@"))
                 {
                     if (Connections.ContainsKey(item.Key) && Connections[item.Key].Id == item.Value && !merge)
                     {
@@ -159,18 +159,10 @@ namespace Utility.DataLayer
                     {
                         TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usings}");
 
-                        foreach (var u in (await usings.EvalL<string>()).Select(u => u.Trim()))
+                        foreach (var u in (await usings.EvalL<string>("@")).Select(u => u.Trim()))
                         {
                             await LoadConfig(config, u);
                         }
-
-                        mergeConfig = _entity.Create(new
-                        {
-                            Id = await current.EvalS("$meta.id"),
-                            Name = await current.EvalS("$meta.name"),
-                            Type = await current.EvalS("$meta.type"),
-                            Config = await current.EvalE("config", null)
-                        });
                     }
 
                     TraceLog(nameof(GetConfigs), $"Merging configs\r\nCurrent\r\n{config}\r\n\r\n{key}\r\n{mergeConfig}");

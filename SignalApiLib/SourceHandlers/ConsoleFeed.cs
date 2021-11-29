@@ -86,21 +86,21 @@ namespace SignalApiLib.SourceHandlers
 
                 var payload = new
                 {
-                    email = await lead.EvalS("email", null),
-                    date_acquired = dateAcquired.ValueType == EntityValueType.Object ? await dateAcquired.EvalS("$date") : await dateAcquired.EvalAsS(),
-                    first_name = await lead.EvalS("first_name", null),
-                    last_name = await lead.EvalS("last_name", null),
-                    gender = await lead.EvalS("gender", null),
+                    email = await lead.EvalS("email", defaultValue: null),
+                    date_acquired = dateAcquired.ValueType == EntityValueType.Object ? await dateAcquired.EvalS("$date") : await dateAcquired.EvalAsS("@"),
+                    first_name = await lead.EvalS("first_name", defaultValue: null),
+                    last_name = await lead.EvalS("last_name", defaultValue: null),
+                    gender = await lead.EvalS("gender", defaultValue: null),
                     dob,
-                    zip = await lead.EvalS("zip_code", null),
-                    address1 = await lead.EvalS("address1", null),
-                    city = await lead.EvalS("city", null),
-                    state = await lead.EvalS("state", null),
-                    opt_in_ip = await lead.EvalS("user_ip", null),
+                    zip = await lead.EvalS("zip_code", defaultValue: null),
+                    address1 = await lead.EvalS("address1", defaultValue: null),
+                    city = await lead.EvalS("city", defaultValue: null),
+                    state = await lead.EvalS("state", defaultValue: null),
+                    opt_in_ip = await lead.EvalS("user_ip", defaultValue: null),
                     opt_in_domain = Regex.Replace(await lead.EvalS("domain"), "^(www\\.)?", ""),
-                    user_agent = await lead.EvalS("user_agent", null),
-                    phone = await lead.EvalS("phone_home", null),
-                    household_income = await lead.EvalS("household_income", null),
+                    user_agent = await lead.EvalS("user_agent", defaultValue: null),
+                    phone = await lead.EvalS("phone_home", defaultValue: null),
+                    household_income = await lead.EvalS("household_income", defaultValue: null),
                     attribution_id = 3,
                     record_type_id = 4
                 };
@@ -144,7 +144,7 @@ namespace SignalApiLib.SourceHandlers
 
                 var payload = new
                 {
-                    email = await lead.EvalS("email", null),
+                    email = await lead.EvalS("email", defaultValue: null),
                     date_acquired = DateTime.UtcNow,
                     attribution_id = 3,
                     record_type_id = recordTypeId

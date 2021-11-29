@@ -72,7 +72,7 @@ namespace SimpleImportExport
                     {
                         var shouldDownload = await Data.CallFn("SimpleImportExport", "shouldTransfer", JsonSerializer.Serialize(new { JobId = jobId, f.FileName }));
 
-                        if (await shouldDownload.EvalAsS() == "1" || await shouldDownload.EvalB("result", true))
+                        if (await shouldDownload.EvalAsS("@") == "1" || await shouldDownload.EvalB("result", true))
                         {
                             await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopying {f.FileName}:\n\tFrom: {src}\n\tTo: {dest}");
 

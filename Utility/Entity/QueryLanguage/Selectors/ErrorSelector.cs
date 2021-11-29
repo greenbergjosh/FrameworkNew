@@ -9,6 +9,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public ErrorSelector(string message) => Message = message;
 
-        public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities) => throw new NotImplementedException();
+        public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters) => throw new NotImplementedException();
     }
 }

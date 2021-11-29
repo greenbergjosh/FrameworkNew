@@ -31,7 +31,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
             _right = right;
         }
 
-        public async Task<Entity> Evaluate(Entity entity)
+        public async Task<Entity> Evaluate(Entity entity, Entity evaluationParameters)
         {
             if (_value != null)
             {
@@ -40,7 +40,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
             if (_query != null)
             {
-                var result = await entity.Eval(_query);
+                var result = await entity.Eval(_query, evaluationParameters);
                 // don't set _value; need to always eval
                 return result.SingleOrDefault() ?? Entity.Undefined;
             }
@@ -50,7 +50,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
                 return default;
             }
 
-            var value = entity.Create(await Operator.Evaluate(_left, _right, entity), Operator.ToString());
+            var value = entity.Create(await Operator.Evaluate(_left, _right, entity, evaluationParameters), Operator.ToString());
             if (OutputType != QueryExpressionType.InstanceDependent)
             {
                 _value = value;

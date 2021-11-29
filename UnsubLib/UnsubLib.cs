@@ -80,7 +80,7 @@ namespace UnsubLib
             var config = fw.StartupConfiguration;
 
             var queuedCampaignsUrl = await config.EvalS("QueuedCampaignsUrl");
-            var queuedCampaignsBody = await config.EvalS("QueuedCampaignsBody", null);
+            var queuedCampaignsBody = await config.EvalS("QueuedCampaignsBody", defaultValue: null);
 
             var unsubLib = new UnsubLib(fw, queuedCampaignsUrl, queuedCampaignsBody)
             {
@@ -154,7 +154,7 @@ namespace UnsubLib
             await _fw.Err(ErrorSeverity.Log, nameof(ForceUnsub), ErrorDescriptor.Log, $"Starting ForceUnsub: {forceName}");
 
             var res = await Data.CallFn(Conn, "SelectNetwork", "{}", "");
-            var network = await res?.EvalL();
+            var network = await res?.EvalL("@");
 
             if (network == null)
             {
@@ -374,7 +374,7 @@ namespace UnsubLib
                             });
                             var res = await Data.CallFn(Conn, "MergeNetworkCampaigns", args, campaignJson);
 
-                            if (res == null || await res.EvalS("result", null) == "failed")
+                            if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                             {
                                 await _fw.Error($"{nameof(ManualDirectory)}-{networkName}", $"Failed to merge campaings. Response: {res}");
                             }
@@ -387,7 +387,7 @@ namespace UnsubLib
                         {
                             var res = await Data.CallFn(Conn, "SelectNetworkCampaign", JsonSerializer.Serialize(new { ncid = networkCampaignId, nid = networkId }));
 
-                            if ((await res?.EvalGuid("$meta.id", null)).HasValue != true)
+                            if ((await res?.EvalGuid("$meta.id", defaultValue: null)).HasValue != true)
                             {
                                 await _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to retrieve campaign details from db: NetworkCampaignId:{networkCampaignId} NetworkId:{networkId} Response: {res}");
                                 continue;
@@ -401,13 +401,13 @@ namespace UnsubLib
                         var unsubRelId = cd.id;
                         var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", JsonSerializer.Serialize(new { relationshipId = unsubRelId, NetworkId = networkId }));
 
-                        if (res == null || await res.EvalS("result", null) == "failed")
+                        if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                         {
                             await _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Campaign lookup failed. Response: {res}");
                             continue;
                         }
 
-                        IEnumerable<Entity> campaigns = (await (await res?.EvalL()).Where(async c => string.IsNullOrWhiteSpace(networkCampaignIdFilter) || networkCampaignIdFilter == await c.EvalS("NetworkCampaignId"))).ToList();
+                        IEnumerable<Entity> campaigns = (await (await res?.EvalL("@")).Where(async c => string.IsNullOrWhiteSpace(networkCampaignIdFilter) || networkCampaignIdFilter == await c.EvalS("NetworkCampaignId"))).ToList();
 
                         if (!campaigns.Any())
                         {
@@ -532,7 +532,7 @@ namespace UnsubLib
             {
                 var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", JsonSerializer.Serialize(new { NetworkId = networkId }), "");
 
-                if (res == null || await res.EvalS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                 {
                     await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"Campaigns lookup failed. Response: {res}");
                     return;
@@ -673,7 +673,7 @@ namespace UnsubLib
                 }
 
                 var resDigest = await Data.CallFn(Conn, "UpdateNetworkCampaignsDigestType", "", JsonSerializer.Serialize(digestTypes.Select(kvp => new { Id = kvp.Key, DtId = kvp.Value })));
-                if (await resDigest?.EvalS("result", null) != "success")
+                if (await resDigest?.EvalS("result", defaultValue: null) != "success")
                 {
                     await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update digest type for campaigns. Response: {resDigest}");
                 }
@@ -681,7 +681,7 @@ namespace UnsubLib
                 await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Campaigns with Positive Delta: {campaignsWithPositiveDelta.Count}");
                 var res = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", JsonSerializer.Serialize(campaignsWithPositiveDelta.Select(kvp => new { Id = kvp.Key, FId = kvp.Value })));
 
-                if (await res?.EvalS("result", null) != "success")
+                if (await res?.EvalS("result", defaultValue: null) != "success")
                 {
                     await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update unsub files. Response: {res}");
                 }
@@ -721,16 +721,16 @@ namespace UnsubLib
             {
                 await LoadQueuedCampaigns();
 
-                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API: {(await campaigns.EvalL()).Count()}");
+                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API: {(await campaigns.EvalL("@")).Count()}");
 
-                var queuedCampaigns = (await (await campaigns.EvalL()).Where(async c => _queuedCampaigns.Contains(await c.EvalS("$meta.id")))).ToList();
+                var queuedCampaigns = (await (await campaigns.EvalL("@")).Where(async c => _queuedCampaigns.Contains(await c.EvalS("$meta.id")))).ToList();
 
                 await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API and (queued according to Console or first time seeing campaign): {queuedCampaigns.Count}");
 
                 return queuedCampaigns;
             }
 
-            return await campaigns?.EvalL() ?? Enumerable.Empty<Entity>();
+            return await campaigns?.EvalL("@") ?? Enumerable.Empty<Entity>();
         }
 
         public async Task<IDictionary<(string url, IDictionary<string, string> postData), List<Entity>>> GetUnsubUris(Entity network, IEnumerable<Entity> campaigns, INetworkProvider networkProvider)
@@ -1095,13 +1095,13 @@ namespace UnsubLib
             var campaigns = await Data.CallFn(Conn, "SelectNetworkCampaigns", "{}", "");
             var refdFiles = new HashSet<string>();
 
-            if (campaigns == null || await campaigns.EvalS("result", null) == "failed")
+            if (campaigns == null || await campaigns.EvalS("result", defaultValue: null) == "failed")
             {
                 await _fw.Error(nameof(CleanUnusedFiles), $"Campaign lookup failed. Response: {campaigns}");
                 throw new HaltingException($"Campaign lookup failed. Response: {campaigns}", null);
             }
 
-            foreach (var c in await campaigns.EvalL())
+            foreach (var c in await campaigns.EvalL("@"))
             {
                 try
                 {
@@ -1443,7 +1443,7 @@ namespace UnsubLib
             {
                 var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", JsonSerializer.Serialize(new { Base64Payload = true }));
 
-                if (res == null || await res.EvalS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                 {
                     await _fw.Error(nameof(GetCampaigns), $"Campaign lookup failed. Response: {res}");
                     return null;
@@ -1785,7 +1785,7 @@ namespace UnsubLib
                     return (false, null, null, default, null);
                 }
 
-                var fileId = (await c.EvalS("MostRecentUnsubFileId", null))?.ToLower();
+                var fileId = (await c.EvalS("MostRecentUnsubFileId", defaultValue: null))?.ToLower();
                 var type = await c.EvalS("SuppressionDigestType");
                 var mostRecentFileDateString = await c.EvalS("MostRecentUnsubFileDate", string.Empty);
                 _ = DateTime.TryParse(mostRecentFileDateString, out var mostRecentFileDate);
@@ -1824,7 +1824,7 @@ namespace UnsubLib
             var entity = await ge.EvalE(path);
             if (entity?.ValueType == EntityValueType.Array)
             {
-                return await entity.EvalL();
+                return await entity.EvalL("@");
             }
 
             var str = entity == null ? null : await entity.EvalS("@");
@@ -1846,7 +1846,7 @@ namespace UnsubLib
 
             var campaignId = await dtve.EvalS("CampaignId");
 
-            var campaignResult = (await result.EvalD()).First(r => r.Key == campaignId);
+            var campaignResult = (await result.EvalD("@")).First(r => r.Key == campaignId);
             return JsonSerializer.Serialize(campaignResult.Value);
         }
 
@@ -1859,7 +1859,7 @@ namespace UnsubLib
             try
             {
                 var dbResults = await Data.CallFn(Conn, "IsUnsubBatch", JsonSerializer.Serialize(batchRequest));
-                var dbResult = await dbResults.EvalS("result", null);
+                var dbResult = await dbResults.EvalS("result", defaultValue: null);
                 if (dbResult == "failed")
                 {
                     return JsonSerializer.Serialize(dbResults);
@@ -1867,7 +1867,7 @@ namespace UnsubLib
 
                 var unsubResults = new ConcurrentDictionary<string, BatchResult>();
 
-                await (await dbResults.EvalD()).ForEachAsync(10, async item =>
+                await (await dbResults.EvalD("@")).ForEachAsync(10, async item =>
                 {
                     var campaignId = item.Key;
                     var result = item.Value;
@@ -1998,7 +1998,7 @@ namespace UnsubLib
                     {
                         var args = JsonSerializer.Serialize(new
                         {
-                            SignalGroups = (await (await _fw.Entity.Parse("application/json", item.Key)).EvalL<string>()).Select(sg => sg == "Tier1" ? "Tier1 Suppression" : sg),
+                            SignalGroups = (await (await _fw.Entity.Parse("application/json", item.Key)).EvalL<string>("@")).Select(sg => sg == "Tier1" ? "Tier1 Suppression" : sg),
                             Emails = item.Value.Where(e => e.Contains("@")).ToArray(),
                             EmailMd5s = item.Value.Where(e => !e.Contains("@")).ToArray()
                         });
@@ -2287,7 +2287,7 @@ namespace UnsubLib
                 var queued = await _fw.Entity.Parse("application/json", result);
 
                 _queuedCampaigns = new HashSet<string>();
-                foreach (var campaign in await queued.EvalL())
+                foreach (var campaign in await queued.EvalL("@"))
                 {
                     _ = _queuedCampaigns.Add(await campaign.EvalS("CampaignUId"));
                 }

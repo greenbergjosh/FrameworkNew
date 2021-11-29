@@ -175,7 +175,7 @@ namespace Utility
 
             var stackedParameters = new EntityDocumentStack();
 
-            var implementation = await entity.EvalS("Evaluate.EntityId", null);
+            var implementation = await entity.EvalS("Evaluate.EntityId", defaultValue: null);
             if (!string.IsNullOrWhiteSpace(implementation))
             {
                 evaluatableId = Guid.Parse(implementation);

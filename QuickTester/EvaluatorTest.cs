@@ -185,7 +185,6 @@ namespace QuickTester
             Assert.AreEqual(1, count);
         }
 
-
         private class AdderEvaluatable : IEvaluatable
         {
             public async Task<Entity> Evaluate(Entity entity, Entity parameters)

@@ -37,12 +37,12 @@ namespace QuickTester
                     var childBody = await child.EvalAsS("Instruction", null);
                     if (childBody == null)
                     {
-                        childBody = await child.EvalAsS();
+                        childBody = await child.EvalAsS("@");
                     }
                     else
                     {
                         suppress = await child.EvalB("Suppress", false);
-                        prepend = await child.EvalS("Prepend", null);
+                        prepend = await child.EvalS("Prepend", defaultValue: null);
                     }
 
                     if (!suppress)
@@ -63,7 +63,7 @@ namespace QuickTester
                     sb = new StringBuilder();
                     foreach (var child in Symbol)
                     {
-                        _ = sb.Append(await child.EvalAsS());
+                        _ = sb.Append(await child.EvalAsS("@"));
                     }
 
                     var symbol = sb.ToString();
@@ -236,7 +236,7 @@ namespace QuickTester
 
                     foreach (var (k, v) in Scopes)
                     {
-                        _ies[k] = (await v.Scope.Eval()).GetEnumerator();
+                        _ies[k] = (await v.Scope.Eval("@")).GetEnumerator();
                     }
 
                     _initialized = true;
@@ -335,16 +335,16 @@ namespace QuickTester
             {
                 var parts = new List<string>();
 
-                foreach (var step in await Repeater.Eval())
+                foreach (var step in await Repeater.Eval("@"))
                 {
-                    var scope = await step.EvalD();
+                    var scope = await step.EvalD("@");
 
                     foreach (var kvp in scope)
                     {
                         _contextSetter(kvp.Key, kvp.Value);
                     }
 
-                    var stepContent = await Template.EvalAsS();
+                    var stepContent = await Template.EvalAsS("@");
 
                     foreach (var kvp in scope)
                     {
@@ -356,7 +356,7 @@ namespace QuickTester
 
                 return entity.Create(new
                 {
-                    Entity = string.Join(await Separator.EvalAsS(), parts),
+                    Entity = string.Join(await Separator.EvalAsS("@"), parts),
                     Complete = true
                 });
             }
@@ -1136,10 +1136,10 @@ DO NOTHING
 
         private static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
-        private static async IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query)
+        private static async IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
         {
             foreach (var entity in entities)
-            { //$meta.id  // EvalL()
+            { //$meta.id  // EvalL("@")
                 switch (functionName)
                 {
                     case "replace":
@@ -1161,7 +1161,7 @@ DO NOTHING
 
                     case "distinct":
                         var d = new HashSet<string>();
-                        foreach (var child in await entity.EvalL())
+                        foreach (var child in await entity.EvalL("@"))
                         {
                             var s = await child.EvalS("$meta.id");
                             if (d.Contains(s))

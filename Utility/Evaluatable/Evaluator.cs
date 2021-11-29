@@ -52,7 +52,7 @@ namespace Utility.Evaluatable
                     }
                     else
                     {
-                        var evaluate = await current.entity.EvalE("$evaluate", null);
+                        var evaluate = await current.entity.EvalE("$evaluate", defaultValue: null);
                         if (evaluate == null)
                         {
                             // Entity has no evaluate method, short-cut for a constant
@@ -70,7 +70,7 @@ namespace Utility.Evaluatable
                                 lastEvaluate = evaluate;
                                 // TODO: Formalize how an evaluate points to another entity,
                                 // it is via EntityPath's ref feature, and thus maybe transparent here?
-                                evaluate = await evaluate.EvalE("$evaluate", null);
+                                evaluate = await evaluate.EvalE("$evaluate", defaultValue: null);
                             }
 
                             var stackedParameters = new EntityDocumentStack();
@@ -81,14 +81,14 @@ namespace Utility.Evaluatable
 
                             foreach (var stackItem in evaluateStack)
                             {
-                                var actualParameters = await stackItem.EvalE("actualParameters", null);
+                                var actualParameters = await stackItem.EvalE("actualParameters", defaultValue: null);
                                 if (actualParameters != null)
                                 {
                                     stackedParameters.Push(actualParameters);
                                 }
                             }
 
-                            var id = await lastEvaluate.EvalGuid("$meta.id", null);
+                            var id = await lastEvaluate.EvalGuid("$meta.id", defaultValue: null);
                             var code = await lastEvaluate.EvalS("code");
                             var evaluationParameters = entity.Create(new
                             {
@@ -106,13 +106,18 @@ namespace Utility.Evaluatable
                         }
                     }
 
-                    var currentComplete = await evaluationResult.EvalB("Complete");
-                    if (!currentComplete)
+                    var currentComplete = await evaluationResult.EvalE("Complete", defaultValue: null);
+                    if (currentComplete == null)
+                    {
+                        throw new InvalidOperationException("Evaluation did not return Complete flag");
+                    }
+
+                    if (!currentComplete.Value<bool>())
                     {
                         stack.Push(current);
                     }
 
-                    var next = await evaluationResult.EvalE("Entity", null);
+                    var next = await evaluationResult.EvalE("Entity", defaultValue: null);
                     if (next != null)
                     {
                         if (current.entity.Equals(next))

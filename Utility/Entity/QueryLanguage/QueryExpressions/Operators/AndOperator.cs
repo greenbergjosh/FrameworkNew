@@ -11,15 +11,15 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                 ? QueryExpressionType.Invalid
                 : left.OutputType == QueryExpressionType.Boolean ? QueryExpressionType.Boolean : QueryExpressionType.Invalid;
 
-        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
+        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity, Entity evaluationParameters)
         {
-            var leftEntity = await left.Evaluate(entity);
+            var leftEntity = await left.Evaluate(entity, evaluationParameters);
             if (leftEntity.ValueType != EntityValueType.Boolean)
             {
                 return default;
             }
 
-            var rightEntity = await right.Evaluate(entity);
+            var rightEntity = await right.Evaluate(entity, evaluationParameters);
             return rightEntity.ValueType != EntityValueType.Boolean
                 ? default
                 : (EntityDocument)new EntityDocumentConstant(leftEntity.Value<bool>() && rightEntity.Value<bool>(), EntityValueType.Boolean);

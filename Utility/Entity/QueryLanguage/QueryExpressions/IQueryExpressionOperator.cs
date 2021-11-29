@@ -8,7 +8,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
         QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right);
 
-        Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity);
+        Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity, Entity evaluationParameters);
 
         string ToString(QueryExpressionNode left, QueryExpressionNode right);
     }
