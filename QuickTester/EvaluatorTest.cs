@@ -26,6 +26,8 @@ namespace QuickTester
             await EvaluateWithParameters(fw);
             await EvaluatableEntity(fw);
             await EvaluatableEntityWithParameters(fw);
+            await EvaluatableEntityWithActualParameters(fw);
+            await EvaluatableEntityWithMergedParameters(fw);
         }
 
         private static async Task EvaluateConstant(FrameworkWrapper fw)
@@ -241,6 +243,31 @@ namespace QuickTester
 
         private static async Task EvaluatableEntityWithParameters(FrameworkWrapper fw)
         {
+            var random = new Random();
+            var left = random.Next();
+            var right = random.Next();
+            var sum = left + right;
+
+            var parameters = fw.Entity.Create(new
+            {
+                left,
+                right
+            });
+
+            var adder = await fw.Entity.Parse("application/json", @"{ ""$evaluate"": { ""code"": ""return Create(new { Entity = await EvalI(\""parameters.left\"") + await EvalI(\""parameters.right\""), Complete = true});"" } }");
+
+            var count = 0;
+            await foreach (var result in fw.Evaluator.Evaluate(adder, parameters))
+            {
+                count++;
+                Assert.AreEqual(sum, result.Value<int>());
+            }
+
+            Assert.AreEqual(1, count);
+        }
+
+        private static async Task EvaluatableEntityWithActualParameters(FrameworkWrapper fw)
+        {
             var value = 7;
 
             var entity = await fw.Entity.Parse("application/json", $@"{{ ""$evaluate"": {{ ""code"": ""return Create(new {{ Entity = await EvalI(\""parameters.value\""), Complete = true}});"", ""actualParameters"": {{ ""value"": {value} }} }} }}");
@@ -250,6 +277,30 @@ namespace QuickTester
             {
                 count++;
                 Assert.AreEqual(fw.Entity.Create(value), result);
+            }
+
+            Assert.AreEqual(1, count);
+        }
+
+        private static async Task EvaluatableEntityWithMergedParameters(FrameworkWrapper fw)
+        {
+            var random = new Random();
+            var left = random.Next();
+            var right = random.Next();
+            var sum = left + right;
+
+            var parameters = fw.Entity.Create(new
+            {
+                left,
+            });
+
+            var adder = await fw.Entity.Parse("application/json", $@"{{ ""$evaluate"": {{ ""code"": ""return Create(new {{ Entity = await EvalI(\""parameters.left\"") + await EvalI(\""parameters.right\""), Complete = true}});"", ""actualParameters"": {{ ""right"": {right} }} }} }}");
+
+            var count = 0;
+            await foreach (var result in fw.Evaluator.Evaluate(adder, parameters))
+            {
+                count++;
+                Assert.AreEqual(sum, result.Value<int>());
             }
 
             Assert.AreEqual(1, count);
