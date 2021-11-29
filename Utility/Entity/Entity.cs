@@ -62,8 +62,6 @@ namespace Utility.Entity
 
         public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
 
-        public bool IsEvaluatable => Document?.IsEvaluatable ?? false;
-
         public bool IsArray => Document?.IsArray ?? false;
 
         public bool IsObject => Document?.IsObject ?? false;
@@ -104,7 +102,7 @@ namespace Utility.Entity
 
         public async Task<string> EvalAsS(string query = "@", string defaultValue = null)
         {
-            var result = await EvalE(query);
+            var result = await EvalE(query, null);
             return result?.ValueType == EntityValueType.String ? result.Value<string>() : result?.ToString() ?? defaultValue;
         }
 
@@ -112,7 +110,7 @@ namespace Utility.Entity
 
         public Task<bool> EvalB(string query = "@", bool defaultValue = false) => GetWithDefault(query, defaultValue);
 
-        public Task<Dictionary<string, Entity>> EvalD(string query = "@") => EvalD<Entity>(query);
+        public Task<Dictionary<string, Entity>> EvalD(string query = "@", bool throwIfMissing = true) => EvalD<Entity>(query, throwIfMissing);
 
         public async Task<Dictionary<string, TValue>> EvalD<TValue>(string query = "@", bool throwIfMissing = true)
         {
@@ -260,23 +258,20 @@ namespace Utility.Entity
                     }
                 }
 
-                var wasEvaluatable = false;
-                await foreach (var evaluatableChild in child.Document.ProcessEvaluatable())
+                await foreach (var evaluationChild in child.Evaluator.Evaluate(child))
                 {
-                    wasEvaluatable = true;
-                    evaluatableChild.Query = evaluatableChild.Query.Replace("$", child.Query);
-                    await foreach (var handledChild in HandleChild(evaluatableChild, processReference))
+                    if (!child.Equals(evaluationChild))
                     {
-                        yield return handledChild;
+                        await foreach (var handledChild in HandleChild(evaluationChild, processReference))
+                        {
+                            yield return handledChild;
+                        }
+                    }
+                    else
+                    {
+                        yield return child;
                     }
                 }
-
-                if (wasEvaluatable)
-                {
-                    yield break;
-                }
-
-                yield return child;
             }
         }
 
@@ -335,9 +330,6 @@ namespace Utility.Entity
 
             return defaultValue;
         }
-
-        internal Task<Entity> Evaluate() => Document?.Evaluate();
-
         #endregion
     }
 

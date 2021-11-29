@@ -22,7 +22,7 @@ namespace Utility.Entity.Implementations
         public Entity Pop() => _entities.Pop();
 
         #region EntityDocument Implementation
-        public override EntityValueType ValueType => _entities.FirstOrDefault()?.ValueType ?? EntityValueType.Undefined;
+        public override EntityValueType ValueType => _entities.FirstOrDefault()?.ValueType ?? EntityValueType.Null;
 
         public override int Length => _entities.FirstOrDefault()?.Document.Length ?? throw new InvalidOperationException();
 

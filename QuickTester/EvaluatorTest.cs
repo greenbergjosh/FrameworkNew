@@ -22,42 +22,8 @@ namespace QuickTester
             await EntityPathEvaluateSequence(fw);
             await EntityPathEvaluateSequence(fw);
             await EntityMutator();
-        }
-
-        private static async Task EntityMutator()
-        {
-            static async IAsyncEnumerable<Entity> Mutate42(Entity entity)
-            {
-                if (entity.ValueType == EntityValueType.Number && await entity.EvalI("@") == 42)
-                {
-                    yield return entity.Create(420);
-                }
-            }
-
-            var fw = await FrameworkWrapper.Create(evaluatorConfig: new EvaluatorConfig(EntityMutator: Mutate42));
-
-            var constant10 = fw.Entity.Create(10);
-
-            var count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(constant10))
-            {
-                count++;
-                Assert.AreEqual(constant10, result);
-            }
-
-            Assert.AreEqual(1, count);
-
-            var constant42 = fw.Entity.Create(42);
-            var constant420 = fw.Entity.Create(420);
-
-            count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(constant42))
-            {
-                count++;
-                Assert.AreEqual(constant420, result);
-            }
-
-            Assert.AreEqual(1, count);
+            await EvaluatableEntity(fw);
+            await EvaluatableEntityWithParameters(fw);
         }
 
         private static async Task EvaluateConstant(FrameworkWrapper fw)
@@ -156,7 +122,7 @@ namespace QuickTester
 
             var results = new List<Entity>();
 
-            await foreach(var result in fw.Evaluator.Evaluate(sequenceEvaluator))
+            await foreach (var result in fw.Evaluator.Evaluate(sequenceEvaluator))
             {
                 results.Add(result);
             }
@@ -177,6 +143,74 @@ namespace QuickTester
 
             Assert.AreEqual(entities.Count, results.Count);
             CollectionAssert.AreEqual(entities, results);
+        }
+
+        private static async Task EntityMutator()
+        {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+            static async IAsyncEnumerable<Entity> Mutate42(Entity entity)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            {
+                if (entity.ValueType == EntityValueType.Number && entity.Value<int>() == 42)
+                {
+                    yield return entity.Create(420);
+                }
+            }
+
+            var fw = await FrameworkWrapper.Create(evaluatorConfig: new EvaluatorConfig(entityMutator: Mutate42));
+
+            var constant10 = fw.Entity.Create(10);
+
+            var count = 0;
+            await foreach (var result in fw.Evaluator.Evaluate(constant10))
+            {
+                count++;
+                Assert.AreEqual(constant10, result);
+            }
+
+            Assert.AreEqual(1, count);
+
+            var constant42 = fw.Entity.Create(42);
+            var constant420 = fw.Entity.Create(420);
+
+            count = 0;
+            await foreach (var result in fw.Evaluator.Evaluate(constant42))
+            {
+                count++;
+                Assert.AreEqual(constant420, result);
+            }
+
+            Assert.AreEqual(1, count);
+        }
+
+        private static async Task EvaluatableEntity(FrameworkWrapper fw)
+        {
+            var entity = await fw.Entity.Parse("application/json", @"{ ""$evaluate"": { ""code"": ""return Create(new { Entity = 42, Complete = true});"" } }");
+
+            var count = 0;
+            await foreach (var result in fw.Evaluator.Evaluate(entity))
+            {
+                count++;
+                Assert.AreEqual(fw.Entity.Create(42), result);
+            }
+
+            Assert.AreEqual(1, count);
+        }
+
+        private static async Task EvaluatableEntityWithParameters(FrameworkWrapper fw)
+        {
+            var value = 7;
+
+            var entity = await fw.Entity.Parse("application/json", $@"{{ ""$evaluate"": {{ ""code"": ""return Create(new {{ Entity = await EvalI(\""parameters.value\""), Complete = true}});"", ""actualParameters"": {{ ""value"": {value} }} }} }}");
+
+            var count = 0;
+            await foreach (var result in fw.Evaluator.Evaluate(entity))
+            {
+                count++;
+                Assert.AreEqual(fw.Entity.Create(value), result);
+            }
+
+            Assert.AreEqual(1, count);
         }
     }
 }

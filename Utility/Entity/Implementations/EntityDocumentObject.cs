@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Utility.Evaluatable;
 
 namespace Utility.Entity.Implementations
 {
@@ -39,23 +37,11 @@ namespace Utility.Entity.Implementations
             _length = _readableProperties.Count + _readableFields.Count;
         }
 
-        public override bool IsEvaluatable => _value is IEvaluatable;
-
         public override int Length => _length;
 
         public override TOutput Value<TOutput>() => (TOutput)(object)_value;
 
         protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
-
-        public override Task<Entity> Evaluate()
-        {
-            if (_value is not IEvaluatable evaluatable)
-            {
-                throw new InvalidOperationException("This entity is not evaluatable");
-            }
-
-            return evaluatable.Evaluate(Entity);
-        }
 
         protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
         {
@@ -91,17 +77,6 @@ namespace Utility.Entity.Implementations
 
             propertyEntityDocument = default;
             return false;
-        }
-
-        public override async IAsyncEnumerable<Entity> ProcessEvaluatable()
-        {
-            if (IsEvaluatable)
-            {
-                await foreach (var result in Entity.Evaluator.Evaluate(Entity))
-                {
-                    yield return result;
-                }
-            }
         }
 
         public override string ToString() => _value?.ToString();

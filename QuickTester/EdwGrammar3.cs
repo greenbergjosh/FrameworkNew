@@ -32,21 +32,21 @@ namespace QuickTester
                 foreach (var child in Body)
                 {
                     var suppress = false;
+                    string prepend = null;
 
-                    var instruction = await child.EvalE("Instruction", null);
-                    if (instruction == null)
+                    var childBody = await child.EvalAsS("Instruction", null);
+                    if (childBody == null)
                     {
-                        instruction = child;
+                        childBody = await child.EvalAsS();
                     }
                     else
                     {
                         suppress = await child.EvalB("Suppress", false);
+                        prepend = await child.EvalS("Prepend", null);
                     }
 
-                    var childBody = await instruction.EvalAsS();
                     if (!suppress)
                     {
-                        var prepend = await child.EvalS("Prepend", null);
                         if (!string.IsNullOrEmpty(prepend) && !string.IsNullOrEmpty(childBody))
                         {
                             _ = sb.Append(prepend);
@@ -63,7 +63,7 @@ namespace QuickTester
                     sb = new StringBuilder();
                     foreach (var child in Symbol)
                     {
-                        _ = sb.Append(await child.EvalAsS("@"));
+                        _ = sb.Append(await child.EvalAsS());
                     }
 
                     var symbol = sb.ToString();
@@ -309,6 +309,8 @@ namespace QuickTester
                     });
                 }
             }
+
+            public override string ToString() => string.Join("|", Scopes.Select(s => s.Value.Scope));
         }
 
         public class RepetitionInstruction : IEvaluatable
@@ -358,6 +360,8 @@ namespace QuickTester
                     Complete = true
                 });
             }
+
+            public override string ToString() => $"<<r|{Template}|{Separator}|{Repeater}";
         }
 
         public static async Task Run()
@@ -368,7 +372,7 @@ namespace QuickTester
             {
                 if (entity.ValueType == EntityValueType.String)
                 {
-                    var value = await entity.EvalS("@");
+                    var value = entity.Value<string>();
 
                     var (hadTokens, tokenReplacedValue) = await ReplaceTokens(entity, value);
 
@@ -389,7 +393,7 @@ namespace QuickTester
                     FunctionHandler: FunctionHandler
                 ),
                 evaluatorConfig: new EvaluatorConfig(
-                    EntityMutator: ReplaceTemplates
+                    entityMutator: ReplaceTemplates
                 )
             );
 
@@ -612,8 +616,6 @@ DO NOTHING
              ***************************************************************************************************************************
              */
 
-
-
             //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
             var checked_transform_rs_elements = new Production(new[]
             {
@@ -704,9 +706,6 @@ DO NOTHING
                 E.Create(checked_transform_all_keys),
                 E.Create(@" IS NOT NULL")
             }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
-
-
-
 
             // If singleton then this one is not created at all - it is null.
             var report_sequence_checked_transform_sql = new Production(new[]
@@ -850,7 +849,6 @@ DO NOTHING
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " , "}),
 
-
                 E.Create(@", expires)
                     SELECT id,
                            ts"),
@@ -915,7 +913,6 @@ DO NOTHING
                 E.Create(@" WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); ")
             }, (key, value) => symbolTable[key] = E.Create(value), null);
 
-
             ///////////*************************** report_sequence_select.sql 
             ///
 
@@ -944,9 +941,6 @@ DO NOTHING
             ["rs_element"] = 
                 "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
             */
-
-
-
 
             var process_constants = new Production(new[]
             {
@@ -1029,7 +1023,6 @@ DO NOTHING
                 E.Create($" rs{Environment.NewLine}    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)")
             }, (key, value) => symbolTable[key] = E.Create(value), null);
 
-
             var report_sequence_select_sql = new Production(new[]
             {
                 //["process_constants"] =
@@ -1110,12 +1103,17 @@ DO NOTHING
                 var nextTokenStartIndex = tokenizedInput.IndexOf(tokenStart, currentIndex);
                 if (nextTokenStartIndex == -1)
                 {
+                    if (currentIndex == 0)
+                    {
+                        return (false, tokenizedInput);
+                    }
+
                     _ = result.Append(tokenizedInput[currentIndex..]);
                     break;
                 }
                 else
                 {
-                    _ = result.Append(tokenizedInput[currentIndex..(nextTokenStartIndex)]);
+                    _ = result.Append(tokenizedInput[currentIndex..nextTokenStartIndex]);
                     var nextTokenEndIndex = tokenizedInput.IndexOf(tokenEnd, nextTokenStartIndex);
                     if (nextTokenStartIndex == -1)
                     {
@@ -1124,13 +1122,16 @@ DO NOTHING
 
                     var query = tokenizedInput[(nextTokenStartIndex + tokenStart.Length)..nextTokenEndIndex].Trim();
                     var value = await entity.EvalS(query);
-                    _ = result.Append(value);
+
+                    var nestedReplacedValue = await ReplaceTokens(entity, value);
+
+                    _ = result.Append(nestedReplacedValue.tokenReplaced);
 
                     currentIndex = nextTokenEndIndex + tokenEnd.Length;
                 }
             }
 
-            return (currentIndex != 0, result.ToString());
+            return (true, result.ToString());
         }
 
         private static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
@@ -1169,10 +1170,11 @@ DO NOTHING
                             }
                             else
                             {
-                                d.Add(s);
+                                _ = d.Add(s);
                                 yield return child;
                             }
                         }
+
                         break;
 
                     case "repeat":

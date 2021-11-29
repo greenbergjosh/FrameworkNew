@@ -111,7 +111,11 @@ namespace QuickTester
                 },
                 MissingPropertyHandler: (entity, propertyName) =>
                 {
-                    Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
+                    if (propertyName != "$evaluate")
+                    {
+                        Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
+                    }
+
                     return Task.FromResult<EntityDocument>(null);
                 },
                 FunctionHandler: functionHandler
@@ -253,7 +257,7 @@ namespace QuickTester
 
                 foreach (var result in await testEntity.Eval(query))
                 {
-                    Console.WriteLine($"\t{result?.ToString() ?? "null"}");
+                    Console.WriteLine($"\tQuery: {result?.Query} Data: {result?.ToString() ?? "null"}");
                 }
 
                 Console.WriteLine();

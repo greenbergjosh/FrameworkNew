@@ -1,12 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Utility.Entity.Implementations;
 
 namespace Utility.Evaluatable
 {
     public delegate IAsyncEnumerable<Entity.Entity> EntityMutator(Entity.Entity entity);
 
-    public record EvaluatorConfig(EntityMutator EntityMutator = null);
+    public class EvaluatorConfig
+    {
+        public EntityMutator EntityMutator { get; init; }
+        public RoslynWrapper<Entity.Entity, Entity.Entity> RoslynWrapper { get; internal set; }
+
+        public EvaluatorConfig(EntityMutator entityMutator = null, RoslynWrapper<Entity.Entity, Entity.Entity> roslynWrapper = null)
+        {
+            EntityMutator = entityMutator;
+            RoslynWrapper = roslynWrapper;
+        }
+    }
 
     public class Evaluator
     {
@@ -32,13 +43,64 @@ namespace Utility.Evaluatable
                         stack.Push((child, true));
                     }
                 }
-                else if (!current.entity.IsEvaluatable)
-                {
-                    yield return current.entity;
-                }
                 else
                 {
-                    var evaluationResult = await current.entity.Evaluate();
+                    Entity.Entity evaluationResult;
+                    if (current.entity.Document is IEvaluatable evaluatable)
+                    {
+                        evaluationResult = await evaluatable.Evaluate(current.entity);
+                    }
+                    else
+                    {
+                        var evaluate = await current.entity.EvalE("$evaluate", null);
+                        if (evaluate == null)
+                        {
+                            // Entity has no evaluate method, short-cut for a constant
+                            yield return current.entity;
+                            continue;
+                        }
+                        else
+                        {
+                            var evaluateStack = new Stack<Entity.Entity>();
+                            var lastEvaluate = evaluate;
+
+                            while (evaluate != null)
+                            {
+                                evaluateStack.Push(evaluate);
+                                lastEvaluate = evaluate;
+                                // TODO: Formalize how an evaluate points to another entity,
+                                // it is via EntityPath's ref feature, and thus maybe transparent here?
+                                evaluate = await evaluate.EvalE("$evaluate", null);
+                            }
+
+                            var stackedParameters = new EntityDocumentStack();
+                            foreach (var stackItem in evaluateStack)
+                            {
+                                var parameters = await stackItem.EvalE("actualParameters", null);
+                                if (parameters != null)
+                                {
+                                    stackedParameters.Push(parameters);
+                                }
+                            }
+
+                            var id = await lastEvaluate.EvalGuid("$meta.id", null);
+                            var code = await lastEvaluate.EvalS("code");
+                            var evaluationParameters = entity.Create(new
+                            {
+                                parameters = stackedParameters
+                            });
+
+                            if (id.HasValue)
+                            {
+                                evaluationResult = await _config.RoslynWrapper.Evaluate(id.Value, code, evaluationParameters);
+                            }
+                            else
+                            {
+                                evaluationResult = await _config.RoslynWrapper.Evaluate(code, evaluationParameters);
+                            }
+                        }
+                    }
+
                     var currentComplete = await evaluationResult.EvalB("Complete");
                     if (!currentComplete)
                     {
@@ -48,7 +110,14 @@ namespace Utility.Evaluatable
                     var next = await evaluationResult.EvalE("Entity", null);
                     if (next != null)
                     {
-                        stack.Push((next, false));
+                        if (current.entity.Equals(next))
+                        {
+                            yield return next;
+                        }
+                        else
+                        {
+                            stack.Push((next, false));
+                        }
                     }
                 }
             }
@@ -61,10 +130,17 @@ namespace Utility.Evaluatable
             {
                 await foreach (var child in _config.EntityMutator(entity))
                 {
-                    await foreach (var handledChild in HandleEntity(child))
+                    hadMutations = true;
+                    if (entity.Equals(child))
                     {
-                        hadMutations = true;
-                        yield return handledChild;
+                        yield return child;
+                    }
+                    else
+                    {
+                        await foreach (var handledChild in HandleEntity(child))
+                        {
+                            yield return handledChild;
+                        }
                     }
                 }
             }

@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Scripting;
 
 namespace Utility
 {
-    internal class RoslynWrapper<TGlobals, TOutput>
+    public class RoslynWrapper<TGlobals, TOutput>
     {
         private class ScriptDescriptor
         {
