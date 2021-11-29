@@ -395,6 +395,36 @@ namespace QuickTester
 
             var E = fw.Entity;
 
+            string test = @"
+{
+   ""joins"":[
+      {
+                ""alias"":""bob"",
+         ""table_name"":""blob"",
+         ""join_type"":""LEFT"",
+         ""on"":""$on_cols1 = $bob.col AND $on_cols2=$tgt.col2"",
+         ""where"":""$tgt.col IS NOT NULL""
+      },
+      {
+                ""alias"":""tom"",
+         ""table_name"":""thom"",
+         ""join_type"":""LEFT"",
+         ""on"":""$on_cols1 = $bob.col AND $on_cols2=$tgt.col2"",
+         ""where"":""$tgt.col IS NOT NULL"",
+         ""joins"":[
+            {
+                    ""alias"":""rich"",
+               ""table_name"":""richard"",
+               ""join_type"":""LEFT"",
+               ""on"":""$on_cols1 = $bob.col AND $on_cols2=$tgt.col2"",
+               ""where"":""$tgt.col IS NOT NULL""
+            }
+         ]
+      }
+   ]
+}
+";
+
             var symbolTable = new Dictionary<string, Entity>()
             {
                 ["firstName"] = E.Create("John"),
@@ -405,7 +435,9 @@ namespace QuickTester
                 ["rsid"] = E.Create("123456789"),
                 ["tg_table_names"] = E.Create(new[] { "bob", "tom", "rich" }),
                 ["target_table_insert_sql_meta_rs_name"] = E.Create("PathDmSn"),
-                ["report_sequence_checked_transform_meta_rs_name"] = E.Create("PathDmSn")
+                ["report_sequence_checked_transform_meta_rs_name"] = E.Create("PathDmSn"),
+                ["test_joins"] = await E.Parse("application/json", test),
+                ["test_joins_start_table"] = E.Create("ws")
             };
 
             var productions = new Dictionary<string, Entity>();
@@ -1081,6 +1113,65 @@ DO NOTHING
                 }))
 
             }, (key, value) => symbolTable[key] = E.Create(value), null);
+
+            ///////////////////////////  Test recursive joins
+
+            //["test_joins"] = await E.Parse("application/json", test),
+            //["test_joins_start_table"] = E.Create("ws")
+
+//{
+//   ""joins"":[
+//      {
+//         ""alias"":""bob"",
+//         ""table_name"":""blob"",
+//         ""join_type"":""LEFT"",
+//         ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
+//         ""where"":""$tgt.col IS NOT NULL""
+//      },
+//      {
+//         ""alias"":""tom"",
+//         ""table_name"":""thom"",
+//         ""join_type"":""LEFT"",
+//         ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
+//         ""where"":""$tgt.col IS NOT NULL"",
+//         ""joins"":[
+//            {
+//               ""alias"":""rich"",
+//               ""table_name"":""richard"",
+//               ""join_type"":""LEFT"",
+//               ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
+//               ""where"":""$tgt.col IS NOT NULL""
+//            }
+//         ]
+//      }
+//   ]
+//}
+//            ";
+
+            var test_join = new Production(new[]
+            {
+                E.Create(new GetterInstruction("context://col?value", E.Create(""), false, @"'", @"'")),
+                E.Create(@"::"),
+                E.Create(new GetterInstruction("context://col?data_type")),
+                E.Create(@" "),
+                E.Create(new GetterInstruction("context://col?name")),
+
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), E.Create($",{Environment.NewLine}"),
+                    E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                        ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?event_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
+
+                })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}),
+            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create(new GetterInstruction("context://col?name")) });
+
+            //["rs_element"] =
+            //    "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
+            var test_joins = new Production(new[]
+            {
+                E.Create(test_join)
+            }, (key, value) => symbolTable[key] = E.Create(value),
+                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
+
+
 
             var cur_prod = report_sequence_select_sql;
 
