@@ -164,9 +164,9 @@ namespace GenericApi
                     ["requestInfo"] = new { r = 0, requestRsId, requestRsTimestamp }
                 };
 
-                var identity = await request.EvalS("i", null);
+                var identity = await request.EvalS("i", defaultValue: null);
 
-                foreach (var kvp in await request.EvalD<Entity>())
+                foreach (var kvp in await request.EvalD("@"))
                 {
                     if (kvp.Key == "i")
                     {

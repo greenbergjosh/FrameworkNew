@@ -53,7 +53,7 @@ namespace SignalApiLib
             }
 
             var extraData = new Dictionary<string, Entity>();
-            foreach (var kvp in await s.EvalD())
+            foreach (var kvp in await s.EvalD("@"))
             {
                 if (!propsUsed.Contains(kvp.Key))
                 {

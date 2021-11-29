@@ -10,14 +10,14 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         private ContainerQueryIndexExpression(QueryExpressionNode expression) => _expression = expression;
 
-        public async IAsyncEnumerable<int> GetIndexes(Entity entity)
+        public async IAsyncEnumerable<int> GetIndexes(Entity entity, Entity evaluationParameters)
         {
             if (_expression.OutputType is not QueryExpressionType.Number and not QueryExpressionType.InstanceDependent)
             {
                 yield break;
             }
 
-            var result = await _expression.Evaluate(entity);
+            var result = await _expression.Evaluate(entity, evaluationParameters);
             if (result.ValueType != EntityValueType.Number)
             {
                 yield break;
@@ -32,14 +32,14 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
             yield return (int)index;
         }
 
-        public async IAsyncEnumerable<string> GetProperties(Entity entity)
+        public async IAsyncEnumerable<string> GetProperties(Entity entity, Entity evaluationParameters)
         {
             if (_expression.OutputType is not QueryExpressionType.String and not QueryExpressionType.InstanceDependent)
             {
                 yield break;
             }
 
-            var result = await _expression.Evaluate(entity);
+            var result = await _expression.Evaluate(entity, evaluationParameters);
             if (result.ValueType != EntityValueType.String)
             {
                 yield break;

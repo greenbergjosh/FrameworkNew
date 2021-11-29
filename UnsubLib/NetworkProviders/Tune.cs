@@ -66,7 +66,7 @@ namespace UnsubLib.NetworkProviders
                         RelationshipPath = relationshipPath
                     }), converted);
 
-                if (res == null || await res.EvalS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{responseBody ?? "[null]"}");
                     return null;
@@ -116,7 +116,7 @@ namespace UnsubLib.NetworkProviders
         {
             var enriched = new List<Entity>();
 
-            foreach (var campaign in await campaigns.EvalL())
+            foreach (var campaign in await campaigns.EvalL("@"))
             {
                 var offerId = await campaign.EvalS("NetworkCampaignId");
                 if (!tuneCampaigns.TryGetValue(offerId, out var tuneCampaign))
@@ -131,7 +131,7 @@ namespace UnsubLib.NetworkProviders
                     continue;
                 }
 
-                var serialized = await campaign.EvalD();
+                var serialized = await campaign.EvalD("@");
 
                 serialized["UnsubFileDownloadUri"] = campaigns.Create(unsubFileDownloadUri);
 

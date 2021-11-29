@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
+using Utility.Evaluatable;
 
 namespace Utility.Entity
 {
@@ -21,8 +22,6 @@ namespace Utility.Entity
         public Entity Entity { get; internal set; }
 
         public abstract EntityValueType ValueType { get; }
-
-        public virtual bool IsEvaluatable { get; } = false;
 
         public bool IsArray => ValueType == EntityValueType.Array;
 
@@ -62,8 +61,6 @@ namespace Utility.Entity
 
         protected internal abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
-        public virtual Task<Entity> Evaluate() => throw new NotImplementedException();
-
         public static EntityDocument MapValue(object value) => value switch
         {
             null => new EntityDocumentConstant(null, EntityValueType.Null),
@@ -74,6 +71,7 @@ namespace Utility.Entity
             decimal => new EntityDocumentConstant(value, EntityValueType.Number),
             IDictionary dictionary => new EntityDocumentDictionary(dictionary),
             IEnumerable array => EntityDocumentArray.Create(array),
+            IEvaluatable evaluatable => new EntityDocumentEvaluatable(evaluatable),
             Utility.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
             _ => EntityDocumentObject.Create(value),
@@ -81,13 +79,6 @@ namespace Utility.Entity
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public virtual async IAsyncEnumerable<Entity> ProcessReference()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-        {
-            yield break;
-        }
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public virtual async IAsyncEnumerable<Entity> ProcessEvaluatable()
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             yield break;

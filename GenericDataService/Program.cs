@@ -37,7 +37,7 @@ namespace GenericDataService
 
                 await DataService.Config(FrameworkWrapper);
 
-                WwwRootPath = await FrameworkWrapper.StartupConfiguration.EvalS("PhysicalFileProviderPath", null);
+                WwwRootPath = await FrameworkWrapper.StartupConfiguration.EvalS("PhysicalFileProviderPath", defaultValue: null);
 
                 await HealthCheckHandler.Initialize(FrameworkWrapper);
             }

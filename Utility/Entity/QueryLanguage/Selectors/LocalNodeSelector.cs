@@ -5,7 +5,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
     internal sealed class LocalNodeSelector : ISelector
     {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
+        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             foreach (var entity in entities)

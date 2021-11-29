@@ -84,7 +84,7 @@ namespace UnsubLib.NetworkProviders
                             RelationshipPath = relationshipPath
                         }), respBody);
 
-                    if (res == null || await res.EvalS("result", null) == "failed")
+                    if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                     {
                         await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{respBody ?? "[null]"}");
                         return null;
@@ -137,7 +137,7 @@ namespace UnsubLib.NetworkProviders
                 respBody = resp.body;
                 var rb = await network.Parse("application/json", respBody);
 
-                if ((await rb?.EvalS("message", null))?.Contains("Can't find entry in the database") == true)
+                if ((await rb?.EvalS("message", defaultValue: null))?.Contains("Can't find entry in the database") == true)
                 {
                     return null;
                 }

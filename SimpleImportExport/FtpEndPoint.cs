@@ -33,8 +33,8 @@ namespace SimpleImportExport
             var host = await ge.EvalS("Host");
             var basePath = await ge.EvalS("BasePath");
             var user = await ge.EvalS("User");
-            var password = await ge.EvalS("Password", null);
-            var keyPath = await ge.EvalS("KeyPath", null);
+            var password = await ge.EvalS("Password", defaultValue: null);
+            var keyPath = await ge.EvalS("KeyPath", defaultValue: null);
             var maxDepth = await ge.EvalI("MaxDepth", 0);
             var isSFtp = await ge.EvalB("isSftp", false);
             var isFtps = await ge.EvalB("IsFtps", false);
@@ -49,7 +49,7 @@ namespace SimpleImportExport
                 isSFtp = true;
             }
 
-            var port = (await ge.EvalS("Port", null)).ParseInt();
+            var port = (await ge.EvalS("Port", defaultValue: null)).ParseInt();
 
             var endpoint = new FtpEndPoint(host, basePath, user, password, keyPath, port, maxDepth, isSFtp, isFtps);
             await endpoint.LoadPatterns(ge);

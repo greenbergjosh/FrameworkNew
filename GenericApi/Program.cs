@@ -21,7 +21,7 @@ namespace GenericApi
         public static async Task Main(string[] args)
         {
             FrameworkWrapper = await FrameworkWrapper.Create(commandLineArgs: args);
-            if (Guid.TryParse(await FrameworkWrapper.StartupConfiguration.EvalS("RsConfigId", null), out var rsConfigId))
+            if (Guid.TryParse(await FrameworkWrapper.StartupConfiguration.EvalS("RsConfigId", defaultValue: null), out var rsConfigId))
             {
                 RsConfigId = rsConfigId;
             }
@@ -39,7 +39,7 @@ namespace GenericApi
 
         public static async Task LoadLbms()
         {
-            var lbms = await FrameworkWrapper.StartupConfiguration.EvalD<Entity>("LBMs");
+            var lbms = await FrameworkWrapper.StartupConfiguration.EvalD("LBMs");
 
             Lbms = lbms;
         }

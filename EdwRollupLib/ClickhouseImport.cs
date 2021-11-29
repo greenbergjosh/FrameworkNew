@@ -216,7 +216,7 @@ SETTINGS index_granularity = 8192;";
                 })
             });
 
-            return await result.EvalS("result", null) != "success"
+            return await result.EvalS("result", defaultValue: null) != "success"
                 ? throw new DataException($"Error exporting table: {tableName} result: {result}")
                 : parameters;
         }

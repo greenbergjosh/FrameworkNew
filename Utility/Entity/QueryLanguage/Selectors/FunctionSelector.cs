@@ -17,12 +17,12 @@ namespace Utility.Entity.QueryLanguage.Selectors
             _query = $"{_functionName}({string.Join<object>(", ", functionArguments.Select(arg => arg.Query))})";
         }
 
-        public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
+        public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
         {
             var functionHandler = entities.FirstOrDefault()?.FunctionHandler;
             return functionHandler is null
                 ? throw new InvalidOperationException($"No function handler defined")
-                : functionHandler(entities, _functionName, _functionArguments, _query);
+                : functionHandler(entities, _functionName, _functionArguments, _query, evaluationParameters);
         }
     }
 }

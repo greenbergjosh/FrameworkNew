@@ -16,7 +16,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async IAsyncEnumerable<int> GetIndexes(Entity entity)
+        public async IAsyncEnumerable<int> GetIndexes(Entity entity, Entity evaluationParameters)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (_step == 0)

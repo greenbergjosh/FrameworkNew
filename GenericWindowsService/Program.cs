@@ -92,7 +92,7 @@ namespace GenericWindowsService
                     Service = (IGenericWindowsService)dynamicContext.Assembly.CreateInstance(await fw.StartupConfiguration.EvalS("DataServiceTypeName"));
                 }
 
-                WwwRootPath = await fw.StartupConfiguration.EvalS("PhysicalFileProviderPath", null);
+                WwwRootPath = await fw.StartupConfiguration.EvalS("PhysicalFileProviderPath", defaultValue: null);
 
                 return fw;
             }

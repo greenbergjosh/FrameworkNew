@@ -25,28 +25,28 @@ namespace QuickTester
                 _symbolSetter = symbolSetter;
             }
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 // TODO: Seperate evaluation order from concat order
                 var sb = new StringBuilder();
                 foreach (var child in Body)
                 {
                     var suppress = false;
+                    string prepend = null;
 
-                    var instruction = await child.EvalE("Instruction", null);
-                    if (instruction == null)
+                    var childBody = await child.EvalAsS("Instruction", null);
+                    if (childBody == null)
                     {
-                        instruction = child;
+                        childBody = await child.EvalAsS("@");
                     }
                     else
                     {
                         suppress = await child.EvalB("Suppress", false);
+                        prepend = await child.EvalS("Prepend", defaultValue: null);
                     }
 
-                    var childBody = await instruction.EvalAsS();
                     if (!suppress)
                     {
-                        var prepend = await child.EvalS("Prepend", null);
                         if (!string.IsNullOrEmpty(prepend) && !string.IsNullOrEmpty(childBody))
                         {
                             _ = sb.Append(prepend);
@@ -104,7 +104,7 @@ namespace QuickTester
             private IList<Entity> _result;
             private int _index = 0;
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 if (_index == 0)
                 {
@@ -168,7 +168,7 @@ namespace QuickTester
 
             public ConditionInstruction(List<(Entity Antecedent, Entity Consequent)> cases) => Cases = cases;
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 foreach (var c in Cases)
                 {
@@ -224,7 +224,7 @@ namespace QuickTester
             private int _repeatCount = 0;
             private readonly HashSet<string> _finished = new();
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 if (!_initialized)
                 {
@@ -236,7 +236,7 @@ namespace QuickTester
 
                     foreach (var (k, v) in Scopes)
                     {
-                        _ies[k] = (await v.Scope.Eval()).GetEnumerator();
+                        _ies[k] = (await v.Scope.Eval("@")).GetEnumerator();
                     }
 
                     _initialized = true;
@@ -309,6 +309,8 @@ namespace QuickTester
                     });
                 }
             }
+
+            public override string ToString() => string.Join("|", Scopes.Select(s => s.Value.Scope));
         }
 
         public class RepetitionInstruction : IEvaluatable
@@ -329,20 +331,20 @@ namespace QuickTester
                 _contextRemover = contextRemover;
             }
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 var parts = new List<string>();
 
-                foreach (var step in await Repeater.Eval())
+                foreach (var step in await Repeater.Eval("@"))
                 {
-                    var scope = await step.EvalD();
+                    var scope = await step.EvalD("@");
 
                     foreach (var kvp in scope)
                     {
                         _contextSetter(kvp.Key, kvp.Value);
                     }
 
-                    var stepContent = await Template.EvalAsS();
+                    var stepContent = await Template.EvalAsS("@");
 
                     foreach (var kvp in scope)
                     {
@@ -354,21 +356,23 @@ namespace QuickTester
 
                 return entity.Create(new
                 {
-                    Entity = string.Join(await Separator.EvalAsS(), parts),
+                    Entity = string.Join(await Separator.EvalAsS("@"), parts),
                     Complete = true
                 });
             }
+
+            public override string ToString() => $"<<r|{Template}|{Separator}|{Repeater}";
         }
 
         public static async Task Run()
         {
             Entity contextEntity = null;
 
-            static async IAsyncEnumerable<Entity> ReplaceTemplates(Entity entity)
+            static async IAsyncEnumerable<Entity> ReplaceTemplates(Entity entity, Entity parameters)
             {
                 if (entity.ValueType == EntityValueType.String)
                 {
-                    var value = await entity.EvalS("@");
+                    var value = entity.Value<string>();
 
                     var (hadTokens, tokenReplacedValue) = await ReplaceTokens(entity, value);
 
@@ -389,7 +393,7 @@ namespace QuickTester
                     FunctionHandler: FunctionHandler
                 ),
                 evaluatorConfig: new EvaluatorConfig(
-                    EntityMutator: ReplaceTemplates
+                    entityMutator: ReplaceTemplates
                 )
             );
 
@@ -644,8 +648,6 @@ DO NOTHING
              ***************************************************************************************************************************
              */
 
-
-
             //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
             var checked_transform_rs_elements = new Production(new[]
             {
@@ -736,9 +738,6 @@ DO NOTHING
                 E.Create(checked_transform_all_keys),
                 E.Create(@" IS NOT NULL")
             }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
-
-
-
 
             // If singleton then this one is not created at all - it is null.
             var report_sequence_checked_transform_sql = new Production(new[]
@@ -882,7 +881,6 @@ DO NOTHING
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " , "}),
 
-
                 E.Create(@", expires)
                     SELECT id,
                            ts"),
@@ -947,7 +945,6 @@ DO NOTHING
                 E.Create(@" WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); ")
             }, (key, value) => symbolTable[key] = E.Create(value), null);
 
-
             ///////////*************************** report_sequence_select.sql 
             ///
 
@@ -976,9 +973,6 @@ DO NOTHING
             ["rs_element"] = 
                 "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
             */
-
-
-
 
             var process_constants = new Production(new[]
             {
@@ -1060,7 +1054,6 @@ DO NOTHING
                 E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.name", E.Create(""), false, @"""", @"""")),
                 E.Create($" rs{Environment.NewLine}    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)")
             }, (key, value) => symbolTable[key] = E.Create(value), null);
-
 
             var report_sequence_select_sql = new Production(new[]
             {
@@ -1175,7 +1168,7 @@ DO NOTHING
 
             var cur_prod = report_sequence_select_sql;
 
-            await foreach (var output in fw.Evaluator.Evaluate(E.Create(cur_prod)))
+            await foreach (var output in fw.Evaluator.Evaluate(E.Create(cur_prod), null))
             {
                 Console.WriteLine(output.Value<string>());
             }
@@ -1201,12 +1194,17 @@ DO NOTHING
                 var nextTokenStartIndex = tokenizedInput.IndexOf(tokenStart, currentIndex);
                 if (nextTokenStartIndex == -1)
                 {
+                    if (currentIndex == 0)
+                    {
+                        return (false, tokenizedInput);
+                    }
+
                     _ = result.Append(tokenizedInput[currentIndex..]);
                     break;
                 }
                 else
                 {
-                    _ = result.Append(tokenizedInput[currentIndex..(nextTokenStartIndex)]);
+                    _ = result.Append(tokenizedInput[currentIndex..nextTokenStartIndex]);
                     var nextTokenEndIndex = tokenizedInput.IndexOf(tokenEnd, nextTokenStartIndex);
                     if (nextTokenStartIndex == -1)
                     {
@@ -1215,21 +1213,24 @@ DO NOTHING
 
                     var query = tokenizedInput[(nextTokenStartIndex + tokenStart.Length)..nextTokenEndIndex].Trim();
                     var value = await entity.EvalS(query);
-                    _ = result.Append(value);
+
+                    var nestedReplacedValue = await ReplaceTokens(entity, value);
+
+                    _ = result.Append(nestedReplacedValue.tokenReplaced);
 
                     currentIndex = nextTokenEndIndex + tokenEnd.Length;
                 }
             }
 
-            return (currentIndex != 0, result.ToString());
+            return (true, result.ToString());
         }
 
         private static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
-        private static async IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query)
+        private static async IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
         {
             foreach (var entity in entities)
-            { //$meta.id  // EvalL()
+            { //$meta.id  // EvalL("@")
                 switch (functionName)
                 {
                     case "replace":
@@ -1251,7 +1252,7 @@ DO NOTHING
 
                     case "distinct":
                         var d = new HashSet<string>();
-                        foreach (var child in await entity.EvalL())
+                        foreach (var child in await entity.EvalL("@"))
                         {
                             var s = await child.EvalS("$meta.id");
                             if (d.Contains(s))
@@ -1260,10 +1261,11 @@ DO NOTHING
                             }
                             else
                             {
-                                d.Add(s);
+                                _ = d.Add(s);
                                 yield return child;
                             }
                         }
+
                         break;
 
                     case "repeat":

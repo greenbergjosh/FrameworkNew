@@ -54,7 +54,8 @@ namespace Utility
                     fw.ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
                 }
 
-                fw.Evaluator = Evaluator.Create(evaluatorConfig ?? new EvaluatorConfig());
+                evaluatorConfig ??= new EvaluatorConfig();
+                fw.Evaluator = Evaluator.Create(evaluatorConfig);
 
                 static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
@@ -92,6 +93,7 @@ namespace Utility
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
                     fw.RoslynWrapper = new RoslynWrapper<Entity.Entity, Entity.Entity>(Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                    evaluatorConfig.RoslynWrapper ??= fw.RoslynWrapper;
                 }
 
                 fw.EdwWriter = await EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(fw.StartupConfiguration);
@@ -173,7 +175,7 @@ namespace Utility
 
             var stackedParameters = new EntityDocumentStack();
 
-            var implementation = await entity.EvalS("Evaluate.EntityId", null);
+            var implementation = await entity.EvalS("Evaluate.EntityId", defaultValue: null);
             if (!string.IsNullOrWhiteSpace(implementation))
             {
                 evaluatableId = Guid.Parse(implementation);

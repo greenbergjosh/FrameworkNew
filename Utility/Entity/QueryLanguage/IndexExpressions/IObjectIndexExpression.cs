@@ -4,6 +4,6 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 {
     internal interface IObjectIndexExpression : IIndexExpression
     {
-        IAsyncEnumerable<string> GetProperties(Entity entity);
+        IAsyncEnumerable<string> GetProperties(Entity entity, Entity evaluationParameters);
     }
 }

@@ -42,7 +42,7 @@ namespace SignalApiLib.SourceHandlers
             {
                 var res = await Data.CallFn(Conn, func, requestFromPost);
 
-                if (await res?.EvalS("result", null) != "success")
+                if (await res?.EvalS("result", defaultValue: null) != "success")
                 {
                     await _fw.Error($"{sourceStr}.{nameof(HandleRequest)}", $"DB write failed. Response: {res}\r\nBody: {requestFromPost}");
                 }

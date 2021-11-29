@@ -12,7 +12,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public IndexSelector(IEnumerable<IIndexExpression> indexes) => _indexes = indexes;
 
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
+        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
         {
             foreach (var entity in entities)
             {
@@ -30,7 +30,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                         var returnedIndexes = new HashSet<int>();
                         foreach (var indexExpression in _indexes.OfType<IArrayIndexExpression>())
                         {
-                            await foreach (var index in indexExpression.GetIndexes(entity))
+                            await foreach (var index in indexExpression.GetIndexes(entity, evaluationParameters))
                             {
                                 if (index >= 0 && index < arrayLength)
                                 {
@@ -63,7 +63,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                         var properties = new HashSet<string>();
                         foreach (var indexExpression in _indexes.OfType<IObjectIndexExpression>())
                         {
-                            await foreach (var property in indexExpression.GetProperties(entity))
+                            await foreach (var property in indexExpression.GetProperties(entity, evaluationParameters))
                             {
                                 _ = properties.Add(property);
                             }
@@ -84,7 +84,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     var succeeded = true;
                     foreach (var indexExpression in _indexes.OfType<ItemQueryIndexExpression>())
                     {
-                        if (!await indexExpression.Evaluate(entity))
+                        if (!await indexExpression.Evaluate(entity, evaluationParameters))
                         {
                             succeeded = false;
                             break;

@@ -66,7 +66,7 @@ namespace UnsubLib.NetworkProviders
                     campaigns.ToString()
                 );
 
-                if (res == null || await res.EvalS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{campaigns}");
                     return null;

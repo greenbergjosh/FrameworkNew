@@ -16,7 +16,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async IAsyncEnumerable<string> GetProperties(Entity entity)
+        public async IAsyncEnumerable<string> GetProperties(Entity entity, Entity evaluationParameters)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             yield return _name;

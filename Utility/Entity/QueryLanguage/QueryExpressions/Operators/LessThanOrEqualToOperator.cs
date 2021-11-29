@@ -17,10 +17,10 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                     _ => QueryExpressionType.Invalid
                 };
 
-        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
+        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity, Entity evaluationParameters)
         {
-            var leftEntity = await left.Evaluate(entity);
-            var rightEntity = await right.Evaluate(entity);
+            var leftEntity = await left.Evaluate(entity, evaluationParameters);
+            var rightEntity = await right.Evaluate(entity, evaluationParameters);
 
             switch (leftEntity.ValueType)
             {
