@@ -25,7 +25,7 @@ namespace QuickTester
                 _symbolSetter = symbolSetter;
             }
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 // TODO: Seperate evaluation order from concat order
                 var sb = new StringBuilder();
@@ -104,7 +104,7 @@ namespace QuickTester
             private IList<Entity> _result;
             private int _index = 0;
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 if (_index == 0)
                 {
@@ -168,7 +168,7 @@ namespace QuickTester
 
             public ConditionInstruction(List<(Entity Antecedent, Entity Consequent)> cases) => Cases = cases;
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 foreach (var c in Cases)
                 {
@@ -224,7 +224,7 @@ namespace QuickTester
             private int _repeatCount = 0;
             private readonly HashSet<string> _finished = new();
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 if (!_initialized)
                 {
@@ -331,7 +331,7 @@ namespace QuickTester
                 _contextRemover = contextRemover;
             }
 
-            public async Task<Entity> Evaluate(Entity entity)
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
             {
                 var parts = new List<string>();
 
@@ -368,7 +368,7 @@ namespace QuickTester
         {
             Entity contextEntity = null;
 
-            static async IAsyncEnumerable<Entity> ReplaceTemplates(Entity entity)
+            static async IAsyncEnumerable<Entity> ReplaceTemplates(Entity entity, Entity parameters)
             {
                 if (entity.ValueType == EntityValueType.String)
                 {
@@ -1077,7 +1077,7 @@ DO NOTHING
 
             var cur_prod = report_sequence_select_sql;
 
-            await foreach (var output in fw.Evaluator.Evaluate(E.Create(cur_prod)))
+            await foreach (var output in fw.Evaluator.Evaluate(E.Create(cur_prod), null))
             {
                 Console.WriteLine(output.Value<string>());
             }

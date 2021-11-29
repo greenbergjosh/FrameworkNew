@@ -16,7 +16,7 @@ namespace Utility.Entity.Implementations
 
         public override int Length => throw new NotImplementedException();
 
-        public Task<Entity> Evaluate(Entity entity) => _evaluatable.Evaluate(entity);
+        public Task<Entity> Evaluate(Entity entity, Entity parameters) => _evaluatable.Evaluate(entity, parameters);
 
         public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(_evaluatable);
         public override T Value<T>() => throw new NotImplementedException();

@@ -31,7 +31,7 @@ namespace QuickTester
             var constant = fw.Entity.Create(5);
 
             var count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(constant))
+            await foreach (var result in fw.Evaluator.Evaluate(constant, null))
             {
                 count++;
                 Assert.AreEqual(constant, result);
@@ -46,7 +46,7 @@ namespace QuickTester
 
             public SingleResultEvaluator(Entity result) => _result = result;
 
-            public Task<Entity> Evaluate(Entity entity) => Task.FromResult(entity.Create(new
+            public Task<Entity> Evaluate(Entity entity, Entity parameters) => Task.FromResult(entity.Create(new
             {
                 Entity = _result,
                 Complete = true
@@ -60,7 +60,7 @@ namespace QuickTester
             var singleResult = fw.Entity.Create(new SingleResultEvaluator(constant));
 
             var count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(singleResult))
+            await foreach (var result in fw.Evaluator.Evaluate(singleResult, null))
             {
                 count++;
                 Assert.AreEqual(constant, result);
@@ -71,7 +71,7 @@ namespace QuickTester
 
         private class NoResultEvaluator : IEvaluatable
         {
-            public Task<Entity> Evaluate(Entity entity) => Task.FromResult(entity.Create(new { Complete = true }));
+            public Task<Entity> Evaluate(Entity entity, Entity parameters) => Task.FromResult(entity.Create(new { Complete = true }));
         }
 
         private static async Task EvaluateNoResult(FrameworkWrapper fw)
@@ -79,7 +79,7 @@ namespace QuickTester
             var noResult = fw.Entity.Create(new NoResultEvaluator());
 
             var count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(noResult))
+            await foreach (var result in fw.Evaluator.Evaluate(noResult, null))
             {
                 count++;
             }
@@ -107,7 +107,7 @@ namespace QuickTester
 
             public SequenceEvaluator(IReadOnlyList<Entity> entities) => _entities = entities;
 
-            public Task<Entity> Evaluate(Entity entity) => Task.FromResult(entity.Create(new
+            public Task<Entity> Evaluate(Entity entity, Entity parameters) => Task.FromResult(entity.Create(new
             {
                 Entity = _entities[_index++],
                 Complete = _index == _entities.Count
@@ -122,7 +122,7 @@ namespace QuickTester
 
             var results = new List<Entity>();
 
-            await foreach (var result in fw.Evaluator.Evaluate(sequenceEvaluator))
+            await foreach (var result in fw.Evaluator.Evaluate(sequenceEvaluator, null))
             {
                 results.Add(result);
             }
@@ -148,7 +148,7 @@ namespace QuickTester
         private static async Task EntityMutator()
         {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-            static async IAsyncEnumerable<Entity> Mutate42(Entity entity)
+            static async IAsyncEnumerable<Entity> Mutate42(Entity entity, Entity parameters)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
                 if (entity.ValueType == EntityValueType.Number && entity.Value<int>() == 42)
@@ -162,7 +162,7 @@ namespace QuickTester
             var constant10 = fw.Entity.Create(10);
 
             var count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(constant10))
+            await foreach (var result in fw.Evaluator.Evaluate(constant10, null))
             {
                 count++;
                 Assert.AreEqual(constant10, result);
@@ -174,7 +174,7 @@ namespace QuickTester
             var constant420 = fw.Entity.Create(420);
 
             count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(constant42))
+            await foreach (var result in fw.Evaluator.Evaluate(constant42, null))
             {
                 count++;
                 Assert.AreEqual(constant420, result);
@@ -188,7 +188,7 @@ namespace QuickTester
             var entity = await fw.Entity.Parse("application/json", @"{ ""$evaluate"": { ""code"": ""return Create(new { Entity = 42, Complete = true});"" } }");
 
             var count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(entity))
+            await foreach (var result in fw.Evaluator.Evaluate(entity, null))
             {
                 count++;
                 Assert.AreEqual(fw.Entity.Create(42), result);
@@ -204,7 +204,7 @@ namespace QuickTester
             var entity = await fw.Entity.Parse("application/json", $@"{{ ""$evaluate"": {{ ""code"": ""return Create(new {{ Entity = await EvalI(\""parameters.value\""), Complete = true}});"", ""actualParameters"": {{ ""value"": {value} }} }} }}");
 
             var count = 0;
-            await foreach (var result in fw.Evaluator.Evaluate(entity))
+            await foreach (var result in fw.Evaluator.Evaluate(entity, null))
             {
                 count++;
                 Assert.AreEqual(fw.Entity.Create(value), result);

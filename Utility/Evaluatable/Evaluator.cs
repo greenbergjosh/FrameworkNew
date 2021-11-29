@@ -5,7 +5,7 @@ using Utility.Entity.Implementations;
 
 namespace Utility.Evaluatable
 {
-    public delegate IAsyncEnumerable<Entity.Entity> EntityMutator(Entity.Entity entity);
+    public delegate IAsyncEnumerable<Entity.Entity> EntityMutator(Entity.Entity entity, Entity.Entity parameters);
 
     public class EvaluatorConfig
     {
@@ -27,7 +27,7 @@ namespace Utility.Evaluatable
 
         public static Evaluator Create(EvaluatorConfig config) => new(config ?? throw new ArgumentNullException(nameof(config)));
 
-        public async IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity)
+        public async IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity, Entity.Entity parameters)
         {
             var stack = new Stack<(Entity.Entity entity, bool handled)>();
             stack.Push((entity, false));
@@ -38,7 +38,7 @@ namespace Utility.Evaluatable
 
                 if (!current.handled)
                 {
-                    await foreach (var child in HandleEntity(current.entity))
+                    await foreach (var child in HandleEntity(current.entity, parameters))
                     {
                         stack.Push((child, true));
                     }
@@ -48,7 +48,7 @@ namespace Utility.Evaluatable
                     Entity.Entity evaluationResult;
                     if (current.entity.Document is IEvaluatable evaluatable)
                     {
-                        evaluationResult = await evaluatable.Evaluate(current.entity);
+                        evaluationResult = await evaluatable.Evaluate(current.entity, parameters);
                     }
                     else
                     {
@@ -74,12 +74,17 @@ namespace Utility.Evaluatable
                             }
 
                             var stackedParameters = new EntityDocumentStack();
+                            if (parameters != null)
+                            {
+                                stackedParameters.Push(parameters);
+                            }
+
                             foreach (var stackItem in evaluateStack)
                             {
-                                var parameters = await stackItem.EvalE("actualParameters", null);
-                                if (parameters != null)
+                                var actualParameters = await stackItem.EvalE("actualParameters", null);
+                                if (actualParameters != null)
                                 {
-                                    stackedParameters.Push(parameters);
+                                    stackedParameters.Push(actualParameters);
                                 }
                             }
 
@@ -123,12 +128,12 @@ namespace Utility.Evaluatable
             }
         }
 
-        private async IAsyncEnumerable<Entity.Entity> HandleEntity(Entity.Entity entity)
+        private async IAsyncEnumerable<Entity.Entity> HandleEntity(Entity.Entity entity, Entity.Entity parameters)
         {
             var hadMutations = false;
             if (_config.EntityMutator != null)
             {
-                await foreach (var child in _config.EntityMutator(entity))
+                await foreach (var child in _config.EntityMutator(entity, parameters))
                 {
                     hadMutations = true;
                     if (entity.Equals(child))
@@ -137,7 +142,7 @@ namespace Utility.Evaluatable
                     }
                     else
                     {
-                        await foreach (var handledChild in HandleEntity(child))
+                        await foreach (var handledChild in HandleEntity(child, parameters))
                         {
                             yield return handledChild;
                         }

@@ -258,7 +258,7 @@ namespace Utility.Entity
                     }
                 }
 
-                await foreach (var evaluationChild in child.Evaluator.Evaluate(child))
+                await foreach (var evaluationChild in child.Evaluator.Evaluate(child, null))
                 {
                     if (!child.Equals(evaluationChild))
                     {
