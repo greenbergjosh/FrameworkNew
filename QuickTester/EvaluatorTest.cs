@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,6 +23,7 @@ namespace QuickTester
             await EntityPathEvaluateSequence(fw);
             await EntityPathEvaluateSequence(fw);
             await EntityMutator();
+            await EvaluateWithParameters(fw);
             await EvaluatableEntity(fw);
             await EvaluatableEntityWithParameters(fw);
         }
@@ -178,6 +180,47 @@ namespace QuickTester
             {
                 count++;
                 Assert.AreEqual(constant420, result);
+            }
+
+            Assert.AreEqual(1, count);
+        }
+
+
+        private class AdderEvaluatable : IEvaluatable
+        {
+            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
+            {
+                var left = await parameters.EvalI("left");
+                var right = await parameters.EvalI("right");
+
+                return entity.Create(new
+                {
+                    Entity = left + right,
+                    Complete = true
+                });
+            }
+        }
+
+        private static async Task EvaluateWithParameters(FrameworkWrapper fw)
+        {
+            var random = new Random();
+            var left = random.Next();
+            var right = random.Next();
+            var sum = left + right;
+
+            var parameters = fw.Entity.Create(new
+            {
+                left,
+                right
+            });
+
+            var adder = fw.Entity.Create(new AdderEvaluatable());
+
+            var count = 0;
+            await foreach (var result in fw.Evaluator.Evaluate(adder, parameters))
+            {
+                count++;
+                Assert.AreEqual(sum, result.Value<int>());
             }
 
             Assert.AreEqual(1, count);
