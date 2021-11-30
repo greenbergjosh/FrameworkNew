@@ -22,12 +22,15 @@ namespace QuickTester
 
         public CastedEntity(string b) { e = e.Create(b); }
 
-        public CastedEntity(Dictionary<string, CastedEntity> d) { e = e.Create(d); }
+        public CastedEntity(object o) { e = e.Create(o); }
+
+        //public CastedEntity(Dictionary<string, CastedEntity> d) { e = e.Create(d); }
 
         public static implicit operator CastedEntity(int b) => new CastedEntity(b);
         public static implicit operator CastedEntity(bool b) => new CastedEntity(b);
         public static implicit operator CastedEntity(string s) => new CastedEntity(s);
         public static implicit operator CastedEntity(Dictionary<string, CastedEntity> d) => new CastedEntity(d);
+        //public static implicit operator CastedEntity(object o) => new CastedEntity(o);
 
         public CastedEntity this[string index]
         {
@@ -157,11 +160,17 @@ namespace QuickTester
             }
 
             e = fw.Entity;
+            TestEntity("hello");
             CastedEntity i = 3;
             CastedEntity s = "bob";
             CastedEntity b = false;
-            CastedEntity d = new() { ["a"] = 1, ["b"] = true };
+            //CastedEntity d = new { a = 1, b = true };
             CastedEntity d2 = CastedEntity.TestReturn(new() { ["a"] = 1, ["b"] = true });
+
+        }
+
+        public static void TestEntity(CastedEntity e)
+        {
 
         }
 

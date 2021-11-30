@@ -1,0 +1,162 @@
+$meta:
+  id:   3aeeb2b6-c006-4854-a679-00ea73a6f1c7
+  name: checked_transform_rs_element
+  type: Template
+
+parameter: p
+
+instructions:
+  agg_func:
+    type: ??
+    cases:
+      - antecedent: p.col.data_type[?(@=='BOOLEAN')]
+        consequent: BOOL_OR
+      - antecedent: true
+        consequent: MAX
+
+body: |
+  <<agg_func>>("<<p.col.alias>>") "<<p.col.alias>>"
+
+---
+
+$meta:
+  id:   3aeeb2b6-c006-4854-a679-00ea73a6f1c7
+  name: GenerateSomething
+  type: Template
+
+vars:
+  col:     config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*
+  rs_name: context://sym?report_sequence_checked_transform_meta_rs_name
+
+instructions:
+  csep: &comma_sep
+    evaluate: repeat
+    prepend: ", "
+    separator: ", "
+    scopes:
+      - col
+
+  asep: &and_sep
+    type: []
+    prepend: " AND "
+    separator: " AND "
+    scopes:
+      - col
+
+  checked_transform_parsed_rs_elements:
+    <<: *comma_sep
+    repeat: checked_transform_parsed_rs_element    
+
+  checked_transform_rs_elements:
+    <<: *comma_sep
+
+  target_schema_column_name:
+    <<: *comma_sep
+
+  checked_transform_all_keys_not_null:
+    <<: *and_sep
+
+  checked_transform_all_keys:
+    <<: *comma_sep
+
+body: |
+  DROP TABLE IF EXISTS tmp_checked_pending_set;
+  CREATE TABLE tmp_checked_pending_set AS
+     (SELECT id,
+             MIN(ts)                           ts,
+             MIN(satisfaction_expires)         satisfaction_expires,
+             MIN(expires_interval)             expires_interval
+             <<checked_transform_rs_elements>>
+      FROM (
+             SELECT rs.id,
+                    rs.ts,
+                    NOW() +
+                    COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)  satisfaction_expires,
+                    COALESCE(payload ->> 'agg_ttl_interval', '30d')                                expires_interval
+                    <<checked_transform_parsed_rs_elements>>
+             FROM tmp_staging_report_sequence_checked rs WHERE staging_ts < <max_ts_to_move>
+             UNION
+             SELECT rs.id,
+                    rs.ts,
+                    NOW() + COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL) satisfaction_expires,
+                    NULL::TEXT expires_interval
+                    <<checked_transform_parsed_rs_elements>>
+             FROM tmp_staging_report_sequence_checked_detail rs WHERE staging_ts < <max_ts_to_move>
+             UNION
+             SELECT pnd.id,
+                    pnd.ts,
+                    satisfaction_expires,
+                    expires_interval
+                    <<target_schema_column_name>>
+             FROM "<pending_target_schema>"."<<rs_name>>" pnd
+                  JOIN tmp_staging_report_sequence_checked rsc
+                       ON (pnd.id = rsc.id AND pnd.ts = rsc.ts)
+                  JOIN tmp_staging_report_sequence_checked_detail rscd
+                       ON (pnd.id = rscd.id AND pnd.ts = rscd.ts)
+                  WHERE rsc.staging_ts < <max_ts_to_move>
+                       AND rscd.staging_ts < <max_ts_to_move>
+                  <partition_where_clause>
+           ) src
+      GROUP BY id
+     );
+
+  CREATE UNIQUE INDEX uix_tmp_checked_pending_set ON tmp_checked_pending_set(id, ts);
+
+  INSERT INTO "<pending_target_schema>"."<<rs_name>>" 
+  AS tgt (id, ts, satisfaction_expires, expires_interval
+          <<target_schema_column_name>>)
+  SELECT * FROM tmp_checked_pending_set
+  ON CONFLICT (id, ts) DO UPDATE
+     SET ts = COALESCE(tgt.ts, excluded.ts)
+         <<target_schema_column_name>>;
+
+  INSERT INTO warehouse.report_sequence_duplicates(id, ts)
+  SELECT id,
+         ts
+  FROM   "<pending_target_schema>"."<<rs_name>>" p
+  WHERE  ts IS NOT NULL
+         <<checked_transform_all_keys_not_null>>
+         AND EXISTS(SELECT 1 FROM "<target_schema>"."<<rs_name>>" tgt
+  WHERE  p.id = tgt.id <dups_partition_where_clause>);
+
+  WITH inserted AS (
+       INSERT INTO "<target_schema>"."<<rs_name>>"
+       (
+          id
+        , ts 
+          <<target_schema_column_name>>
+        , expires
+       )
+       SELECT   id
+              , ts
+              <<checked_transform_all_keys>>
+              , NOW() + expires_interval::INTERVAL
+       FROM "<pending_target_schema>"."<<rs_name>>"
+       WHERE ts IS NOT NULL
+             <<checked_transform_all_keys_not_null>>
+       ON CONFLICT DO NOTHING
+       RETURNING 1
+  )
+  INSERT INTO log.general(ts, reporter, message)
+  SELECT CLOCK_TIMESTAMP(),
+         'edw.check_and_normalize_report_sequence_satisfaction',
+         FORMAT('inserted %s rows', COUNT(*))
+  FROM inserted;
+
+  WITH deleted AS (
+       DELETE FROM "<pending_target_schema>"."<<rs_name>>"
+       WHERE ts IS NOT NULL
+       <<checked_transform_all_keys_not_null>>
+      RETURNING 1
+  )
+  INSERT
+  INTO log.general(ts, reporter, message)
+  SELECT CLOCK_TIMESTAMP(),
+         'edw.check_and_normalize_report_sequence_satisfaction',
+         FORMAT('deleted %s rows', COUNT(*))
+  FROM deleted;
+
+  DELETE
+  FROM "<pending_target_schema>"."<<rs_name>>"
+  WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL);
+...

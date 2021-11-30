@@ -32,6 +32,7 @@
     <PackageReference Include="System.Threading.Channels" Version="5.0.0" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="5.0.0" />
     <PackageReference Include="System.Xml.XPath" Version="4.3.0" />
+    <PackageReference Include="YamlDotNet" Version="11.2.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,7 +47,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="CastedEntity.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="json2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="yaml2.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
