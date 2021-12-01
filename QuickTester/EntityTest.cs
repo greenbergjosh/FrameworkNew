@@ -98,7 +98,7 @@ namespace QuickTester
                         "reftestparentdocument" => (new[] { await entity.Parse("application/json", refTestParentDocument) }, UnescapeQueryString(uri)),
                         "reftestchilddocument" => (new[] { await entity.Parse("application/json", refTestChildDocument) }, UnescapeQueryString(uri)),
                         "reftestchilddocument2" => (new[] { await entity.Parse("application/json", refTestChildDocument2) }, UnescapeQueryString(uri)),
-                        "testclass" => (new[] { entity.Create(EntityDocumentObject.Create(testClass)) }, UnescapeQueryString(uri)),
+                        "testclass" => (new[] { entity.Create(testClass) }, UnescapeQueryString(uri)),
                         _ => throw new InvalidOperationException($"Unknown entity: {uri.Host}")
                     },
                     "memory" => (new[] {entity.Create(uri.Host switch

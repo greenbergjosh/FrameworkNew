@@ -78,7 +78,7 @@ namespace QuickTester
 
             var fw = await FrameworkWrapper.Create();
 
-            var flow = await DynamicDataflow.Create(fw.Entity.Create(config), fw);
+            var flow = await DynamicDataflow.Create(await fw.Entity.Parse("application/json", config), fw);
 
             var sendTasks = new List<Task<bool>>();
 

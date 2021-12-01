@@ -35,11 +35,11 @@ namespace GenericDaemonLib
                     continue;
                 }
 
-                var parameters = _fw.Entity.Create(new Dictionary<string, object>
+                var parameters = new Dictionary<string, object>
                 {
                     ["daemonName"] = daemonName,
                     ["cancellationToken"] = _cancellationTokenSource.Token
-                });
+                };
 
                 await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Starting daemon: {daemonName}...");
                 try

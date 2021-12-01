@@ -399,7 +399,7 @@ namespace QuickTester
 
             var E = fw.Entity;
 
-            string test = @"
+            var test = @"
 {
    ""joins"":[
       {
@@ -431,62 +431,62 @@ namespace QuickTester
 
             var symbolTable = new Dictionary<string, Entity>()
             {
-                ["firstName"] = E.Create("John"),
-                ["condition1"] = E.Create(true),
-                ["condition2"] = E.Create(false),
+                ["firstName"] = "John",
+                ["condition1"] = true,
+                ["condition2"] = false,
                 ["1to5"] = E.Create(new[] { 1, 2, 3, 4, 5 }),
                 ["1to3"] = E.Create(new[] { 1, 2, 3 }),
-                ["rsid"] = E.Create("123456789"),
+                ["rsid"] = "123456789",
                 ["tg_table_names"] = E.Create(new[] { "bob", "tom", "rich" }),
-                ["target_table_insert_sql_meta_rs_name"] = E.Create("PathDmSn"),
-                ["report_sequence_checked_transform_meta_rs_name"] = E.Create("PathDmSn"),
+                ["target_table_insert_sql_meta_rs_name"] = "PathDmSn",
+                ["report_sequence_checked_transform_meta_rs_name"] = "PathDmSn",
                 ["test_joins"] = await E.Parse("application/json", test),
-                ["test_joins_start_table"] = E.Create("ws")
+                ["test_joins_start_table"] = "ws"
             };
 
             var productions = new Dictionary<string, Entity>();
 
             var context = new Dictionary<string, Entity>
             {
-                ["sym"] = E.Create(symbolTable),
-                ["productions"] = E.Create(productions),
+                ["sym"] = symbolTable,
+                ["productions"] = productions,
             };
 
-            contextEntity = E.Create(context);
+            contextEntity = context;
 
             var subProduction = new Production(new[]
             {
                 E.Create(new { Instruction = "I am repeating: a: ", Suppress = false, Prepend = "" }),
-                E.Create(new GetterInstruction("context://a", E.Create("***NOT FOUND A***"))),
-                E.Create(" b: "),
-                E.Create(new GetterInstruction("context://b", E.Create("***NOT FOUND B***"))),
-                E.Create(" c: "),
-                E.Create(new GetterInstruction("context://c", E.Create("***NOT FOUND C***"))),
+                E.Create(new GetterInstruction("context://a", "***NOT FOUND A***")),
+                " b: ",
+                E.Create(new GetterInstruction("context://b", "***NOT FOUND B***")),
+                " c: ",
+                E.Create(new GetterInstruction("context://c", "***NOT FOUND C***")),
             });
 
             var production = new Production(new[]
             {
-                E.Create("Hello there "),
-                E.Create(new GetterInstruction("context://sym?firstName", E.Create("***NO NAME***"))),
-                E.Create("! How are you?\r\n"),
+                "Hello there ",
+                E.Create(new GetterInstruction("context://sym?firstName", "***NO NAME***")),
+                "! How are you?\r\n",
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
-                    (E.Create(new GetterInstruction("context://sym?condition1[?(@==true)]", null, true)), E.Create("Condition1 is true!!!")),
-                    (null, E.Create("Condition1 is *NOT* true!!!"))
+                    (E.Create(new GetterInstruction("context://sym?condition1[?(@==true)]", null, true)), "Condition1 is true!!!"),
+                    (null, "Condition1 is *NOT* true!!!")
                 })),
                 //<<??|context://g?thread_group_id[?(@.thread_group_type!=""singleton"")]->multiton_cols>>
                 //context://sym?condition2[?(@==true)]
-                E.Create("\r\n"),
+                "\r\n",
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
-                    (E.Create(new GetterInstruction("context://sym?condition2[?(@==true)]", null, true)), E.Create("Condition2 is true!!!")),
-                    (null, E.Create("Condition2 is *NOT* true!!!"))
+                    (E.Create(new GetterInstruction("context://sym?condition2[?(@==true)]", null, true)), "Condition2 is true!!!"),
+                    (null, "Condition2 is *NOT* true!!!")
                 })),
-                E.Create("\r\n"),
-                E.Create(new RepetitionInstruction(E.Create(subProduction), E.Create("\r\n"), E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
+                "\r\n",
+                E.Create(new RepetitionInstruction(E.Create(subProduction), "\r\n", E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                     ["a"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("context://sym?1to5.*")), true, 0, ExhaustionBehavior.DefaultValue),
-                    ["b"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("context://sym?1to3.*")), false, 0, ExhaustionBehavior.Restart),//ExhaustionBehavior.DefaultValue, E.Create("Default Value for b!"))
-                    ["c"] = new ParallelGetInstructionScope(E.Create("Hello"), false, 3, ExhaustionBehavior.DefaultValue, E.Create("Goodbye")),
+                    ["b"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("context://sym?1to3.*")), false, 0, ExhaustionBehavior.Restart),//ExhaustionBehavior.DefaultValue, "Default Value for b!")
+                    ["c"] = new ParallelGetInstructionScope("Hello", false, 3, ExhaustionBehavior.DefaultValue, "Goodbye"),
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("production1") });
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "production1" });
 
             /*
              DELETE
@@ -496,10 +496,10 @@ namespace QuickTester
 
             var delete_report_sequence_config = new Production(new[]
             {
-                E.Create("DELETE FROM edw.report_sequence_config WHERE (id = '"),
+                "DELETE FROM edw.report_sequence_config WHERE (id = '",
                 E.Create(new GetterInstruction("context://sym?rsid")),
-                E.Create("'::UUID)")
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                "'::UUID)"
+            }, (key, value) => symbolTable[key] = value, null);
 
             //                ["union"] = E.Create(new ProductionDescription("<<[]|union_select|tbl=context://g?names| UNION >>", null)),
             //                ["union_select"] = E.Create(new ProductionDescription("SELECT id, ts FROM warehouse_report_sequence.\"<<tbl://>>\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>' ", null)),
@@ -511,35 +511,35 @@ namespace QuickTester
 
             var union_select = new Production(new[]
             {
-                E.Create("SELECT id, ts FROM warehouse_report_sequence.\""),
+                "SELECT id, ts FROM warehouse_report_sequence.\"",
                 E.Create(new GetterInstruction("context://tbl")),
-                E.Create("\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'")
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                "\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'"
+            }, (key, value) => symbolTable[key] = value, null);
 
             var union_query = new Production(new[]
             {
-                E.Create(new RepetitionInstruction(E.Create(union_select), E.Create(" UNION "),
+                E.Create(new RepetitionInstruction(E.Create(union_select), " UNION ",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["tbl"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("context://sym?tg_table_names.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)))
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+            }, (key, value) => symbolTable[key] = value, null);
 
             var lt_union_select = new Production(new[]
             {
-                E.Create("SELECT id, ts FROM warehouse_report_sequence.\""),
+                "SELECT id, ts FROM warehouse_report_sequence.\"",
                 E.Create(new GetterInstruction("context://tbl")),
-                E.Create("\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>' UNION SELECT id, ts FROM warehouse_report_sequence.\""),
+                "\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>' UNION SELECT id, ts FROM warehouse_report_sequence.\"",
                 E.Create(new GetterInstruction("context://tbl")),
-                E.Create("_long_term\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'")
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                "_long_term\" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'"
+            }, (key, value) => symbolTable[key] = value, null);
 
             var lt_union_query = new Production(new[]
             {
-                E.Create(new RepetitionInstruction(E.Create(lt_union_select), E.Create(" UNION "),
+                E.Create(new RepetitionInstruction(E.Create(lt_union_select), " UNION ",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["tbl"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("context://sym?tg_table_names.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+            }, (key, value) => symbolTable[key] = value, null);
 
             /*
              INSERT INTO warehouse.report_sequence_duplicates(id, ts)
@@ -593,56 +593,56 @@ DO NOTHING
 
             var target_schema_column_name = new Production(new[]
             {
-                E.Create("\""),
+                "\"",
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create("\"")
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+                "\""
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             var target_schema_column_name_with_coalesce = new Production(new[]
             {
                 //(COALESCE((payload -> 'body' ->> 'PathStyleVerticalTypeId'), '0'))::INT,
-                E.Create("(COALESCE((payload -> 'body'"),
+                "(COALESCE((payload -> 'body'",
                 E.Create(new GetterInstruction("context://col?json_path")),
-                E.Create("), '"),
-                E.Create(new GetterInstruction("context://col?default_value", E.Create(""))),
-                E.Create("'))::"),
+                "), '",
+                E.Create(new GetterInstruction("context://col?default_value", "")),
+                "'))::",
                 E.Create(new GetterInstruction("context://col?data_type"))
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             var target_table_insert_sql = new Production(new[]
             {
-                E.Create(@"INSERT INTO warehouse.report_sequence_duplicates(id, ts)
+                @"INSERT INTO warehouse.report_sequence_duplicates(id, ts)
                                 SELECT id, ts
                                 FROM <report_sequence_set> rss
-                                WHERE EXISTS (SELECT 1 FROM ""<target_schema>""."),
+                                WHERE EXISTS (SELECT 1 FROM ""<target_schema>"".",
                 E.Create(new GetterInstruction("context://sym?target_table_insert_sql_meta_rs_name")),
-                E.Create(@" t WHERE t.id = rss.id);
-                                INSERT INTO ""<target_schema>""."""),
+                @" t WHERE t.id = rss.id);
+                                INSERT INTO ""<target_schema>"".""",
                 E.Create(new GetterInstruction("context://sym?target_table_insert_sql_meta_rs_name")),
-                E.Create(@""" ("),
+                @""" (",
 
-                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@" , expires) SELECT id, ts, payload, silo_id "),
+                @" , expires) SELECT id, ts, payload, silo_id ",
 
                 // need the instructions to be able to add a prepend char since it is not part of the
                 // (also suppression, I think order is handled by aliasing at template level)
 
-                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name_with_coalesce), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name_with_coalesce), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@",
+                @",
                         NOW() + COALESCE(payload ->> 'agg_ttl_interval', '30d')::INTERVAL
                         FROM <report_sequence_set>
                         WHERE config_id = '<config_id>'
                         ON CONFLICT
-                        DO NOTHING")
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                        DO NOTHING"
+            }, (key, value) => symbolTable[key] = value, null);
 
             /*
              ***************************************************************************************************************************
@@ -652,14 +652,14 @@ DO NOTHING
             var checked_transform_rs_elements = new Production(new[]
             {
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
-                    (E.Create(new GetterInstruction("context://col?data_type[?(@=='BOOLEAN')]", null, true)), E.Create("BOOL_OR")),
-                    (null, E.Create("MAX")) })),
-                E.Create(@"("""),
+                    (E.Create(new GetterInstruction("context://col?data_type[?(@=='BOOLEAN')]", null, true)), "BOOL_OR"),
+                    (null, "MAX") })),
+                @"(""",
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@""") """),
+                @""") """,
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@"""")
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+                @""""
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             //util.try_parse(CASE
             //                        WHEN payload -> 'body' -> 'PathStyleVerticalTypeId' IS NULL THEN NULL
@@ -667,63 +667,63 @@ DO NOTHING
             //                    NULL)::INT                                                                  "pathstyle_vertical_type_id",
             var checked_transform_parsed_rs_elements = new Production(new[]
             {
-                E.Create("util.try_parse(CASE WHEN payload -> 'body' "),
+                "util.try_parse(CASE WHEN payload -> 'body' ",
                 E.Create(new GetterInstruction("context://col?json_path.replace('>>', '>')")),
-                E.Create(@" IS NULL THEN NULL
-                                    ELSE COALESCE(payload -> 'body' "),
-                E.Create(new GetterInstruction("context://col?json_path", E.Create(""))),
-                E.Create(", "),
-                E.Create(new GetterInstruction("context://col?default_value", E.Create("NULL"), false, "'", "'")),
-                E.Create(") END, '"),
+                @" IS NULL THEN NULL
+                                    ELSE COALESCE(payload -> 'body' ",
+                E.Create(new GetterInstruction("context://col?json_path", "")),
+                ", ",
+                E.Create(new GetterInstruction("context://col?default_value", "NULL", false, "'", "'")),
+                ") END, '",
                 E.Create(new GetterInstruction("context://col?data_type")),
-                E.Create(@"', "),
+                @"', ",
                 //E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
-                //    (E.Create(new GetterInstruction("context://col?error_value", null, true)), E.Create("'")),
-                //    (null, E.Create(""))})),
-                //E.Create(new GetterInstruction("context://col?error_value", E.Create("NULL"))),
+                //    (E.Create(new GetterInstruction("context://col?error_value", null, true)), "'"),
+                //    (null, "")})),
+                //E.Create(new GetterInstruction("context://col?error_value", "NULL")),
                 //E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
-                //    (E.Create(new GetterInstruction("context://col?error_value", null, true)), E.Create("'")),
-                //    (null, E.Create(""))
+                //    (E.Create(new GetterInstruction("context://col?error_value", null, true)), "'"),
+                //    (null, "")
                 //})),
-                E.Create(new GetterInstruction("context://col?error_value", E.Create("NULL"), false, "'", "'")),
-                E.Create(")::"),
+                E.Create(new GetterInstruction("context://col?error_value", "NULL", false, "'", "'")),
+                ")::",
                 E.Create(new GetterInstruction("context://col?data_type")),
-                E.Create(@" """),
+                @" """,
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@"""")
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+                @""""
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             //"pathstyle_id" = COALESCE(tgt."pathstyle_id", excluded."pathstyle_id"),
             var checked_transform_tgt_and_excluded = new Production(new[]
             {
-                E.Create(@""""),
+                @"""",
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@""" = COALESCE(tgt."""),
+                @""" = COALESCE(tgt.""",
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@""", excluded."""),
+                @""", excluded.""",
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@""")")
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+                @""")"
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             // "root_campaign_id" IS NOT NULL
             var checked_transform_all_keys_without_satisfaction = new Production(new[]
             {
-                E.Create(@""""),
+                @"""",
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@"""")
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+                @""""
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             // COALESCE("is_repeat_user", CASE WHEN satisfaction_expires < NOW() THEN 'f'::BOOLEAN END) IS NOT NULL
             var checked_transform_all_keys_with_satisfaction = new Production(new[]
             {
-                E.Create(@"COALESCE("""),
+                @"COALESCE(""",
                 E.Create(new GetterInstruction("context://col?alias")),
-                E.Create(@""", CASE WHEN satisfaction_expires < NOW() THEN '"),
+                @""", CASE WHEN satisfaction_expires < NOW() THEN '",
                 E.Create(new GetterInstruction("context://col?satisfaction_default_value")),
-                E.Create(@"'::"),
+                @"'::",
                 E.Create(new GetterInstruction("context://col?data_type")),
-                E.Create(@" END)")
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+                @" END)"
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             var checked_transform_all_keys = new Production(new[]
             {
@@ -731,80 +731,80 @@ DO NOTHING
                     (E.Create(new GetterInstruction("context://col?satisfaction_default_value[?(@)]", null, true)), E.Create(checked_transform_all_keys_with_satisfaction)),
                     (null, E.Create(checked_transform_all_keys_without_satisfaction))
                 })),
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             var checked_transform_all_keys_not_null = new Production(new[]
             {
                 E.Create(checked_transform_all_keys),
-                E.Create(@" IS NOT NULL")
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
+                @" IS NOT NULL"
+            }, (key, value) => symbolTable[key] = value, new Entity[] { "" });
 
             // If singleton then this one is not created at all - it is null.
             var report_sequence_checked_transform_sql = new Production(new[]
             {
-                E.Create(@"DROP TABLE IF EXISTS tmp_checked_pending_set;
+                @"DROP TABLE IF EXISTS tmp_checked_pending_set;
                     CREATE TABLE tmp_checked_pending_set AS
                         (SELECT id,
                                 MIN(ts)                           ts,
                                 MIN(satisfaction_expires)         satisfaction_expires,
-                                MIN(expires_interval)             expires_interval,"),
+                                MIN(expires_interval)             expires_interval,",
 
                 //MAX("pathstyle_vertical_type_id") "pathstyle_vertical_type_id",
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_rs_elements), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_rs_elements), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@" FROM (
+                @" FROM (
                           SELECT rs.id,
                                  rs.ts,
                                  NOW() +
                                  COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
-                                 COALESCE(payload ->> 'agg_ttl_interval', '30d')                                            expires_interval,"),
+                                 COALESCE(payload ->> 'agg_ttl_interval', '30d')                                            expires_interval,",
 
                 //util.try_parse(CASE
                 //                        WHEN payload -> 'body' -> 'PathStyleVerticalTypeId' IS NULL THEN NULL
                 //                        ELSE COALESCE(payload -> 'body' ->> 'PathStyleVerticalTypeId', '0') END, 'INT',
                 //                    NULL)::INT                                                                  "pathstyle_vertical_type_id",
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@"FROM tmp_staging_report_sequence_checked rs
+                @"FROM tmp_staging_report_sequence_checked rs
                       WHERE staging_ts < <max_ts_to_move>
                       UNION
                       SELECT rs.id,
                              rs.ts,
                              NOW() +
                              COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)              satisfaction_expires,
-                             NULL::TEXT                                                                                 expires_interval,"),
+                             NULL::TEXT                                                                                 expires_interval,",
 
                 // same as above repetition
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_parsed_rs_elements), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@"FROM tmp_staging_report_sequence_checked_detail rs
+                @"FROM tmp_staging_report_sequence_checked_detail rs
                       WHERE staging_ts < < max_ts_to_move >
                       UNION
                       SELECT pnd.id,
                              pnd.ts,
                              satisfaction_expires,
-                             expires_interval,"),
+                             expires_interval,",
 
                 // reusing a template from another template
-                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@"FROM ""<pending_target_schema>""."""),
+                @"FROM ""<pending_target_schema>"".""",
 
                 E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
 
-                E.Create(@""" pnd
+                @""" pnd
                                    JOIN tmp_staging_report_sequence_checked rsc
                                         ON (pnd.id = rsc.id AND pnd.ts = rsc.ts)
                                    JOIN tmp_staging_report_sequence_checked_detail rscd
@@ -817,94 +817,94 @@ DO NOTHING
 
                         CREATE UNIQUE INDEX uix_tmp_checked_pending_set ON tmp_checked_pending_set(id, ts);
 
-                        INSERT INTO ""<pending_target_schema>""."""),
+                        INSERT INTO ""<pending_target_schema>"".""",
 
                 E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
 
-                E.Create(@""" AS tgt (id, ts, satisfaction_expires, expires_interval,"),
+                @""" AS tgt (id, ts, satisfaction_expires, expires_interval,",
 
                 // again reusing
-                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(target_schema_column_name), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@")
+                @")
                     SELECT *
                     FROM tmp_checked_pending_set
                     ON CONFLICT (id, ts) DO UPDATE
-                        SET ts                           = COALESCE(tgt.ts, excluded.ts),"),
+                        SET ts                           = COALESCE(tgt.ts, excluded.ts),",
 
                 // "pathstyle_id"               = COALESCE(tgt."pathstyle_id", excluded."pathstyle_id"),
-                E.Create(new RepetitionInstruction(E.Create(checked_transform_tgt_and_excluded), E.Create(","),
+                E.Create(new RepetitionInstruction(E.Create(checked_transform_tgt_and_excluded), ",",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue),
                 })), (key, value) => context[key] = value, (key) => context.Remove(key))),
 
-                E.Create(@";
+                @";
 
                     INSERT INTO warehouse.report_sequence_duplicates(id, ts)
                     SELECT id,
                            ts
-                    FROM ""<pending_target_schema>""."""),
+                    FROM ""<pending_target_schema>"".""",
 
                 E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name")),
 
-                E.Create(@""" p
-                        WHERE ts IS NOT NULL"),
+                @""" p
+                        WHERE ts IS NOT NULL",
 
                 // AND "root_campaign_id" IS NOT NULL
                 // AND COALESCE("is_repeat_user", CASE WHEN satisfaction_expires < NOW() THEN 'f'::BOOLEAN END) IS NOT NULL
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), " AND ",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " AND "}),
 
-                E.Create(@" AND EXISTS(SELECT 1
-                        FROM ""<target_schema>""."),
+                @" AND EXISTS(SELECT 1
+                        FROM ""<target_schema>"".",
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", "", false, @"""", @"""")),
 
-                E.Create(@" tgt
+                @" tgt
                      WHERE p.id = tgt.id <dups_partition_where_clause>);
 
                     WITH inserted AS(
-                        INSERT INTO ""<target_schema>""."),
+                        INSERT INTO ""<target_schema>"".",
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", "", false, @"""", @"""")),
 
-                E.Create(@" (id, ts "),
+                @" (id, ts ",
 
                 // reuse again (comma sep list of quoted columns)
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(target_schema_column_name), E.Create(" , "),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(target_schema_column_name), " , ",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " , "}),
 
-                E.Create(@", expires)
+                @", expires)
                     SELECT id,
-                           ts"),
+                           ts",
 
                 // same as two above but without not null
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys), E.Create(" , "),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys), " , ",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " , "}),
 
-                E.Create(@" , NOW() + expires_interval::INTERVAL
-                    FROM ""<pending_target_schema>""."),
+                @" , NOW() + expires_interval::INTERVAL
+                    FROM ""<pending_target_schema>"".",
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", "", false, @"""", @"""")),
 
-                E.Create(@" WHERE ts IS NOT NULL"),
+                @" WHERE ts IS NOT NULL",
 
                 // again with the not null
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), " AND ",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " AND "}),
 
-                E.Create(@" ON CONFLICT DO NOTHING
+                @" ON CONFLICT DO NOTHING
                                 RETURNING 1
                         )
                         INSERT
@@ -916,19 +916,19 @@ DO NOTHING
                         ;
 
                         WITH deleted AS (
-                            DELETE FROM ""<pending_target_schema>""."),
+                            DELETE FROM ""<pending_target_schema>"".",
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", "", false, @"""", @"""")),
 
-                E.Create(@"
-                    WHERE ts IS NOT NULL "),
+                @"
+                    WHERE ts IS NOT NULL ",
 
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), E.Create(" AND "),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(checked_transform_all_keys_not_null), " AND ",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = " AND "}),
 
-                E.Create(@" RETURNING 1
+                @" RETURNING 1
                     )
                     INSERT
                     INTO log.general(ts, reporter, message)
@@ -938,12 +938,12 @@ DO NOTHING
                     FROM deleted;
 
                     DELETE
-                    FROM ""<pending_target_schema>""."),
+                    FROM ""<pending_target_schema>"".",
 
-                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", E.Create(""), false, @"""", @"""")),
+                E.Create(new GetterInstruction("context://sym?report_sequence_checked_transform_meta_rs_name", "", false, @"""", @"""")),
 
-                E.Create(@" WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); ")
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                @" WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL); "
+            }, (key, value) => symbolTable[key] = value, null);
 
             ///////////*************************** report_sequence_select.sql 
             ///
@@ -976,55 +976,55 @@ DO NOTHING
 
             var process_constants = new Production(new[]
             {
-                E.Create(new GetterInstruction("context://col?value", E.Create(""), false, @"'", @"'")),
-                E.Create(@"::"),
+                E.Create(new GetterInstruction("context://col?value", "", false, @"'", @"'")),
+                @"::",
                 E.Create(new GetterInstruction("context://col?data_type")),
-                E.Create(@" "),
+                @" ",
                 E.Create(new GetterInstruction("context://col?name")),
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create(new GetterInstruction("context://col?name")) });
+            }, (key, value) => symbolTable[key] = value, new[] { E.Create(new GetterInstruction("context://col?name")) });
 
             //["rs_element"] =
             //    "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
             var rs_element = new Production(new[]
             {
-                E.Create(@"rs."),
+                @"rs.",
                 E.Create(new GetterInstruction("context://col?alias")),
-            }, (key, value) => symbolTable[key] = E.Create(value),
-                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
+            }, (key, value) => symbolTable[key] = value,
+                    new[] { E.Create(new GetterInstruction("context://col?alias", "")) });
 
             //["rs_elements"]
             //    "<<rs_element>> \"<<g|context://rs?alias>>\""
             var rs_elements = new Production(new[]
             {
-                E.Create(@"    "),
+                @"    ",
                 E.Create(rs_element),
-                E.Create(@"  "),
-                E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                @"  ",
+                E.Create(new GetterInstruction("context://col?alias", "", false, @"""", @"""")),
+            }, (key, value) => symbolTable[key] = value, null);
 
             //["event_element"] =
             //    "(coalesce(event_payload -> 'body' <<g|context://evt?json_path>>, ''))::<<g|context://evt?data_type>>"
             //    "<<g|context://evt?alias>>",
             var event_element = new Production(new[]
             {
-                E.Create("COALESCE(event_payload -> 'body' "),
+                "COALESCE(event_payload -> 'body' ",
                 E.Create(new GetterInstruction("context://col?json_path")),
-                E.Create(@", "),
-                E.Create(new GetterInstruction("context://col?satisfaction_default_value", E.Create("''"), false, "'", "'")),
-                E.Create(@")::"),
+                ", ",
+                E.Create(new GetterInstruction("context://col?satisfaction_default_value", "''", false, "'", "'")),
+                ")::",
                 E.Create(new GetterInstruction("context://col?data_type"))
-            }, (key, value) => symbolTable[key] = E.Create(value),
-                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
+            }, (key, value) => symbolTable[key] = value,
+                    new[] { E.Create(new GetterInstruction("context://col?alias", "")) });
 
             //["event_elements"] =
             //    "<<event_element>> \"<<g|context://evt?alias>>\""
             var event_elements = new Production(new[]
             {
-                E.Create(@"    "),
+                "    ",
                 E.Create(event_element),
-                E.Create(@"  "),
-                E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                "  ",
+                E.Create(new GetterInstruction("context://col?alias", "", false, @"""", @"""")),
+            }, (key, value) => symbolTable[key] = value, null);
 
             //["derived_element"]
             //    "<<g|context://der?col_value>>::<<g|context://der?data_type>>"
@@ -1032,139 +1032,137 @@ DO NOTHING
             var derived_element = new Production(new[]
             {
                 E.Create(new GetterInstruction("context://col?col_value")),
-                E.Create(@"::"),
+                "::",
                 E.Create(new GetterInstruction("context://col?data_type")),
-            }, (key, value) => symbolTable[key] = E.Create(value),
-                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
+            }, (key, value) => symbolTable[key] = value,
+                    new[] { E.Create(new GetterInstruction("context://col?alias", "")) });
 
             //["derived_elements"] =
             //    "<<derived_element>> \"<<g|context://der?alias>>\""
             var derived_elements = new Production(new[]
             {
-                E.Create(@"    "),
+                "    ",
                 E.Create(derived_element),
-                E.Create(@" "),
-                E.Create(new GetterInstruction("context://col?alias", E.Create(""), false, @"""", @"""")),
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                " ",
+                E.Create(new GetterInstruction("context://col?alias", "", false, @"""", @"""")),
+            }, (key, value) => symbolTable[key] = value, null);
 
             //JOIN warehouse_report_sequence."PathDmSn" rs ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)
             var select_sql_multiton_join = new Production(new[]
             {
-                E.Create($"{Environment.NewLine}    JOIN warehouse_report_sequence."),
-                E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.name", E.Create(""), false, @"""", @"""")),
-                E.Create($" rs{Environment.NewLine}    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)")
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+                $"{Environment.NewLine}    JOIN warehouse_report_sequence.",
+                E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.name", "", false, @"""", @"""")),
+                $" rs{Environment.NewLine}    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)"
+            }, (key, value) => symbolTable[key] = value, null);
 
             var report_sequence_select_sql = new Production(new[]
             {
                 //["process_constants"] =
                 //"'<<g|context://constant?value>>'::<<g|context://constant?data_type>>"
                 //"<<g|context://constant?name>>"
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(process_constants), E.Create(""),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(process_constants), "",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?constants.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = true }),
 
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
                     (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
-                        E.Create(@"SELECT event_id,
+                        @"SELECT event_id,
     event_ts,
     rs.id    rs_id,
-    rs.ts    rs_ts")),
-                    (null, E.Create(@"SELECT event_id,
-    event_ts"))
+    rs.ts    rs_ts"),
+                    (null, @"SELECT event_id,
+    event_ts")
                 })),
 
-                E.Create($"{Environment.NewLine}    -- Event elements"),
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), E.Create($",{Environment.NewLine}"),
+                $"{Environment.NewLine}    -- Event elements",
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), $",{Environment.NewLine}",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?event_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}),
 
-                E.Create($"{Environment.NewLine}    -- RS elements"),
+                $"{Environment.NewLine}    -- RS elements",
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
                     (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
-                        E.Create(new Production( new [] { E.Create(new { Instruction = new RepetitionInstruction(E.Create(rs_elements), E.Create($",{Environment.NewLine}"),
+                        E.Create(new Production( new [] { E.Create(new { Instruction = new RepetitionInstruction(E.Create(rs_elements), $",{Environment.NewLine}",
                             E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                                 ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?rs_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                         })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}) }))),
-                    (null, E.Create(@""))
+                    (null, "")
                 })),
 
-                E.Create($"{Environment.NewLine}    -- Derived elements"),
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(derived_elements), E.Create($",{Environment.NewLine}"),
+                $"{Environment.NewLine}    -- Derived elements",
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(derived_elements), $",{Environment.NewLine}",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?derived_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}),
 
-                E.Create($"{Environment.NewLine}FROM satisfied_set ws"),
+                $"{Environment.NewLine}FROM satisfied_set ws",
 
                 E.Create(new ConditionInstruction(new List<(Entity Antecedent, Entity Consequent)> {
                     (E.Create(new GetterInstruction(@"config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]", null, true)),
                         E.Create(select_sql_multiton_join)),
-                    (null, E.Create(@""))
+                    (null, "")
                 }))
 
-            }, (key, value) => symbolTable[key] = E.Create(value), null);
+            }, (key, value) => symbolTable[key] = value, null);
 
             ///////////////////////////  Test recursive joins
 
             //["test_joins"] = await E.Parse("application/json", test),
-            //["test_joins_start_table"] = E.Create("ws")
+            //["test_joins_start_table"] = "ws"
 
-//{
-//   ""joins"":[
-//      {
-//         ""alias"":""bob"",
-//         ""table_name"":""blob"",
-//         ""join_type"":""LEFT"",
-//         ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
-//         ""where"":""$tgt.col IS NOT NULL""
-//      },
-//      {
-//         ""alias"":""tom"",
-//         ""table_name"":""thom"",
-//         ""join_type"":""LEFT"",
-//         ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
-//         ""where"":""$tgt.col IS NOT NULL"",
-//         ""joins"":[
-//            {
-//               ""alias"":""rich"",
-//               ""table_name"":""richard"",
-//               ""join_type"":""LEFT"",
-//               ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
-//               ""where"":""$tgt.col IS NOT NULL""
-//            }
-//         ]
-//      }
-//   ]
-//}
-//            ";
+            //{
+            //   ""joins"":[
+            //      {
+            //         ""alias"":""bob"",
+            //         ""table_name"":""blob"",
+            //         ""join_type"":""LEFT"",
+            //         ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
+            //         ""where"":""$tgt.col IS NOT NULL""
+            //      },
+            //      {
+            //         ""alias"":""tom"",
+            //         ""table_name"":""thom"",
+            //         ""join_type"":""LEFT"",
+            //         ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
+            //         ""where"":""$tgt.col IS NOT NULL"",
+            //         ""joins"":[
+            //            {
+            //               ""alias"":""rich"",
+            //               ""table_name"":""richard"",
+            //               ""join_type"":""LEFT"",
+            //               ""on"":""$on_cols1 = $bob.col AND $on_cols2 =$tgt.col2"",
+            //               ""where"":""$tgt.col IS NOT NULL""
+            //            }
+            //         ]
+            //      }
+            //   ]
+            //}
+            //            ";
 
             var test_join = new Production(new[]
             {
-                E.Create(new GetterInstruction("context://col?value", E.Create(""), false, @"'", @"'")),
-                E.Create(@"::"),
+                E.Create(new GetterInstruction("context://col?value", "", false, @"'", @"'")),
+                "::",
                 E.Create(new GetterInstruction("context://col?data_type")),
-                E.Create(@" "),
+                " ",
                 E.Create(new GetterInstruction("context://col?name")),
 
-                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), E.Create($",{Environment.NewLine}"),
+                E.Create(new { Instruction = new RepetitionInstruction(E.Create(event_elements), $",{Environment.NewLine}",
                     E.Create(new ParallelGetInstruction(new Dictionary<string, ParallelGetInstructionScope>{
                         ["col"] = new ParallelGetInstructionScope(E.Create(new GetterInstruction("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?event_elements.*")), true, 0, ExhaustionBehavior.DefaultValue)
 
                 })), (key, value) => context[key] = value, (key) => context.Remove(key)), Suppress = false, Prepend = $",{Environment.NewLine}"}),
-            }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create(new GetterInstruction("context://col?name")) });
+            }, (key, value) => symbolTable[key] = value, new[] { E.Create(new GetterInstruction("context://col?name")) });
 
             //["rs_element"] =
             //    "rs.<<g|context://rs?alias>>", "<<g|context://rs?alias>>")),
             var test_joins = new Production(new[]
             {
                 E.Create(test_join)
-            }, (key, value) => symbolTable[key] = E.Create(value),
-                    new[] { E.Create(new GetterInstruction("context://col?alias", E.Create(""))) });
-
-
+            }, (key, value) => symbolTable[key] = value,
+                    new[] { E.Create(new GetterInstruction("context://col?alias", "")) });
 
             var cur_prod = report_sequence_select_sql;
 

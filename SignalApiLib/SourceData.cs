@@ -63,7 +63,7 @@ namespace SignalApiLib
 
             if (extraData.Count > 0)
             {
-                sourceData.o = s.Create(extraData);
+                sourceData.o = extraData;
             }
 
             if (sourceData.@ref.IsNullOrWhitespace())

@@ -135,7 +135,7 @@ namespace UnsubLib.NetworkProviders
 
                 serialized["UnsubFileDownloadUri"] = campaigns.Create(unsubFileDownloadUri);
 
-                enriched.Add(campaigns.Create(serialized));
+                enriched.Add(serialized);
             }
 
             return campaigns.Create(enriched);

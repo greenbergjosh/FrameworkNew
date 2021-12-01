@@ -1829,17 +1829,17 @@ namespace UnsubLib
 
             var str = entity == null ? null : await entity.EvalS("@");
 
-            return str.IsNullOrWhitespace() ? null : new[] { ge.Create(str) };
+            return str.IsNullOrWhitespace() ? null : new Entity[] { str };
         }
 
         public async Task<string> IsUnsubList(Entity dtve)
         {
             var request = new
             {
-                batch = dtve.Create(new[]
+                batch = new[]
                 {
                     dtve
-                })
+                }
             };
 
             var result = await dtve.Parse("application/json", await IsUnsubBatch(dtve.Create(request)));

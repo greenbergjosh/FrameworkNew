@@ -36,7 +36,7 @@ namespace Utility.OpgAuth
                     }
                     else
                     {
-                        await Data.AddConnectionStrings(fw.Entity.Create(new Dictionary<string, string> { [ConnName] = conn.Value.ToString() }));
+                        await Data.AddConnectionStrings(new Dictionary<string, Entity.Entity> { [ConnName] = conn.Value.ToString() });
                         var ssoFailed = false;
 
                         SsoPlatforms.Clear();
@@ -237,7 +237,7 @@ namespace Utility.OpgAuth
                 }
             }
 
-            var mergedPermissions = _fw.Entity.Create(permissions);
+            Entity.Entity mergedPermissions = permissions;
 
             if (await mergedPermissions.EvalB(GOD_USER))
             {

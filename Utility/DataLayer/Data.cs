@@ -188,9 +188,9 @@ namespace Utility.DataLayer
                 TraceLog(nameof(GetConfigs), $"Overriding configs from command line:\r\n{JsonSerializer.Serialize(commandLineArgs)}");
                 var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs).Build();
 
-                var commandLineDictionary = new Dictionary<string, string>(commandLineConfig.AsEnumerable());
+                var commandLineDictionary = new Dictionary<string, Entity.Entity>(commandLineConfig.AsEnumerable().Select(kvp => new KeyValuePair<string, Entity.Entity>(kvp.Key, kvp.Value)));
 
-                resolvedConfig.Push(_entity.Create(commandLineDictionary));
+                resolvedConfig.Push(commandLineDictionary);
             }
 
             return _entity.Create(resolvedConfig);

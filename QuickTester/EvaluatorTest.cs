@@ -32,7 +32,7 @@ namespace QuickTester
 
         private static async Task EvaluateConstant(FrameworkWrapper fw)
         {
-            var constant = fw.Entity.Create(5);
+            var constant = 5;
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(constant, null))
@@ -59,7 +59,7 @@ namespace QuickTester
 
         private static async Task EvaluateSingleResult(FrameworkWrapper fw)
         {
-            var constant = fw.Entity.Create(5);
+            var constant = 5;
 
             var singleResult = fw.Entity.Create(new SingleResultEvaluator(constant));
 
@@ -93,7 +93,7 @@ namespace QuickTester
 
         private static async Task EntityPathEvaluateSingleResult(FrameworkWrapper fw)
         {
-            var constant = fw.Entity.Create(5);
+            var constant = 5;
 
             var singleResult = fw.Entity.Create(new SingleResultEvaluator(constant));
 
@@ -157,13 +157,13 @@ namespace QuickTester
             {
                 if (entity.ValueType == EntityValueType.Number && entity.Value<int>() == 42)
                 {
-                    yield return entity.Create(420);
+                    yield return 420;
                 }
             }
 
             var fw = await FrameworkWrapper.Create(evaluatorConfig: new EvaluatorConfig(entityMutator: Mutate42));
 
-            var constant10 = fw.Entity.Create(10);
+            var constant10 = 10;
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(constant10, null))
@@ -174,8 +174,8 @@ namespace QuickTester
 
             Assert.AreEqual(1, count);
 
-            var constant42 = fw.Entity.Create(42);
-            var constant420 = fw.Entity.Create(420);
+            var constant42 = 42;
+            var constant420 = 420;
 
             count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(constant42, null))
@@ -235,7 +235,7 @@ namespace QuickTester
             await foreach (var result in fw.Evaluator.Evaluate(entity, null))
             {
                 count++;
-                Assert.AreEqual(fw.Entity.Create(42), result);
+                Assert.AreEqual(42, result);
             }
 
             Assert.AreEqual(1, count);
@@ -276,7 +276,7 @@ namespace QuickTester
             await foreach (var result in fw.Evaluator.Evaluate(entity, null))
             {
                 count++;
-                Assert.AreEqual(fw.Entity.Create(value), result);
+                Assert.AreEqual(value, result);
             }
 
             Assert.AreEqual(1, count);

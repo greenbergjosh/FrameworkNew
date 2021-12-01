@@ -58,6 +58,20 @@ namespace Utility.Entity
 
         #endregion
 
+        #region Operators
+        public static implicit operator Entity(bool value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(decimal value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(float value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(int value) => new (EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(long value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(string value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(Dictionary<string, Entity> value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(Dictionary<string, object> value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(EntityDocument value) => new(value, value?.Entity?.Root, value?.Entity?._config, value?.Entity.Query);
+        public static implicit operator Entity(List<Entity> value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(List<object> value) => new(EntityDocument.MapValue(value), null, null, null);
+        #endregion
+
         #region Properties
 
         public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
@@ -74,11 +88,11 @@ namespace Utility.Entity
 
         internal EntityDocument Document { get; }
 
-        internal FunctionHandler FunctionHandler => _config.FunctionHandler;
+        internal FunctionHandler FunctionHandler => _config?.FunctionHandler;
 
-        internal Evaluator Evaluator => _config.Evaluator;
+        internal Evaluator Evaluator => _config?.Evaluator;
 
-        internal MissingPropertyHandler MissingPropertyHandler => _config.MissingPropertyHandler;
+        internal MissingPropertyHandler MissingPropertyHandler => _config?.MissingPropertyHandler;
 
         #endregion
 
@@ -258,19 +272,26 @@ namespace Utility.Entity
                     }
                 }
 
-                await foreach (var evaluationChild in child.Evaluator.Evaluate(child, null))
+                if (child.Evaluator != null)
                 {
-                    if (!child.Equals(evaluationChild))
+                    await foreach (var evaluationChild in child.Evaluator.Evaluate(child, null))
                     {
-                        await foreach (var handledChild in HandleChild(evaluationChild, processReference, evaluationParameters))
+                        if (!child.Equals(evaluationChild))
                         {
-                            yield return handledChild;
+                            await foreach (var handledChild in HandleChild(evaluationChild, processReference, evaluationParameters))
+                            {
+                                yield return handledChild;
+                            }
+                        }
+                        else
+                        {
+                            yield return child;
                         }
                     }
-                    else
-                    {
-                        yield return child;
-                    }
+                }
+                else
+                {
+                    yield return child;
                 }
             }
         }
