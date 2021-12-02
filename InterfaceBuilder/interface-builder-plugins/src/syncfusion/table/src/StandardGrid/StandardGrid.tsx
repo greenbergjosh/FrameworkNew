@@ -34,6 +34,7 @@ import { average, count, getUsableColumns, getUsableData } from "./utils"
 import { getCustomAggregateFunctionKey } from "./aggregates/getAggregateRows"
 import { AggregateSafe } from "./utils/AggregateSafe"
 import styles from "./styles.scss"
+import styles2 from "./styles2.scss"
 import classNames from "classnames"
 
 let grid: GridComponent | null = null
@@ -378,7 +379,6 @@ const StandardGrid = (
 
   const class1 = showToolbar ? null : styles.hideToolbar
   const class2 = useSmallPager ? styles.smallPager : null
-  const classes = classNames(class1, class2)
 
   return (
     <GridComponent
@@ -403,7 +403,7 @@ const StandardGrid = (
       allowSelection={false}
       allowSorting={true}
       allowTextWrap={true}
-      className={classes}
+      className={classNames(class1, class2, styles2.standardGrid)}
       columnMenuItems={["SortAscending", "SortDescending"]}
       columns={usableColumns as ColumnModel[]}
       // dataSource={usableData}

@@ -1,0 +1,93 @@
+@import "~@opg/interface-builder/dist/styles/colors.scss";
+
+/* LEGACY: OnPoint Colors "Orange Theme" */
+$background-color-primary: #ffa430;
+$background-color-primary-light: #ffc880;
+$border-color: #ebeff2;
+
+/*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * Disables module BEM class name transformations
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+:global {
+  :local(.standardGrid) {
+    /* SyncFusion Theme Overrides */
+    &.e-grid {
+      border: 0;
+
+      .e-content {
+        transition: margin-bottom ease-in-out 250ms, padding-bottom ease-in-out 250ms;
+      }
+      .e-content:not(:hover) {
+        margin-bottom: -50px; /* to hide horizontal scrollbar */
+        padding-bottom: 50px; /* to hide horizontal scrollbar */
+      }
+
+      .e-toolbar {
+        border: 0;
+      }
+
+      .e-detailindentcell {
+        border: 0;
+      }
+
+      .e-detailcell {
+        border: 0;
+      }
+
+      .e-gridheader {
+        border: 0;
+      }
+
+      .e-headercell,
+      .e-detailheadercell {
+        background: #fafafa;
+        border-bottom: 1px solid $border-color;
+      }
+
+      .e-rowcell,
+      .e-detailrowcollapse {
+        border-color: $border-color;
+      }
+
+      &.e-resize-lines .e-headercell .e-rhandler {
+        border-color: $border-color;
+      }
+
+      td.e-active {
+        background-color: $background-color-primary-light;
+      }
+
+      td.e-rowcell.opg-remove-cell-padding {
+        padding: 0 3px;
+      }
+
+      td.e-rowcell.opg-small-font {
+        font-size: 9pt;
+      }
+
+      tr.e-row .e-rowcell:empty {
+        height: auto !important;
+      }
+
+      tr.e-row.e-altrow {
+        background-color: #f8f9fa;
+      }
+
+      th.e-headercell.opg-narrow-header {
+        .e-headercelldiv {
+          line-height: normal;
+          margin-top: 0 !important;
+          margin-right: 0 !important;
+          margin-bottom: 0 !important;
+        }
+      }
+
+      .e-toolbar .e-toolbar-items .e-toolbar-left .e-toolbar-item:first-child {
+        margin-left: 0;
+      }
+    }
+  }
+}
