@@ -5,9 +5,5 @@ export default {
   icon: "table",
   componentDefinition: {
     component: "pivot-table",
-    columns: [],
-    rows: [],
-    values: [],
-    formatSettings: [],
   },
 }

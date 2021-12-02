@@ -1,4 +1,3 @@
-@import "./syncfusion/e-icons";
 @import "./colors";
 
 /*
@@ -8,9 +7,6 @@
  * https://github.com/css-modules/css-modules
  */
 :global {
-  /* SyncFusion Theme Overrides */
-  @import "./syncfusion/index";
-
   /* OnPoint overrides for AntDesign styles */
   @import "./antd.overrides";
 }

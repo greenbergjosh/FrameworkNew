@@ -31,6 +31,7 @@ import "@opg/interface-builder-plugins/lib/html/link/index.css"
 import "@opg/interface-builder-plugins/lib/html/tab-set/index.css"
 import "@opg/interface-builder-plugins/lib/html/tab/index.css"
 import "@opg/interface-builder-plugins/lib/syncfusion/table/index.css"
+import "@opg/interface-builder-plugins/lib/syncfusion/pivot-table/index.css"
 
 /*
  * Import InterfaceBuilder Plugins

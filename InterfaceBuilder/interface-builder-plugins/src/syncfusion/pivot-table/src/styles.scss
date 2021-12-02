@@ -1,0 +1,45 @@
+@import "~@opg/interface-builder/dist/styles/colors.scss";
+
+.configPanelOpenButton {
+  position: absolute;
+  right: 5px;
+  z-index: 1;
+  border-radius: 24px;
+  background-color: #e0e0e0;
+  color: #000000D9;
+
+  &:hover {
+    background-color: #e0e0e0;
+  }
+}
+
+.configPanelCloseButton {
+  color: #000000D9;
+}
+
+.splitView {
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.viewPanel {
+}
+
+:global {
+  :local(.configPanel) {
+    .e-pivotfieldlist-wrapper.e-static {
+      width: unset;
+      height: unset;
+      border: none;
+    }
+
+    .e-pivotfieldlist-wrapper .e-field-list-title {
+      display: none;
+    }
+  }
+}
+
+.editModePanel {
+  cursor: default;
+  margin: -5px;
+}

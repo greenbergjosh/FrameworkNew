@@ -1,19 +1,23 @@
 import React from "react"
-import { BaseInterfaceComponent, ComponentDefinitionNamedProps, LayoutDefinition } from "@opg/interface-builder"
-import { PivotTableInterfaceComponentProps, PivotTableInterfaceComponentState } from "./types"
-import { settings } from "./settings"
+import {
+  BaseInterfaceComponent,
+  ComponentDefinitionNamedProps,
+  LayoutDefinition,
+  Undraggable,
+} from "@opg/interface-builder"
 import layoutDefinition from "./layoutDefinition"
+import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
 import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
+import { PivotTableInterfaceComponentProps, PivotTableInterfaceComponentState } from "./types"
+import { set } from "lodash/fp"
+import { settings } from "./settings"
 
 export default class PivotTableInterfaceComponent extends BaseInterfaceComponent<
   PivotTableInterfaceComponentProps,
   PivotTableInterfaceComponentState
 > {
-  static defaultProps = {
-    userInterfaceData: {},
-    valueKey: "data",
-  }
+  static defaultProps = {}
 
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition
@@ -21,28 +25,37 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
 
   static manageForm = settings
 
+  private handleChange = (newSchema: DataSourceSettingsModel) => {
+    if (this.props.mode === "edit") {
+      this.props.onChangeSchema &&
+        this.props.userInterfaceSchema &&
+        this.props.onChangeSchema(set("dataSourceSettings", newSchema, this.props.userInterfaceSchema))
+    }
+  }
+
   /**
    *
    */
   static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
+    const { catalog, cube, providerType, url, localeIdentifier } = props.dataSourceSettings as DataSourceSettingsModel
     return (
-      <>
+      <Undraggable>
         <div>
-          <strong>Catalog:</strong> {props.catalog}
+          <strong>Catalog:</strong> {catalog}
         </div>
         <div>
-          <strong>Cube:</strong> {props.cube}
+          <strong>Cube:</strong> {cube}
         </div>
         <div>
-          <strong>Provider Type:</strong> {props.providerType}
+          <strong>Provider Type:</strong> {providerType}
         </div>
         <div>
-          <strong>URL:</strong> {props.url}
+          <strong>URL:</strong> {url}
         </div>
         <div>
-          <strong>Locale:</strong> {props.localeIdentifier}
+          <strong>Locale:</strong> {localeIdentifier}
         </div>
-      </>
+      </Undraggable>
     )
   }
 
@@ -51,42 +64,36 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
       case "display":
         return (
           <DisplayMode
-            //
-            // Datasource props
-            catalog={this.props.catalog}
-            cube={this.props.cube}
-            enableSorting={this.props.enableSorting}
-            localeIdentifier={this.props.localeIdentifier}
-            providerType={this.props.providerType}
-            url={this.props.url}
-            //
-            // Options
+            dataSourceSettings={this.props.dataSourceSettings}
             enableVirtualization={this.props.enableVirtualization}
+            height={this.props.height}
+            heightKey={this.props.heightKey}
             showFieldList={this.props.showFieldList}
             showGroupingBar={this.props.showGroupingBar}
-            //
-            // Mapped props
-            columns={this.props.columns}
-            filters={this.props.filters}
-            rows={this.props.rows}
-            values={this.props.values}
-            //
-            // Mapped Settings props
-            calculatedFieldSettings={this.props.calculatedFieldSettings}
-            filterSettings={this.props.filterSettings}
-            formatSettings={this.props.formatSettings}
-            //
-            // Appearance props
-            height={this.props.height}
           />
         )
       case "edit":
         return (
           <EditMode
-            getRootUserInterfaceData={this.props.getRootUserInterfaceData}
-            onChangeRootData={this.props.onChangeRootData}
-            onChangeSchema={this.props.onChangeSchema}
-            userInterfaceSchema={this.props.userInterfaceSchema}
+            dataSourceSettings={this.props.dataSourceSettings}
+            enableVirtualization={this.props.enableVirtualization}
+            height={this.props.height}
+            heightKey={this.props.heightKey}
+            showFieldList={this.props.showFieldList}
+            showGroupingBar={this.props.showGroupingBar}
+            onChange={this.handleChange}
+          />
+        )
+      default:
+        // "preview" mode
+        return (
+          <DisplayMode
+            dataSourceSettings={this.props.dataSourceSettings}
+            enableVirtualization={this.props.enableVirtualization}
+            height={this.props.height}
+            heightKey={this.props.heightKey}
+            showFieldList={this.props.showFieldList}
+            showGroupingBar={this.props.showGroupingBar}
           />
         )
     }

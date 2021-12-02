@@ -25,12 +25,12 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "valueKey",
-                defaultValue: "data",
+                defaultValue: "pivotTableSettings",
                 hidden: true,
               },
               {
-                key: "url",
-                valueKey: "url",
+                key: "dataSourceSettings.url",
+                valueKey: "dataSourceSettings.url",
                 placeholder: "https://",
                 label: "URL",
                 component: "input",
@@ -38,8 +38,8 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
-                key: "catalog",
-                valueKey: "catalog",
+                key: "dataSourceSettings.catalog",
+                valueKey: "dataSourceSettings.catalog",
                 placeholder: "Catalog Name",
                 label: "Catalog",
                 component: "input",
@@ -47,8 +47,8 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
-                key: "cube",
-                valueKey: "cube",
+                key: "dataSourceSettings.cube",
+                valueKey: "dataSourceSettings.cube",
                 placeholder: "Cube Name",
                 label: "Cube",
                 component: "input",
@@ -56,8 +56,8 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
-                key: "providerType",
-                valueKey: "providerType",
+                key: "dataSourceSettings.providerType",
+                valueKey: "dataSourceSettings.providerType",
                 label: "Provider Type",
                 component: "radio",
                 dataHandlerType: "local",
@@ -81,19 +81,11 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 },
               },
               {
-                key: "localeIdentifier",
-                valueKey: "localeIdentifier",
+                key: "dataSourceSettings.localeIdentifier",
+                valueKey: "dataSourceSettings.localeIdentifier",
                 label: "Locale",
                 component: "number-input",
                 defaultValue: 1033,
-                bindable: true,
-              },
-              {
-                key: "enableSorting",
-                valueKey: "enableSorting",
-                label: "Sorting",
-                component: "toggle",
-                defaultValue: false,
                 bindable: true,
               },
             ],
@@ -101,6 +93,15 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
           {
             key: "appearance",
             components: [
+              {
+                key: "dataSourceSettings.enableSorting",
+                valueKey: "dataSourceSettings.enableSorting",
+                label: "Sorting",
+                component: "toggle",
+                defaultValue: false,
+                bindable: true,
+                help: "Allows to perform sort operation to order members of a specific fields either in ascending or descending that used to be displayed in the pivot table.",
+              },
               {
                 key: "showFieldList",
                 valueKey: "showFieldList",
@@ -129,13 +130,62 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
+                handlerFunctionSrc:
+                  "return function({props, lib: { getValue, setValue, raiseEvent }, args}) {\n  // Do stuff here\n}",
+                outgoingEventMap: {
+                  valueChanged: {
+                    type: "none",
+                  },
+                },
+                style: "&.container {}",
+                buttonStyle: "solid",
+                buttonType: "radio",
+                invisible: false,
+                hidden: false,
+                data: {
+                  values: [
+                    {
+                      label: "Auto",
+                      value: "auto",
+                    },
+                    {
+                      label: "Match Field List height",
+                      value: "fieldlist",
+                    },
+                    {
+                      label: "Full",
+                      value: "full",
+                    },
+                    {
+                      label: "Value",
+                      value: "value",
+                    },
+                  ],
+                },
+                dataHandlerType: "local",
+                valueKey: "heightKey",
+                label: "Height",
+                hideLabel: false,
+                component: "radio",
+                defaultValue: "auto",
+                name: "Height Options",
+                help: "Height of the pivot table.",
+              },
+              {
                 key: "height",
                 valueKey: "height",
-                label: "Height",
+                label: "Height Value",
                 defaultValue: 350,
-                help: "Height of the pivot table.",
                 component: "number-input",
                 bindable: true,
+                visibilityConditions: {
+                  "===": [
+                    "value",
+                    {
+                      var: "heightKey",
+                    },
+                  ],
+                },
               },
             ],
           },
