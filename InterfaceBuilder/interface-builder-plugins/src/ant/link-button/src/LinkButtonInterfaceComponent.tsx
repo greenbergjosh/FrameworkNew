@@ -121,7 +121,10 @@ export default class LinkButtonInterfaceComponent extends BaseInterfaceComponent
  * @param uriTemplate
  * @param getValue
  */
-function replaceUriTokens(uriTemplate: string, getValue: AbstractBaseInterfaceComponentType["prototype"]["getValue"]): string {
+function replaceUriTokens(
+  uriTemplate: string,
+  getValue: AbstractBaseInterfaceComponentType["prototype"]["getValue"]
+): string {
   // One token and one value
   const hasOneToken = uriTemplate.includes("{$}")
   const localUIData = getValue("$")

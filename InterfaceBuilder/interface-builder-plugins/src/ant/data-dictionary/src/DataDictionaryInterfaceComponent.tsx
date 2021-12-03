@@ -48,7 +48,8 @@ export default class DataDictionaryInterfaceComponent extends BaseInterfaceCompo
   static manageForm = settings
 
   render(): JSX.Element {
-    const { defaultValue, keyLabel, valueLabel, getRootUserInterfaceData, onChangeRootData, valueComponent, valueKey } = this.props
+    const { defaultValue, keyLabel, valueLabel, getRootUserInterfaceData, onChangeRootData, valueComponent, valueKey } =
+      this.props
     const dictionary = this.getValue(valueKey) || defaultValue
     const values = dictionary && Object.entries(dictionary).map(([key, value]) => ({ key, value }))
     return (

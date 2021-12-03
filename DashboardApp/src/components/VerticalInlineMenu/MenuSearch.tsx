@@ -54,7 +54,7 @@ export function MenuSearch({
 
     indexNavigationTree(navigationTree, addNodeToIndex, appRootPath)
     return { navigationNodeMap, searchDB }
-  }, [navigationTree])
+  }, [navigationTree, appRootPath])
 
   /**
    * Filter navigationTree when searchText changes
@@ -87,7 +87,16 @@ export function MenuSearch({
       setFilteredNavigationTree(navigationTree)
       setHasSearched(false)
     }
-  }, [setOpenKeys, searchDB, setFilteredNavigationTree, navigationNodeMap, navigationTree, searchText, hasSearched])
+  }, [
+    setOpenKeys,
+    searchDB,
+    setFilteredNavigationTree,
+    navigationNodeMap,
+    navigationTree,
+    searchText,
+    hasSearched,
+    appRootPath,
+  ])
 
   /* ***********************************************
    *

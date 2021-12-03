@@ -30,24 +30,25 @@ export const DataBinding: React.FC<
     getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
   }
 > = (props): React.ReactElement<any, any> | null => {
+  const { userInterfaceData, componentDefinition, getRootUserInterfaceData } = props
   /**
    * Bind componentDefinition props
    */
   const boundComponentDefinition = React.useMemo(() => {
-    const hasBindings = !isEmpty(props.componentDefinition.bindings)
+    const hasBindings = !isEmpty(componentDefinition.bindings)
 
     /* Nothing to bind so return the componentDefinition */
     if (!hasBindings) {
-      return props.componentDefinition
+      return componentDefinition
     }
 
     /* Do bindings with jsonLogic */
-    let def: ComponentDefinition = { ...props.componentDefinition }
-    forOwn(props.componentDefinition.bindings, (rule, key) => {
+    let def: ComponentDefinition = { ...componentDefinition }
+    forOwn(componentDefinition.bindings, (rule, key) => {
       const result = jsonLogic.apply(rule, {
-        $root: props.getRootUserInterfaceData(),
-        $: props.userInterfaceData,
-        ...props.userInterfaceData,
+        $root: getRootUserInterfaceData(),
+        $: userInterfaceData,
+        ...userInterfaceData,
       })
       def = set(key, result, def)
     })
@@ -58,8 +59,8 @@ export const DataBinding: React.FC<
      *  and remove this loop below (problem may be that you don't have the parent component's context);
      *  Or keep this loop below and make it more generic.
      */
-    if (props.componentDefinition.incomingEventHandlers) {
-      const handlers = props.componentDefinition.incomingEventHandlers as any[]
+    if (componentDefinition.incomingEventHandlers) {
+      const handlers = componentDefinition.incomingEventHandlers as any[]
       handlers.forEach((handler, idx) => {
         const hasEventBindings = !isEmpty(handler.bindings)
 
@@ -71,9 +72,9 @@ export const DataBinding: React.FC<
         /* Do bindings with jsonLogic */
         forOwn(handler.bindings, (rule, key) => {
           const result = jsonLogic.apply(rule, {
-            $root: props.getRootUserInterfaceData(),
-            $: props.userInterfaceData,
-            ...props.userInterfaceData,
+            $root: getRootUserInterfaceData(),
+            $: userInterfaceData,
+            ...userInterfaceData,
           })
           def = set(`incomingEventHandlers[${idx}].${key}`, result, def)
         })
@@ -81,7 +82,7 @@ export const DataBinding: React.FC<
     }
 
     return def
-  }, [props.userInterfaceData, props.componentDefinition])
+  }, [userInterfaceData, componentDefinition, getRootUserInterfaceData])
 
   return <>{props.children({ boundComponentDefinition })}</>
 }

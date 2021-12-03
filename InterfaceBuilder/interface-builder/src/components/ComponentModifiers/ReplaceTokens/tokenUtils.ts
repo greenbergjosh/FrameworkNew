@@ -22,7 +22,8 @@ export function replaceTokens<T extends DataType>(
    * RegEx test cases
    * https://regex101.com/r/vfVPMl/1
    */
-  const regex = /\{(?<dataType>date|number|duration)?\(?(?<token>\$\.?[^(){}:]*)\)?:?(?<format>([CcDdEeFfGgMmNnOoPpRrsTtUuXxYy]|fromNow|toNow|milliseconds|seconds|minutes|hours|days|weeks|months|years|durationLargestUnit|durationMixedUnit)\d{0,2})?}/gm
+  const regex =
+    /\{(?<dataType>date|number|duration)?\(?(?<token>\$\.?[^(){}:]*)\)?:?(?<format>([CcDdEeFfGgMmNnOoPpRrsTtUuXxYy]|fromNow|toNow|milliseconds|seconds|minutes|hours|days|weeks|months|years|durationLargestUnit|durationMixedUnit)\d{0,2})?}/gm
 
   // Check for tokens and abort if none
   if (stringTemplate.search(regex) < 0) {

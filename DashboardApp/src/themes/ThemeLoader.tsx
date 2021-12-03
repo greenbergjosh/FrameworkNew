@@ -46,7 +46,7 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
       }
       setData({ ...data, ...fromStore.appPageModel })
     }
-  }, [dispatch, fromStore.appPaths.currentUrl, props.location, fromStore.appPageModel])
+  }, [data, dispatch, fromStore.appPaths.currentUrl, props.location, fromStore.appPageModel])
 
   // Keep the Querystring updated from the app model
   React.useEffect(() => {

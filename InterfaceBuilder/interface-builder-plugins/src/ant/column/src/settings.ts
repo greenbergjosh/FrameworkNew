@@ -61,8 +61,7 @@ const columnManageFormDefinition: Partial<ComponentDefinition>[] = [
                         valueKey: "span",
                         component: "number-input",
                         label: "Column Width",
-                        help:
-                          "All column widths combined should add up to 24. Blank widths will be spread across any remaining space.",
+                        help: "All column widths combined should add up to 24. Blank widths will be spread across any remaining space.",
                       },
                       {
                         key: "components",

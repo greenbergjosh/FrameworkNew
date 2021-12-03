@@ -14,15 +14,14 @@ export interface DataMapProps {
   valueLabel: string
 }
 
-const itemChangeHandler = (data: DataMapProps["data"], index: number, onDataChanged: DataMapProps["onDataChanged"]) => (
-  updatedItem: DataItem
-) => onDataChanged([...data.slice(0, index), updatedItem, ...data.slice(index + 1)])
+const itemChangeHandler =
+  (data: DataMapProps["data"], index: number, onDataChanged: DataMapProps["onDataChanged"]) =>
+  (updatedItem: DataItem) =>
+    onDataChanged([...data.slice(0, index), updatedItem, ...data.slice(index + 1)])
 
-const itemDeleteHandler = (
-  data: DataMapProps["data"],
-  index: number,
-  onDataChanged: DataMapProps["onDataChanged"]
-) => () => onDataChanged([...data.slice(0, index), ...data.slice(index + 1)])
+const itemDeleteHandler =
+  (data: DataMapProps["data"], index: number, onDataChanged: DataMapProps["onDataChanged"]) => () =>
+    onDataChanged([...data.slice(0, index), ...data.slice(index + 1)])
 
 const rowProps = {
   gutter: 16,

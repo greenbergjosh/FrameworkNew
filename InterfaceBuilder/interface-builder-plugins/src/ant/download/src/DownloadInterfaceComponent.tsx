@@ -56,18 +56,8 @@ export default class DownloadInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const {
-      block,
-      buttonLabel,
-      defaultValue,
-      displayType,
-      ghost,
-      hideButtonLabel,
-      icon,
-      paramsValueKey,
-      shape,
-      size,
-    } = this.props
+    const { block, buttonLabel, defaultValue, displayType, ghost, hideButtonLabel, icon, paramsValueKey, shape, size } =
+      this.props
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
     const rawValue = this.getValue(paramsValueKey)

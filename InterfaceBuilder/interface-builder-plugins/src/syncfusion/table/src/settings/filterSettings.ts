@@ -151,7 +151,7 @@ export function encodeFilters(arg: ActionEventArgs, prevFilters: EncodedFilterBy
  */
 export function stringifyFilter(arg: ActionEventArgs): string | undefined {
   if (arg.requestType === "filtering" && arg.currentFilterObject) {
-    const { field, uid, operator, value } = arg.currentFilterObject
+    const { field, operator, value } = arg.currentFilterObject
     const strValue = isString(value) ? value : JSON.stringify(value, null, " ")
     const safeValue = strValue.toLowerCase()
     return `${field}~${operator}~${safeValue}`

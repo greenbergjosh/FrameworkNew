@@ -2,8 +2,7 @@ import { formatNumber } from "./formatNumber"
 import { formatDate } from "./formatDate"
 import { formatDuration, isDuration } from "./formatDuration"
 import { isArray, isDate } from "lodash/fp"
-import { CoerceableDataType, DataType } from "./types"
-import { DurationUnits } from "./types"
+import { CoerceableDataType, DataType, DurationUnits } from "./types"
 
 export type { DurationUnits }
 export { durationFormats } from "./formatDuration"

@@ -69,14 +69,7 @@ export default class SectionedNavigationInterfaceComponent extends BaseInterface
   }
 
   render(): JSX.Element {
-    const {
-      onChangeData,
-      sections,
-      title,
-      userInterfaceData,
-      getRootUserInterfaceData,
-      onChangeRootData,
-    } = this.props
+    const { onChangeData, sections, title, userInterfaceData, getRootUserInterfaceData, onChangeRootData } = this.props
     const { activeKey } = this.state
     const activeSectionKey = activeKey || (sections[0] && sections[0].title)
 

@@ -9,7 +9,6 @@ import {
   SliceTooltipFunction as _SliceTooltipFunction,
 } from "./types"
 
-
 export default { component: PieInterfaceComponent, layoutDefinition } as RegisterableComponent
 export type PieInterfaceComponentProps = _PieInterfaceComponentProps
 export type PieInterfaceComponentState = _PieInterfaceComponentState

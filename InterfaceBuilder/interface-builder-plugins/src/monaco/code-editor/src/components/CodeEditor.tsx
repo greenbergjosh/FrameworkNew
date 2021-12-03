@@ -35,7 +35,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
    */
   const original = React.useMemo(() => {
     return formatDocumentPartial(props.original)
-  }, [props.document, props.original])
+  }, [props.document, props.original, formatDocumentPartial])
 
   /**
    * Watch for external document changes
@@ -44,7 +44,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
     // TODO: see above note
     // setEditorInstanceKey(editorInstanceKey + 1)
     setDraft(formatDocumentPartial(props.document))
-  }, [props.document])
+  }, [props.document, formatDocumentPartial])
 
   /* ***********************************
    *

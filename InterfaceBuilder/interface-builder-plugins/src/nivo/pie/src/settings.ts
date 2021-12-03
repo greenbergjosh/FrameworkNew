@@ -149,8 +149,7 @@ return function ({ props, lib, args: { slice } }) {
                 valueKey: "useTooltipFunction",
                 component: "toggle",
                 label: "Tooltip Custom Formatter",
-                help:
-                  "A function that receives the slice and returns a formatted string displayed as the tooltip of the slice.",
+                help: "A function that receives the slice and returns a formatted string displayed as the tooltip of the slice.",
                 bindable: true,
               },
               {
@@ -277,8 +276,7 @@ return function ({ props, lib, args: { slice } }) {
                 key: "threshold",
                 valueKey: "threshold",
                 label: "Threshold",
-                help:
-                  'Set the cutoff value to display. Values below this amount will be aggregated into an "Other" slice.',
+                help: 'Set the cutoff value to display. Values below this amount will be aggregated into an "Other" slice.',
                 component: "number-input",
                 defaultValue: 0,
                 bindable: true,
@@ -287,8 +285,7 @@ return function ({ props, lib, args: { slice } }) {
                 key: "otherAggregatorFunctionSrc",
                 valueKey: "otherAggregatorFunctionSrc",
                 label: "Other slice aggregator",
-                help:
-                  'A function that receives all slices below the threshold and returns the data for the "Other" slice. Note: By default the value will be summed.',
+                help: 'A function that receives all slices below the threshold and returns the data for the "Other" slice. Note: By default the value will be summed.',
                 defaultTheme: "vs-dark",
                 defaultLanguage: "javascript",
                 defaultValue: `/**

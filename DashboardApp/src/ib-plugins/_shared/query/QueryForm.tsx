@@ -94,7 +94,7 @@ export const QueryForm = React.memo(
       const newState = getDefaultFormValues(layout, parameters, parameterValues, getDefinitionDefaultValue)
 
       updateFormState(newState)
-    }, [layout, parameters, parameterValues])
+    }, [layout, parameters, parameterValues, getDefinitionDefaultValue])
 
     /*
      * Submit Form

@@ -1,6 +1,6 @@
 import { SortableGroupableColumnModel } from "types"
 import { ActionEventArgs, GroupSettingsModel } from "@syncfusion/ej2-react-grids"
-import { get, isArray, isEmpty, sortBy, isString } from "lodash/fp"
+import { isArray, isEmpty, isString, sortBy } from "lodash/fp"
 
 export type EncodedGroupBy = string | string[] | null
 

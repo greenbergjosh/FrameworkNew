@@ -55,6 +55,9 @@ export abstract class AbstractBaseInterfaceComponent<
   public abstract getDefaultValue: () => unknown
   public abstract getValue: GetValue
   public abstract setValue: SetValue
-  public abstract anyPropsChanged: (prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>) => boolean
+  public abstract anyPropsChanged: (
+    prevProps: Readonly<BaseInterfaceComponentProps>,
+    propsToCheck: Array<string>
+  ) => boolean
   public abstract raiseEvent: RaiseEvent
 }

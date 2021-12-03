@@ -34,8 +34,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 label: "Calculate Percent",
-                help:
-                  "Calculate the percent from the current count and a maximum value. When not selected, the data is assumed to be a percentage.",
+                help: "Calculate the percent from the current count and a maximum value. When not selected, the data is assumed to be a percentage.",
                 bindable: true,
               },
               {

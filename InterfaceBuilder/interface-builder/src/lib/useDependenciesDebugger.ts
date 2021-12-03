@@ -3,7 +3,12 @@ import React from "react"
 // https://stackoverflow.com/questions/55187563/determine-which-dependency-array-variable-caused-useeffect-hook-to-fire
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const compareInputs = (inputKeys: any[], oldInputs: { [x: string]: any }, newInputs: { [x: string]: any }, source?: string) => {
+const compareInputs = (
+  inputKeys: any[],
+  oldInputs: { [x: string]: any },
+  newInputs: { [x: string]: any },
+  source?: string
+) => {
   inputKeys.forEach((key) => {
     const oldInput = oldInputs[key]
     const newInput = newInputs[key]

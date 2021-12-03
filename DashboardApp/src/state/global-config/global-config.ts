@@ -70,7 +70,7 @@ export interface Effects {
 }
 
 export interface Selectors {
-  associations(state: Store.AppState): Record<GC.PersistedConfig["id"], GC.Associations>
+  associations(state: Store.AppState): Record<GC.PersistedConfig["id"], GC.IAssociations>
   /** record of config[] indexed by config.type */
   configsByType(state: Store.AppState): Record<GC.ConfigType, Array<GC.PersistedConfig>>
   /** a record of configs indexed on config.id */

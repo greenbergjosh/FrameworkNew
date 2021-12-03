@@ -43,8 +43,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Allow Nesting Leaves?",
                 component: "toggle",
                 defaultValue: true,
-                help:
-                  "Allows nesting a leaf under another leaf. If false, leaves and parents are considered separate types.",
+                help: "Allows nesting a leaf under another leaf. If false, leaves and parents are considered separate types.",
                 bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "modifiable" }],

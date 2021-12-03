@@ -56,9 +56,10 @@ export function ChangeManager(props: ChangeManagerProps) {
     defaultValue,
     getValue,
     internalDocument,
+    onExternalDocumentChange,
+    originalDocument,
     prevExternalDocument,
     prevInternalDocument,
-    onExternalDocumentChange,
     setValue,
     valueKey,
   ])

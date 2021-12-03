@@ -8,14 +8,14 @@ export function DroppableInner({
   canDrop,
   children,
   connectDropTarget,
-  droppableId,
+  // droppableId,
   innerRef,
   isOver,
   orientation = "vertical",
   placeholder,
   placeholderText,
-  setPlaceholder,
-}: DroppableInnerProps) {
+}: // setPlaceholder,
+DroppableInnerProps) {
   const childrenResult = children({ isOver })
   const childCount = Array.isArray(childrenResult) ? childrenResult.length : 1
   const emptyContainer = childCount === 0

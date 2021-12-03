@@ -69,7 +69,7 @@ export const ReplaceTokens: React.FC<
       }
     })
     return newDef
-  }, [props.componentDefinition, props.userInterfaceData, props.mode])
+  }, [props.componentDefinition, props.userInterfaceData, props.mode, props.getRootUserInterfaceData])
 
   return <>{props.children({ tokenReplacedComponentDefinition })}</>
 }

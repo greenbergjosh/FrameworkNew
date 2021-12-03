@@ -186,12 +186,13 @@ const ReportBody = ({
   }, [
     automaticQueryErrorState,
     dispatch,
-    unsatisfiedByParentParams.length,
-    queryResultDataIsNone,
+    fromStore.isExecutingQuery,
+    getDefinitionDefaultValue,
     queryConfig,
     queryConfig.query,
+    queryResultDataIsNone,
     satisfiedByParentParams,
-    fromStore.isExecutingQuery,
+    unsatisfiedByParentParams.length,
     withoutHeader,
   ])
 
@@ -200,24 +201,25 @@ const ReportBody = ({
    */
   const getMemoizedDetailTemplate = React.useMemo(() => {
     return getDetailTemplate({
-      dispatch,
       columnDetails: reportConfig.details,
+      columnType: "layout",
+      dispatch,
+      getDefinitionDefaultValue,
       getRootUserInterfaceData,
+      handleChangeData: onChangeData,
       onChangeRootData,
       parameterValues: parameterValues.toUndefined(),
       parentData,
-      handleChangeData: onChangeData,
-      columnType: "layout",
-      getDefinitionDefaultValue,
     })
   }, [
     dispatch,
+    getDefinitionDefaultValue,
+    getRootUserInterfaceData,
     onChangeData,
-    reportConfig.details,
+    onChangeRootData,
     parameterValues,
     parentData,
-    getRootUserInterfaceData,
-    onChangeRootData,
+    reportConfig.details,
   ])
 
   const sortSettings: Table.StandardGridTypes.SortSettingsModel = {
@@ -299,14 +301,15 @@ const ReportBody = ({
       return { ...cloneDeep(column), template, formatter, customAggregateFunction }
     })
   }, [
-    onChangeData,
     dispatch,
     fromStore.configsById,
-    reportConfig.columns,
+    getDefinitionDefaultValue,
+    getRootUserInterfaceData,
+    onChangeData,
+    onChangeRootData,
     parameterValues,
     parentData,
-    getRootUserInterfaceData,
-    onChangeRootData,
+    reportConfig.columns,
   ]) // Even though we are in display mode, we still need to update columns.
 
   /* **********************************************************************

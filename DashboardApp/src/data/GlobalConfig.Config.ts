@@ -120,7 +120,7 @@ export function mkCompleteLocalDraft(draft: InProgressLocalDraftConfig): Either<
 // ──────────────────────────────────────────────────────────────────────────────────
 //
 
-export interface Associations {
+export interface IAssociations {
   isTypeOf: Array<PersistedConfig["id"]>
   usedBy: Array<PersistedConfig["id"]>
   uses: Array<PersistedConfig["id"]>
@@ -128,6 +128,6 @@ export interface Associations {
   references: Array<PersistedConfig["id"]>
 }
 
-export function Associations(a: Associations): Associations {
+export function Associations(a: IAssociations): IAssociations {
   return a
 }

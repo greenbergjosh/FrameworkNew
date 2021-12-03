@@ -104,9 +104,7 @@ export default class DataMapInterfaceComponent extends BaseInterfaceComponent<
             <DataPathContext path="valueComponent">
               <ComponentRenderer
                 componentLimit={1}
-                components={[
-                  { ...valueComponent, hideLabel: true, getRootUserInterfaceData, onChangeRootData },
-                ]}
+                components={[{ ...valueComponent, hideLabel: true, getRootUserInterfaceData, onChangeRootData }]}
                 data={dataItem}
                 getRootUserInterfaceData={getRootUserInterfaceData}
                 onChangeRootData={onChangeRootData}

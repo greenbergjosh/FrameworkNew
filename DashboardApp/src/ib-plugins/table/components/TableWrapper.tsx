@@ -63,14 +63,15 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
       return { ...cloneDeep(column), template, formatter, customAggregateFunction }
     })
   }, [
-    onChangeData,
+    columns,
     dispatch,
     fromStore.configsById,
-    columns,
+    getDefinitionDefaultValue,
+    getRootUserInterfaceData,
+    onChangeData,
+    onChangeRootData,
     parameterValues,
     parentData,
-    getRootUserInterfaceData,
-    onChangeRootData,
   ])
 
   return <TableInterfaceComponent {...props} columns={enrichedColumns} />
