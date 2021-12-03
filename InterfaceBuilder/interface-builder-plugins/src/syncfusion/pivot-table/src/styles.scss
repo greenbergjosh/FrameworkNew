@@ -6,7 +6,7 @@
   z-index: 1;
   border-radius: 24px;
   background-color: #e0e0e0;
-  color: #000000D9;
+  color: $ib-grey-darkest;
 
   &:hover {
     background-color: #e0e0e0;
@@ -14,7 +14,7 @@
 }
 
 .configPanelCloseButton {
-  color: #000000D9;
+  color: $ib-grey-darkest;
 }
 
 .splitView {
@@ -42,4 +42,19 @@
 .editModePanel {
   cursor: default;
   margin: -5px;
+}
+
+.exportButton {
+  margin: 4px;
+  padding: 0 4px 0 4px;
+  border-radius: 0;
+  color: $ib-grey-darkest;
+
+  &:hover {
+    background-color: #dcdcdc;
+    color: $ib-grey-darkest;
+  }
+  &:visited {
+    color: $ib-grey-darkest;
+  }
 }

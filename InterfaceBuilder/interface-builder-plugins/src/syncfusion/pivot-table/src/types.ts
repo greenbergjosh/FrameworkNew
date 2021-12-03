@@ -18,7 +18,11 @@ export interface PivotTableSettings {
   showGroupingBar: boolean
 }
 
-export interface DisplayModeProps extends PivotTableSettings {}
+export interface DisplayModeProps extends PivotTableSettings {
+  exportExcel: boolean
+  exportPDF: boolean
+  exportCSV: boolean
+}
 
 export interface EditModeProps extends PivotTableSettings {
   onChange: (dataSourceSettings: DataSourceSettingsModel) => void
@@ -31,6 +35,9 @@ export interface PivotTableInterfaceComponentProps extends ComponentDefinitionNa
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeSchema: ComponentRenderMetaProps["onChangeSchema"]
   userInterfaceSchema?: ComponentDefinition
+  exportExcel: boolean
+  exportPDF: boolean
+  exportCSV: boolean
 }
 
 export interface PivotTableInterfaceComponentState {}

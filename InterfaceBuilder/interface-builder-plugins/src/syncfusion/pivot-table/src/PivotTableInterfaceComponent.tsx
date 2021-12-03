@@ -70,6 +70,9 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             heightKey={this.props.heightKey}
             showFieldList={this.props.showFieldList}
             showGroupingBar={this.props.showGroupingBar}
+            exportExcel={this.props.exportExcel}
+            exportPDF={this.props.exportPDF}
+            exportCSV={this.props.exportCSV}
           />
         )
       case "edit":
@@ -94,6 +97,9 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             heightKey={this.props.heightKey}
             showFieldList={this.props.showFieldList}
             showGroupingBar={this.props.showGroupingBar}
+            exportExcel={this.props.exportExcel}
+            exportPDF={this.props.exportPDF}
+            exportCSV={this.props.exportCSV}
           />
         )
     }

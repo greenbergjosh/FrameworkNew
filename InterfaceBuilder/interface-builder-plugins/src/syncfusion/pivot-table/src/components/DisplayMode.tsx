@@ -68,6 +68,18 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
     }
   }
 
+  const handleExportClick = (format: "excel" | "pdf" | "csv") => () => {
+    if (pivotRef && pivotRef.current) {
+      if (format === "excel") {
+        pivotRef.current.excelExport()
+      } else if (format === "pdf") {
+        pivotRef.current.pdfExport()
+      } else if (format === "csv") {
+        pivotRef.current.csvExport()
+      }
+    }
+  }
+
   const ViewPanel = (
     <div id="ViewPanel">
       {!showConfigPanel && (
@@ -81,9 +93,41 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
           }}
         />
       )}
+      {props.exportCSV && (
+        <Button
+          className={styles.exportButton}
+          type="link"
+          size="small"
+          icon="file-text"
+          onClick={handleExportClick("csv")}>
+          CSV Export
+        </Button>
+      )}
+      {props.exportExcel && (
+        <Button
+          className={styles.exportButton}
+          type="link"
+          size="small"
+          icon="file-excel"
+          onClick={handleExportClick("excel")}>
+          Excel Export
+        </Button>
+      )}
+      {props.exportPDF && (
+        <Button
+          className={styles.exportButton}
+          type="link"
+          size="small"
+          icon="file-pdf"
+          onClick={handleExportClick("pdf")}>
+          PDF Export
+        </Button>
+      )}
       <PivotViewComponent
         ref={pivotRef}
         allowCalculatedField={allowCalculatedField}
+        allowPdfExport={props.exportPDF}
+        allowExcelExport={props.exportExcel}
         enableVirtualization={props.enableVirtualization}
         enginePopulated={afterPivotTablePopulate}
         height={height}
