@@ -74,7 +74,9 @@ export const QueryForm = React.memo(
       if (promise && isMounted) {
         setLoading(true)
         promise.finally(() => {
-          setLoading(false)
+          if (isMounted) {
+            setLoading(false)
+          }
         })
       }
       if (isMounted) {
@@ -111,7 +113,9 @@ export const QueryForm = React.memo(
       if (promise && isMounted) {
         setLoading(true)
         promise.finally(() => {
-          setLoading(false)
+          if (isMounted) {
+            setLoading(false)
+          }
         })
       }
       if (isMounted) {
