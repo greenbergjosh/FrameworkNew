@@ -57,7 +57,7 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        public override string ToString() => _value?.ToString();
+        public override string ToString() => _value?.ToString() ?? "null";
 
         public override int GetHashCode() => _value?.GetHashCode() ?? base.GetHashCode();
 

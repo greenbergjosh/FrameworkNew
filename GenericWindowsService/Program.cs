@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -87,7 +88,7 @@ namespace GenericWindowsService
             {
                 var fw = await FrameworkWrapper.Create(commandLineArgs: args);
 
-                using (var dynamicContext = new AssemblyResolver(await fw.StartupConfiguration.EvalS("DataServiceAssemblyFilePath"), await fw.StartupConfiguration.EvalL<string>("AssemblyDirs")))
+                using (var dynamicContext = new AssemblyResolver(await fw.StartupConfiguration.EvalS("DataServiceAssemblyFilePath"), await fw.StartupConfiguration.EvalL<string>("AssemblyDirs").ToList()))
                 {
                     Service = (IGenericWindowsService)dynamicContext.Assembly.CreateInstance(await fw.StartupConfiguration.EvalS("DataServiceTypeName"));
                 }

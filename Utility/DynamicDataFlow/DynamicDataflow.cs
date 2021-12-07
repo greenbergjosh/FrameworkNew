@@ -53,19 +53,15 @@ namespace Utility.Dataflow
             var defaultDataflowBlockOptions = await config.EvalE("defaultBlockOptions");
             var defaultDataflowLinkOptions = await config.EvalE("defaultLinkOptions");
 
-            var blocks = await config.EvalL("blocks");
-
             var dataflowBlocks = new Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)>();
 
-            foreach (var block in blocks)
+            await foreach (var block in config.EvalL("blocks"))
             {
                 var id = int.Parse(await block.EvalS("id"));
                 dataflowBlocks.Add(id, await CreateDataflowBlock(block, defaultDataflowBlockOptions, fw));
             }
 
-            var links = await config.EvalL("links");
-
-            foreach (var link in links)
+            await foreach (var link in config.EvalL("links"))
             {
                 await CreateLink(link, dataflowBlocks, defaultDataflowLinkOptions, fw);
             }

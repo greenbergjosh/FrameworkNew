@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 
-namespace Utility.Entity
+namespace System.Collections.Generic
 {
-    public static class Extensions
+    public static class IEnumerableExtensions
     {
         public static Task<IOrderedEnumerable<TSource>> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector) => OrderByDescending(source, keySelector, Comparer<TKey>.Default);
 

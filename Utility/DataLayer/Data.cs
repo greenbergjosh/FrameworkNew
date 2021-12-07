@@ -152,14 +152,14 @@ namespace Utility.DataLayer
                 try
                 {
                     var current = await GetConfigRecordValue(key, configConn, configFunc);
-                    var usings = (await current.Eval("using")).FirstOrDefault();
+                    var usings = await current.Eval("using").FirstOrDefault();
                     var mergeConfig = current;
 
                     if (usings != null)
                     {
                         TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usings}");
 
-                        foreach (var u in (await usings.EvalL<string>("@")).Select(u => u.Trim()))
+                        await foreach (var u in usings.EvalL<string>("@").Select(u => u.Trim()))
                         {
                             await LoadConfig(config, u);
                         }
@@ -190,7 +190,7 @@ namespace Utility.DataLayer
 
                 var commandLineDictionary = new Dictionary<string, Entity.Entity>(commandLineConfig.AsEnumerable().Select(kvp => new KeyValuePair<string, Entity.Entity>(kvp.Key, kvp.Value)));
 
-                resolvedConfig.Push(commandLineDictionary);
+                resolvedConfig.Push(_entity.Create(commandLineDictionary));
             }
 
             return _entity.Create(resolvedConfig);

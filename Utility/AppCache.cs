@@ -33,8 +33,8 @@ namespace Utility
             var args = JsonSerializer.Serialize(rawArgs);
 
             var dataCacheKeys = await Data.CallFn(Conn, "getDataCaches", args);
-            var results = await dataCacheKeys.EvalL("result");
-            return results?.ToList() ?? Enumerable.Empty<Entity.Entity>().ToList();
+            var results = await dataCacheKeys.EvalL("result").ToList();
+            return results ?? Enumerable.Empty<Entity.Entity>().ToList();
         }
 
         public static async Task AddDataCache(Guid cacheScopeId, DateTime? expires, params string[] keys)

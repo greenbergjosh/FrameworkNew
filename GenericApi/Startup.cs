@@ -222,8 +222,8 @@ namespace GenericApi
                                     continue;
                                 }
 
-                                var args = (await kvp.Value.Eval("args")).FirstOrDefault();
-                                var payload = (await kvp.Value.Eval("payload")).FirstOrDefault()?.ToString();
+                                var args = await kvp.Value.Eval("args").FirstOrDefault();
+                                var payload = (await kvp.Value.Eval("payload").FirstOrDefault())?.ToString();
                                 if (args == null && payload == null)
                                 {
                                     args = kvp.Value;
@@ -261,7 +261,7 @@ namespace GenericApi
                             throw new InvalidOperationException($"Unknown method {method}");
                         }
 
-                        var r = (await result?.Eval("r")).FirstOrDefault();
+                        var r = await result?.Eval("r").FirstOrDefault();
                         results[kvp.Key] = r != null
                             ? result
                             : (object)(new

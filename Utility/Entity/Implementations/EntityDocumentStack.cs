@@ -100,7 +100,7 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        public override string ToString() => JsonSerializer.Serialize(Entity);
+        public override string ToString() => JsonSerializer.Serialize(_entities);
         #endregion
     }
 }

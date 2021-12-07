@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal sealed class LocalNodeSelector : ISelector
+    internal sealed class LocalNodeSelector : Selector
     {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, Entity parameters)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            foreach (var entity in entities)
+            foreach (var entity in targetEntity.Document.EnumerateArray())
             {
                 yield return entity;
             }

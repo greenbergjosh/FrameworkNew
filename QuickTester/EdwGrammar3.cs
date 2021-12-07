@@ -108,7 +108,7 @@ namespace QuickTester
             {
                 if (_index == 0)
                 {
-                    _result = (await entity.Eval(Query)).ToList();
+                    _result = await entity.Eval(Query).ToList();
                 }
 
                 if (TreatAsPredicate)
@@ -236,7 +236,7 @@ namespace QuickTester
 
                     foreach (var (k, v) in Scopes)
                     {
-                        _ies[k] = (await v.Scope.Eval("@")).GetEnumerator();
+                        _ies[k] = await v.Scope.Eval("@").GetEnumerator();
                     }
 
                     _initialized = true;
@@ -335,7 +335,7 @@ namespace QuickTester
             {
                 var parts = new List<string>();
 
-                foreach (var step in await Repeater.Eval("@"))
+                await foreach (var step in Repeater.Eval("@"))
                 {
                     var scope = await step.EvalD("@");
 
@@ -448,11 +448,11 @@ namespace QuickTester
 
             var context = new Dictionary<string, Entity>
             {
-                ["sym"] = symbolTable,
-                ["productions"] = productions,
+                ["sym"] = E.Create(symbolTable),
+                ["productions"] = E.Create(productions),
             };
 
-            contextEntity = context;
+            contextEntity = fw.Entity.Create(context);
 
             var subProduction = new Production(new[]
             {
@@ -1166,6 +1166,11 @@ DO NOTHING
 
             var cur_prod = report_sequence_select_sql;
 
+            await foreach (var constant in fw.Entity.Eval("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?constants.*"))
+            {
+                Console.WriteLine(constant);
+            }
+
             await foreach (var output in fw.Evaluator.Evaluate(E.Create(cur_prod), null))
             {
                 Console.WriteLine(output.Value<string>());
@@ -1235,7 +1240,7 @@ DO NOTHING
                         if (entity.ValueType == EntityValueType.Array)
                         {
                             var index = 0;
-                            foreach (var child in await entity.Eval("@.*"))
+                            await foreach (var child in entity.Eval("@.*"))
                             {
                                 yield return entity.Create(child.Value<string>().Replace(functionArguments[0].Value<string>(), functionArguments[1].Value<string>()), $"{entity.Query}[{index}].{query}");
                                 index++;
@@ -1250,7 +1255,7 @@ DO NOTHING
 
                     case "distinct":
                         var d = new HashSet<string>();
-                        foreach (var child in await entity.EvalL("@"))
+                        await foreach (var child in entity.EvalL("@"))
                         {
                             var s = await child.EvalS("$meta.id");
                             if (d.Contains(s))

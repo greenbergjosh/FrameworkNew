@@ -1,36 +1,42 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Utility.Entity.QueryLanguage.IndexExpressions;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal sealed class IndexSelector : ISelector
+    internal sealed class IndexSelector : Selector
     {
-        private readonly IEnumerable<IIndexExpression> _indexes;
+        private readonly IEnumerable<IIndexExpression> _indexExpressions;
 
         public static IndexSelector Wildcard { get; } = new(null);
 
-        public IndexSelector(IEnumerable<IIndexExpression> indexes) => _indexes = indexes;
+        public IndexSelector(IEnumerable<IIndexExpression> indexExpressions) => _indexExpressions = indexExpressions;
 
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, Entity parameters)
         {
-            foreach (var entity in entities)
+            var indexSelector = (IndexSelector)selector;
+
+            foreach (var target in targetEntity.Document.EnumerateArray())
             {
-                if (entity.Document.IsArray)
+                var matched = Enumerable.Empty<Entity>();
+
+                if (target.Document.IsArray)
                 {
-                    var arrayLength = entity.Document.Length;
+                    var arrayLength = target.Document.Length;
 
                     IEnumerable<int> indexes;
-                    if (this == Wildcard)
+                    // TODO: Replace with Wildcard once evaluator provides state
+                    if (indexSelector._indexExpressions == null)
                     {
-                        indexes = Enumerable.Range(0, arrayLength).ToHashSet();
+                        matched = target.Document.EnumerateArray();
                     }
                     else
                     {
                         var returnedIndexes = new HashSet<int>();
-                        foreach (var indexExpression in _indexes.OfType<IArrayIndexExpression>())
+                        foreach (var indexExpression in indexSelector._indexExpressions.OfType<IArrayIndexExpression>())
                         {
-                            await foreach (var index in indexExpression.GetIndexes(entity, evaluationParameters))
+                            await foreach (var index in indexExpression.GetIndexes(target, parameters))
                             {
                                 if (index >= 0 && index < arrayLength)
                                 {
@@ -40,51 +46,48 @@ namespace Utility.Entity.QueryLanguage.Selectors
                         }
 
                         indexes = returnedIndexes;
-                    }
 
-                    var matched = entity.Document.EnumerateArray().Select((entity, index) => (entity, index)).Where(item => indexes.Contains(item.index));
-
-                    foreach (var match in matched)
-                    {
-                        yield return match.entity;
+                        matched = target.Document.EnumerateArray().Select((entity, index) => (entity, index)).Where(item => indexes.Contains(item.index)).OrderBy(match => match.index).Select(match => match.entity);
                     }
                 }
-                else if (entity.Document.IsObject)
+                else if (target.Document.IsObject)
                 {
-                    if (this == Wildcard)
+                    // TODO: Replace with Wildcard once evaluator provides state
+                    if (indexSelector._indexExpressions == null)
                     {
-                        foreach (var (name, value) in entity.Document.EnumerateObject())
-                        {
-                            yield return value;
-                        }
+                        matched = target.Document.EnumerateObject().Select(item => item.value);
                     }
                     else
                     {
                         var properties = new HashSet<string>();
-                        foreach (var indexExpression in _indexes.OfType<IObjectIndexExpression>())
+                        foreach (var indexExpression in indexSelector._indexExpressions.OfType<IObjectIndexExpression>())
                         {
-                            await foreach (var property in indexExpression.GetProperties(entity, evaluationParameters))
+                            await foreach (var property in indexExpression.GetProperties(target, parameters))
                             {
                                 _ = properties.Add(property);
                             }
                         }
 
+                        var items = new List<Entity>();
+
                         foreach (var property in properties)
                         {
-                            var (found, value) = await entity.Document.TryGetProperty(property);
+                            var (found, value) = await target.Document.TryGetProperty(property);
                             if (found)
                             {
-                                yield return value;
+                                items.Add(value);
                             }
                         }
+
+                        matched = items;
                     }
                 }
                 else
                 {
                     var succeeded = true;
-                    foreach (var indexExpression in _indexes.OfType<ItemQueryIndexExpression>())
+                    foreach (var indexExpression in indexSelector._indexExpressions.OfType<ItemQueryIndexExpression>())
                     {
-                        if (!await indexExpression.Evaluate(entity, evaluationParameters))
+                        if (!await indexExpression.Evaluate(target, parameters))
                         {
                             succeeded = false;
                             break;
@@ -93,12 +96,18 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
                     if (succeeded)
                     {
-                        yield return entity;
+                        matched = new[] { target };
                     }
+                }
+
+                foreach (var match in matched)
+                {
+                    yield return match;
                 }
             }
         }
 
-        public override string ToString() => this == Wildcard ? "[*]" : $"[{string.Join(",", _indexes.Select(r => r.ToString()))}]";
+        // TODO: Replace with Wildcard once evaluator provides state
+        public override string ToString() => _indexExpressions == null ? "[*]" : $"[{string.Join(",", _indexExpressions.Select(r => r.ToString()))}]";
     }
 }

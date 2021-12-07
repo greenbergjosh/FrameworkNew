@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal sealed class FunctionSelector : ISelector
+    internal sealed class FunctionSelector : Selector
     {
         private readonly string _functionName;
         private readonly IReadOnlyList<Entity> _functionArguments;
@@ -17,12 +18,18 @@ namespace Utility.Entity.QueryLanguage.Selectors
             _query = $"{_functionName}({string.Join<object>(", ", functionArguments.Select(arg => arg.Query))})";
         }
 
-        public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, Entity parameters)
         {
-            var functionHandler = entities.FirstOrDefault()?.FunctionHandler;
-            return functionHandler is null
-                ? throw new InvalidOperationException($"No function handler defined")
-                : functionHandler(entities, _functionName, _functionArguments, _query, evaluationParameters);
+            var functionSelector = (FunctionSelector)selector;
+
+            var functionHandler = targetEntity.FunctionHandler;
+
+            var entities = targetEntity.Document.EnumerateArray();
+
+            await foreach (var resultEntity in functionHandler(entities, functionSelector._functionName, functionSelector._functionArguments, functionSelector._query, parameters))
+            {
+                yield return resultEntity;
+            }
         }
     }
 }

@@ -111,7 +111,7 @@ namespace QuickTester
                 },
                 MissingPropertyHandler: (entity, propertyName) =>
                 {
-                    if (propertyName != "$evaluate")
+                    if (propertyName != "$evaluate" && propertyName != "Entity")
                     {
                         Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
                     }
@@ -158,7 +158,7 @@ namespace QuickTester
                     {
                         var index = 0;
                         var yielded = false;
-                        foreach (var child in await entity.Eval("@.*"))
+                        await foreach (var child in entity.Eval("@.*"))
                         {
                             if (tryInvokeStringMethod(child, functionName, functionArguments, out var value))
                             {
@@ -214,6 +214,7 @@ namespace QuickTester
 
             var queries = new[]
             {
+                "$.f[?(@.count==3+2)]", // addition operator
                 "$.a.b.*",
                 "$.a.b.d",
                 "$.a.b.d.length",
@@ -255,7 +256,7 @@ namespace QuickTester
                 Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", jsonPathResult.Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
                 Console.WriteLine("Entity:");
 
-                foreach (var result in await testEntity.Eval(query))
+                await foreach (var result in testEntity.Eval(query))
                 {
                     Console.WriteLine($"\tQuery: {result?.Query} Data: {result?.ToString() ?? "null"}");
                 }
@@ -289,7 +290,7 @@ namespace QuickTester
             Console.WriteLine($"JsonPath:");
             Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", JsonPath.Parse(arrayQuery).Evaluate(testJsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
             Console.WriteLine("Entity:");
-            foreach (var result in await testEntity.Eval(arrayQuery))
+            await foreach (var result in testEntity.Eval(arrayQuery))
             {
                 Console.WriteLine($"\t{result} GetS: {await result.EvalS("@")}");
             }
@@ -326,7 +327,7 @@ namespace QuickTester
             {
                 Console.WriteLine($"Query: {absoluteQuery}");
                 Console.WriteLine("Entity:");
-                foreach (var result in await E.Eval(absoluteQuery))
+                await foreach (var result in E.Eval(absoluteQuery))
                 {
                     Console.WriteLine($"\t{result?.ToString() ?? "null"}");
                 }

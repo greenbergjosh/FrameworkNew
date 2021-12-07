@@ -85,18 +85,18 @@ namespace Utility.Entity
             yield break;
         }
 
-        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name)
+        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name, bool updateQuery = true)
         {
             if (TryGetPropertyCore(name, out var document))
             {
-                return (true, Entity.Create(document, $"{Entity.Query}.{name}"));
+                return (true, Entity.Create(document, updateQuery ? $"{Entity.Query}.{name}" : Entity.Query));
             }
             else if (Entity.MissingPropertyHandler != null)
             {
                 var foundEntityDocument = await Entity.MissingPropertyHandler(Entity, name);
                 if (foundEntityDocument != null)
                 {
-                    return (true, Entity.Create(foundEntityDocument, $"{Entity.Query}.{name}"));
+                    return (true, Entity.Create(foundEntityDocument, updateQuery ? $"{Entity.Query}.{name}" : document.Entity.Query));
                 }
             }
 

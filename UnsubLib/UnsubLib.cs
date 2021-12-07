@@ -154,7 +154,7 @@ namespace UnsubLib
             await _fw.Err(ErrorSeverity.Log, nameof(ForceUnsub), ErrorDescriptor.Log, $"Starting ForceUnsub: {forceName}");
 
             var res = await Data.CallFn(Conn, "SelectNetwork", "{}", "");
-            var network = await res?.EvalL("@");
+            var network = await res?.EvalL("@").ToList();
 
             if (network == null)
             {
@@ -194,7 +194,7 @@ namespace UnsubLib
 
                 var networks = await Data.CallFn(Conn, "SelectNetwork", JsonSerializer.Serialize(new { NetworkName = networkName }), "");
 
-                var network = (await networks.Eval("[0]")).FirstOrDefault();
+                var network = await networks.Eval("[0]").FirstOrDefault();
                 if (network == null || string.IsNullOrWhiteSpace(await network.EvalS("$meta.name")))
                 {
                     await _fw.Error(nameof(ManualDownload), $"{nameof(ManualDownload)}: Network {networkName} not found");
@@ -244,7 +244,7 @@ namespace UnsubLib
 
                 var networks = await Data.CallFn(Conn, "SelectNetwork", JsonSerializer.Serialize(new { NetworkName = networkName }), "");
 
-                var network = (await networks.Eval("[0]")).FirstOrDefault();
+                var network = await networks.Eval("[0]").FirstOrDefault();
                 if (network == null || string.IsNullOrWhiteSpace(await network.EvalS("$meta.name")))
                 {
                     await _fw.Error(nameof(RefreshCampaigns), $"{nameof(RefreshCampaigns)}: Network {networkName} not found");
@@ -273,7 +273,7 @@ namespace UnsubLib
 
                 var networks = await Data.CallFn(Conn, "SelectNetwork", JsonSerializer.Serialize(new { NetworkName = networkName }), "");
 
-                var network = (await networks.Eval("[0]")).FirstOrDefault();
+                var network = await networks.Eval("[0]").FirstOrDefault();
                 if (network == null || string.IsNullOrWhiteSpace(await network.EvalS("$meta.name")))
                 {
                     await _fw.Error(nameof(RunCampaign), $"RunCampaign: Network {networkName} not found");
@@ -407,7 +407,7 @@ namespace UnsubLib
                             continue;
                         }
 
-                        IEnumerable<Entity> campaigns = (await (await res?.EvalL("@")).Where(async c => string.IsNullOrWhiteSpace(networkCampaignIdFilter) || networkCampaignIdFilter == await c.EvalS("NetworkCampaignId"))).ToList();
+                        var campaigns = await res?.EvalL("@").Where(async c => string.IsNullOrWhiteSpace(networkCampaignIdFilter) || networkCampaignIdFilter == await c.EvalS("NetworkCampaignId")).ToList();
 
                         if (!campaigns.Any())
                         {
@@ -538,7 +538,7 @@ namespace UnsubLib
                     return;
                 }
 
-                var campaign = (await res.Eval($"[?(@.NetworkCampaignId==\"{networkCampaignId}\")]")).FirstOrDefault();
+                var campaign = await res.Eval($"[?(@.NetworkCampaignId==\"{networkCampaignId}\")]").FirstOrDefault();
 
                 if (campaign == null)
                 {
@@ -721,16 +721,16 @@ namespace UnsubLib
             {
                 await LoadQueuedCampaigns();
 
-                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API: {(await campaigns.EvalL("@")).Count()}");
+                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API: {(await campaigns.EvalL("@").ToList()).Count}");
 
-                var queuedCampaigns = (await (await campaigns.EvalL("@")).Where(async c => _queuedCampaigns.Contains(await c.EvalS("$meta.id")))).ToList();
+                var queuedCampaigns = await campaigns.EvalL("@").Where(async c => _queuedCampaigns.Contains(await c.EvalS("$meta.id"))).ToList();
 
                 await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API and (queued according to Console or first time seeing campaign): {queuedCampaigns.Count}");
 
                 return queuedCampaigns;
             }
 
-            return await campaigns?.EvalL("@") ?? Enumerable.Empty<Entity>();
+            return await campaigns?.EvalL("@").ToList() ?? Enumerable.Empty<Entity>();
         }
 
         public async Task<IDictionary<(string url, IDictionary<string, string> postData), List<Entity>>> GetUnsubUris(Entity network, IEnumerable<Entity> campaigns, INetworkProvider networkProvider)
@@ -1101,7 +1101,7 @@ namespace UnsubLib
                 throw new HaltingException($"Campaign lookup failed. Response: {campaigns}", null);
             }
 
-            foreach (var c in await campaigns.EvalL("@"))
+            await foreach (var c in campaigns.EvalL("@"))
             {
                 try
                 {
@@ -1270,8 +1270,7 @@ namespace UnsubLib
 
             try
             {
-                //foreach (var x in await dtve.GetL("DomUnsub"))
-                await Pw.ForEachAsync(await dtve.EvalL("DomUnsub"), MaxParallelism, async x =>
+                await Pw.ForEachAsync(await dtve.EvalL("DomUnsub").ToList(), MaxParallelism, async x =>
                 {
                     var tmpFileName = "";
                     var campaignId = "";
@@ -1317,7 +1316,7 @@ namespace UnsubLib
                 });
 
                 var domFiles = new List<string>();
-                foreach (var cfp in await dtve.EvalL("DomUnsub"))
+                await foreach (var cfp in dtve.EvalL("DomUnsub"))
                 {
                     var fid = (await cfp.EvalS("FId")).ToLower();
                     if (!domFiles.Contains(fid))
@@ -1346,7 +1345,7 @@ namespace UnsubLib
                 }
 
                 //foreach (var x in await dtve.GetL("Diff"))
-                await Pw.ForEachAsync(await dtve.EvalL("Diff"), MaxParallelism, async x =>
+                await Pw.ForEachAsync(await dtve.EvalL("Diff").ToList(), MaxParallelism, async x =>
                 {
                     var oldf = (await x.EvalS("oldf")).ToLower();
                     var newf = (await x.EvalS("newf")).ToLower();
@@ -1824,7 +1823,7 @@ namespace UnsubLib
             var entity = await ge.EvalE(path);
             if (entity?.ValueType == EntityValueType.Array)
             {
-                return await entity.EvalL("@");
+                return await entity.EvalL("@").ToList();
             }
 
             var str = entity == null ? null : await entity.EvalS("@");
@@ -1854,7 +1853,7 @@ namespace UnsubLib
 
         public async Task<string> IsUnsubBatch(Entity batchRequest)
         {
-            var requests = await (await batchRequest.EvalL("batch")).ToDictionary(async e => await e.EvalS("CampaignId"));
+            var requests = await batchRequest.EvalL("batch").ToDictionary(async e => await e.EvalS("CampaignId"));
 
             try
             {
@@ -1882,7 +1881,7 @@ namespace UnsubLib
 
                     if (string.IsNullOrWhiteSpace(error))
                     {
-                        var emailsNotFound = await result.EvalL<string>("NotUnsub");
+                        var emailsNotFound = await result.EvalL<string>("NotUnsub").ToList();
                         _ = unsubResults.TryAdd(campaignId, new BatchResult { NotUnsub = emailsNotFound });
                     }
                     else
@@ -1910,7 +1909,7 @@ namespace UnsubLib
 
                             var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
 
-                            foreach (var digestOrEmail in await request.EvalL<string>("EmailMd5"))
+                            await foreach (var digestOrEmail in request.EvalL<string>("EmailMd5"))
                             {
                                 if (digestOrEmail.Contains("@"))
                                 {
@@ -1998,7 +1997,7 @@ namespace UnsubLib
                     {
                         var args = JsonSerializer.Serialize(new
                         {
-                            SignalGroups = (await (await _fw.Entity.Parse("application/json", item.Key)).EvalL<string>("@")).Select(sg => sg == "Tier1" ? "Tier1 Suppression" : sg),
+                            SignalGroups = (await _fw.Entity.Parse("application/json", item.Key)).EvalL<string>("@").Select(sg => sg == "Tier1" ? "Tier1 Suppression" : sg).ToList(),
                             Emails = item.Value.Where(e => e.Contains("@")).ToArray(),
                             EmailMd5s = item.Value.Where(e => !e.Contains("@")).ToArray()
                         });
@@ -2007,7 +2006,7 @@ namespace UnsubLib
 
                         var res = await Data.CallFn("Signal", "inSignalGroupsNew", args);
 
-                        var emailsNotFound = item.Value.Except(await res?.EvalL<string>("emails_in")).ToList();
+                        var emailsNotFound = item.Value.Except(await res?.EvalL<string>("emails_in").ToList()).ToList();
                         _ = signalGroupsNotUnsub.TryAdd(item.Key, emailsNotFound);
                     }
                     catch (Exception e)
@@ -2038,7 +2037,7 @@ namespace UnsubLib
             }
             catch (Exception ex)
             {
-                await _fw.Error(nameof(IsUnsubBatch), $"Exception processing: {string.Join(Environment.NewLine, await requests.Select(async kvp => $"{kvp.Key}: {(await kvp.Value.EvalL("EmailMd5")).Count()}"))}{Environment.NewLine}Exception: {ex}");
+                await _fw.Error(nameof(IsUnsubBatch), $"Exception processing: {string.Join(Environment.NewLine, await requests.Select(async kvp => $"{kvp.Key}: {await kvp.Value.EvalL("EmailMd5").Count()}"))}{Environment.NewLine}Exception: {ex}");
                 throw;
             }
         }
@@ -2287,7 +2286,7 @@ namespace UnsubLib
                 var queued = await _fw.Entity.Parse("application/json", result);
 
                 _queuedCampaigns = new HashSet<string>();
-                foreach (var campaign in await queued.EvalL("@"))
+                await foreach (var campaign in queued.EvalL("@"))
                 {
                     _ = _queuedCampaigns.Add(await campaign.EvalS("CampaignUId"));
                 }

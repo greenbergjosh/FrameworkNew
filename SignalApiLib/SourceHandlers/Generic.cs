@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -21,14 +22,14 @@ namespace SignalApiLib.SourceHandlers
             _cfg = cfg;
         }
 
-        public async Task<bool> CanHandle(string sourceStr) => !sourceStr.IsNullOrWhitespace() && (await _cfg.Eval(sourceStr.ToLower())).Any();
+        public async Task<bool> CanHandle(string sourceStr) => !sourceStr.IsNullOrWhitespace() && await _cfg.Eval(sourceStr.ToLower()).Any();
 
         public Task<string> HandleRequest(string requestFromPost, HttpContext ctx) => throw new NotImplementedException();
 
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx, string sourceStr)
         {
             sourceStr = sourceStr.ToLower();
-            var cfg = (await _cfg.Eval(sourceStr)).FirstOrDefault();
+            var cfg = await _cfg.Eval(sourceStr).FirstOrDefault();
 
             if (cfg == null)
             {

@@ -143,7 +143,7 @@ namespace QuickTester
 
             var parent = fw.Entity.Create(new { a = sequenceEvaluator });
 
-            var results = (await parent.Eval("a")).ToList();
+            var results = await parent.Eval("a").ToList();
 
             Assert.AreEqual(entities.Count, results.Count);
             CollectionAssert.AreEqual(entities, results);

@@ -36,7 +36,7 @@ namespace Utility.OpgAuth
                     }
                     else
                     {
-                        await Data.AddConnectionStrings(new Dictionary<string, Entity.Entity> { [ConnName] = conn.Value.ToString() });
+                        await Data.AddConnectionStrings(fw.Entity.Create(new Dictionary<string, Entity.Entity> { [ConnName] = conn.Value.ToString() }));
                         var ssoFailed = false;
 
                         SsoPlatforms.Clear();
@@ -207,7 +207,7 @@ namespace Utility.OpgAuth
                 }
             }
 
-            foreach (var item in await permissions.EvalL("@"))
+            await foreach (var item in permissions.EvalL("@"))
             {
                 if (item.IsObject)
                 {
@@ -229,7 +229,7 @@ namespace Utility.OpgAuth
             }
 
             var permissions = new Dictionary<string, Entity.Entity>();
-            foreach (var permissionSet in await res.EvalL("@"))
+            await foreach (var permissionSet in res.EvalL("@"))
             {
                 foreach (var kvp in await permissionSet.EvalD("@"))
                 {
@@ -237,7 +237,7 @@ namespace Utility.OpgAuth
                 }
             }
 
-            Entity.Entity mergedPermissions = permissions;
+            var mergedPermissions = _fw.Entity.Create(permissions);
 
             if (await mergedPermissions.EvalB(GOD_USER))
             {
@@ -249,7 +249,7 @@ namespace Utility.OpgAuth
             for (var i = 1; i < steps.Length + 1; i++)
             {
                 var path = steps.Take(i).Join(".");
-                var val = (await mergedPermissions.Eval(path)).FirstOrDefault();
+                var val = await mergedPermissions.Eval(path).FirstOrDefault();
 
                 if (val == null)
                 {
@@ -324,7 +324,7 @@ namespace Utility.OpgAuth
 
         internal static async Task<Entity.Entity> GetConfig(bool throwOnNull = true)
         {
-            var conf = (await _fw?.StartupConfiguration.Eval("OpgAuth")).FirstOrDefault();
+            var conf = await _fw?.StartupConfiguration.Eval("OpgAuth").FirstOrDefault();
 
             return conf == null && throwOnNull ? throw new Exception(_initError) : conf;
         }

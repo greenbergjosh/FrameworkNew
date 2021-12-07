@@ -122,7 +122,7 @@ namespace EdwRollupLib
 
             var reportSequences = new List<Parameters>();
 
-            var rsConfigIds = (await prepareThreadGroupResult.EvalL<string>("rs_config_ids")).Select(i => Guid.Parse(i));
+            var rsConfigIds = await prepareThreadGroupResult.EvalL<string>("rs_config_ids").Select(i => Guid.Parse(i)).ToList();
             if (!rsConfigIds.Any())
             {
                 throw new Exception($"No rs_config_ids, response: {prepareThreadGroupResult}");
@@ -148,7 +148,7 @@ namespace EdwRollupLib
 
             var rollups = new List<Parameters>();
 
-            var allRollupArgs = (await processRsResult.EvalL("args")).ToList();
+            var allRollupArgs = await processRsResult.EvalL("args").ToList();
 
             if (allRollupArgs.Any())
             {

@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Utility.Entity.Implementations;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal sealed class PropertySelector : ISelector
+    internal sealed class PropertySelector : Selector
     {
         private readonly string _name;
 
@@ -11,38 +13,42 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public PropertySelector(string name) => _name = name;
 
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, Entity parameters)
         {
-            foreach (var entity in entities)
+            var propertySelector = (PropertySelector)selector;
+
+            var matched = Enumerable.Empty<Entity>();
+
+            foreach (var target in targetEntity.Document.EnumerateArray())
             {
-                if (this == Wildcard)
+                // TODO: Replace with Wildcard once evaluator provides state
+                if (propertySelector._name == null)
                 {
-                    if (entity.Document.IsObject)
+                    if (target.Document.IsObject)
                     {
-                        foreach (var (_, value) in entity.Document.EnumerateObject())
-                        {
-                            yield return value;
-                        }
+                        matched = target.Document.EnumerateObject().Select(property => property.value);
                     }
-                    else if (entity.Document.IsArray)
+                    else if (target.Document.IsArray)
                     {
-                        foreach (var item in entity.Document.EnumerateArray())
-                        {
-                            yield return item;
-                        }
+                        matched = target.Document.EnumerateArray();
                     }
                 }
-                else if (entity.Document.IsObject)
+                else if (target.Document.IsObject)
                 {
-                    var (found, propertyEntity) = await entity.Document.TryGetProperty(_name);
+                    var (found, propertyEntity) = await target.Document.TryGetProperty(propertySelector._name);
                     if (found)
                     {
-                        yield return propertyEntity;
+                        matched = new[] { propertyEntity };
                     }
                 }
-                else if (_name == "length")
+                else if (propertySelector._name == "length")
                 {
-                    yield return entity.Create(new EntityDocumentConstant(entity.Document.Length, EntityValueType.Number), $"{entity.Query}.length");
+                    matched = new[] { target.Create(new EntityDocumentConstant(target.Document.Length, EntityValueType.Number), $"{target.Query}.length") };
+                }
+
+                foreach (var match in matched)
+                {
+                    yield return match;
                 }
             }
         }

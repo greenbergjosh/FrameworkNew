@@ -1,9 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Utility;
 using Utility.Entity;
-
-// email_events_merged
 
 namespace QuickTester
 {
@@ -30,7 +29,7 @@ namespace QuickTester
             }
             else if (op == "all")
             {
-                r = GenerateClickhouseIn(await ge.EvalS($"{op}[0].var"), $"[{(await ge.EvalL<string>($"{op}[1].in[1]")).Select(s => $"\"{s}\"").Join(",")}]");
+                r = GenerateClickhouseIn(await ge.EvalS($"{op}[0].var"), $"[{await ge.EvalL<string>($"{op}[1].in[1]").Select(s => $"\"{s}\"").Join(",")}]");
             }
             else
             {
@@ -40,7 +39,7 @@ namespace QuickTester
             return "(" + r + ")";
         }
 
-        public static async Task<string> GenerateClickhouseNary(string op, Entity ge) => (await (await ge.EvalL("@")).Select(async x => await GenerateClickhouseWhere(x))).Join(" " + op + " ");
+        public static async Task<string> GenerateClickhouseNary(string op, Entity ge) => await ge.EvalL("@").Select(async x => await GenerateClickhouseWhere(x)).Join(" " + op + " ");
 
         public static async Task<string> GenerateClickhouseUnary(string op, Entity ge)
         {
@@ -51,7 +50,7 @@ namespace QuickTester
             }
             else if (op == "filter")
             {
-                var vars = (await (await ge.Eval("[0]..var")).Select(var => var.EvalAsS("@"))).Distinct().ToArray();
+                var vars = await ge.Eval("[0]..var").Select(async var => await var.EvalAsS("@")).Distinct().ToArray();
                 var whereClause = await GenerateClickhouseWhere(await ge.EvalE("[0]"));
                 for (var i = 0; i < vars.Length; i++)
                 {

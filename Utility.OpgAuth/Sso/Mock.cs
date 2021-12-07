@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Utility.OpgAuth.Sso
         public override async Task Init(FrameworkWrapper fw, Entity.Entity init)
         {
             _isConsole = ((await init.EvalS("Console"))?.ParseBool() ?? false) && System.Diagnostics.Debugger.IsAttached;
-            _emails = (await init.EvalL<string>("emails")).ToArray();
+            _emails = await init.EvalL<string>("emails").ToArray();
         }
 
         public override string PlatformType { get; } = "Mock";
