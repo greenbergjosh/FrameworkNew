@@ -11,7 +11,7 @@ namespace Utility.Evaluatable
         private IList<Entity.Entity> _items;
         private int _itemIndex;
 
-        public async Task<Entity.Entity> Evaluate(Entity.Entity entity, Entity.Entity parameters)
+        public async Task<EvaluatableResponse> Evaluate(Entity.Entity entity, Entity.Entity parameters)
         {
             var sequence = entity.Value<EvaluatableSequenceBase>();
 
@@ -30,17 +30,13 @@ namespace Utility.Evaluatable
 
             if (sequence._itemIndex < sequence._items.Count)
             {
-                return entity.Create(new
-                {
-                    Entity = sequence._items[sequence._itemIndex++],
-                    Complete = sequence._itemIndex >= sequence._items.Count
-                });
+                return new EvaluatableResponse(
+                    Entity: sequence._items[sequence._itemIndex++],
+                    Complete: sequence._itemIndex >= sequence._items.Count
+                );
             }
 
-            return entity.Create(new
-            {
-                Complete = true
-            });
+            return new EvaluatableResponse(Complete: true);
         }
 
         protected abstract IAsyncEnumerable<Entity.Entity> Load(EvaluatableSequenceBase sequence, Entity.Entity targetEntity, Entity.Entity parameters);

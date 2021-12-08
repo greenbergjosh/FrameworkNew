@@ -72,7 +72,7 @@ namespace Utility.Entity.Implementations
                 if (entity.Document.TryGetPropertyCore(name, out var childEntityDocument))
                 {
                     found = true;
-                    child.Push(Entity.Create(childEntityDocument, $"{Entity.Query}.{name}"));
+                    child.Push(Entity.Create(childEntityDocument, $"{Entity.Query}.{name}", Entity));
                 }
             }
 

@@ -111,7 +111,7 @@ namespace QuickTester
                 },
                 MissingPropertyHandler: (entity, propertyName) =>
                 {
-                    if (propertyName != "$evaluate" && propertyName != "Entity")
+                    if (propertyName is not "$evaluate" and not "Entity")
                     {
                         Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
                     }
@@ -214,7 +214,7 @@ namespace QuickTester
 
             var queries = new[]
             {
-                "$.f[?(@.count==3+2)]", // addition operator
+                "$..[?(@.color==$.targetColor)]", // root selector in an operator
                 "$.a.b.*",
                 "$.a.b.d",
                 "$.a.b.d.length",
@@ -292,15 +292,16 @@ namespace QuickTester
             Console.WriteLine("Entity:");
             await foreach (var result in testEntity.Eval(arrayQuery))
             {
-                Console.WriteLine($"\t{result} GetS: {await result.EvalS("@")}");
+                Console.WriteLine($"\tQuery: {result.Query} Data: {result} GetS: {await result.EvalS("@")}");
             }
 
             Console.WriteLine();
 
             var absoluteQueries = new[]
             {
+                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@==\"multiton\")]",
                 "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@!=\"multiton\")]",
-                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$id",
+                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.id",
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?a.x",
                 "entity://refTestParentDocument?a.$ref",

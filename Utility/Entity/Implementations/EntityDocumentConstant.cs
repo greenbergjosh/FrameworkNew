@@ -49,7 +49,11 @@ namespace Utility.Entity.Implementations
         {
             if (other is EntityDocumentConstant otherConstant)
             {
-                return _value.Equals(otherConstant._value);
+                return ValueType != EntityValueType.Undefined && otherConstant.ValueType != EntityValueType.Undefined 
+                    && (
+                            (ValueType == EntityValueType.Null && _value is null && otherConstant.ValueType == EntityValueType.Null && otherConstant._value is null) 
+                            || _value.Equals(otherConstant._value)
+                       );
             }
             else
             {

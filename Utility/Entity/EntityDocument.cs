@@ -38,7 +38,14 @@ namespace Utility.Entity
 
             foreach (var (item, index) in EnumerateArrayCore().Select((item, index) => (item, index)))
             {
-                yield return Entity.Create(item, $"{Entity.Query}[{index}]");
+                if (item.Entity != null)
+                {
+                    yield return item.Entity;
+                }
+                else
+                {
+                    yield return Entity.Create(item, $"{Entity.Query}[{index}]", Entity);
+                }
             }
         }
 
@@ -53,7 +60,7 @@ namespace Utility.Entity
 
             foreach (var (name, value) in EnumerateObjectCore())
             {
-                yield return (name, Entity.Create(value, $"{Entity.Query}.{name}"));
+                yield return (name, Entity.Create(value, $"{Entity.Query}.{name}", Entity));
             }
         }
 
@@ -85,18 +92,18 @@ namespace Utility.Entity
             yield break;
         }
 
-        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name, bool updateQuery = true)
+        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name, bool updateQueryAndRoot = true)
         {
             if (TryGetPropertyCore(name, out var document))
             {
-                return (true, Entity.Create(document, updateQuery ? $"{Entity.Query}.{name}" : Entity.Query));
+                return (true, Entity.Create(document, updateQueryAndRoot ? $"{Entity.Query}.{name}" : Entity.Query, updateQueryAndRoot ? Entity : document?.Entity?.Root ?? null));
             }
             else if (Entity.MissingPropertyHandler != null)
             {
                 var foundEntityDocument = await Entity.MissingPropertyHandler(Entity, name);
                 if (foundEntityDocument != null)
                 {
-                    return (true, Entity.Create(foundEntityDocument, updateQuery ? $"{Entity.Query}.{name}" : document.Entity.Query));
+                    return (true, Entity.Create(foundEntityDocument, updateQueryAndRoot ? $"{Entity.Query}.{name}" : document?.Entity?.Query ?? "$", updateQueryAndRoot ? Entity : document?.Entity.Root ?? null));
                 }
             }
 

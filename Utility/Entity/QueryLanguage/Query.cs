@@ -272,7 +272,7 @@ namespace Utility.Entity.QueryLanguage
                         Helpers.ConsumeWhitespace(query, ref index);
                         if (Helpers.TryParseEntityDocument(query, ref index, out var argumentEntityDocument))
                         {
-                            functionArguments.Add(entity.Create(argumentEntityDocument, argumentEntityDocument.ToString()));
+                            functionArguments.Add(entity.Create(argumentEntityDocument, argumentEntityDocument.ToString(), null));
                         }
                         else
                         {

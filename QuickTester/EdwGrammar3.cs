@@ -25,7 +25,7 @@ namespace QuickTester
                 _symbolSetter = symbolSetter;
             }
 
-            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
             {
                 // TODO: Seperate evaluation order from concat order
                 var sb = new StringBuilder();
@@ -74,11 +74,10 @@ namespace QuickTester
                     }
                 }
 
-                return entity.Create(new
-                {
-                    Entity = body,
-                    Complete = true
-                });
+                return new EvaluatableResponse(
+                    Entity: body,
+                    Complete: true
+                );
             }
 
             public override string ToString() => string.Join("", Body);
@@ -104,7 +103,7 @@ namespace QuickTester
             private IList<Entity> _result;
             private int _index = 0;
 
-            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
             {
                 if (_index == 0)
                 {
@@ -114,21 +113,19 @@ namespace QuickTester
                 if (TreatAsPredicate)
                 {
                     var res = _result.Any();
-                    return entity.Create(new
-                    {
-                        Entity = res,
-                        Complete = true
-                    });
+                    return new EvaluatableResponse(
+                        Entity: res,
+                        Complete: true
+                    );
                 }
                 else
                 {
                     if (_index == 0 && _result.Count == 0)
                     {
-                        return entity.Create(new
-                        {
-                            Entity = DefaultValue,
-                            Complete = true
-                        });
+                        return new EvaluatableResponse(
+                            Entity: DefaultValue,
+                            Complete: true
+                        );
                     }
                     else
                     {
@@ -141,19 +138,17 @@ namespace QuickTester
 
                         if (current.ValueType == EntityValueType.String)
                         {
-                            return entity.Create(new
-                            {
-                                Entity = Prefix + (await current.EvalAsS("@")) + Suffix,
-                                Complete = complete
-                            });
+                            return new EvaluatableResponse(
+                                Entity: Prefix + (await current.EvalAsS("@")) + Suffix,
+                                Complete: complete
+                        );
                         }
                         else
                         {
-                            return entity.Create(new
-                            {
-                                Entity = current,
-                                Complete = complete
-                            });
+                            return new EvaluatableResponse(
+                                Entity: current,
+                                Complete: complete
+                            );
                         }
                     }
                 }
@@ -168,35 +163,32 @@ namespace QuickTester
 
             public ConditionInstruction(List<(Entity Antecedent, Entity Consequent)> cases) => Cases = cases;
 
-            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
             {
                 foreach (var c in Cases)
                 {
                     if ((c.Antecedent != null) && (await c.Antecedent.EvalB("@")))
                     {
-                        return entity.Create(new
-                        {
-                            Entity = c.Consequent,
-                            Complete = true
-                        });
+                        return new EvaluatableResponse(
+                            Entity: c.Consequent,
+                            Complete: true
+                        );
                     }
                     else if (c.Antecedent == null)
                     {
                         if (c.Consequent != null)
                         {
-                            return entity.Create(new
-                            {
-                                Entity = c.Consequent,
-                                Complete = true
-                            });
+                            return new EvaluatableResponse(
+                                Entity: c.Consequent,
+                                Complete: true
+                            );
                         }
                     }
                 }
 
-                return entity.Create(new
-                {
-                    Complete = true
-                });
+                return new EvaluatableResponse(
+                    Complete: true
+                );
             }
 
             public override string ToString() => $"<<iif|{string.Join('|', Cases.Select(c => $"{c.Antecedent}=>{c.Consequent}"))}>>";
@@ -224,7 +216,7 @@ namespace QuickTester
             private int _repeatCount = 0;
             private readonly HashSet<string> _finished = new();
 
-            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
             {
                 if (!_initialized)
                 {
@@ -295,18 +287,16 @@ namespace QuickTester
 
                 if (anyProduced)
                 {
-                    return entity.Create(new
-                    {
-                        Entity = result,
-                        Complete = complete
-                    });
+                    return new EvaluatableResponse(
+                        Entity: entity.Create(result),
+                        Complete: complete
+                    );
                 }
                 else
                 {
-                    return entity.Create(new
-                    {
-                        Complete = true
-                    });
+                    return new EvaluatableResponse(
+                        Complete: true
+                    );
                 }
             }
 
@@ -331,7 +321,7 @@ namespace QuickTester
                 _contextRemover = contextRemover;
             }
 
-            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
             {
                 var parts = new List<string>();
 
@@ -354,11 +344,10 @@ namespace QuickTester
                     parts.Add(stepContent);
                 }
 
-                return entity.Create(new
-                {
-                    Entity = string.Join(await Separator.EvalAsS("@"), parts),
-                    Complete = true
-                });
+                return new EvaluatableResponse(
+                    Entity: string.Join(await Separator.EvalAsS("@"), parts),
+                    Complete: true
+                );
             }
 
             public override string ToString() => $"<<r|{Template}|{Separator}|{Repeater}";
@@ -490,8 +479,8 @@ namespace QuickTester
 
             /*
              DELETE
-    FROM edw.report_sequence_config
-    WHERE id = <report_sequence_id>;
+        FROM edw.report_sequence_config
+        WHERE id = <report_sequence_id>;
              */
 
             var delete_report_sequence_config = new Production(new[]
@@ -543,9 +532,9 @@ namespace QuickTester
 
             /*
              INSERT INTO warehouse.report_sequence_duplicates(id, ts)
-SELECT id, ts
-FROM <report_sequence_set> rss
-WHERE EXISTS (SELECT 1 FROM "<target_schema>"."PathDmSn" t WHERE t.id = rss.id);
+        SELECT id, ts
+        FROM <report_sequence_set> rss
+        WHERE EXISTS (SELECT 1 FROM "<target_schema>"."PathDmSn" t WHERE t.id = rss.id);
 
             INSERT INTO "<target_schema>"."PathDmSn" (id, ts, payload, silo_id, "pathstyle_vertical_type_id", "pathstyle_id",
                                           "subcampaign_entity_id", "campaign_id", "root_campaign_id", "is_repeat_user",
@@ -554,41 +543,41 @@ WHERE EXISTS (SELECT 1 FROM "<target_schema>"."PathDmSn" t WHERE t.id = rss.id);
                                           "sub_campaign_id", "ip_address", "third_party_id", "browser_name",
                                           "device_platform", "is_mobile", "utm_campaign", "utm_ad_group", "utm_ad",
                                           "utm_keyword", "user_validation_id", "traffic_type_id", expires)
-SELECT id,
-       ts,
-       payload,
-       silo_id,
-       (COALESCE((payload -> 'body' ->> 'PathStyleVerticalTypeId'), '0'))::INT,
-       (COALESCE((payload -> 'body' ->> 'PathStyleId'), '0'))::INT,
-       (COALESCE((payload -> 'body' ->> 'SubCampaignEntityId'), '0'))::INT,
-       (COALESCE((payload -> 'body' ->> 'CampaignId'), '0'))::INT,
-       (COALESCE((payload -> 'body' ->> 'RootCampaignId'), '0'))::INT,
-       (COALESCE((payload -> 'body' ->> 'IsRepeatUser'), ''))::BOOLEAN,
-       (COALESCE((payload -> 'body' ->> 'DeviceInfoId'), ''))::INT,
-       (COALESCE((payload -> 'body' ->> 'Gender'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'Age'), ''))::INT,
-       (COALESCE((payload -> 'body' ->> 'EmailDomainId'), ''))::INT,
-       (COALESCE((payload -> 'body' ->> 'LocationId'), ''))::INT,
-       (COALESCE((payload -> 'body' ->> 'RegistrationType'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'RecaptchaScore'), ''))::NUMERIC,
-       (COALESCE((payload -> 'body' ->> 'ValidatedJornaya'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'SubCampaignId'), '0'))::INT,
-       (COALESCE((payload -> 'body' ->> 'IpAddress'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'ThirdPartyId'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'BrowserName'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'DevicePlatform'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'IsMobile'), ''))::BOOLEAN,
-       (COALESCE((payload -> 'body' ->> 'UtmCampaign'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'UtmAdGroup'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'UtmAd'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'UtmKeyword'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'user_validation_id'), ''))::TEXT,
-       (COALESCE((payload -> 'body' ->> 'TrafficTypeId'), ''))::INT,
-       NOW() + COALESCE(payload ->> 'agg_ttl_interval', '30d')::INTERVAL
-FROM <report_sequence_set>
-WHERE config_id = '<config_id>'
-ON CONFLICT
-DO NOTHING
+        SELECT id,
+        ts,
+        payload,
+        silo_id,
+        (COALESCE((payload -> 'body' ->> 'PathStyleVerticalTypeId'), '0'))::INT,
+        (COALESCE((payload -> 'body' ->> 'PathStyleId'), '0'))::INT,
+        (COALESCE((payload -> 'body' ->> 'SubCampaignEntityId'), '0'))::INT,
+        (COALESCE((payload -> 'body' ->> 'CampaignId'), '0'))::INT,
+        (COALESCE((payload -> 'body' ->> 'RootCampaignId'), '0'))::INT,
+        (COALESCE((payload -> 'body' ->> 'IsRepeatUser'), ''))::BOOLEAN,
+        (COALESCE((payload -> 'body' ->> 'DeviceInfoId'), ''))::INT,
+        (COALESCE((payload -> 'body' ->> 'Gender'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'Age'), ''))::INT,
+        (COALESCE((payload -> 'body' ->> 'EmailDomainId'), ''))::INT,
+        (COALESCE((payload -> 'body' ->> 'LocationId'), ''))::INT,
+        (COALESCE((payload -> 'body' ->> 'RegistrationType'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'RecaptchaScore'), ''))::NUMERIC,
+        (COALESCE((payload -> 'body' ->> 'ValidatedJornaya'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'SubCampaignId'), '0'))::INT,
+        (COALESCE((payload -> 'body' ->> 'IpAddress'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'ThirdPartyId'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'BrowserName'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'DevicePlatform'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'IsMobile'), ''))::BOOLEAN,
+        (COALESCE((payload -> 'body' ->> 'UtmCampaign'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'UtmAdGroup'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'UtmAd'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'UtmKeyword'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'user_validation_id'), ''))::TEXT,
+        (COALESCE((payload -> 'body' ->> 'TrafficTypeId'), ''))::INT,
+        NOW() + COALESCE(payload ->> 'agg_ttl_interval', '30d')::INTERVAL
+        FROM <report_sequence_set>
+        WHERE config_id = '<config_id>'
+        ON CONFLICT
+        DO NOTHING
              */
 
             var target_schema_column_name = new Production(new[]

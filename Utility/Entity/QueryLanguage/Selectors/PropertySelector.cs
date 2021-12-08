@@ -17,7 +17,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
         {
             var propertySelector = (PropertySelector)selector;
 
-            var matched = Enumerable.Empty<Entity>();
+            var matched = new List<Entity>();
 
             foreach (var target in targetEntity.Document.EnumerateArray())
             {
@@ -26,11 +26,11 @@ namespace Utility.Entity.QueryLanguage.Selectors
                 {
                     if (target.Document.IsObject)
                     {
-                        matched = target.Document.EnumerateObject().Select(property => property.value);
+                        matched.AddRange(target.Document.EnumerateObject().Select(property => property.value));
                     }
                     else if (target.Document.IsArray)
                     {
-                        matched = target.Document.EnumerateArray();
+                        matched.AddRange(target.Document.EnumerateArray());
                     }
                 }
                 else if (target.Document.IsObject)
@@ -38,18 +38,18 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     var (found, propertyEntity) = await target.Document.TryGetProperty(propertySelector._name);
                     if (found)
                     {
-                        matched = new[] { propertyEntity };
+                        matched.Add(propertyEntity);
                     }
                 }
                 else if (propertySelector._name == "length")
                 {
-                    matched = new[] { target.Create(new EntityDocumentConstant(target.Document.Length, EntityValueType.Number), $"{target.Query}.length") };
+                    matched.Add(target.Create(new EntityDocumentConstant(target.Document.Length, EntityValueType.Number), $"{target.Query}.length", target));
                 }
+            }
 
-                foreach (var match in matched)
-                {
-                    yield return match;
-                }
+            foreach (var match in matched)
+            {
+                yield return match;
             }
         }
 

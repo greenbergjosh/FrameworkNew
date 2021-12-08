@@ -78,9 +78,11 @@ namespace Utility.Entity
         #region Methods
         public static Entity Initialize(EntityConfig config) => new(config);
 
-        public Entity Clone(string query) => Create(Document, query);
+        public Entity Clone(string query) => Create(Document, query, Root);
 
-        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), this, _config, query);
+        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), null, _config, query);
+
+        internal Entity Create<T>(T value, string query, Entity root) => new(EntityDocument.MapValue(value), root, _config, query);
 
         public bool Equals(Entity other) => Document?.Equals(other?.Document) ?? false;
 
@@ -212,11 +214,12 @@ namespace Utility.Entity
                 {
                     yield return this;
                 }
+
                 yield break;
             }
             else
             {
-                await foreach (var item in Evaluator.Evaluate(Create(query), Create(new { target = this, parameters })))
+                await foreach (var item in Evaluator.Evaluate(Create(query), Create(new { target = this, parameters }, "$", null)))
                 {
                     yield return item;
                 }

@@ -10,9 +10,9 @@ namespace Utility.Evaluatable
     public class EvaluatorConfig
     {
         public EntityMutator EntityMutator { get; init; }
-        public RoslynWrapper<Entity.Entity, Entity.Entity> RoslynWrapper { get; internal set; }
+        public RoslynWrapper<Entity.Entity, EvaluatableResponse> RoslynWrapper { get; internal set; }
 
-        public EvaluatorConfig(EntityMutator entityMutator = null, RoslynWrapper<Entity.Entity, Entity.Entity> roslynWrapper = null)
+        public EvaluatorConfig(EntityMutator entityMutator = null, RoslynWrapper<Entity.Entity, EvaluatableResponse> roslynWrapper = null)
         {
             EntityMutator = entityMutator;
             RoslynWrapper = roslynWrapper;
@@ -45,7 +45,7 @@ namespace Utility.Evaluatable
                 }
                 else
                 {
-                    Entity.Entity evaluationResult;
+                    EvaluatableResponse evaluationResult;
                     if (current.entity.Document is IEvaluatable evaluatable)
                     {
                         evaluationResult = await evaluatable.Evaluate(current.entity, parameters);
@@ -131,19 +131,13 @@ namespace Utility.Evaluatable
                         }
                     }
 
-                    var (completeFound, currentComplete) = await evaluationResult.Document.TryGetProperty("Complete");
-                    if (!completeFound || currentComplete == null)
-                    {
-                        throw new InvalidOperationException("Evaluation did not return Complete flag");
-                    }
-
-                    if (!currentComplete.Value<bool>())
+                    if (!evaluationResult.Complete)
                     {
                         stack.Push(current);
                     }
 
-                    var (nextFound, next) = await evaluationResult.Document.TryGetProperty("Entity", false);
-                    if (nextFound && next != null)
+                    var next = evaluationResult.Entity;
+                    if (next != null)
                     {
                         if (current.entity.Equals(next))
                         {

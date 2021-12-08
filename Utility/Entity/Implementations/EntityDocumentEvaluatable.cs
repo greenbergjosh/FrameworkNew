@@ -23,7 +23,7 @@ namespace Utility.Entity.Implementations
         #endregion
 
         #region Methods
-        public Task<Entity> Evaluate(Entity entity, Entity parameters) => _evaluatable.Evaluate(entity, parameters);
+        public Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters) => _evaluatable.Evaluate(entity, parameters);
 
         public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(_evaluatable);
 
