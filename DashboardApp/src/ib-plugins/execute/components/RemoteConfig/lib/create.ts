@@ -56,9 +56,9 @@ export function create({
     .createRemoteConfig(payload)
     .then((result) => {
       if (result && result.type === "error") {
-        return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+        return { data: result.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
-      return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.created } as LoadStatus
+      return { data: result.result, loadStatus: LOADSTATUSCODES.created } as LoadStatus
     })
     .catch((e: Error) => getErrorState(e))
 }

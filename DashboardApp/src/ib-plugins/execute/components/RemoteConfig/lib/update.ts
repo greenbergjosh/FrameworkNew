@@ -88,9 +88,9 @@ export function update({
     .updateRemoteConfig(payload)
     .then((result) => {
       if (result && result.type === "error") {
-        return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+        return { data: result.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
-      return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
+      return { data: result.result, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
     })
     .catch((e: Error) => {
       return getErrorState(e)

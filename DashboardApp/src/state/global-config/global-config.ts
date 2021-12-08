@@ -175,17 +175,19 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                       return notifyConfig
                     }),
                     Some((createdConfig) => {
-                      const notifyConfig: NotifyConfig = {
-                        type: "success",
-                        message: `Global Config created`,
-                      }
-                      executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.insertFunction)
-                      dispatch.globalConfig.insertLocalConfig({
+                      const newConfig = {
                         ...createdConfig,
                         config: some(draft.config),
                         type: completeDraft.type,
                         type_id: completeDraft.type_id,
-                      })
+                      }
+                      const notifyConfig: NotifyConfig = {
+                        type: "success",
+                        message: `Global Config created`,
+                        result: newConfig,
+                      }
+                      executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.insertFunction)
+                      dispatch.globalConfig.insertLocalConfig(newConfig)
 
                       dispatch.feedback.notify(notifyConfig)
                       return notifyConfig
@@ -248,6 +250,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               const notifyConfig: NotifyConfig = {
                 type: "success",
                 message: `Global Config Deleted`,
+                result: null,
               }
               configPayloads.map((configPayload) =>
                 executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.deleteFunction)
@@ -296,6 +299,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               const notifyConfig: NotifyConfig = {
                 type: "success",
                 message: `Config loaded successfully`,
+                result: configs,
               }
               dispatch.globalConfig.update({ configs: success(configs) })
               return notifyConfig
@@ -352,6 +356,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                   const notifyConfig: NotifyConfig = {
                     type: "success",
                     message: `Global Config updated.`,
+                    result: completeDraft,
                   }
                   executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.updateFunction)
                   dispatch.globalConfig.updateLocalConfig({

@@ -62,7 +62,7 @@ export function deleteCfg({
     .deleteRemoteConfigs([payload]) // deleteRemoteConfigs expects an array
     .then((result) => {
       if (result && result.type === "error") {
-        return { data: uiDataSlice, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+        return { data: result.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
       return { data: null, loadStatus: LOADSTATUSCODES.deleted } as LoadStatus
     })

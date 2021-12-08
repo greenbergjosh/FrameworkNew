@@ -1,9 +1,12 @@
-import { notification } from "antd"
-import { ArgsProps as NotificationArgs } from "antd/lib/notification"
+import * as React from "react"
 import * as Store from "./store.types"
+import { notification } from "antd"
+import { UserInterfaceProps } from "@opg/interface-builder"
 
-export interface NotifyConfig extends NotificationArgs {
+export interface NotifyConfig {
   type: Exclude<keyof typeof notification, "close" | "config" | "destroy" | "open" | "warn">
+  message: string | React.ReactNode
+  result?: UserInterfaceProps["data"]
 }
 
 declare module "./store.types" {
