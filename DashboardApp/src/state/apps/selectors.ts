@@ -144,7 +144,18 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
       slice((state) => state.appPaths),
       (appPageConfig, appPaths): AppPageModel => {
         return {
-          $app: { location: { parameters: appPageConfig.parameters, querystring: appPaths.querystring } },
+          $app: {
+            location: {
+              parameters: appPageConfig.parameters,
+              appRootPath: appPaths.appRootPath,
+              appUri: appPaths.appUri,
+              currentUrl: appPaths.currentUrl,
+              pagePathSegments: appPaths.pagePathSegments,
+              pageUri: appPaths.pageUri,
+              querystring: appPaths.querystring,
+              rootUri: appPaths.rootUri,
+            },
+          },
         }
       }
     )

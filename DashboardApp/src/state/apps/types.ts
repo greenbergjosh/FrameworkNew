@@ -42,7 +42,13 @@ export interface AppPageModel {
   $app: {
     location: {
       parameters: Record<string, string>
-      querystring: Record<string, string | number | boolean | (string | number | boolean)[] | null>
+      appRootPath: AppPaths["appRootPath"]
+      appUri: AppPaths["appUri"]
+      currentUrl: AppPaths["currentUrl"]
+      pagePathSegments: AppPaths["pagePathSegments"]
+      pageUri: AppPaths["pageUri"]
+      querystring: AppPaths["querystring"]
+      rootUri: AppPaths["rootUri"]
     }
   }
 }
