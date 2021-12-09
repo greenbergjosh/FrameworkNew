@@ -1,57 +1,14 @@
-import { none, Option, some } from "fp-ts/lib/Option"
-import { Left, Right } from "../../data/Either"
+import * as basic from "./authProviders/basic"
+import * as google from "./authProviders/google"
+import * as onelogin from "./authProviders/onelogin"
 import * as Store from "../store.types"
-import * as onelogin from "./iam.onelogin"
-import * as google from "./iam.google"
-import * as basic from "./iam.basic"
+import { IamStoreModel } from "./types"
+import { Left, Right } from "../../data/Either"
+import { none, some } from "fp-ts/lib/Option"
 import { NotifyConfig } from "../feedback"
 
-declare module "../store.types" {
-  interface AppModels {
-    iam: {
-      state: State
-      reducers: Reducers
-      effects: Effects
-      selectors: Selectors
-    }
-  }
-}
-
-export interface State {
-  profile: Option<Profile>
-}
-
-export interface Reducers {
-  reset(): void
-  update(updater: Partial<State>): void
-}
-
-export interface Effects {
-  attemptResumeSession(): Promise<void>
-  authViaBasicAuth(loginData: { user: string; password: string }): void
-  authViaGoogleOAuth(): void
-  authViaOneLoginOIDC(): void
-  logout(): void
-  handleGoogleAuthSignedIn(currentUser: gapi.auth2.GoogleUser): Promise<void>
-}
-
-export interface Selectors {}
-
-export interface Profile {
-  Name: string
-  Email: string
-  ImageUrl: string
-}
-
-export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
-  state: {
-    profile: none,
-  },
-  reducers: {
-    reset: () => iam.state,
-    update: (state, updater): State => ({ ...state, ...updater }),
-  },
-  effects: (dispatch) => ({
+const effects: IamStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
+  return {
     attemptResumeSession(_, { remoteDataClient }) {
       onelogin.checkOneLoginAuthSignedIn(dispatch)
       return !remoteDataClient.token
@@ -116,7 +73,7 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
       dispatch.remoteDataClient.reset()
       dispatch.navigation.navigate("/login")
     },
-  }),
-
-  selectors: () => ({}),
+  }
 }
+
+export default effects

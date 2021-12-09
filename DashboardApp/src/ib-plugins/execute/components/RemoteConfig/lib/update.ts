@@ -2,8 +2,8 @@ import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams } from "../../../
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { getRemoteConfigId } from "./utils"
 import { get, isEmpty } from "lodash/fp"
-import { CreateConfigEventPayload, UpdateConfigEventPayload } from "../../../../../state/global-config/global-config"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { CreateConfigEventPayload, UpdateConfigEventPayload } from "../../../../../state/global-config/types"
 
 /**
  * UPDATE
@@ -86,11 +86,11 @@ export function update({
 
   return dispatch.globalConfig
     .updateRemoteConfig(payload)
-    .then((result) => {
-      if (result && result.type === "error") {
-        return { data: result.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+    .then((notifyConfig) => {
+      if (notifyConfig && notifyConfig.type === "error") {
+        return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
-      return { data: result.result, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
+      return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
     })
     .catch((e: Error) => {
       return getErrorState(e)

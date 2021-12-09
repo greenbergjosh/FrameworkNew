@@ -3,7 +3,7 @@ import * as iots from "io-ts"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import React from "react"
 import * as Reach from "@reach/router"
-import { Profile } from "../iam/iam"
+import { Profile } from "../iam/types"
 import { routes } from "./routes"
 
 export type NavigationGroupAutomaticChildType = iots.TypeOf<typeof NavigationGroupAutomaticChildTypeCodec>

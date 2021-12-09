@@ -142,7 +142,8 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
     return createSelector(
       select.apps.appPageConfig,
       slice((state) => state.appPaths),
-      (appPageConfig, appPaths): AppPageModel => {
+      select.iam.profile,
+      (appPageConfig, appPaths, profile): AppPageModel => {
         return {
           $app: {
             location: {
@@ -155,6 +156,7 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
               querystring: appPaths.querystring,
               rootUri: appPaths.rootUri,
             },
+            profile,
           },
         }
       }

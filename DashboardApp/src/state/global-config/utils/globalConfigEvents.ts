@@ -1,11 +1,11 @@
-import { AppDispatch } from "../store.types"
+import { AppDispatch } from "../../store.types"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
-import { Left, Right } from "../../data/Either"
-import { ConfigEventPayload } from "./global-config"
-import { JSONRecord } from "../../data/JSON"
-import * as GC from "../../data/GlobalConfig.Config"
-import { NotifyConfig } from "../feedback"
+import { Left, Right } from "../../../data/Either"
+import { ConfigEventPayload } from "../types"
+import { JSONRecord } from "../../../data/JSON"
+import * as GC from "../../../data/GlobalConfig.Config"
+import { NotifyConfig } from "../../feedback"
 
 export enum APITypeEventHandlerKey {
   deleteFunction = "deleteFunction",

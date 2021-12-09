@@ -1,120 +1,17 @@
-import { failure, initial, pending, RemoteData, success } from "@devexperts/remote-data-ts"
-import { array, head, mapOption, snoc, sort, uniq } from "fp-ts/lib/Array"
-import { concat, identity, tuple } from "fp-ts/lib/function"
-import { fromNullable, some } from "fp-ts/lib/Option"
-import { ordString } from "fp-ts/lib/Ord"
-import * as record from "fp-ts/lib/Record"
-import { setoidString } from "fp-ts/lib/Setoid"
-import * as iots from "io-ts"
-import { JSONFromString } from "io-ts-types"
-import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
-import { Left, Right } from "../../data/Either"
 import * as GC from "../../data/GlobalConfig.Config"
-import { JSONRecordCodec } from "../../data/JSON"
-import { None, Some } from "../../data/Option"
-import { prettyPrint } from "../../lib/json"
-import { Config as mockGlobalConfigs } from "./global-config.json"
 import * as Store from "../store.types"
-import { APITypeEventHandlerKey, executeParentTypeEventHandler } from "./globalConfigEvents"
+import { APITypeEventHandlerKey, executeParentTypeEventHandler } from "./utils/globalConfigEvents"
+import { failure, pending, success } from "@devexperts/remote-data-ts"
+import { GlobalConfigStoreModel } from "./types"
+import { head } from "fp-ts/lib/Array"
+import { Left, Right } from "../../data/Either"
+import { None, Some } from "../../data/Option"
 import { NotifyConfig } from "../feedback"
+import { prettyPrint } from "../../lib/json"
+import { some } from "fp-ts/lib/Option"
 
-declare module "../store.types" {
-  interface AppModels {
-    globalConfig: {
-      state: State
-      reducers: Reducers
-      effects: Effects
-      selectors: Selectors
-    }
-  }
-}
-
-export interface State {
-  /** configs from the database */
-  configs: RemoteData<Error, Array<GC.PersistedConfig>>
-  readonly defaultEntityTypeConfig: { lang: "json"; nameMaxLength?: number }
-  /** a place to hold edits to a config prior to persisting changes */
-}
-
-export interface Reducers {
-  insertLocalConfig(c: GC.PersistedConfig): void
-  rmLocalConfigsById(ids: Array<GC.PersistedConfig["id"]>): void
-  update(payload: Partial<State>): void
-  updateLocalConfig(c: Partial<GC.PersistedConfig> & Required<Pick<GC.PersistedConfig, "id">>): void
-  // insertOrUpdateLocalConfigs(updater: State["configs"]): void
-}
-
-export type DeleteConfigEventPayload = {
-  prevState: GC.PersistedConfig
-  parent?: GC.PersistedConfig
-}
-
-export type UpdateConfigEventPayload = {
-  prevState: GC.PersistedConfig
-  nextState: GC.InProgressRemoteUpdateDraft
-  parent?: GC.PersistedConfig
-}
-
-export type CreateConfigEventPayload = {
-  nextState: GC.InProgressLocalDraftConfig
-  parent?: GC.PersistedConfig
-}
-
-export type ConfigEventPayload = DeleteConfigEventPayload | UpdateConfigEventPayload | CreateConfigEventPayload
-
-export interface Effects {
-  createRemoteConfig(config: CreateConfigEventPayload): Promise<NotifyConfig>
-  deleteRemoteConfigs(configs: DeleteConfigEventPayload[]): Promise<NotifyConfig>
-  loadRemoteConfigs(): Promise<NotifyConfig>
-  updateRemoteConfig(config: UpdateConfigEventPayload): Promise<NotifyConfig>
-}
-
-export interface Selectors {
-  associations(state: Store.AppState): Record<GC.PersistedConfig["id"], GC.IAssociations>
-  /** record of config[] indexed by config.type */
-  configsByType(state: Store.AppState): Record<GC.ConfigType, Array<GC.PersistedConfig>>
-  /** a record of configs indexed on config.id */
-  configsById(state: Store.AppState): Record<GC.PersistedConfig["id"], GC.PersistedConfig>
-  configNames(state: Store.AppState): Array<GC.PersistedConfig["name"]>
-  /** an array of unique strings which are all the known values on config.type */
-  configTypes(state: Store.AppState): Array<GC.ConfigType>
-  /** a Record of all configs where config.type === 'EntityType', indexed by config.name
-   * which should correspond to some other configs' config.type */
-  entityTypeConfigs(state: Store.AppState): Record<GC.ConfigType, GC.PersistedConfig>
-}
-
-export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> = {
-  state: {
-    configs:
-      initial ||
-      success(
-        mockGlobalConfigs.map((c) => ({
-          id: c.Id,
-          name: c.Name,
-          config: fromNullable(c.Config),
-          type: c.Type,
-        }))
-      ),
-    defaultEntityTypeConfig: { lang: "json", nameMaxLength: undefined },
-  },
-
-  reducers: {
-    insertLocalConfig: (s, c) => ({
-      ...s,
-      configs: s.configs.map((cs) => snoc(cs, c)),
-    }),
-    rmLocalConfigsById: (s, ids) => ({
-      ...s,
-      configs: s.configs.map((cs) => cs.filter((c) => !ids.includes(c.id))),
-    }),
-    update: (state, payload) => ({ ...state, ...payload }),
-    updateLocalConfig: (s, { id, ...updatedFields }) => ({
-      ...s,
-      configs: s.configs.map((cs) => cs.map((c) => (c.id === id ? { ...c, ...updatedFields } : c))),
-    }),
-  },
-
-  effects: (dispatch) => ({
+const effects: GlobalConfigStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
+  return {
     async createRemoteConfig(configPayload) {
       const draft = configPayload.nextState
 
@@ -175,8 +72,9 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                       return notifyConfig
                     }),
                     Some((createdConfig) => {
-                      const newConfig = {
-                        ...createdConfig,
+                      const newConfig: NotifyConfig["result"] = {
+                        id: createdConfig.id,
+                        name: createdConfig.name,
                         config: some(draft.config),
                         type: completeDraft.type,
                         type_id: completeDraft.type_id,
@@ -372,132 +270,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
         })
       )
     },
-  }),
-
-  selectors: (slice, createSelector) => ({
-    associations(select) {
-      return createSelector(
-        slice((self) => self.configs),
-        select.globalConfig.configsById,
-        (state) => select.globalConfig.entityTypeConfigs(state),
-        (configs, configsById, entityTypeConfigs) => {
-          return configs
-            .map((globalConfigItems) => {
-              const associationsMap = record.fromFoldable(array)(globalConfigItems.map(toAssociationsTuple), identity)
-
-              record.reduceWithKey(associationsMap, associationsMap, (guid, acc, associations) => {
-                associations.references.forEach((id) => {
-                  record.lookup(id, acc).map((associatedRecord) => associatedRecord.referencedBy.push(guid))
-                })
-                associations.uses.forEach((id) => {
-                  record.lookup(id, acc).map((associatedRecord) => associatedRecord.usedBy.push(guid))
-                })
-
-                return acc
-              })
-
-              globalConfigItems.forEach(({ id, type }) => {
-                record.lookup(type, entityTypeConfigs).map(({ id: typeId }) => {
-                  record.lookup(typeId, associationsMap).map((associations) => {
-                    associations.isTypeOf.push(id)
-                  })
-                })
-              })
-
-              return associationsMap
-            })
-            .getOrElse({})
-
-          function toAssociationsTuple(c: GC.PersistedConfig) {
-            return tuple(
-              c.id,
-              GC.Associations({
-                isTypeOf: [],
-                referencedBy: [],
-                references: uniq<NonEmptyString>(setoidString)(c.config.map(extractGuids).getOrElse([])), // String scan config for GUID via regex. Confirm GUID is real. Add to referenes
-                usedBy: [],
-                uses: uniq<NonEmptyString>(setoidString)(c.config.map(extractUsing).getOrElse([])), // Parse JSON, if .using exists, .using -> .uses
-              })
-            )
-          }
-
-          function extractUsing(config: string): Array<GC.PersistedConfig["id"]> {
-            return JSONFromString.decode(config)
-              .chain(JSONRecordCodec.decode)
-              .chain((rec) => iots.type({ using: iots.array(iots.string) }).decode(rec))
-              .map((rec) => rec.using.map((usingItem) => usingItem.toLowerCase()))
-              .chain(iots.array(NonEmptyString).decode)
-              .getOrElse([])
-          }
-
-          function extractGuids(config: string): Array<GC.PersistedConfig["id"]> {
-            const guidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi
-            const guids = config.match(guidPattern) || []
-            return mapOption(guids, (guid) => record.lookup(guid.toLowerCase(), configsById).map((c) => c.id))
-          }
-        }
-      )
-    },
-
-    configsByType() {
-      return createSelector(
-        slice((self) => self.configs),
-        (configs) => {
-          return configs.map(arrToRecordGroupedByType).getOrElse({})
-
-          function arrToRecordGroupedByType(cs: Array<GC.PersistedConfig>) {
-            return record.fromFoldable(array)(
-              cs.map((c) => tuple(c.type, [c])),
-              concat
-            )
-          }
-        }
-      )
-    },
-
-    configsById() {
-      return createSelector(
-        slice((state) => state.configs),
-        (cs) =>
-          record.fromFoldable(array)(
-            cs.getOrElse([]).map((c) => tuple(c.id, c)),
-            identity
-          )
-      )
-    },
-
-    configNames() {
-      return createSelector(
-        slice((self) => self.configs),
-        (cs) =>
-          cs
-            .map((cs) => cs.map((c) => c.name))
-            .map((types) => uniq<NonEmptyString>(setoidString)(types))
-            .map((types) => sort<NonEmptyString>(ordString)(types))
-            .getOrElse([])
-      )
-    },
-
-    configTypes() {
-      return createSelector(
-        slice((self) => self.configs),
-        (cs) =>
-          cs
-            .map((cs) => cs.map((c) => c.type))
-            .map((types) => uniq(setoidString)(types))
-            .map((types) => sort(ordString)(types))
-            .getOrElse([])
-      )
-    },
-
-    entityTypeConfigs(select) {
-      return createSelector(select.globalConfig.configsByType, (configsByType) => {
-        return record
-          .lookup("EntityType", configsByType)
-          .map((cs) => cs.map((c) => tuple(c.name, c)))
-          .map((kvPairs) => record.fromFoldable(array)(kvPairs, identity))
-          .getOrElse({})
-      })
-    },
-  }),
+  }
 }
+
+export default effects

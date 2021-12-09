@@ -1,9 +1,9 @@
-import { Left, Right } from "../../data/Either"
+import { Left, Right } from "../../../data/Either"
 import { none, some } from "fp-ts/lib/Option"
-import * as Store from "../store.types"
+import * as Store from "../../store.types"
 import { SigninResponse, UserManager, UserManagerSettings } from "oidc-client"
 import { globalHistory } from "@reach/router"
-import { NotifyConfig } from "../feedback"
+import { NotifyConfig } from "../../feedback"
 
 const ONELOGIN_CONFIG: UserManagerSettings = {
   authority: "https://onpoint.onelogin.com/oidc/2",

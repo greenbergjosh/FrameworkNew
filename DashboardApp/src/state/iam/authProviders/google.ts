@@ -1,8 +1,8 @@
-import { Left, Right } from "../../data/Either"
+import { Left, Right } from "../../../data/Either"
 import { none, some } from "fp-ts/lib/Option"
-import { assertNever } from "../../lib/assert-never"
-import * as Store from "../store.types"
-import { NotifyConfig } from "../feedback"
+import { assertNever } from "../../../lib/assert-never"
+import * as Store from "../../store.types"
+import { NotifyConfig } from "../../feedback"
 
 const gAPI = () => window.gapi
 const gAuth = () => gAPI().auth2.getAuthInstance()

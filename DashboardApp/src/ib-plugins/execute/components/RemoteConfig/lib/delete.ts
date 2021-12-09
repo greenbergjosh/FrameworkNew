@@ -1,9 +1,9 @@
 import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams } from "../../../types"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { getRemoteConfigId } from "./utils"
-import { DeleteConfigEventPayload } from "../../../../../state/global-config/global-config"
 import { isEmpty } from "lodash/fp"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { DeleteConfigEventPayload } from "../../../../../state/global-config/types"
 
 /**
  * DELETE
@@ -60,9 +60,9 @@ export function deleteCfg({
 
   return dispatch.globalConfig
     .deleteRemoteConfigs([payload]) // deleteRemoteConfigs expects an array
-    .then((result) => {
-      if (result && result.type === "error") {
-        return { data: result.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+    .then((notifyConfig) => {
+      if (notifyConfig && notifyConfig.type === "error") {
+        return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
       return { data: null, loadStatus: LOADSTATUSCODES.deleted } as LoadStatus
     })

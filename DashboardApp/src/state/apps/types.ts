@@ -4,6 +4,7 @@ import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { NotifyConfig } from "../feedback"
 import { RemoteData } from "@devexperts/remote-data-ts"
 import { WindowLocation } from "@reach/router"
+import { Profile } from "../iam/types"
 
 export interface AppEntity {
   id: string
@@ -50,6 +51,7 @@ export interface AppPageModel {
       querystring: AppPaths["querystring"]
       rootUri: AppPaths["rootUri"]
     }
+    profile: Profile
   }
 }
 
