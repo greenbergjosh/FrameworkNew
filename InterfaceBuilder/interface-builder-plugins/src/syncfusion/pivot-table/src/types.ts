@@ -14,7 +14,7 @@ export interface PivotTableSettings {
   enableVirtualization: boolean
   height: number
   heightKey: "auto" | "full" | "fieldlist" | "value"
-  showFieldList: boolean
+  openFieldList: boolean
   showGroupingBar: boolean
 }
 

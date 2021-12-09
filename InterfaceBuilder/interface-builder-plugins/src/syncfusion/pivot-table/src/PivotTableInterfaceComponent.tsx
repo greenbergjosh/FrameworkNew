@@ -66,7 +66,7 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
             heightKey={this.props.heightKey}
-            showFieldList={this.props.showFieldList}
+            openFieldList={this.props.openFieldList}
             showGroupingBar={this.props.showGroupingBar}
             exportExcel={this.props.exportExcel}
             exportPDF={this.props.exportPDF}
@@ -83,11 +83,10 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
             heightKey={this.props.heightKey}
-            showFieldList={this.props.showFieldList}
+            openFieldList={this.props.openFieldList}
             showGroupingBar={this.props.showGroupingBar}
             onChange={(newSchema) => {
               if (this.props.mode === "edit") {
-                debugger
                 const { onChangeSchema, userInterfaceSchema } = this.props
                 onChangeSchema &&
                   userInterfaceSchema &&
@@ -103,15 +102,15 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
           <DisplayMode
             dataSourceSettings={dataSourceSettings}
             enableVirtualization={this.props.enableVirtualization}
-            height={this.props.height}
-            heightKey={this.props.heightKey}
-            showFieldList={this.props.showFieldList}
-            showGroupingBar={this.props.showGroupingBar}
+            exportCSV={this.props.exportCSV}
             exportExcel={this.props.exportExcel}
             exportPDF={this.props.exportPDF}
-            exportCSV={this.props.exportCSV}
+            height={this.props.height}
+            heightKey={this.props.heightKey}
             name={this.props.name}
             onChange={() => void 0}
+            openFieldList={this.props.openFieldList}
+            showGroupingBar={this.props.showGroupingBar}
           />
         )
     }

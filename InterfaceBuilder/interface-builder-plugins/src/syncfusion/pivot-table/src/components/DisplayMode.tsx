@@ -32,7 +32,7 @@ import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {
   const prevSettings = usePrevious<DataSourceSettingsModel>(props.dataSourceSettings)
-  const [showConfigPanel, setShowConfigPanel] = React.useState(false)
+  const [openConfigPanel, setOpenConfigPanel] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
@@ -41,6 +41,10 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
   const isValidDataConnection = validateDataConnection(dataSourceSettings)
   const allowCalculatedField = !isEmpty(dataSourceSettings.calculatedFieldSettings)
   const { onChange } = props
+
+  React.useEffect(() => {
+    setOpenConfigPanel(props.openFieldList)
+  }, [props.openFieldList])
 
   const services = React.useMemo(() => {
     const services = []
@@ -103,49 +107,55 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
     return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
-  const ViewPanel = (
+  function getExportButtons() {
+    return (
+      <>
+        {props.exportCSV && (
+          <Button
+            className={styles.exportButton}
+            type="link"
+            size="small"
+            icon="file-text"
+            onClick={handleExportClick("csv")}>
+            CSV Export
+          </Button>
+        )}
+        {props.exportExcel && (
+          <Button
+            className={styles.exportButton}
+            type="link"
+            size="small"
+            icon="file-excel"
+            onClick={handleExportClick("excel")}>
+            Excel Export
+          </Button>
+        )}
+        {props.exportPDF && (
+          <Button
+            className={styles.exportButton}
+            type="link"
+            size="small"
+            icon="file-pdf"
+            onClick={handleExportClick("pdf")}>
+            PDF Export
+          </Button>
+        )}
+      </>
+    )
+  }
+
+  const getViewPanel = () => (
     <div id="ViewPanel">
-      {!showConfigPanel && (
-        <Button
-          className={styles.configPanelOpenButton}
-          type="link"
-          icon="setting"
-          size="small"
-          onClick={() => {
-            setShowConfigPanel(true)
-          }}
-        />
-      )}
-      {props.exportCSV && (
-        <Button
-          className={styles.exportButton}
-          type="link"
-          size="small"
-          icon="file-text"
-          onClick={handleExportClick("csv")}>
-          CSV Export
-        </Button>
-      )}
-      {props.exportExcel && (
-        <Button
-          className={styles.exportButton}
-          type="link"
-          size="small"
-          icon="file-excel"
-          onClick={handleExportClick("excel")}>
-          Excel Export
-        </Button>
-      )}
-      {props.exportPDF && (
-        <Button
-          className={styles.exportButton}
-          type="link"
-          size="small"
-          icon="file-pdf"
-          onClick={handleExportClick("pdf")}>
-          PDF Export
-        </Button>
-      )}
+      <Button
+        className={styles.configPanelOpenButton}
+        type="link"
+        icon="setting"
+        size="small"
+        onClick={() => {
+          setOpenConfigPanel(true)
+        }}
+      />
+      {getExportButtons()}
       <PivotViewComponent
         ref={pivotRef}
         allowCalculatedField={allowCalculatedField}
@@ -162,7 +172,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
     </div>
   )
 
-  const ConfigPanel = (
+  const getConfigPanel = () => (
     <div id="ConfigPanel">
       <Button
         className={styles.configPanelCloseButton}
@@ -170,7 +180,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
         icon="close"
         size="small"
         onClick={() => {
-          setShowConfigPanel(false)
+          setOpenConfigPanel(false)
         }}
       />
       <PivotFieldListComponent
@@ -200,8 +210,8 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
     <Undraggable>
       {/* THIS NEXT DIV IS NECESSARY! SEE NOTE ABOVE */}
       <div>
-        {ViewPanel}
-        {ConfigPanel}
+        {getViewPanel()}
+        {getConfigPanel()}
         <SplitterComponent separatorSize={4} className={styles.splitView}>
           <PanesDirective>
             <PaneDirective content="#ViewPanel" cssClass={styles.viewPanel} min="0" />
@@ -211,8 +221,8 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
               min="24px"
               size="300px"
               max="700px"
-              resizable={showConfigPanel}
-              collapsed={!showConfigPanel}
+              resizable={openConfigPanel}
+              collapsed={!openConfigPanel}
             />
           </PanesDirective>
         </SplitterComponent>
