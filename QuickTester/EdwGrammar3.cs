@@ -25,7 +25,7 @@ namespace QuickTester
                 _symbolSetter = symbolSetter;
             }
 
-            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
             {
                 // TODO: Seperate evaluation order from concat order
                 var sb = new StringBuilder();
@@ -103,11 +103,11 @@ namespace QuickTester
             private IList<Entity> _result;
             private int _index = 0;
 
-            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
             {
                 if (_index == 0)
                 {
-                    _result = await entity.Eval(Query).ToList();
+                    _result = await request.Entity.Eval(Query).ToList();
                 }
 
                 if (TreatAsPredicate)
@@ -163,7 +163,7 @@ namespace QuickTester
 
             public ConditionInstruction(List<(Entity Antecedent, Entity Consequent)> cases) => Cases = cases;
 
-            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
             {
                 foreach (var c in Cases)
                 {
@@ -216,7 +216,7 @@ namespace QuickTester
             private int _repeatCount = 0;
             private readonly HashSet<string> _finished = new();
 
-            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
             {
                 if (!_initialized)
                 {
@@ -288,7 +288,7 @@ namespace QuickTester
                 if (anyProduced)
                 {
                     return new EvaluatableResponse(
-                        Entity: entity.Create(result),
+                        Entity: request.Entity.Create(result),
                         Complete: complete
                     );
                 }
@@ -321,7 +321,7 @@ namespace QuickTester
                 _contextRemover = contextRemover;
             }
 
-            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
             {
                 var parts = new List<string>();
 

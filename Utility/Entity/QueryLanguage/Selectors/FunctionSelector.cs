@@ -18,7 +18,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
             _query = $"{_functionName}({string.Join<object>(", ", functionArguments.Select(arg => arg.Query))})";
         }
 
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, Entity parameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
         {
             var functionSelector = (FunctionSelector)selector;
 
@@ -26,7 +26,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
             var entities = targetEntity.Document.EnumerateArray();
 
-            await foreach (var resultEntity in functionHandler(entities, functionSelector._functionName, functionSelector._functionArguments, functionSelector._query, parameters))
+            await foreach (var resultEntity in functionHandler(entities, functionSelector._functionName, functionSelector._functionArguments, functionSelector._query, request.Parameters))
             {
                 yield return resultEntity;
             }

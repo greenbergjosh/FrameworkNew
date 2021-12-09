@@ -59,7 +59,7 @@ namespace Utility.Entity.QueryLanguage
             return false;
         }
 
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase sequence, Entity targetEntity, Entity parameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase sequence, Entity targetEntity, EvaluatableRequest request)
         {
             var query = (Query)sequence;
             IEnumerable<Entity> entities;
@@ -103,11 +103,11 @@ namespace Utility.Entity.QueryLanguage
                 var selector = selectors[i];
 
                 var next = new List<Entity>();
-                await foreach (var child in targetEntity.Evaluator.Evaluate(targetEntity.Create(selector), targetEntity.Create(new { target = current, parameters })))
+                await foreach (var child in targetEntity.Evaluator.Evaluate(targetEntity.Create(selector), targetEntity.Create(new { target = current, request.Parameters })))
                 {
                     var processReference = i == selectors.Count - 1 || selectors[i + 1] is not RefSelector;
 
-                    await foreach (var handledChild in HandleChild(child, processReference, parameters))
+                    await foreach (var handledChild in HandleChild(child, processReference, request.Parameters))
                     {
                         next.Add(handledChild);
                     }

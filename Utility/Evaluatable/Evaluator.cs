@@ -48,19 +48,18 @@ namespace Utility.Evaluatable
                     EvaluatableResponse evaluationResult;
                     if (current.entity.Document is IEvaluatable evaluatable)
                     {
-                        evaluationResult = await evaluatable.Evaluate(current.entity, parameters);
+                        evaluationResult = await evaluatable.Evaluate(new EvaluatableRequest(Entity: current.entity, Parameters: parameters));
                     }
                     else
                     {
-                        var evaluateFound = false;
                         Entity.Entity evaluate = null;
 
                         if (current.entity.IsObject)
                         {
-                            (evaluateFound, evaluate) = await current.entity.Document.TryGetProperty("$evaluate");
+                            evaluate = await current.entity.Eval("$evaluate").SingleOrDefault();
                         }
 
-                        if (!evaluateFound)
+                        if (evaluate == null)
                         {
                             // Entity has no evaluate method, short-cut for a constant
                             yield return current.entity;
@@ -77,7 +76,8 @@ namespace Utility.Evaluatable
                                 lastEvaluate = evaluate;
                                 // TODO: Formalize how an evaluate points to another entity,
                                 // it is via EntityPath's ref feature, and thus maybe transparent here?
-                                (_, evaluate) = await evaluate.Document.TryGetProperty("$evaluate");
+                                //(_, evaluate) = await evaluate.Document.TryGetProperty("$evaluate");
+                                evaluate = await evaluate.Eval("$evaluate").SingleOrDefault();
                             }
 
                             var stackedParameters = new EntityDocumentStack();
@@ -88,24 +88,10 @@ namespace Utility.Evaluatable
 
                             foreach (var stackItem in evaluateStack)
                             {
-                                var (actualParametersFound, actualParameters) = await stackItem.Document.TryGetProperty("actualParameters");
-                                if (actualParametersFound && actualParameters != null)
+                                var actualParameters = await stackItem.Eval("actualParameters").SingleOrDefault();
+                                if (actualParameters != null)
                                 {
                                     stackedParameters.Push(actualParameters);
-                                }
-                            }
-
-                            Guid? id = default;
-                            var (metaFound, meta) = await lastEvaluate.Document.TryGetProperty("$meta");
-                            if (metaFound)
-                            {
-                                var (idFound, idString) = await meta.Document.TryGetProperty("id");
-                                if (idFound)
-                                {
-                                    if (Guid.TryParse(idString.Value<string>(), out var result))
-                                    {
-                                        id = result;
-                                    }
                                 }
                             }
 
@@ -115,19 +101,12 @@ namespace Utility.Evaluatable
                                 throw new InvalidOperationException("No code found");
                             }
 
-                            var evaluationParameters = entity.Create(new
+                            var evaluationParameters = current.entity.Create(new
                             {
                                 parameters = stackedParameters
                             });
 
-                            if (id.HasValue)
-                            {
-                                evaluationResult = await _config.RoslynWrapper.Evaluate(id.Value, code.Value<string>(), evaluationParameters);
-                            }
-                            else
-                            {
-                                evaluationResult = await _config.RoslynWrapper.Evaluate(code.Value<string>(), evaluationParameters);
-                            }
+                            evaluationResult = await _config.RoslynWrapper.Evaluate(code.Value<string>(), evaluationParameters);
                         }
                     }
 

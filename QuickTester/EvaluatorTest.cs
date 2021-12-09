@@ -50,7 +50,7 @@ namespace QuickTester
 
             public SingleResultEvaluator(Entity result) => _result = result;
 
-            public Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters) => Task.FromResult(new EvaluatableResponse(
+            public Task<EvaluatableResponse> Evaluate(EvaluatableRequest request) => Task.FromResult(new EvaluatableResponse(
                 Entity: _result,
                 Complete: true
             ));
@@ -74,7 +74,7 @@ namespace QuickTester
 
         private class NoResultEvaluator : IEvaluatable
         {
-            public Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters) => Task.FromResult(new EvaluatableResponse(Complete: true));
+            public Task<EvaluatableResponse> Evaluate(EvaluatableRequest request) => Task.FromResult(new EvaluatableResponse(Complete: true));
         }
 
         private static async Task EvaluateNoResult(FrameworkWrapper fw)
@@ -110,7 +110,7 @@ namespace QuickTester
 
             public SequenceEvaluator(IReadOnlyList<Entity> entities) => _entities = entities;
 
-            public Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters) => Task.FromResult(new EvaluatableResponse(
+            public Task<EvaluatableResponse> Evaluate(EvaluatableRequest request) => Task.FromResult(new EvaluatableResponse(
                 Entity: _entities[_index++],
                 Complete: _index == _entities.Count
             ));
@@ -187,10 +187,10 @@ namespace QuickTester
 
         private class AdderEvaluatable : IEvaluatable
         {
-            public async Task<EvaluatableResponse> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
             {
-                var left = await parameters.EvalI("left");
-                var right = await parameters.EvalI("right");
+                var left = await request.Parameters.EvalI("left");
+                var right = await request.Parameters.EvalI("right");
 
                 return new EvaluatableResponse(
                     Entity: left + right,
@@ -259,6 +259,10 @@ namespace QuickTester
 
             var adder = fw.Entity.Create(new Dictionary<string, object>
             {
+                ["$meta"] = new
+                {
+                    id = Guid.NewGuid()
+                },
                 ["$evaluate"] = new
                 {
                     code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await EvalI(\"parameters.left\") + await EvalI(\"parameters.right\"), Complete: true);"

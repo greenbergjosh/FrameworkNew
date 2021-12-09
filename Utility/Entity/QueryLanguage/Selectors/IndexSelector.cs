@@ -13,7 +13,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public IndexSelector(IEnumerable<IIndexExpression> indexExpressions) => _indexExpressions = indexExpressions;
 
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, Entity parameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
         {
             var indexSelector = (IndexSelector)selector;
 
@@ -36,7 +36,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                         var returnedIndexes = new HashSet<int>();
                         foreach (var indexExpression in indexSelector._indexExpressions.OfType<IArrayIndexExpression>())
                         {
-                            await foreach (var index in indexExpression.GetIndexes(target, parameters))
+                            await foreach (var index in indexExpression.GetIndexes(target, request.Parameters))
                             {
                                 if (index >= 0 && index < arrayLength)
                                 {
@@ -62,7 +62,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                         var properties = new HashSet<string>();
                         foreach (var indexExpression in indexSelector._indexExpressions.OfType<IObjectIndexExpression>())
                         {
-                            await foreach (var property in indexExpression.GetProperties(target, parameters))
+                            await foreach (var property in indexExpression.GetProperties(target, request.Parameters))
                             {
                                 _ = properties.Add(property);
                             }
@@ -87,7 +87,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     var succeeded = true;
                     foreach (var indexExpression in indexSelector._indexExpressions.OfType<ItemQueryIndexExpression>())
                     {
-                        if (!await indexExpression.Evaluate(target, parameters))
+                        if (!await indexExpression.Evaluate(target, request.Parameters))
                         {
                             succeeded = false;
                             break;

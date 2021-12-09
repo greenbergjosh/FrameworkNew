@@ -11,19 +11,19 @@ namespace Utility.Evaluatable
         private IList<Entity.Entity> _items;
         private int _itemIndex;
 
-        public async Task<EvaluatableResponse> Evaluate(Entity.Entity entity, Entity.Entity parameters)
+        public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
         {
-            var sequence = entity.Value<EvaluatableSequenceBase>();
+            var sequence = request.Entity.Value<EvaluatableSequenceBase>();
 
             if (!sequence._loaded)
             {
-                var (found, targetEntity) = await parameters.Document.TryGetProperty("target", false);
+                var (found, targetEntity) = await request.Parameters.Document.TryGetProperty("target", false);
                 if (!found)
                 {
                     throw new InvalidOperationException($"{nameof(EvaluatableSequenceBase)} requires a parameter named `target`");
                 }
 
-                _items = await Load(sequence, targetEntity, parameters).ToList();
+                _items = await Load(sequence, targetEntity, request).ToList();
 
                 sequence._loaded = true;
             }
@@ -39,6 +39,6 @@ namespace Utility.Evaluatable
             return new EvaluatableResponse(Complete: true);
         }
 
-        protected abstract IAsyncEnumerable<Entity.Entity> Load(EvaluatableSequenceBase sequence, Entity.Entity targetEntity, Entity.Entity parameters);
+        protected abstract IAsyncEnumerable<Entity.Entity> Load(EvaluatableSequenceBase sequence, Entity.Entity targetEntity, EvaluatableRequest request);
     }
 }

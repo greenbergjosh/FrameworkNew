@@ -5,7 +5,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 {
     internal sealed class RefSelector : Selector
     {
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, Entity parameters)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
         {
             foreach (var target in targetEntity.Document.EnumerateArray())
             {
