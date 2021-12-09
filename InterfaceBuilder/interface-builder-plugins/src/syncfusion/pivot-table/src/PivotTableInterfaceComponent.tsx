@@ -25,18 +25,13 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
 
   static manageForm = settings
 
-  private handleChange = (newSchema: DataSourceSettingsModel) => {
-    if (this.props.mode === "edit") {
-      this.props.onChangeSchema &&
-        this.props.userInterfaceSchema &&
-        this.props.onChangeSchema(set("dataSourceSettings", newSchema, this.props.userInterfaceSchema))
-    }
-  }
-
   /**
    *
    */
   static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
+    if (!props.dataSourceSettings) {
+      return <div>ERROR: Can&rsquo;t read data connection settings.</div>
+    }
     const { catalog, cube, providerType, url, localeIdentifier } = props.dataSourceSettings as DataSourceSettingsModel
     return (
       <Undraggable>
@@ -60,11 +55,14 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
   }
 
   render(): JSX.Element {
+    let dataSourceSettings: DataSourceSettingsModel
+
     switch (this.props.mode) {
       case "display":
+        dataSourceSettings = this.getValue(this.props.valueKey)
         return (
           <DisplayMode
-            dataSourceSettings={this.props.dataSourceSettings}
+            dataSourceSettings={dataSourceSettings}
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
             heightKey={this.props.heightKey}
@@ -73,6 +71,9 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             exportExcel={this.props.exportExcel}
             exportPDF={this.props.exportPDF}
             exportCSV={this.props.exportCSV}
+            onChange={(newSchema: DataSourceSettingsModel) => {
+              this.setValue([this.props.valueKey, newSchema])
+            }}
           />
         )
       case "edit":
@@ -84,14 +85,23 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             heightKey={this.props.heightKey}
             showFieldList={this.props.showFieldList}
             showGroupingBar={this.props.showGroupingBar}
-            onChange={this.handleChange}
+            onChange={(newSchema) => {
+              if (this.props.mode === "edit") {
+                debugger
+                const { onChangeSchema, userInterfaceSchema } = this.props
+                onChangeSchema &&
+                  userInterfaceSchema &&
+                  onChangeSchema(set("dataSourceSettings", newSchema, userInterfaceSchema))
+              }
+            }}
           />
         )
       default:
         // "preview" mode
+        dataSourceSettings = this.getValue(this.props.valueKey)
         return (
           <DisplayMode
-            dataSourceSettings={this.props.dataSourceSettings}
+            dataSourceSettings={dataSourceSettings}
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
             heightKey={this.props.heightKey}
@@ -100,6 +110,8 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             exportExcel={this.props.exportExcel}
             exportPDF={this.props.exportPDF}
             exportCSV={this.props.exportCSV}
+            name={this.props.name}
+            onChange={() => void 0}
           />
         )
     }

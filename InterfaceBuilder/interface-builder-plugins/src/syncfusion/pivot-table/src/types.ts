@@ -22,6 +22,8 @@ export interface DisplayModeProps extends PivotTableSettings {
   exportExcel: boolean
   exportPDF: boolean
   exportCSV: boolean
+  name?: string
+  onChange: (dataSourceSettings: DataSourceSettingsModel) => void
 }
 
 export interface EditModeProps extends PivotTableSettings {
@@ -35,6 +37,9 @@ export interface PivotTableInterfaceComponentProps extends ComponentDefinitionNa
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeSchema: ComponentRenderMetaProps["onChangeSchema"]
   userInterfaceSchema?: ComponentDefinition
+  valueKey: string
+
+  // Additional props
   exportExcel: boolean
   exportPDF: boolean
   exportCSV: boolean

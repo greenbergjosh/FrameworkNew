@@ -1,7 +1,7 @@
 import React from "react"
 import {
   CalculatedField,
-  FieldList,
+  EnginePopulatedEventArgs,
   GroupingBar,
   Inject,
   PivotFieldListComponent,
@@ -11,13 +11,16 @@ import {
 import classNames from "classnames"
 import styles from "../styles.scss"
 import { Browser } from "@syncfusion/ej2-base"
-import { Button } from "antd"
+import { Alert, Button } from "antd"
 import { DisplayModeProps } from "../types"
 import { getHeight } from "../lib/getHeight"
 import { isEmpty } from "lodash/fp"
 import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
 import { sanitizeDataSourceSettings } from "../lib/sanitizeDataSourceSettings"
 import { Undraggable } from "@opg/interface-builder"
+import { validateDataConnection } from "lib/validateDataConnection"
+import { usePrevious } from "lib/usePrevious"
+import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -28,12 +31,16 @@ import { Undraggable } from "@opg/interface-builder"
  */
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {
+  const prevSettings = usePrevious<DataSourceSettingsModel>(props.dataSourceSettings)
   const [showConfigPanel, setShowConfigPanel] = React.useState(false)
+  const [error, setError] = React.useState<Error | null>(null)
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
-  const allowCalculatedField = !isEmpty(props.dataSourceSettings.calculatedFieldSettings)
   const height = getHeight(props.heightKey, props.height)
   const dataSourceSettings = sanitizeDataSourceSettings(props.dataSourceSettings)
+  const isValidDataConnection = validateDataConnection(dataSourceSettings)
+  const allowCalculatedField = !isEmpty(dataSourceSettings.calculatedFieldSettings)
+  const { onChange } = props
 
   const services = React.useMemo(() => {
     const services = []
@@ -44,26 +51,34 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
   }, [allowCalculatedField, props.showGroupingBar, props.enableVirtualization])
 
   React.useEffect(() => {
-    setTimeout(() => {
-      renderComplete()
-    })
-  }, [])
-
-  function afterFieldListPopulate() {
-    if (fieldListRef.current && pivotRef.current) {
-      fieldListRef.current.updateView(pivotRef.current)
+    if (!prevSettings && fieldListRef.current && pivotRef.current) {
+      if (isValidDataConnection) {
+        // Sync PivotView with FieldList
+        fieldListRef.current.updateView(pivotRef.current)
+        fieldListRef.current.update(pivotRef.current)
+      } else {
+        setError(new Error("The pivot table cannot be displayed. The data connection settings are invalid."))
+      }
     }
-  }
+  }, [isValidDataConnection, prevSettings, dataSourceSettings])
 
-  function afterPivotTablePopulate() {
+  const handleEnginePopulated_FieldList = React.useCallback(
+    (e: EnginePopulatedEventArgs) => {
+      // Sync PivotView with FieldList
+      if (fieldListRef.current && pivotRef.current) {
+        fieldListRef.current.updateView(pivotRef.current)
+      }
+      if (prevSettings) {
+        // Put FieldList changes into model
+        const dataSourceSettings = sanitizeDataSourceSettings(e.dataSourceSettings)
+        dataSourceSettings && onChange(dataSourceSettings)
+      }
+    },
+    [prevSettings, onChange]
+  )
+
+  function handleEnginePopulated_PivotTable() {
     if (!Browser.isDevice && fieldListRef.current && pivotRef.current) {
-      fieldListRef.current.update(pivotRef.current)
-    }
-  }
-
-  function renderComplete() {
-    if (fieldListRef.current && pivotRef.current) {
-      fieldListRef.current.updateView(pivotRef.current)
       fieldListRef.current.update(pivotRef.current)
     }
   }
@@ -78,6 +93,14 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
         pivotRef.current.csvExport()
       }
     }
+  }
+
+  if (!props.dataSourceSettings) {
+    return <div style={{ textAlign: "center" }}>Loading...</div>
+  }
+
+  if (error) {
+    return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
   const ViewPanel = (
@@ -129,7 +152,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
         allowPdfExport={props.exportPDF}
         allowExcelExport={props.exportExcel}
         enableVirtualization={props.enableVirtualization}
-        enginePopulated={afterPivotTablePopulate}
+        enginePopulated={handleEnginePopulated_PivotTable}
         height={height}
         showGroupingBar={props.showGroupingBar}
         style={{ zIndex: 0 }}
@@ -152,11 +175,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
       />
       <PivotFieldListComponent
         ref={fieldListRef}
-        enginePopulated={afterFieldListPopulate}
+        enginePopulated={handleEnginePopulated_FieldList}
         dataSourceSettings={dataSourceSettings}
         renderMode={"Fixed"}
         allowCalculatedField={allowCalculatedField}>
-        <Inject services={[...services, FieldList]} />
+        <Inject services={[...services]} />
       </PivotFieldListComponent>
     </div>
   )

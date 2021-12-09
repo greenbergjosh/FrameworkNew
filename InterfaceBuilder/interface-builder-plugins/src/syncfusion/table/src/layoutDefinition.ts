@@ -1,5 +1,5 @@
 export default {
-  category: "Display",
+  category: "Chart",
   name: "table",
   title: "Table",
   icon: "table",
