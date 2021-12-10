@@ -58,10 +58,11 @@ export function create({
   return dispatch.globalConfig
     .createRemoteConfig(payload)
     .then((notifyConfig) => {
+      const data = { ...notifyConfig.result, config: uiDataSlice.config }
       if (notifyConfig && notifyConfig.type === "error") {
-        return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+        return { data, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
-      return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.created } as LoadStatus
+      return { data, loadStatus: LOADSTATUSCODES.created } as LoadStatus
     })
     .catch((e: Error) => getErrorState(e))
 }

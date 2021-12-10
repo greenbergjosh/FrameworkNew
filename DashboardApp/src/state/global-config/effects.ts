@@ -72,20 +72,25 @@ const effects: GlobalConfigStoreModel["effects"] = (dispatch: Store.AppDispatch)
                       return notifyConfig
                     }),
                     Some((createdConfig) => {
-                      const newConfig: NotifyConfig["result"] = {
-                        id: createdConfig.id,
-                        name: createdConfig.name,
-                        config: some(draft.config),
-                        type: completeDraft.type,
-                        type_id: completeDraft.type_id,
-                      }
                       const notifyConfig: NotifyConfig = {
                         type: "success",
                         message: `Global Config created`,
-                        result: newConfig,
+                        result: {
+                          id: createdConfig.id,
+                          name: createdConfig.name,
+                          config: draft.config, // <-- raw config string
+                          type: completeDraft.type,
+                          type_id: completeDraft.type_id,
+                        },
                       }
                       executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.insertFunction)
-                      dispatch.globalConfig.insertLocalConfig(newConfig)
+                      dispatch.globalConfig.insertLocalConfig({
+                        id: createdConfig.id,
+                        name: createdConfig.name,
+                        config: some(draft.config), // <-- convert config to Option!
+                        type: completeDraft.type,
+                        type_id: completeDraft.type_id,
+                      })
 
                       dispatch.feedback.notify(notifyConfig)
                       return notifyConfig

@@ -229,6 +229,10 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
  * @param language
  */
 function formatDocument(doc: CodeEditorProps["document"], language: EditorLang): string {
+  if (language === "csharp" && isEmpty(doc)) {
+    return "/* Enter C# code here */"
+  }
+
   if (isEmpty(doc)) {
     return isString(doc) ? doc : ""
   }

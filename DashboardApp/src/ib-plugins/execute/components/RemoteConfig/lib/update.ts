@@ -90,10 +90,11 @@ export function update({
   return dispatch.globalConfig
     .updateRemoteConfig(payload)
     .then((notifyConfig) => {
+      const data = { ...notifyConfig.result, config: uiDataSlice.config }
       if (notifyConfig && notifyConfig.type === "error") {
-        return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+        return { data, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
-      return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
+      return { data, loadStatus: LOADSTATUSCODES.updated } as LoadStatus
     })
     .catch((e: Error) => {
       return getErrorState(e)
