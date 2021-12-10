@@ -65,12 +65,22 @@ namespace Utility
                 return null;
             }
 
+            object config;
+            if (type == "LBM.CS")
+            {
+                config = (await entity.GetS("Config")).Trim('"');
+            }
+            else
+            {
+                config = await _entity.Parse("application/json", await entity.GetS("Config"));
+            }
+
             entity = _entity.Create(new
             {
                 Id = await entity.GetS("Id"),
                 Name = name,
                 Type = type,
-                Config = await _entity.Parse("application/json", await entity.GetS("Config"))
+                Config =  config
             });
 
             _ = _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);

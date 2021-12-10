@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "skipClean skipQueuedCampaigns n:\"Amobee - New API Test\" refreshCampaigns"
+      "commandLineArgs": "skipClean skipQueuedCampaigns n:\"Synergy - Andy\" refreshCampaigns"
     }
   }
 }

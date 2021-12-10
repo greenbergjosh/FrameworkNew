@@ -83,7 +83,7 @@ namespace GenericApi
                 }
                 else if (context.IsLocal() && context.Request.Query["m"] == "config")
                 {
-                    await context.WriteSuccessRespAsync(_fw.StartupConfiguration.ToString());
+                    await context.WriteSuccessRespAsync(JsonSerializer.Serialize(_fw.StartupConfiguration));
                     return;
                 }
                 else if (context.Request.Query["m"] == "reinit")
@@ -164,7 +164,7 @@ namespace GenericApi
                     ["requestInfo"] = new { r = 0, requestRsId, requestRsTimestamp }
                 };
 
-                var identity = await request.GetS("i");
+                var identity = await request.GetS("i", null);
 
                 foreach (var kvp in await request.GetD<Entity>(""))
                 {
@@ -236,12 +236,12 @@ namespace GenericApi
 
                         if (!processed && Program.Lbms.TryGetValue(method, out var lbm))
                         {
-                            if (!await lbm.GetB("skipAuth") && !await CheckAuth())
+                            if (!await lbm.GetB("skipAuth", false) && !await CheckAuth())
                             {
                                 continue;
                             }
 
-                            result = (Entity)await _fw.RoslynWrapper.RunFunction(
+                            var resultO = await _fw.RoslynWrapper.RunFunction(
                                 await lbm.GetS("id"),
                                 new
                                 {
@@ -254,6 +254,8 @@ namespace GenericApi
                                     dropEvent = (Func<object, Task<(Guid eventId, DateTime eventTimestamp)>>)(body => DropEvent(requestRsId, requestRsTimestamp, body))
                                 }, new StateWrapper()
                             );
+
+                            result = (Entity)resultO;
                             processed = true;
                         }
 
@@ -287,6 +289,7 @@ namespace GenericApi
                             Method = kvp.Key,
                             Request = kvp.Value,
                             Exception = ex.Message,
+                            ExceptionRaw = ex.ToString(),
                             ex.StackTrace
                         }, null, _fw.Error);
 

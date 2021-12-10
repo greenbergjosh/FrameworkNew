@@ -41,14 +41,14 @@ namespace Utility.OpgAuth
 
                         SsoPlatforms.Clear();
 
-                        foreach (var sso in await conf.GetD<string>("Sso"))
+                        foreach (var sso in await conf.GetD("Sso"))
                         {
                             var key = sso.Key;
 
                             try
                             {
-                                var typeName = await conf.GetS($"Sso.{key}.Type");
-                                var init = await conf.GetE($"Sso.{key}.Initialization");
+                                var typeName = await sso.Value.GetS("Type");
+                                var init = await sso.Value.GetE("Initialization");
 
                                 if (typeName.IsNullOrWhitespace())
                                 {
@@ -110,7 +110,7 @@ namespace Utility.OpgAuth
                 : await platform.GetUserDetails(payload);
         }
 
-        public static async Task<UserDetails> Login(string ssoKey, Entity.Entity payload, Func<UserDetails, bool> registrationValidation = null)
+        public static async Task<UserDetails> Login(string ssoKey, Entity.Entity payload, Func<UserDetails, Task<bool>> registrationValidation = null)
         {
             if (!_initialized)
             {
@@ -128,7 +128,7 @@ namespace Utility.OpgAuth
 
             var res = await Data.CallFn(ConnName, "SsoLogin", JsonSerializer.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
 
-            if (res == null || await res.GetAsS() == null || !(await res.GetS("err")).IsNullOrWhitespace())
+            if (res == null || await res.GetAsS() == null || !(await res.GetS("err", null)).IsNullOrWhitespace())
             {
                 throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.ToString() ?? "[null]"}");
             }
@@ -146,7 +146,7 @@ namespace Utility.OpgAuth
                 ? throw new AuthException("Failed to retrieve name from SSO")
                 : userDetails.Email.IsNullOrWhitespace()
                 ? throw new AuthException("Failed to retrieve email from SSO")
-                : registrationValidation == null || !registrationValidation(userDetails)
+                : registrationValidation == null || !await registrationValidation(userDetails)
                 ? throw new AuthException($"SSO login failed {nameof(registrationValidation)}: Platform: {platform.PlatformType} Payload: {payload} Result: {res}")
                 : await RegisterSsoUser(platform, userDetails, payload);
         }
@@ -177,7 +177,7 @@ namespace Utility.OpgAuth
         public static async Task<Entity.Entity> GetTokenUserDetails(string token)
         {
             var res = await Data.CallFn(ConnName, "GetTokenUserDetails", JsonSerializer.Serialize(new { t = token }));
-            var err = await res.GetS("err");
+            var err = await res.GetS("err", null);
 
             return !err.IsNullOrWhitespace()
                 ? throw new AuthException($"Failed to get user details from token: Token: {token} Error: {err}")
@@ -220,7 +220,7 @@ namespace Utility.OpgAuth
         public static async Task<bool> HasPermission(string token, string securable)
         {
             var res = await Data.CallFn(ConnName, "AllUserPermissions", JsonSerializer.Serialize(new { t = token }));
-            var err = await res.GetS("err");
+            var err = await res.GetS("err", null);
 
             if (!err.IsNullOrWhitespace())
             {
@@ -228,9 +228,9 @@ namespace Utility.OpgAuth
             }
 
             var permissions = new Dictionary<string, Entity.Entity>();
-            foreach (var permissionSet in await res.GetL<Entity.Entity>(""))
+            foreach (var permissionSet in await res.GetL<Entity.Entity>())
             {
-                foreach (var kvp in await permissionSet.GetD<Entity.Entity>(""))
+                foreach (var kvp in await permissionSet.GetD<Entity.Entity>())
                 {
                     permissions[kvp.Key] = kvp.Value;
                 }
@@ -238,7 +238,7 @@ namespace Utility.OpgAuth
 
             var mergedPermissions = _fw.Entity.Create(permissions);
 
-            if (await mergedPermissions.GetB(GOD_USER))
+            if (await mergedPermissions.GetB(GOD_USER, false))
             {
                 return true;
             }

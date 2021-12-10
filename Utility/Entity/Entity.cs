@@ -125,6 +125,8 @@ namespace Utility.Entity
 
         public async Task<int> GetI(string query = "@") => (await GetE(query)).Value<int>();
 
+        public async Task<float> GetF(string query = "@") => (await GetE(query)).Value<float>();
+
         public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, defaultValue);
 
         public Task<Dictionary<string, Entity>> GetD(string query = "@") => GetD<Entity>(query);
@@ -170,6 +172,11 @@ namespace Utility.Entity
         {
             IEnumerable<Entity> entities;
             Query parsedQuery;
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                query = "@";
+            }
 
             if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
             {
