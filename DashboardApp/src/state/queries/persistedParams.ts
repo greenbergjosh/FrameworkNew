@@ -1,5 +1,5 @@
-import { JSONArray, JSONRecord } from "../../data/JSON"
-import { ParameterItem, QueryConfig } from "../../data/Report"
+import { JSONArray, JSONRecord } from "../../lib/JSONRecord"
+import { ParameterItem, QueryConfig } from "../../api/ReportCodecs"
 import { get, isEmpty, set } from "lodash/fp"
 
 /**

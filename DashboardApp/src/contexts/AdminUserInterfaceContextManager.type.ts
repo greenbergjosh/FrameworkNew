@@ -1,6 +1,6 @@
 import { UserInterfaceContextManager } from "@opg/interface-builder"
 import { AppDispatch, AppState } from "../state/store.types"
-import { PersistedConfig } from "./GlobalConfig.Config"
+import { PersistedConfig } from "../api/GlobalConfigCodecs"
 
 export interface AdminUserInterfaceContextManager extends UserInterfaceContextManager<PersistedConfig> {
   executeQuery: AppDispatch["reports"]["executeQuery"]

@@ -1,4 +1,4 @@
-import { AdminUserInterfaceContextManager } from "../data/AdminUserInterfaceContextManager.type"
+import { AdminUserInterfaceContextManager } from "../contexts/AdminUserInterfaceContextManager.type"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"

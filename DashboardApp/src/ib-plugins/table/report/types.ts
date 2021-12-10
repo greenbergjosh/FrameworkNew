@@ -1,5 +1,5 @@
-import { JSONRecord } from "../../../data/JSON"
-import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../../data/Report"
+import { JSONRecord } from "../../../lib/JSONRecord"
+import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../../api/ReportCodecs"
 import { Option } from "fp-ts/lib/Option"
 import { PropsFromQueryParams } from "../../_shared/query/QueryParams"
 import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"

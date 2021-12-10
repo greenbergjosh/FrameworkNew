@@ -5,7 +5,7 @@ import {
   ReportDetailsAsLayout,
   ReportDetailsAsNone,
   SimpleLayoutConfig,
-} from "../../../../data/Report"
+} from "../../../../api/ReportCodecs"
 
 export type ReportDetailsType =
   | string

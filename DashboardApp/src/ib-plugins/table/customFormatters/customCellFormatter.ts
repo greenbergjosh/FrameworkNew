@@ -3,7 +3,7 @@ import { AppSelectors } from "../../../state/store.types"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
 import { tryCatch } from "fp-ts/lib/Option"
-import { JSONRecord } from "../../../data/JSON"
+import { JSONRecord } from "../../../lib/JSONRecord"
 
 /*
  * cellFormatterQueryParams.queryParams

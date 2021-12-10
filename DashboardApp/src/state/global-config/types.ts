@@ -1,4 +1,4 @@
-import * as GC from "../../data/GlobalConfig.Config"
+import * as GC from "../../api/GlobalConfigCodecs"
 import * as Store from "../store.types"
 import { NotifyConfig } from "../feedback"
 import { RemoteData } from "@devexperts/remote-data-ts"

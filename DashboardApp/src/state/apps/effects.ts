@@ -2,7 +2,7 @@ import * as Store from "../store.types"
 import { AppsStoreModel } from "./types"
 import { isEmpty } from "lodash/fp"
 import { failure, pending, success } from "@devexperts/remote-data-ts"
-import { Left, Right } from "../../data/Either"
+import { Left, Right } from "../../lib/Either"
 import { NotifyConfig } from "../feedback"
 import qs from "query-string"
 

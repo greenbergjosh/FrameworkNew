@@ -1,8 +1,8 @@
 import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams, RemoteConfigFromStore } from "../../../types"
-import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../../../api/GlobalConfigCodecs"
 import { getErrorStatePromise } from "../../utils"
 import { configToJson, getParsedConfig, getRemoteConfigId } from "./utils"
-import { JSONRecord } from "../../../../../data/JSON"
+import { JSONRecord } from "../../../../../lib/JSONRecord"
 import { isEmpty } from "lodash/fp"
 
 /**

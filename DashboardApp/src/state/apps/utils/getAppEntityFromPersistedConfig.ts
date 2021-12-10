@@ -1,5 +1,5 @@
 import { AppEntity } from "../types"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 

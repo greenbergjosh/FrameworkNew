@@ -1,9 +1,9 @@
-import { Either, Left, Right } from "../../../data/Either"
+import { Either, Left, Right } from "../../../lib/Either"
 import { Branded } from "io-ts"
 import { none, some } from "fp-ts/lib/Option"
 import * as Store from "../../store.types"
-import { HttpError } from "../../../lib/http"
-import { ApiResponse } from "../../../data/AdminApi"
+import { HttpError } from "../../../api/http"
+import { ApiResponse } from "../../../api/AdminApi"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { NotifyConfig } from "../../feedback"
 

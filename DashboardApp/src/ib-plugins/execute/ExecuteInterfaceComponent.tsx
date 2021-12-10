@@ -21,9 +21,9 @@ import {
 import RemoteConfig from "./components/RemoteConfig/RemoteConfig"
 import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
 import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
-import { JSONRecord } from "../../data/JSON"
-import { AdminUserInterfaceContext } from "../../data/AdminUserInterfaceContextManager"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
+import { JSONRecord } from "../../lib/JSONRecord"
+import { AdminUserInterfaceContext } from "../../contexts/AdminUserInterfaceContextManager"
 import layoutDefinition from "./layoutDefinition"
 
 export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<

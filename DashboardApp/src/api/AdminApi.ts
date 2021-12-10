@@ -1,8 +1,8 @@
 import * as iots from "io-ts"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { assertNever } from "../lib/assert-never"
-import { PersistedConfigCodec } from "./GlobalConfig.Config"
-import { JSONRecordCodec } from "./JSON"
+import { PersistedConfigCodec } from "./GlobalConfigCodecs"
+import { JSONRecordCodec } from "../lib/JSONRecord"
 
 export type ResponseCode = iots.TypeOf<typeof ResponseCodeCodec>
 export type AuthLoginPayload = iots.TypeOf<typeof authLoginPayloadCodec>

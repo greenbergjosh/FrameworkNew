@@ -9,7 +9,7 @@ import { Redirect, RouteComponentProps, Router } from "@reach/router"
 import { Login, LoginProps } from "../views/login"
 import { WithRouteProps } from "../state/navigation"
 import { NotFound } from "../views/not-found"
-import { None, Some } from "../data/Option"
+import { None, Some } from "../lib/Option"
 import { usePrevious } from "../hooks/usePrevious"
 
 export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.Element {

@@ -10,7 +10,7 @@ import { useRematch } from "./hooks"
 import { store } from "./state/store"
 import { DragDropContext, registry, ImportFactory } from "@opg/interface-builder"
 import { registerMonacoEditorMount } from "@opg/interface-builder-plugins/lib/monaco/code-editor/registerMonacoEditorMount"
-import getMonacoEditorConstructionOptions from "./data/getMonacoEditorConstructionOptions"
+import getMonacoEditorConstructionOptions from "./lib/getMonacoEditorConstructionOptions"
 import { SplashScreen } from "./components/SplashScreen/SplashScreen"
 import { ThemeLoader } from "./themes/ThemeLoader"
 

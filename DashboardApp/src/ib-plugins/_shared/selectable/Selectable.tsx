@@ -6,9 +6,9 @@ import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
 import { get, intersectionWith, isEqual } from "lodash/fp"
 import React from "react"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
-import { QueryConfigCodec } from "../../../data/Report"
+import { AdminUserInterfaceContextManager } from "../../../contexts/AdminUserInterfaceContextManager.type"
+import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
+import { QueryConfigCodec } from "../../../api/ReportCodecs"
 import {
   BaseInterfaceComponent,
   cheapHash,

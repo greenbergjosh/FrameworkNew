@@ -4,7 +4,7 @@ import { useRematch } from "../hooks"
 import { store } from "../state/store"
 import { AppDispatch, AppSelectors, AppState } from "../state/store.types"
 import { AdminUserInterfaceContextManager } from "./AdminUserInterfaceContextManager.type"
-import { PersistedConfig } from "./GlobalConfig.Config"
+import { PersistedConfig } from "../api/GlobalConfigCodecs"
 
 export const AdminUserInterfaceContext = React.createContext<AdminUserInterfaceContextManager | null>(null)
 

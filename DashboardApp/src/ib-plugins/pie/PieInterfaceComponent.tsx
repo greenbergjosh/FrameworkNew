@@ -4,7 +4,7 @@ import Pie from "@opg/interface-builder-plugins/lib/nivo/pie/PieInterfaceCompone
 import { settings } from "./settings"
 import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../../lib/loadRemoteLBM"
-import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
+import { AdminUserInterfaceContextManager } from "../../contexts/AdminUserInterfaceContextManager.type"
 
 export default class PieInterfaceComponent extends BaseInterfaceComponent<
   PieInterfaceComponentProps,

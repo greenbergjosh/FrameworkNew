@@ -4,10 +4,10 @@ import * as record from "fp-ts/lib/Record"
 import { isArray, isEmpty, merge } from "lodash/fp"
 import { JSONFromString } from "io-ts-types"
 import json5 from "json5"
-import { Left, Right } from "../../data/Either"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
-import { JSONArray, JSONRecord } from "../../data/JSON"
-import { None, Some } from "../../data/Option"
+import { Left, Right } from "../../lib/Either"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
+import { JSONArray, JSONRecord } from "../../lib/JSONRecord"
+import { None, Some } from "../../lib/Option"
 import * as Store from "../store.types"
 import {
   HTTPRequestQueryConfig,
@@ -15,7 +15,7 @@ import {
   QueryConfig,
   QueryConfigCodec,
   ReportConfigCodec,
-} from "../../data/Report"
+} from "../../api/ReportCodecs"
 import { encodeGloballyPersistedParams } from "./persistedParams"
 import { tryCatch } from "fp-ts/lib/Option"
 import { NotifyConfig } from "../feedback"

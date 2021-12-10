@@ -1,5 +1,5 @@
-import { DataMappingItem } from "../../../../data/Report"
-import { JSONRecord } from "../../../../data/JSON"
+import { DataMappingItem } from "../../../../api/ReportCodecs"
+import { JSONRecord } from "../../../../lib/JSONRecord"
 
 export const mapData = (dataMapping: DataMappingItem[], data: JSONRecord) => {
   if (dataMapping) {

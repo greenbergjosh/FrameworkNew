@@ -6,7 +6,7 @@ import { store } from "../state/store"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import { isEmpty, isEqual, isUndefined } from "lodash/fp"
-import { AdminUserInterfaceContextManagerProvider } from "../data/AdminUserInterfaceContextManager"
+import { AdminUserInterfaceContextManagerProvider } from "../contexts/AdminUserInterfaceContextManager"
 import { usePrevious } from "../hooks/usePrevious"
 import { useLocation } from "@reach/router"
 

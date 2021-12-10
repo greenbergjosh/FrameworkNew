@@ -4,16 +4,16 @@ import { none } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import qs from "query-string"
 import { Overwrite } from "utility-types"
-import * as AdminApi from "../data/AdminApi"
-import { CompleteLocalDraft, PersistedConfig } from "../data/GlobalConfig.Config"
-import { JSONArray, JSONRecord } from "../data/JSON"
-import { QueryConfig } from "../data/Report"
-import { HttpError, Method, request } from "../lib/http"
+import * as AdminApi from "./AdminApi"
+import { CompleteLocalDraft, PersistedConfig } from "./GlobalConfigCodecs"
+import { JSONArray, JSONRecord } from "../lib/JSONRecord"
+import { QueryConfig } from "./ReportCodecs"
+import { HttpError, Method, request } from "./http"
 import { prettyPrint } from "../lib/json"
-import * as Store from "./store.types"
-import { NotifyConfig } from "./feedback"
+import * as Store from "../state/store.types"
+import { NotifyConfig } from "../state/feedback"
 
-declare module "./store.types" {
+declare module "../state/store.types" {
   interface AppModels {
     remoteDataClient: {
       state: State

@@ -1,4 +1,4 @@
-import { JSONType } from "../data/JSON"
+import { JSONType } from "./JSONRecord"
 
 export function prettyPrint(value: unknown): string {
   return JSON.stringify(value, null, 2)

@@ -1,5 +1,5 @@
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../../../api/GlobalConfigCodecs"
 import { Brand } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { tryCatch } from "fp-ts/lib/Option"

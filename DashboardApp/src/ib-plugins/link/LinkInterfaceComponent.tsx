@@ -3,7 +3,7 @@ import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceContextManag
 import Link from "@opg/interface-builder-plugins/lib/html/link/LinkInterfaceComponent"
 import { settings } from "./settings"
 import { LinkInterfaceComponentProps } from "./types"
-import { AdminUserInterfaceContext } from "../../data/AdminUserInterfaceContextManager"
+import { AdminUserInterfaceContext } from "../../contexts/AdminUserInterfaceContextManager"
 
 export default class LinkInterfaceComponent extends BaseInterfaceComponent<LinkInterfaceComponentProps> {
   context!: React.ContextType<typeof AdminUserInterfaceContext>

@@ -1,5 +1,5 @@
 import { AppConfig, AppPageConfig } from "../types"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
 import { isEmpty } from "lodash/fp"
 import { DEFAULT_APP_PAGE_CONFIG } from "../constants"
 import { getAppEntityFromPersistedConfig } from "./getAppEntityFromPersistedConfig"

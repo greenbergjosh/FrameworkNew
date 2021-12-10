@@ -1,6 +1,6 @@
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { QueryConfig } from "../../data/Report"
+import { QueryConfig } from "../../api/ReportCodecs"
 import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
 import { QueryProps } from "../_shared/query/types"
 

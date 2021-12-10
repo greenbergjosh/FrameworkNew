@@ -1,4 +1,4 @@
-import { JSONArray, JSONRecord } from "../../data/JSON"
+import { JSONArray, JSONRecord } from "../../lib/JSONRecord"
 import * as Store from "../store.types"
 
 declare module "../store.types" {

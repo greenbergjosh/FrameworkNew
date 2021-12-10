@@ -1,6 +1,6 @@
 import { ComponentDefinition } from "@opg/interface-builder"
 import * as Store from "../store.types"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
 import { NotifyConfig } from "../feedback"
 import { RemoteData } from "@devexperts/remote-data-ts"
 import { WindowLocation } from "@reach/router"

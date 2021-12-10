@@ -3,7 +3,7 @@ import * as google from "./authProviders/google"
 import * as onelogin from "./authProviders/onelogin"
 import * as Store from "../store.types"
 import { IamStoreModel } from "./types"
-import { Left, Right } from "../../data/Either"
+import { Left, Right } from "../../lib/Either"
 import { none, some } from "fp-ts/lib/Option"
 import { NotifyConfig } from "../feedback"
 

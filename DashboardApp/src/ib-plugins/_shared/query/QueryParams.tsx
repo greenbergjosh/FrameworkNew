@@ -2,10 +2,10 @@ import React from "react"
 import * as record from "fp-ts/lib/Record"
 import { none, Option, some } from "fp-ts/lib/Option"
 import { determineSatisfiedParameters } from "./lib/determineSatisfiedParameters"
-import { JSONRecord } from "../../../data/JSON"
+import { JSONRecord } from "../../../lib/JSONRecord"
 import { useRematch } from "../../../hooks"
 import queryString, { ParsedQuery } from "query-string"
-import { ParameterItem, QueryConfig } from "../../../data/Report"
+import { ParameterItem, QueryConfig } from "../../../api/ReportCodecs"
 import { decodeGloballyPersistedParams } from "../../../state/queries/persistedParams"
 
 export interface PropsFromQueryParams {

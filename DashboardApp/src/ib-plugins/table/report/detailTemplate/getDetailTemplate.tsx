@@ -5,8 +5,8 @@ import {
   LocalReportConfig,
   ReportDetailsAsReport,
   SimpleLayoutConfig,
-} from "../../../../data/Report"
-import { JSONRecord } from "../../../../data/JSON"
+} from "../../../../api/ReportCodecs"
+import { JSONRecord } from "../../../../lib/JSONRecord"
 import { Report } from "../Report"
 import React from "react"
 import * as record from "fp-ts/lib/Record"

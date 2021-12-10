@@ -7,12 +7,12 @@ import {
   UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { ConfigType, PersistedConfig } from "../../data/GlobalConfig.Config"
+import { ConfigType, PersistedConfig } from "../../api/GlobalConfigCodecs"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { QueryConfig } from "../../data/Report"
+import { QueryConfig } from "../../api/ReportCodecs"
 import { AppDispatch, AppState } from "../../state/store.types"
 import { confirmationType, QueryFormProps } from "../_shared/query/types"
-import { JSONRecord } from "../../data/JSON"
+import { JSONRecord } from "../../lib/JSONRecord"
 import { PropsFromQueryParams } from "../_shared/query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"

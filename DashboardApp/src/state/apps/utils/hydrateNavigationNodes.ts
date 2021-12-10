@@ -1,5 +1,5 @@
 import { AppPageConfig, AppPaths, NavigationNode } from "../types"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
 import { DEFAULT_APP_PAGE_CONFIG } from "../constants"
 import { isEmpty } from "lodash/fp"
 import { getAppEntityFromPersistedConfig } from "./getAppEntityFromPersistedConfig"

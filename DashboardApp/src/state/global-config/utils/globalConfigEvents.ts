@@ -1,10 +1,10 @@
 import { AppDispatch } from "../../store.types"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
-import { Left, Right } from "../../../data/Either"
+import { Left, Right } from "../../../lib/Either"
 import { ConfigEventPayload } from "../types"
-import { JSONRecord } from "../../../data/JSON"
-import * as GC from "../../../data/GlobalConfig.Config"
+import { JSONRecord } from "../../../lib/JSONRecord"
+import * as GC from "../../../api/GlobalConfigCodecs"
 import { NotifyConfig } from "../../feedback"
 
 export enum APITypeEventHandlerKey {

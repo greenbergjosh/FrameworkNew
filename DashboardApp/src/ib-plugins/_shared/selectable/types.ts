@@ -5,7 +5,7 @@ import {
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { SelectProps as AntdSelectProps } from "antd/lib/select"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 
 /* *********************************************
