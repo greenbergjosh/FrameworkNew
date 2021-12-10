@@ -1,7 +1,7 @@
 import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams } from "../../../types"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { getRemoteConfigId } from "./utils"
-import { get, isEmpty } from "lodash/fp"
+import { get, isEmpty, isString } from "lodash/fp"
 import { PersistedConfig } from "../../../../../api/GlobalConfigCodecs"
 import { CreateConfigEventPayload, UpdateConfigEventPayload } from "../../../../../state/global-config/types"
 
@@ -67,8 +67,11 @@ export function update({
     }
   }
 
+  const stringifiedConfig = isString(uiDataSlice.config)
+    ? uiDataSlice.config
+    : JSON.stringify(uiDataSlice.config, null, 2)
   const nextState: CreateConfigEventPayload["nextState"] = {
-    config: JSON.stringify(uiDataSlice.config, null, 2),
+    config: stringifiedConfig,
     name,
     type: parent.name,
     type_id: parent.id,

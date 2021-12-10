@@ -233,7 +233,7 @@ function formatDocument(doc: CodeEditorProps["document"], language: EditorLang):
     return isString(doc) ? doc : ""
   }
 
-  /* Stringfiy json */
+  /* Reformat json */
   if (language === "json" && isString(doc)) {
     const value = tryCatch(() => JSON.parse(doc)).getOrElse({})
     return JSON.stringify(value, null, 2)
