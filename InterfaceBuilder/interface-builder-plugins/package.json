@@ -128,6 +128,7 @@
     "monaco-editor": "0.30.1",
     "react-awesome-query-builder": "link:../react-awesome-query-builder",
     "react-colorful": "5.5.1",
+    "react-error-boundary": "3.1.4",
     "react-json-view": "1.21.3",
     "react-simple-maps": "2.3.0",
     "styled-components": "5.3.3",

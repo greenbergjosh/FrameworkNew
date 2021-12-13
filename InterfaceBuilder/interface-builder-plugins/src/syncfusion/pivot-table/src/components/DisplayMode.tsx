@@ -21,6 +21,7 @@ import { Undraggable } from "@opg/interface-builder"
 import { validateDataConnection } from "lib/validateDataConnection"
 import { usePrevious } from "lib/usePrevious"
 import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
+import { ErrorBoundary } from "react-error-boundary"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -38,7 +39,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
   const height = getHeight(props.heightKey, props.height)
   const dataSourceSettings = sanitizeDataSourceSettings(props.dataSourceSettings)
-  const isValidDataConnection = validateDataConnection(dataSourceSettings)
   const allowCalculatedField = !isEmpty(dataSourceSettings.calculatedFieldSettings)
   const { onChange } = props
 
@@ -56,15 +56,15 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
 
   React.useEffect(() => {
     if (!prevSettings && fieldListRef.current && pivotRef.current) {
-      if (isValidDataConnection) {
+      if (validateDataConnection(dataSourceSettings)) {
         // Sync PivotView with FieldList
         fieldListRef.current.updateView(pivotRef.current)
         fieldListRef.current.update(pivotRef.current)
       } else {
-        setError(new Error("The pivot table cannot be displayed. The data connection settings are invalid."))
+        setError(new Error("The data connection settings are invalid."))
       }
     }
-  }, [isValidDataConnection, prevSettings, dataSourceSettings])
+  }, [prevSettings, dataSourceSettings])
 
   const handleEnginePopulated_FieldList = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
@@ -101,10 +101,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
 
   if (!props.dataSourceSettings) {
     return <div style={{ textAlign: "center" }}>Loading...</div>
-  }
-
-  if (error) {
-    return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
   function getExportButtons() {
@@ -156,6 +152,9 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
         }}
       />
       {getExportButtons()}
+      {error && (
+        <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
+      )}
       <PivotViewComponent
         ref={pivotRef}
         allowCalculatedField={allowCalculatedField}
@@ -183,14 +182,22 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
           setOpenConfigPanel(false)
         }}
       />
-      <PivotFieldListComponent
-        ref={fieldListRef}
-        enginePopulated={handleEnginePopulated_FieldList}
-        dataSourceSettings={dataSourceSettings}
-        renderMode={"Fixed"}
-        allowCalculatedField={allowCalculatedField}>
-        <Inject services={[...services]} />
-      </PivotFieldListComponent>
+      <ErrorBoundary
+        onError={(e) => {
+          if (e.message.includes("hasAllMember")) {
+            setError(new Error("There was an error communicating with the cube server."))
+          }
+        }}
+        fallbackRender={() => <></>}>
+        <PivotFieldListComponent
+          ref={fieldListRef}
+          enginePopulated={handleEnginePopulated_FieldList}
+          dataSourceSettings={dataSourceSettings}
+          renderMode={"Fixed"}
+          allowCalculatedField={allowCalculatedField}>
+          <Inject services={[...services]} />
+        </PivotFieldListComponent>
+      </ErrorBoundary>
     </div>
   )
 
