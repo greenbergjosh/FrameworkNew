@@ -1,3 +1,30 @@
+.brandingPanel {
+  background: #ff5a00 url(https://onpointglobal.com/wp-content/themes/onpoint-site/dist/images/bg-hero.png) no-repeat
+    top;
+  font-size: 68px;
+  font-weight: 700;
+  line-height: 44px;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-content: flex-start;
+  align-items: flex-start;
+
+  padding: 15px;
+
+  h5 {
+    color: white;
+  }
+}
+
+.portalTitle {
+  font-size: 18px;
+  font-weight: 300;
+}
+
 .image {
   filter: brightness(0.7) contrast(90%);
   height: 100%;
@@ -30,6 +57,11 @@
   flex-direction: column;
   justify-content: space-evenly;
   padding: 10vh 10%;
+  text-align: center;
+}
+
+.legalNotice {
+  text-align: left;
 }
 
 .title {
