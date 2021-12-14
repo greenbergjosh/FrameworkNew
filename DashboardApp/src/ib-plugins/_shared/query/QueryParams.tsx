@@ -21,7 +21,7 @@ interface QueryParamsProps {
   queryConfig: QueryConfig
 }
 
-export const QueryParams = React.memo(({ children, parentData, queryConfig }: QueryParamsProps) => {
+export const QueryParams = React.memo((props: QueryParamsProps) => {
   /* ***************************
    *
    * Redux, State
@@ -57,27 +57,27 @@ export const QueryParams = React.memo(({ children, parentData, queryConfig }: Qu
    */
   const globallyPersistedParams = React.useMemo(() => {
     const gpp = fromStore.queryGlobalParams
-    return decodeGloballyPersistedParams(gpp, queryConfig.parameters)
-  }, [fromStore.queryGlobalParams, queryConfig.parameters])
+    return decodeGloballyPersistedParams(gpp, props.queryConfig.parameters)
+  }, [fromStore.queryGlobalParams, props.queryConfig.parameters])
 
   /**
    * Get persisted params by query
    */
   const persistedParams = React.useMemo(() => {
-    return record.lookup(queryConfig.query, fromStore.queryParamsByQuery).toUndefined() as ParsedQuery
-  }, [queryConfig.query, fromStore.queryParamsByQuery])
+    return record.lookup(props.queryConfig.query, fromStore.queryParamsByQuery).toUndefined() as ParsedQuery
+  }, [props.queryConfig.query, fromStore.queryParamsByQuery])
 
   /**
    * Combine param sources, and then sort them
    */
   const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(() => {
     const sortedParameters = determineSatisfiedParameters(
-      queryConfig.parameters,
-      { ...persistedParams, ...globallyPersistedParams, ...querystringParams, ...parentData } || {},
+      props.queryConfig.parameters,
+      { ...persistedParams, ...globallyPersistedParams, ...querystringParams, ...props.parentData } || {},
       true
     )
     return sortedParameters
-  }, [parentData, queryConfig.parameters, globallyPersistedParams, persistedParams, querystringParams])
+  }, [props.parentData, props.queryConfig.parameters, globallyPersistedParams, persistedParams, querystringParams])
 
   /**
    * Set QueryForm with initial parameters
@@ -96,12 +96,14 @@ export const QueryParams = React.memo(({ children, parentData, queryConfig }: Qu
 
   return (
     <>
-      {children({
-        parameterValues,
-        satisfiedByParentParams,
-        setParameterValues,
-        unsatisfiedByParentParams,
-      })}
+      {props &&
+        props.children &&
+        props.children({
+          parameterValues,
+          satisfiedByParentParams,
+          setParameterValues,
+          unsatisfiedByParentParams,
+        })}
     </>
   )
 })

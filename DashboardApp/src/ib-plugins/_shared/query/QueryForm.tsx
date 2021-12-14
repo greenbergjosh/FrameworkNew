@@ -92,7 +92,7 @@ export const QueryForm = React.memo(
       const promise = onMount(newState)
 
       updateFormState(newState)
-      if (promise && isMountedRef.current) {
+      if (promise) {
         setLoading(true)
         promise.finally(() => {
           if (isMountedRef.current) {
@@ -100,9 +100,7 @@ export const QueryForm = React.memo(
           }
         })
       }
-      if (isMountedRef.current) {
-        setSubmitting(false)
-      }
+      setSubmitting(false)
     }, [])
 
     /*
@@ -125,7 +123,7 @@ export const QueryForm = React.memo(
         return
       }
       const promise = onSubmit(formState)
-      if (promise && isMountedRef.current) {
+      if (promise) {
         setLoading(true)
         promise.finally(() => {
           if (isMountedRef.current) {
@@ -133,10 +131,8 @@ export const QueryForm = React.memo(
           }
         })
       }
-      if (isMountedRef.current) {
-        setSubmitting(false)
-        setParentSubmitting && setParentSubmitting(false)
-      }
+      setSubmitting(false)
+      setParentSubmitting && setParentSubmitting(false)
     }, [submitting, onSubmit, setParentSubmitting, formState])
 
     /*
@@ -144,7 +140,7 @@ export const QueryForm = React.memo(
      * Allow parent components to trigger a submit
      */
     React.useEffect(() => {
-      if (parentSubmitting && isMountedRef.current) {
+      if (parentSubmitting) {
         setSubmitting(true)
       }
     }, [parentSubmitting, setSubmitting])
