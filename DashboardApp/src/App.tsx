@@ -56,7 +56,6 @@ import Empty from "@opg/interface-builder-plugins/lib/ant/empty"
 import Form from "@opg/interface-builder-plugins/lib/ant/form"
 import Icon from "@opg/interface-builder-plugins/lib/ant/icon"
 import Input from "@opg/interface-builder-plugins/lib/ant/input"
-import LinkButton from "@opg/interface-builder-plugins/lib/ant/link-button"
 import List from "@opg/interface-builder-plugins/lib/ant/list"
 import Menu from "@opg/interface-builder-plugins/lib/ant/menu"
 import Modal from "@opg/interface-builder-plugins/lib/ant/modal"
@@ -166,7 +165,7 @@ export function App(): JSX.Element {
       icon: Icon,
       input: Input,
       link: Link,
-      "link-button": LinkButton,
+      "link-button": Button,
       list: List,
       menu: Menu,
       modal: Modal,

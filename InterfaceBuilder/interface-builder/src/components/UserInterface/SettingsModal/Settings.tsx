@@ -1,5 +1,5 @@
 import React from "react"
-import { ComponentRenderer } from "../../ComponentRenderer"
+import { RenderComponents } from "../../RenderComponents"
 import { ComponentDefinition, LayoutDefinition, UserInterfaceProps } from "../../../globalTypes"
 
 export interface ManageComponentFormProps {
@@ -19,7 +19,7 @@ export const Settings = ({
   onChangeRootData,
 }: ManageComponentFormProps) => {
   return (
-    <ComponentRenderer
+    <RenderComponents
       components={Array.isArray(manageForm) ? manageForm : [manageForm]}
       getComponents={() => (Array.isArray(manageForm) ? manageForm : [manageForm])}
       data={componentDefinition}

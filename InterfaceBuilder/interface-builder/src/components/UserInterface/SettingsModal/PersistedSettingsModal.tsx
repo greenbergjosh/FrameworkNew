@@ -3,7 +3,7 @@ import { ComponentDefinition, EditUserInterfaceProps, UserInterfaceProps } from 
 import { DropHelperResult } from "components/DragAndDrop"
 import { getOr, isNull, set } from "lodash/fp"
 import { SettingsModal, SettingsModalProps } from "components/UserInterface/SettingsModal/SettingsModal"
-import { UI_ROOT } from "components/ComponentRenderer"
+import { UI_ROOT } from "../../RenderComponents"
 
 interface GetSettingsModalProps {
   components: ComponentDefinition[]
