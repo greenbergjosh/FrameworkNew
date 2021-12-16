@@ -6,7 +6,6 @@ import { ParameterItem, QueryConfig } from "../../../api/ReportCodecs"
 import { useRematch } from "../../../hooks"
 import { store } from "../../../state/store"
 import { ComponentDefinition, getDefaultsFromComponentDefinitions, UserInterface } from "@opg/interface-builder"
-import { SubmitButton } from "./components/SubmitButton"
 import { PrivilegedUserInterfaceContextManager, QueryFormProps } from "./types"
 import { AppState } from "../../../state/store.types"
 import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
@@ -25,8 +24,6 @@ export const QueryForm = React.memo(
     onSubmit,
     parentSubmitting,
     setParentSubmitting,
-    submitButtonLabel,
-    submitButtonProps,
   }: QueryFormProps) => {
     /* ****************************
      *
@@ -171,26 +168,16 @@ export const QueryForm = React.memo(
 
     if (layout) {
       return (
-        <>
-          <UserInterface
-            components={layout as unknown as ComponentDefinition[]}
-            contextManager={fromStore.privilegedUserInterfaceContextManager}
-            data={formState}
-            getRootUserInterfaceData={getRootUserInterfaceData}
-            onChangeRootData={onChangeRootData}
-            mode="display"
-            onChangeData={updateFormState}
-            submit={handleSubmit}
-          />
-          <div style={{ marginTop: "10px", marginBottom: "10px" }}>
-            <SubmitButton
-              onSubmit={handleSubmit}
-              loading={loading}
-              submitButtonLabel={submitButtonLabel}
-              submitButtonProps={submitButtonProps}
-            />
-          </div>
-        </>
+        <UserInterface
+          components={layout as unknown as ComponentDefinition[]}
+          contextManager={fromStore.privilegedUserInterfaceContextManager}
+          data={formState}
+          getRootUserInterfaceData={getRootUserInterfaceData}
+          onChangeRootData={onChangeRootData}
+          mode="display"
+          onChangeData={updateFormState}
+          submit={handleSubmit}
+        />
       )
     }
 

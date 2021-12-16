@@ -11,7 +11,7 @@ import { ConfigType, PersistedConfig } from "../../api/GlobalConfigCodecs"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../api/ReportCodecs"
 import { AppDispatch, AppState } from "../../state/store.types"
-import { confirmationType, QueryFormProps } from "../_shared/query/types"
+import { QueryFormProps } from "../_shared/query/types"
 import { JSONRecord } from "../../lib/JSONRecord"
 import { PropsFromQueryParams } from "../_shared/query/QueryParams"
 import { Branded } from "io-ts"
@@ -45,32 +45,8 @@ export type ActionType = "read" | "create" | "update" | "delete"
 export type ResultsType = "all" | "selected" | "static"
 export type ParamKVPMapsType = { values: { fieldName: string; valueKey: string }[] }
 
-export type ButtonProps = {
-  block: boolean
-  buttonLabel: string
-  component: "button"
-  confirmation?: confirmationType
-  defaultValue?: string
-  displayType: ButtonDisplayType
-  ghost: boolean
-  hideButtonLabel: boolean
-  icon: string
-  onChangeData: UserInterfaceProps["onChangeData"]
-  placeholder: string
-  requireConfirmation: boolean
-  shape: ShapeType
-  size: SizeType
-  userInterfaceData: UserInterfaceProps["data"]
-  valueKey: string
-}
-
-interface ExecuteButtonProps {
-  buttonProps: ButtonProps
-}
-
 export interface IExecuteInterfaceComponentProps extends ComponentDefinitionNamedProps {
   autoExecuteIntervalSeconds?: number
-  buttonLabel?: string
   component: "query"
   components: ComponentDefinition[]
   executeImmediately?: boolean
@@ -177,8 +153,7 @@ export type ExecuteInterfaceComponentProps = (
     | ExecuteInterfaceComponentDisplayModeProps
     | ExecuteInterfaceComponentPreviewModeProps
     | ExecuteInterfaceComponentEditModeProps
-  ) &
-  ExecuteButtonProps
+  )
 
 /* ****************************************************************************
  *
@@ -196,8 +171,6 @@ export type OnMountType = (
 ) => Promise<void | NotifyConfig> | undefined
 
 export interface RemoteComponentProps {
-  buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
-  buttonProps: ButtonProps
   getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
   getParams: () => JSONRecord
   getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]

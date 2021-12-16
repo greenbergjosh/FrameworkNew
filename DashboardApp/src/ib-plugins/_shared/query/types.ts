@@ -3,7 +3,6 @@ import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
 import { ParameterItem, QueryConfig } from "../../../api/ReportCodecs"
 import { JSONRecord } from "../../../lib/JSONRecord"
 import { AppDispatch } from "../../../state/store.types"
-import { ButtonProps } from "../../execute/types"
 import { AdminUserInterfaceContextManager } from "../../../contexts/AdminUserInterfaceContextManager.type"
 import { UserInterfaceContextManager, UserInterfaceProps } from "@opg/interface-builder"
 import { AbstractBaseInterfaceComponentType } from "@opg/interface-builder/src/components/BaseInterfaceComponent/types"
@@ -24,8 +23,6 @@ export interface QueryFormProps {
   onSubmit: (parameterValues: JSONRecord) => void | Promise<unknown>
   parentSubmitting?: boolean
   setParentSubmitting?: (submitting: boolean) => void
-  submitButtonProps?: ButtonProps
-  submitButtonLabel?: string // retained for legacy
 }
 
 export type SortedParamsType = {
@@ -35,25 +32,6 @@ export type SortedParamsType = {
 
 export type PrivilegedUserInterfaceContextManager = Partial<AdminUserInterfaceContextManager> &
   UserInterfaceContextManager<PersistedConfig>
-
-/* ****************************************************
- *
- * Submit Button
- */
-
-export type confirmationType = {
-  title?: string
-  message?: string
-  okText?: string
-  cancelText?: string
-}
-
-export interface SubmitButtonProps {
-  onSubmit: () => void
-  loading?: boolean
-  submitButtonLabel?: string
-  submitButtonProps?: ButtonProps
-}
 
 /* ****************************************************
  *
@@ -121,5 +99,4 @@ export interface QueryState<T> {
   renderedChildren?: ReturnType<IQueryProps<T>["children"]>
   refreshTimeout?: ReturnType<typeof setTimeout> | null
   remoteQueryLoggingName?: string | null
-  submitButtonLabel?: string
 }

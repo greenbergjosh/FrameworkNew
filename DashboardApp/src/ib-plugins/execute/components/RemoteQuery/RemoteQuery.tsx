@@ -12,8 +12,6 @@ import { executeRemoteQuery } from "./executeRemoteQuery"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
   const {
-    buttonLabel,
-    buttonProps,
     getParams,
     getRootUserInterfaceData,
     onChangeRootData,
@@ -56,13 +54,11 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
    * EVENT HANDLERS
    */
 
-  /* Originally from ReportBody.tsx */
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
     if (!queryConfig || mode === "edit") return
     onRaiseEvent(LOADSTATUSCODES.loading, { value: {} })
 
     /*
-     * From ReportBody.tsx
      * Send parameterValues back up to <QueryParams>
      * (Unknown why this is being done)
      */
@@ -106,16 +102,6 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
    * RENDER METHOD
    */
 
-  // function getOnMount(
-  //   satisfiedByParentParams: JSONRecord,
-  //   setParameterValues: PropsFromQueryParams["setParameterValues"]
-  // ) {
-  //   return (queryFormValues: JSONRecord) =>
-  //     onMount(() => {
-  //       return handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)
-  //     })
-  // }
-
   if (!queryConfig)
     return (
       <Empty
@@ -139,8 +125,6 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
           }
           parameters={unsatisfiedByParentParams}
           parameterValues={parameterValues.getOrElse(record.empty)}
-          submitButtonLabel={buttonLabel || "Save"}
-          submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
           getDefinitionDefaultValue={getDefinitionDefaultValue}

@@ -107,7 +107,6 @@ import tableLayoutDefinition from "@opg/interface-builder-plugins/lib/syncfusion
 /*
  * Import DashboardApp Plugins
  */
-import Query from "./ib-plugins/query"
 import Execute from "./ib-plugins/execute"
 import Relationships from "./ib-plugins/relationships"
 import RemoteComponent from "./ib-plugins/remote-component"
@@ -246,7 +245,6 @@ export function App(): JSX.Element {
      * Register DashboardApp components
      */
     registry.register({
-      query: Query,
       execute: Execute,
       relationships: Relationships,
       "remote-component": RemoteComponent,

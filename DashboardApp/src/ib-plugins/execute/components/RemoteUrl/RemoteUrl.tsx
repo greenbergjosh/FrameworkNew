@@ -12,8 +12,6 @@ import { executeRemoteUrl } from "./executeRemoteUrl"
 
 function RemoteUrl(props: RemoteUrlProps): JSX.Element {
   const {
-    buttonLabel,
-    buttonProps,
     getParams,
     getRootUserInterfaceData,
     onChangeRootData,
@@ -69,7 +67,6 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     if (!queryConfig || mode === "edit") return
 
     /*
-     * From ReportBody.tsx
      * Send parameterValues back up to <QueryParams>
      * (Unknown why this is being done)
      */
@@ -121,8 +118,6 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
           }
           parameters={unsatisfiedByParentParams}
           parameterValues={parameterValues.getOrElse(record.empty)}
-          submitButtonLabel={buttonLabel || "Save"}
-          submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
           getDefinitionDefaultValue={getDefinitionDefaultValue}

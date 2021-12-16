@@ -26,8 +26,6 @@ import { NotifyConfig } from "../../../../state/feedback"
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
     actionType,
-    buttonLabel,
-    buttonProps,
     configDefault,
     entityTypeId,
     getDefinitionDefaultValue,
@@ -193,8 +191,6 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
           }
           parameters={unsatisfiedByParentParams}
           parameterValues={parameterValues.getOrElse(record.empty)}
-          submitButtonLabel={buttonLabel || "Save"}
-          submitButtonProps={buttonProps}
           parentSubmitting={parentSubmitting}
           setParentSubmitting={setParentSubmitting}
           getDefinitionDefaultValue={getDefinitionDefaultValue}

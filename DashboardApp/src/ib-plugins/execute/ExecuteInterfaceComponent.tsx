@@ -240,8 +240,6 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
 
     const {
-      buttonLabel,
-      buttonProps,
       getRootUserInterfaceData,
       onChangeRootData,
       mode,
@@ -261,8 +259,6 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
         return (
           <RemoteConfig
             actionType={castProps.RemoteConfig_actionType}
-            buttonLabel={buttonLabel}
-            buttonProps={buttonProps}
             configDefault={castProps.RemoteConfig_configDefault}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
@@ -291,8 +287,6 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
 
         return (
           <RemoteQuery
-            buttonLabel={buttonLabel}
-            buttonProps={buttonProps}
             executeQuery={executeQuery}
             executeQueryUpdate={executeQueryUpdate}
             getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
@@ -321,8 +315,6 @@ export default class ExecuteInterfaceComponent extends BaseInterfaceComponent<
         castProps = this.props as ExecuteRemoteUrlInterfaceComponentProps
         return (
           <RemoteUrl
-            buttonLabel={buttonLabel}
-            buttonProps={buttonProps}
             executeHTTPRequestQuery={executeHTTPRequestQuery}
             getDefinitionDefaultValue={ExecuteInterfaceComponent.getDefinitionDefaultValue}
             getParams={this.getParamsFromParamKVPMaps}

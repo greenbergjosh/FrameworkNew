@@ -121,11 +121,6 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
   componentWillUnmount(): void {
     const { refreshTimeout } = this.state
     if (refreshTimeout) {
-      // console.log(
-      //   "Query.componentWillUnmount",
-      //   this.state.remoteQueryLoggingName,
-      //   "Removing refresh timeout"
-      // )
       clearTimeout(refreshTimeout)
     }
   }
@@ -133,15 +128,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
   render(): JSX.Element {
     const { queryType, getRootUserInterfaceData, onChangeRootData } = this.props as QueryProps<T> &
       typeof Query["defaultProps"]
-    const {
-      loadError,
-      loadStatus,
-      parameterValues,
-      promptLayout,
-      promptParameters,
-      renderedChildren,
-      submitButtonLabel,
-    } = this.state
+    const { loadError, loadStatus, parameterValues, promptLayout, promptParameters, renderedChildren } = this.state
 
     return loadStatus === "error" ? (
       <Alert type="error" message={loadError || "An error occurred during data loading"} />
@@ -160,12 +147,9 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
               onSubmit={(formProps) => {
                 console.log("Submitted Form Data", formProps)
               }}
-              submitButtonLabel={submitButtonLabel}
             />
           )}
         {renderedChildren}
-
-        {/* <Alert type="warning" message={<pre>{JSON.stringify({ [dataKey]: data }, null, 2)}</pre>} /> */}
       </Spin>
     )
   }
