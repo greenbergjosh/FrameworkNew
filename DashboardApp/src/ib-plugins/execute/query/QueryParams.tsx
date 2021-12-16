@@ -1,7 +1,7 @@
 import React from "react"
 import * as record from "fp-ts/lib/Record"
 import { none, Option, some } from "fp-ts/lib/Option"
-import { determineSatisfiedParameters } from "./lib/determineSatisfiedParameters"
+import { determineSatisfiedParameters } from "./determineSatisfiedParameters"
 import { JSONRecord } from "../../../lib/JSONRecord"
 import { useRematch } from "../../../hooks"
 import queryString, { ParsedQuery } from "query-string"

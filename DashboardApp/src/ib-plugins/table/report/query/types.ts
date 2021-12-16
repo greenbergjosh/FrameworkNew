@@ -1,0 +1,147 @@
+import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
+import { PersistedConfig } from "../../../../api/GlobalConfigCodecs"
+import { ParameterItem, QueryConfig } from "../../../../api/ReportCodecs"
+import { JSONRecord } from "../../../../lib/JSONRecord"
+import { AppDispatch } from "../../../../state/store.types"
+import { AdminUserInterfaceContextManager } from "../../../../contexts/AdminUserInterfaceContextManager.type"
+import { UserInterfaceContextManager, UserInterfaceProps } from "@opg/interface-builder"
+import { AbstractBaseInterfaceComponentType } from "@opg/interface-builder/src/components/BaseInterfaceComponent/types"
+
+export type ShapeType = "circle" | "circle-outline" | "round" | undefined
+export type SizeType = "small" | "large" | undefined
+export type ButtonDisplayType = "primary" | "ghost" | "dashed" | "danger" | "link" | undefined
+
+export type ButtonProps = {
+  block: boolean
+  buttonLabel: string
+  component: "button"
+  confirmation?: confirmationType
+  defaultValue?: string
+  displayType: ButtonDisplayType
+  ghost: boolean
+  hideButtonLabel: boolean
+  icon: string
+  onChangeData: UserInterfaceProps["onChangeData"]
+  placeholder: string
+  requireConfirmation: boolean
+  shape: ShapeType
+  size: SizeType
+  userInterfaceData: UserInterfaceProps["data"]
+  valueKey: string
+}
+
+/* ****************************************************
+ *
+ * Query Form
+ */
+
+export interface QueryFormProps {
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
+  layout: QueryConfig["layout"]
+  parameters: QueryConfig["parameters"]
+  parameterValues: JSONRecord
+  onMount?: (parameterValues: JSONRecord) => void | Promise<unknown>
+  onSubmit: (parameterValues: JSONRecord) => void | Promise<unknown>
+  parentSubmitting?: boolean
+  setParentSubmitting?: (submitting: boolean) => void
+  submitButtonProps?: ButtonProps
+  submitButtonLabel?: string // retained for legacy
+}
+
+export type SortedParamsType = {
+  unsatisfiedByParentParams: ParameterItem[]
+  satisfiedByParentParams: JSONRecord
+}
+
+export type PrivilegedUserInterfaceContextManager = Partial<AdminUserInterfaceContextManager> &
+  UserInterfaceContextManager<PersistedConfig>
+
+/* ****************************************************
+ *
+ * Submit Button
+ */
+
+export type confirmationType = {
+  title?: string
+  message?: string
+  okText?: string
+  cancelText?: string
+}
+
+export interface SubmitButtonProps {
+  onSubmit: () => void
+  loading?: boolean
+  submitButtonLabel?: string
+  submitButtonProps?: ButtonProps
+}
+
+/* ****************************************************
+ *
+ * Query
+ */
+
+export interface QueryChildProps<T = any> {
+  data: T[]
+  loading?: boolean
+}
+
+export interface QueryRefreshOptions {
+  interval?: number
+  stopOnFailure?: boolean
+}
+
+export interface LoadDataParams {
+  dispatchExecuteQuery: AppDispatch["reports"]["executeQuery"]
+  queryResultURI: string
+  queryConfig: QueryConfig
+  satisfiedParams: JSONRecord
+}
+
+export interface IQueryProps<T> {
+  children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
+  dataKey?: string
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
+  inputData?: JSONObject
+  paused?: boolean
+  queryType: "remote-query" | "remote-config" | "remote-url"
+  refresh?: QueryRefreshOptions
+}
+
+interface QueryRemoteQueryProps<T> extends IQueryProps<T> {
+  queryType: "remote-query"
+  remoteQuery?: PersistedConfig["id"]
+  remoteDataFilter?: JSONObject
+  // remoteQueryMapping?: [{ label: "label"; value: string }, { label: "value"; value: string }]
+}
+
+interface QueryRemoteUrlProps<T> extends IQueryProps<T> {
+  queryType: "remote-url"
+  remoteUrl?: PersistedConfig["id"]
+  remoteDataFilter?: JSONObject
+}
+
+interface QueryRemoteConfigProps<T> extends IQueryProps<T> {
+  queryType: "remote-config"
+  remoteConfigType?: PersistedConfig["id"]
+  remoteDataFilter?: JSONObject
+}
+
+export type QueryProps<T = any> = QueryRemoteQueryProps<T> | QueryRemoteUrlProps<T> | QueryRemoteConfigProps<T>
+
+export interface QueryState<T> {
+  runCount: number
+  data: T[]
+  loadError: string | null
+  loadStatus: "none" | "loading" | "loaded" | "error"
+  parameterValues: { [key: string]: any }
+  promptLayout: QueryConfig["layout"]
+  promptParameters: QueryConfig["parameters"]
+  renderedChildren?: ReturnType<IQueryProps<T>["children"]>
+  refreshTimeout?: ReturnType<typeof setTimeout> | null
+  remoteQueryLoggingName?: string | null
+  submitButtonLabel?: string
+}

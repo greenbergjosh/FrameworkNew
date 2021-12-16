@@ -5,9 +5,9 @@ import React from "react"
 import { HTTPRequestQueryConfig, QueryConfig } from "../../../../api/ReportCodecs"
 import { JSONRecord } from "../../../../lib/JSONRecord"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { QueryForm } from "../../../_shared/query/QueryForm"
+import { QueryForm } from "../../query/QueryForm"
 import { OnSubmitType, RemoteUrlProps } from "../../types"
-import { QueryParams } from "../../../_shared/query/QueryParams"
+import { QueryParams } from "../../query/QueryParams"
 import { executeRemoteUrl } from "./executeRemoteUrl"
 
 function RemoteUrl(props: RemoteUrlProps): JSX.Element {
