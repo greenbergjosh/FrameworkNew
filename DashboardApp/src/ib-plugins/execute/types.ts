@@ -11,12 +11,10 @@ import { ConfigType, PersistedConfig } from "../../api/GlobalConfigCodecs"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../api/ReportCodecs"
 import { AppDispatch, AppState } from "../../state/store.types"
-import { QueryFormProps } from "./query/types"
+import { OnMountType, QueryFormProps } from "./query/types"
 import { JSONRecord } from "../../lib/JSONRecord"
-import { PropsFromQueryParams } from "./query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
-import { NotifyConfig } from "../../state/feedback"
 
 export enum LOADSTATUSCODES {
   none = "none",
@@ -159,16 +157,6 @@ export type ExecuteInterfaceComponentProps = (
  *
  * COMPONENTS
  */
-
-export type OnSubmitType = (
-  parameterValues: JSONRecord,
-  satisfiedByParentParams: PropsFromQueryParams["satisfiedByParentParams"],
-  setParameterValues: PropsFromQueryParams["setParameterValues"]
-) => Promise<void | NotifyConfig> | undefined
-
-export type OnMountType = (
-  handleSubmit: () => Promise<void | NotifyConfig> | undefined
-) => Promise<void | NotifyConfig> | undefined
 
 export interface RemoteComponentProps {
   getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]

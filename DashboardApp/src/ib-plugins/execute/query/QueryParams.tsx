@@ -5,40 +5,63 @@ import { determineSatisfiedParameters } from "./determineSatisfiedParameters"
 import { JSONRecord } from "../../../lib/JSONRecord"
 import { useRematch } from "../../../hooks"
 import queryString, { ParsedQuery } from "query-string"
-import { ParameterItem, QueryConfig } from "../../../api/ReportCodecs"
 import { decodeGloballyPersistedParams } from "../../../state/queries/persistedParams"
-
-export interface PropsFromQueryParams {
-  parameterValues: Option<JSONRecord>
-  satisfiedByParentParams: JSONRecord
-  setParameterValues: (value: React.SetStateAction<Option<JSONRecord>>) => void
-  unsatisfiedByParentParams: ParameterItem[]
-}
-
-interface QueryParamsProps {
-  children: (props: PropsFromQueryParams) => JSX.Element
-  parentData?: JSONRecord
-  queryConfig: QueryConfig
-}
+import { PrivilegedUserInterfaceContextManager, QueryParamsProps } from "./types"
+import {
+  AbstractBaseInterfaceComponentType,
+  ComponentDefinition,
+  getDefaultsFromComponentDefinitions,
+  UserInterface,
+} from "@opg/interface-builder"
+import { merge } from "lodash/fp"
+import { ParameterItem, QueryConfig } from "../../../api/ReportCodecs"
+import { AppState } from "../../../state/store.types"
+import { store } from "../../../state/store"
+import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
+import { SubmitButton } from "../../table/report/query/SubmitButton"
 
 export const QueryParams = React.memo((props: QueryParamsProps) => {
-  /* ***************************
-   *
-   * Redux, State
-   */
+  const [fromStore /* dispatch */] = useRematch((appState) => {
+    const privilegedUserInterfaceContextManager = getPrivilegedUserInterfaceContextManager(appState)
 
-  const [fromStore /*dispatch*/] = useRematch((appState) => ({
-    queryParamsByQuery: appState.queries.queryParamsByQuery,
-    queryGlobalParams: appState.queries.queryGlobalParams,
-  }))
-
+    return {
+      privilegedUserInterfaceContextManager,
+      queryParamsByQuery: appState.queries.queryParamsByQuery,
+      queryGlobalParams: appState.queries.queryGlobalParams,
+    }
+  })
+  const isMountedRef = React.useRef(true)
   const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
   const [hasInitialParameters, setHasInitialParameters] = React.useState(false)
+  const [submitting, setSubmitting] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
+  const [formState, setFormState] = React.useState({})
 
   /* ***************************
    *
    * Property Watchers
    */
+
+  /*
+   * PREVENT MEMORY LEAKS
+   *
+   * We can't use the usual way of checking mounted status by setting
+   * an isMounted variable in the useEffect and then checking its value
+   * before setting state.
+   *
+   * Since a submit can be kicked off outside of useEffect, we use a ref
+   * and this "unmount" useEffect to track the mounted status.
+   * Other useEffects in this component must check the isMounted.current ref
+   * before setting state.
+   *
+   * We can't use the traditional way of
+   * https://stackoverflow.com/questions/58038008/how-to-stop-memory-leak-in-useeffect-hook-react
+   */
+  React.useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   /**
    * Get querystring params
@@ -89,21 +112,183 @@ export const QueryParams = React.memo((props: QueryParamsProps) => {
     }
   }, [hasInitialParameters, satisfiedByParentParams])
 
+  /*
+   * Trigger onMount event only on component mount.
+   * For instance the parent may want to execute this
+   * query form immediately when the page loads.
+   */
+  React.useEffect(() => {
+    if (!props.onMount) return
+    const newState = getDefaultFormValues(
+      props.layout,
+      unsatisfiedByParentParams,
+      parameterValues.getOrElse(record.empty),
+      props.getDefinitionDefaultValue
+    )
+    const promise = props.onMount(newState, satisfiedByParentParams, setParameterValues)
+
+    setFormState(newState)
+    if (promise) {
+      setLoading(true)
+      promise.finally(() => {
+        if (isMountedRef.current) {
+          setLoading(false)
+        }
+      })
+    }
+    setSubmitting(false)
+  }, [])
+
+  /*
+   * Update form state when layout or parameters change
+   */
+  React.useEffect(() => {
+    const newState = getDefaultFormValues(
+      props.layout,
+      unsatisfiedByParentParams,
+      parameterValues.getOrElse(record.empty),
+      props.getDefinitionDefaultValue
+    )
+
+    setFormState(newState)
+  }, [props.layout, unsatisfiedByParentParams, parameterValues, props.getDefinitionDefaultValue])
+
+  /*
+   * Submit Form
+   * Wait until state is updated to submit the form so we don't submit old data.
+   */
+  React.useEffect(() => {
+    // This effect triggers whenever state updates,
+    // so we check first for submitting.
+    if (!submitting) {
+      return
+    }
+    const promise = props.onSubmit(formState, satisfiedByParentParams, setParameterValues)
+    if (promise) {
+      setLoading(true)
+      promise.finally(() => {
+        if (isMountedRef.current) {
+          setLoading(false)
+        }
+      })
+    }
+    setSubmitting(false)
+    props.setParentSubmitting && props.setParentSubmitting(false)
+  }, [submitting, props.onSubmit, props.setParentSubmitting, formState])
+
+  /*
+   * Parent Submit Form
+   * Allow parent components to trigger a submit
+   */
+  React.useEffect(() => {
+    if (props.parentSubmitting) {
+      setSubmitting(true)
+    }
+  }, [props.parentSubmitting, setSubmitting])
+
   /* ***************************
    *
    * Render
    */
 
-  return (
-    <>
-      {props &&
-        props.children &&
-        props.children({
-          parameterValues,
-          satisfiedByParentParams,
-          setParameterValues,
-          unsatisfiedByParentParams,
-        })}
-    </>
-  )
+  // if (props.layout) {
+  //   return (
+  //     <UserInterface
+  //       components={props.layout as unknown as ComponentDefinition[]}
+  //       contextManager={fromStore.privilegedUserInterfaceContextManager}
+  //       data={formState}
+  //       getRootUserInterfaceData={props.getRootUserInterfaceData}
+  //       onChangeRootData={props.onChangeRootData}
+  //       mode="display"
+  //       onChangeData={setFormState}
+  //       submit={() => props.onSubmit(formState, satisfiedByParentParams, setParameterValues)}
+  //     />
+  //   )
+  // }
+
+  // return (
+  // <>
+  //   {props &&
+  //   props.children &&
+  //   props.children({
+  //     parameterValues,
+  //     satisfiedByParentParams,
+  //     setParameterValues,
+  //     unsatisfiedByParentParams,
+  //   })}
+  // </>
+  // )
+
+  return null
 })
+
+/* ************************************************************************************
+ *
+ * Static Functions
+ */
+
+export function getDefaultFormValues(
+  layout: QueryConfig["layout"],
+  parameters: QueryConfig["parameters"],
+  parameterValues: JSONRecord,
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+): JSONRecord {
+  const defaultComponentValues = getDefaultComponentValues(layout, getDefinitionDefaultValue)
+  const defaultParameters = getDefaultParameters(parameters)
+
+  return merge(merge(defaultParameters, defaultComponentValues), parameterValues)
+}
+
+/**
+ *
+ * @param parameters
+ */
+export function getDefaultParameters(parameters: QueryConfig["parameters"]): JSONRecord {
+  const emptyParameters: { [key: string]: any } = {}
+
+  return (
+    parameters &&
+    parameters.reduce((acc: { [key: string]: any }, parameter: ParameterItem) => {
+      if (parameter.defaultValue.isSome()) {
+        acc[parameter.name] = parameter.defaultValue.toUndefined()
+      }
+      return acc
+    }, emptyParameters)
+  )
+}
+
+/**
+ *
+ * @param layout
+ */
+export function getDefaultComponentValues(
+  layout: QueryConfig["layout"],
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+): JSONRecord {
+  const emptyComponentValues: JSONRecord = {}
+  const layoutOrEmptySet = (layout || []) as ComponentDefinition[]
+
+  return layoutOrEmptySet.reduce((acc, layoutItem: ComponentDefinition) => {
+    return merge(acc, getDefaultsFromComponentDefinitions([layoutItem], getDefinitionDefaultValue))
+  }, emptyComponentValues)
+}
+
+/**
+ * Connects Redux to Context
+ * @param appState
+ */
+export function getPrivilegedUserInterfaceContextManager(appState: AppState): PrivilegedUserInterfaceContextManager {
+  return {
+    executeQuery: store.dispatch.reports.executeQuery.bind(store.dispatch.reports),
+    reportDataByQuery: appState.reports.reportDataByQuery,
+    loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
+      return appState.globalConfig.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
+    },
+    loadById: (id: string) => {
+      return record.lookup(id, store.select.globalConfig.configsById(appState)).toNullable()
+    },
+    loadByURL: (url: string) => {
+      return [] // TODO: axios
+    },
+  }
+}

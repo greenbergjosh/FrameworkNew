@@ -6,6 +6,46 @@ import { AppDispatch } from "../../../state/store.types"
 import { AdminUserInterfaceContextManager } from "../../../contexts/AdminUserInterfaceContextManager.type"
 import { UserInterfaceContextManager, UserInterfaceProps } from "@opg/interface-builder"
 import { AbstractBaseInterfaceComponentType } from "@opg/interface-builder/src/components/BaseInterfaceComponent/types"
+import { Option } from "fp-ts/lib/Option"
+import React from "react"
+import { NotifyConfig } from "../../../state/feedback"
+
+/* ****************************************************
+ *
+ * Query Params
+ */
+
+export interface PropsFromQueryParams {
+  parameterValues: Option<JSONRecord>
+  satisfiedByParentParams: JSONRecord
+  setParameterValues: (value: React.SetStateAction<Option<JSONRecord>>) => void
+  unsatisfiedByParentParams: ParameterItem[]
+}
+
+export type OnSubmitType = (
+  parameterValues: JSONRecord,
+  satisfiedByParentParams: PropsFromQueryParams["satisfiedByParentParams"],
+  setParameterValues: PropsFromQueryParams["setParameterValues"]
+) => Promise<void | NotifyConfig> | undefined
+
+export type OnMountType = (
+  handleSubmit: () => Promise<void | NotifyConfig> | undefined
+) => Promise<void | NotifyConfig> | undefined
+
+export interface QueryParamsProps {
+  parentData?: JSONRecord
+  queryConfig: QueryConfig
+
+  // From QueryForm
+  getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
+  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
+  onChangeRootData: UserInterfaceProps["onChangeRootData"]
+  layout: QueryConfig["layout"]
+  onMount?: OnSubmitType
+  onSubmit: OnSubmitType
+  parentSubmitting?: boolean
+  setParentSubmitting?: (submitting: boolean) => void
+}
 
 /* ****************************************************
  *

@@ -1,14 +1,13 @@
 import { Empty } from "antd"
 import { some } from "fp-ts/lib/Option"
-import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { HTTPRequestQueryConfig, QueryConfig } from "../../../../api/ReportCodecs"
 import { JSONRecord } from "../../../../lib/JSONRecord"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { QueryForm } from "../../query/QueryForm"
-import { OnSubmitType, RemoteUrlProps } from "../../types"
+import { RemoteUrlProps } from "../../types"
 import { QueryParams } from "../../query/QueryParams"
 import { executeRemoteUrl } from "./executeRemoteUrl"
+import { OnSubmitType } from "../../query/types"
 
 function RemoteUrl(props: RemoteUrlProps): JSX.Element {
   const {
@@ -92,7 +91,7 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
 
   /* *************************************
    *
-   * RENDER METHOD
+   * RENDER
    */
 
   if (!queryConfig)
@@ -106,24 +105,19 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
   const params = getParams()
 
   return (
-    <QueryParams queryConfig={queryConfig} parentData={params}>
-      {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
-        <QueryForm
-          getRootUserInterfaceData={getRootUserInterfaceData}
-          onChangeRootData={onChangeRootData}
-          layout={queryConfig.layout}
-          onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
-          onMount={(queryFormValues) =>
-            onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
-          }
-          parameters={unsatisfiedByParentParams}
-          parameterValues={parameterValues.getOrElse(record.empty)}
-          parentSubmitting={parentSubmitting}
-          setParentSubmitting={setParentSubmitting}
-          getDefinitionDefaultValue={getDefinitionDefaultValue}
-        />
-      )}
-    </QueryParams>
+    <QueryParams
+      queryConfig={queryConfig}
+      parentData={params}
+      // formerly QueryForm props
+      getRootUserInterfaceData={getRootUserInterfaceData}
+      onChangeRootData={onChangeRootData}
+      layout={queryConfig.layout}
+      onSubmit={handleSubmit}
+      onMount={handleSubmit}
+      parentSubmitting={parentSubmitting}
+      setParentSubmitting={setParentSubmitting}
+      getDefinitionDefaultValue={getDefinitionDefaultValue}
+    />
   )
 }
 

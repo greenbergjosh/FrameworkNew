@@ -16,8 +16,8 @@ import {
   ExecuteRemoteUrlInterfaceComponentProps,
   LoadStatusCode,
   LOADSTATUSCODES,
-  OnMountType,
 } from "./types"
+import { OnMountType } from "./query/types"
 import RemoteConfig from "./components/RemoteConfig/RemoteConfig"
 import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
 import RemoteUrl from "./components/RemoteUrl/RemoteUrl"

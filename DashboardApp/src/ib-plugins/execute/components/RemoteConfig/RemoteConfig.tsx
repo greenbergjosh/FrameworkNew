@@ -5,15 +5,7 @@ import React from "react"
 import { QueryConfig } from "../../../../api/ReportCodecs"
 import { JSONRecord } from "../../../../lib/JSONRecord"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { QueryForm } from "../../query/QueryForm"
-import {
-  LoadStatus,
-  LoadStatusCode,
-  LOADSTATUSCODES,
-  OnSubmitType,
-  RemoteConfigFromStore,
-  RemoteConfigProps,
-} from "../../types"
+import { LoadStatus, LoadStatusCode, LOADSTATUSCODES, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
 import { QueryParams } from "../../query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../hooks"
@@ -22,6 +14,7 @@ import { AppDispatch } from "../../../../state/store.types"
 import { isEmpty, merge } from "lodash/fp"
 import { PersistedConfig } from "../../../../api/GlobalConfigCodecs"
 import { NotifyConfig } from "../../../../state/feedback"
+import { OnSubmitType, PropsFromQueryParams } from "../../query/types"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
@@ -99,13 +92,11 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    * EVENT HANDLERS
    */
 
-  /* Originally from ReportBody.tsx */
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
     if (!queryConfig || mode === "edit") return
     onRaiseEvent(LOADSTATUSCODES.loading, { value: {} })
 
     /*
-     * From ReportBody.tsx
      * Send parameterValues back up to <QueryParams>
      * (Unknown why this is being done)
      */
@@ -179,24 +170,40 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const params = getParams()
 
   return (
-    <QueryParams queryConfig={queryConfig} parentData={params}>
-      {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
-        <QueryForm
-          getRootUserInterfaceData={getRootUserInterfaceData}
-          onChangeRootData={onChangeRootData}
-          layout={queryConfig.layout}
-          onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
-          onMount={(queryFormValues) =>
-            onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
-          }
-          parameters={unsatisfiedByParentParams}
-          parameterValues={parameterValues.getOrElse(record.empty)}
-          parentSubmitting={parentSubmitting}
-          setParentSubmitting={setParentSubmitting}
-          getDefinitionDefaultValue={getDefinitionDefaultValue}
-        />
-      )}
-    </QueryParams>
+    // <QueryParams queryConfig={queryConfig} parentData={params}>
+    //   {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
+    //     <QueryForm
+    //       getRootUserInterfaceData={getRootUserInterfaceData}
+    //       onChangeRootData={onChangeRootData}
+    //       layout={queryConfig.layout}
+    //       onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
+    //       onMount={(queryFormValues) =>
+    //         onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
+    //       }
+    //       parameters={unsatisfiedByParentParams}
+    //       parameterValues={parameterValues.getOrElse(record.empty)}
+    //       parentSubmitting={parentSubmitting}
+    //       setParentSubmitting={setParentSubmitting}
+    //       getDefinitionDefaultValue={getDefinitionDefaultValue}
+    //     />
+    //   )}
+    // </QueryParams>
+
+    <QueryParams
+      queryConfig={queryConfig}
+      parentData={params}
+      // formerly QueryForm props
+      getRootUserInterfaceData={getRootUserInterfaceData}
+      onChangeRootData={onChangeRootData}
+      layout={queryConfig.layout}
+      onSubmit={handleSubmit}
+      onMount={(queryFormValues, satisfiedByParentParams, setParameterValues) =>
+        props.onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
+      }
+      parentSubmitting={parentSubmitting}
+      setParentSubmitting={setParentSubmitting}
+      getDefinitionDefaultValue={getDefinitionDefaultValue}
+    />
   )
 }
 
