@@ -40,8 +40,6 @@ export default class DateStepperInterfaceComponent extends BaseInterfaceComponen
       dateFormat,
       userInterfaceData,
       onChangeData,
-      submit,
-      executeImmediately,
     } = this.props
     let newValues: DateValuesType
 
@@ -60,9 +58,6 @@ export default class DateStepperInterfaceComponent extends BaseInterfaceComponen
     const newUserInterfaceData = { ...userInterfaceData, ...newValues }
 
     onChangeData && onChangeData(newUserInterfaceData)
-    if (executeImmediately) {
-      submit && submit()
-    }
   }
 
   /* ***********************************************

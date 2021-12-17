@@ -87,7 +87,6 @@ const dataTab = {
  *   requireConfirmation: boolean
  *   shape: string
  *   size: string
- *   submit: ƒ
  *   useOnClick: boolean
  *   userInterfaceData: JSONRecord
  *   userInterfaceSchema: JSONRecord

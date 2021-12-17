@@ -21,7 +21,6 @@ export interface RouterInterfaceComponentProps extends ComponentDefinitionNamedP
 
   // Necessary?
   dragDropDisabled?: boolean
-  submit?: UserInterfaceProps["submit"]
 }
 
 export interface ModeProps {
@@ -57,7 +56,6 @@ export interface RouteRendererProps extends RouteComponentProps {
 
   // Necessary?
   dragDropDisabled?: boolean
-  submit?: UserInterfaceProps["submit"]
 }
 
 export interface RouterInterfaceComponentState {}

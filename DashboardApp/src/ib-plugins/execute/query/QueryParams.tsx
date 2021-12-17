@@ -11,14 +11,12 @@ import {
   AbstractBaseInterfaceComponentType,
   ComponentDefinition,
   getDefaultsFromComponentDefinitions,
-  UserInterface,
 } from "@opg/interface-builder"
 import { merge } from "lodash/fp"
 import { ParameterItem, QueryConfig } from "../../../api/ReportCodecs"
 import { AppState } from "../../../state/store.types"
 import { store } from "../../../state/store"
 import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
-import { SubmitButton } from "../../table/report/query/SubmitButton"
 
 export const QueryParams = React.memo((props: QueryParamsProps) => {
   const [fromStore /* dispatch */] = useRematch((appState) => {
@@ -34,7 +32,6 @@ export const QueryParams = React.memo((props: QueryParamsProps) => {
   const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
   const [hasInitialParameters, setHasInitialParameters] = React.useState(false)
   const [submitting, setSubmitting] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
   const [formState, setFormState] = React.useState({})
 
   /* ***************************
@@ -125,17 +122,8 @@ export const QueryParams = React.memo((props: QueryParamsProps) => {
       parameterValues.getOrElse(record.empty),
       props.getDefinitionDefaultValue
     )
-    const promise = props.onMount(newState, satisfiedByParentParams, setParameterValues)
-
+    props.onMount(newState, satisfiedByParentParams, setParameterValues)
     setFormState(newState)
-    if (promise) {
-      setLoading(true)
-      promise.finally(() => {
-        if (isMountedRef.current) {
-          setLoading(false)
-        }
-      })
-    }
     setSubmitting(false)
   }, [])
 
@@ -163,15 +151,7 @@ export const QueryParams = React.memo((props: QueryParamsProps) => {
     if (!submitting) {
       return
     }
-    const promise = props.onSubmit(formState, satisfiedByParentParams, setParameterValues)
-    if (promise) {
-      setLoading(true)
-      promise.finally(() => {
-        if (isMountedRef.current) {
-          setLoading(false)
-        }
-      })
-    }
+    props.onSubmit(formState, satisfiedByParentParams, setParameterValues)
     setSubmitting(false)
     props.setParentSubmitting && props.setParentSubmitting(false)
   }, [submitting, props.onSubmit, props.setParentSubmitting, formState])
@@ -190,34 +170,6 @@ export const QueryParams = React.memo((props: QueryParamsProps) => {
    *
    * Render
    */
-
-  // if (props.layout) {
-  //   return (
-  //     <UserInterface
-  //       components={props.layout as unknown as ComponentDefinition[]}
-  //       contextManager={fromStore.privilegedUserInterfaceContextManager}
-  //       data={formState}
-  //       getRootUserInterfaceData={props.getRootUserInterfaceData}
-  //       onChangeRootData={props.onChangeRootData}
-  //       mode="display"
-  //       onChangeData={setFormState}
-  //       submit={() => props.onSubmit(formState, satisfiedByParentParams, setParameterValues)}
-  //     />
-  //   )
-  // }
-
-  // return (
-  // <>
-  //   {props &&
-  //   props.children &&
-  //   props.children({
-  //     parameterValues,
-  //     satisfiedByParentParams,
-  //     setParameterValues,
-  //     unsatisfiedByParentParams,
-  //   })}
-  // </>
-  // )
 
   return null
 })

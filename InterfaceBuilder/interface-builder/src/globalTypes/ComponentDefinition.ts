@@ -43,7 +43,6 @@ export interface ComponentRenderMetaProps {
   onChangeData?: UserInterfaceProps["onChangeData"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition
-  submit?: UserInterfaceProps["submit"]
 }
 
 /**

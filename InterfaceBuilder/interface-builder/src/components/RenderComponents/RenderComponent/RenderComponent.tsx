@@ -19,7 +19,6 @@ export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Eleme
     // onChangeSchema,
     onVisibilityChange,
     path,
-    submit,
     userInterfaceData,
   } = props
   const [Component, setComponent] = React.useState<AbstractBaseInterfaceComponentType>()
@@ -71,7 +70,6 @@ export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Eleme
           onChangeRootData={onChangeRootData}
           onChangeSchema={handleChangeSchema}
           onVisibilityChange={onVisibilityChange}
-          submit={submit}
           userInterfaceData={userInterfaceData}
         />
       )
@@ -86,7 +84,6 @@ export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Eleme
           onChangeRootData={onChangeRootData}
           onChangeSchema={handleChangeSchema}
           onVisibilityChange={onVisibilityChange}
-          submit={submit}
           userInterfaceData={userInterfaceData}
         />
       )
@@ -104,7 +101,6 @@ export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Eleme
           onChangeRootData={onChangeRootData}
           onChangeSchema={handleChangeSchema}
           path={path}
-          submit={submit}
           userInterfaceData={userInterfaceData}
         />
       )

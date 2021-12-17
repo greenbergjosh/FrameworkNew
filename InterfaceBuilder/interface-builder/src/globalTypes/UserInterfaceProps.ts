@@ -10,7 +10,6 @@ interface IUserInterfaceProps {
   onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
   getComponents?: () => ComponentDefinition[] // See CHN-551 Workaround
-  submit?: () => void
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   onChangeRootData: (newData: UserInterfaceProps["data"]) => void
   onVisibilityChange?: (

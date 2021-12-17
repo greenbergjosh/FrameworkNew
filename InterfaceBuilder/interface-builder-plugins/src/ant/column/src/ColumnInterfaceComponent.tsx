@@ -51,7 +51,6 @@ export default class ColumnInterfaceComponent extends BaseInterfaceComponent<Col
       userInterfaceData,
       getRootUserInterfaceData,
       onChangeRootData,
-      submit,
       mode,
       preview,
     } = this.props
@@ -85,7 +84,6 @@ export default class ColumnInterfaceComponent extends BaseInterfaceComponent<Col
                           onChangeSchema(set(`columns.${columnIndex}.components`, newSchema, userInterfaceSchema))
                       }
                     }}
-                    submit={submit}
                   />
                 </DataPathContext>
               </Col>

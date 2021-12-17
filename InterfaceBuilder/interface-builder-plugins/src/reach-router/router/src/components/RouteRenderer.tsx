@@ -41,7 +41,6 @@ export function RouteRenderer(props: RouteRendererProps): JSX.Element {
 //     onChangeData={props.onChangeData}
 //     onChangeSchema={handleChangeSchema}
 //     path={path}
-//     submit={props.submit}
 //     index={0}
 //   />
 // )}

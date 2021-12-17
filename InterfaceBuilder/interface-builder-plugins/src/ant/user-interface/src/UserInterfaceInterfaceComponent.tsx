@@ -19,7 +19,6 @@ export interface UserInterfaceInterfaceComponentProps extends ComponentDefinitio
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
-  submit: UserInterfaceProps["submit"]
   hideMenu: boolean
 }
 
@@ -59,7 +58,7 @@ export default class UserInterfaceInterfaceComponent extends BaseInterfaceCompon
   }
 
   render(): JSX.Element {
-    const { defaultValue, valueKey, submit } = this.props
+    const { defaultValue, valueKey } = this.props
     const { data } = this.state
     if (this.props.mode === "edit") {
       return (
@@ -73,7 +72,6 @@ export default class UserInterfaceInterfaceComponent extends BaseInterfaceCompon
                 mode="edit"
                 onChangeData={this.handleChangeData}
                 onChangeSchema={this.handleChangeSchema}
-                submit={submit}
                 getRootUserInterfaceData={this.props.getRootUserInterfaceData}
                 onChangeRootData={this.props.onChangeRootData}
                 hideMenu={this.props.hideMenu}
@@ -92,7 +90,6 @@ export default class UserInterfaceInterfaceComponent extends BaseInterfaceCompon
         mode="edit"
         onChangeData={this.handleChangeData}
         onChangeSchema={this.handleChangeSchema}
-        submit={submit}
         getRootUserInterfaceData={this.props.getRootUserInterfaceData}
         onChangeRootData={this.props.onChangeRootData}
         hideMenu={this.props.hideMenu}

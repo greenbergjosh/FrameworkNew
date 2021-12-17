@@ -31,16 +31,6 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     getDefinitionDefaultValue,
   } = props
 
-  /* *************************************
-   *
-   * STATE
-   */
-
-  /* *************************************
-   *
-   * PROP WATCHERS
-   */
-
   /**
    * Put the query config from Persisted Global Configs into state
    */
@@ -120,7 +110,9 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
       layout={queryConfig.layout}
       onChangeRootData={onChangeRootData}
       onSubmit={handleSubmit}
-      onMount={handleSubmit}
+      onMount={(queryFormValues, satisfiedByParentParams, setParameterValues) =>
+        props.onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
+      }
       parentSubmitting={parentSubmitting}
       setParentSubmitting={setParentSubmitting}
       getDefinitionDefaultValue={getDefinitionDefaultValue}

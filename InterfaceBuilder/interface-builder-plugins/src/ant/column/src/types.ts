@@ -14,7 +14,6 @@ export interface IColumnInterfaceComponentProps extends ComponentDefinitionNamed
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
-  submit?: UserInterfaceProps["submit"]
 }
 
 interface ColumnInterfaceComponentDisplayModeProps extends IColumnInterfaceComponentProps {

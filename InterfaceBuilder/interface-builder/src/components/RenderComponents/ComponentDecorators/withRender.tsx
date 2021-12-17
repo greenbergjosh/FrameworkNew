@@ -14,7 +14,6 @@ export const withRender: ComposableFn<React.ComponentType<ComponentModifierProps
         onChangeData={hocProps.onChangeData}
         onChangeRootData={hocProps.onChangeRootData}
         onChangeSchema={hocProps.onChangeSchema}
-        submit={hocProps.submit}
         userInterfaceData={hocProps.userInterfaceData}>
         {Component && (
           <Component
@@ -24,7 +23,6 @@ export const withRender: ComposableFn<React.ComponentType<ComponentModifierProps
             onChangeData={hocProps.onChangeData}
             onChangeRootData={hocProps.onChangeRootData}
             onChangeSchema={hocProps.onChangeSchema}
-            submit={hocProps.submit}
             userInterfaceData={hocProps.userInterfaceData}
             userInterfaceSchema={hocProps.componentDefinition}
           />

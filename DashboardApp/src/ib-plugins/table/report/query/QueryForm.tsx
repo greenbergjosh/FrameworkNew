@@ -180,7 +180,6 @@ export const QueryForm = React.memo(
             onChangeRootData={onChangeRootData}
             mode="display"
             onChangeData={updateFormState}
-            submit={handleSubmit}
           />
           <div style={{ marginTop: "10px", marginBottom: "10px" }}>
             <SubmitButton

@@ -14,7 +14,7 @@ import { AppDispatch } from "../../../../state/store.types"
 import { isEmpty, merge } from "lodash/fp"
 import { PersistedConfig } from "../../../../api/GlobalConfigCodecs"
 import { NotifyConfig } from "../../../../state/feedback"
-import { OnSubmitType, PropsFromQueryParams } from "../../query/types"
+import { OnSubmitType } from "../../query/types"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
@@ -48,11 +48,6 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    */
   const [loadStatus, setLoadStatus] = React.useState<LoadStatusCode>(LOADSTATUSCODES.none)
 
-  /* *************************************
-   *
-   * PROP WATCHERS
-   */
-
   const [fromStore, dispatch]: [RemoteConfigFromStore, AppDispatch] = useRematch((appState) => ({
     configNames: store.select.globalConfig.configNames(appState),
     configs: appState.globalConfig.configs,
@@ -71,6 +66,11 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       return record.lookup(type, store.select.globalConfig.configsByType(appState)).toNullable()
     },
   }))
+
+  /* *************************************
+   *
+   * PROP WATCHERS
+   */
 
   /**
    * IMPORTANT! There only needs to be one queryConfig for use with RemoteConfigs.
@@ -170,25 +170,6 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const params = getParams()
 
   return (
-    // <QueryParams queryConfig={queryConfig} parentData={params}>
-    //   {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
-    //     <QueryForm
-    //       getRootUserInterfaceData={getRootUserInterfaceData}
-    //       onChangeRootData={onChangeRootData}
-    //       layout={queryConfig.layout}
-    //       onSubmit={(queryFormValues) => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)}
-    //       onMount={(queryFormValues) =>
-    //         onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
-    //       }
-    //       parameters={unsatisfiedByParentParams}
-    //       parameterValues={parameterValues.getOrElse(record.empty)}
-    //       parentSubmitting={parentSubmitting}
-    //       setParentSubmitting={setParentSubmitting}
-    //       getDefinitionDefaultValue={getDefinitionDefaultValue}
-    //     />
-    //   )}
-    // </QueryParams>
-
     <QueryParams
       queryConfig={queryConfig}
       parentData={params}

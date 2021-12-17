@@ -15,8 +15,6 @@ export interface DateStepperInterfaceComponentProps extends ComponentDefinitionN
   size: ButtonProps["size"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  submit: UserInterfaceProps["submit"]
-  executeImmediately: boolean
 }
 
 export interface DateStepperInterfaceComponentState {}

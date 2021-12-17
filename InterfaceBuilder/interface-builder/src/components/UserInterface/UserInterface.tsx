@@ -57,7 +57,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
   //   this.props.onChangeRootData && this.props.onChangeRootData(newData)
 
   render(): JSX.Element {
-    const { components, getComponents, contextManager, data, mode, onChangeData, submit } = this.props
+    const { components, getComponents, contextManager, data, mode, onChangeData } = this.props
     const { error, fullscreen, itemToAdd, itemToEdit } = this.state
 
     if (error) {
@@ -85,7 +85,6 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                 )
               }
         }
-        submit={submit}
         onDrop={this.handleDrop}
         keyPrefix={this.props.keyPrefix}
       />

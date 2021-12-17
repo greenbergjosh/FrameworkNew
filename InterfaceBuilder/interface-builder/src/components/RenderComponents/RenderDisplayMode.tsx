@@ -30,7 +30,6 @@ export const RenderDisplayMode = React.memo((props: ComponentRendererProps): JSX
                 onChangeSchema: () => void 0,
                 onVisibilityChange: props.onVisibilityChange,
                 path,
-                submit: props.submit,
                 userInterfaceData: props.data,
               })}>
               <RenderComponent
@@ -45,7 +44,6 @@ export const RenderDisplayMode = React.memo((props: ComponentRendererProps): JSX
                 onChangeSchema={() => void 0}
                 onVisibilityChange={props.onVisibilityChange}
                 path={path}
-                submit={props.submit}
                 userInterfaceData={props.data}
               />
             </ErrorBoundary>

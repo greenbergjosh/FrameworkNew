@@ -1,17 +1,6 @@
-import React from "react"
 import { DroppableContextType } from "../../contexts/DroppableContext"
-import {
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
-  ComponentDefinitionRecursiveProp,
-  EditUserInterfaceProps,
-  LayoutDefinition,
-  UserInterfaceProps,
-} from "../../globalTypes"
-import {
-  AbstractBaseInterfaceComponentType,
-  BaseInterfaceComponentProps,
-} from "../../components/BaseInterfaceComponent/types"
+import { ComponentDefinition, EditUserInterfaceProps, UserInterfaceProps } from "../../globalTypes"
+import { AbstractBaseInterfaceComponentType } from "../../components/BaseInterfaceComponent/types"
 
 export interface RenderInterfaceComponentProps {
   componentDefinition: ComponentDefinition
@@ -24,7 +13,6 @@ export interface RenderInterfaceComponentProps {
   onChangeSchema?: (newComponentDefinition: ComponentDefinition, index: number) => void
   onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
   path: string
-  submit?: UserInterfaceProps["submit"]
   userInterfaceData: UserInterfaceProps["data"]
 }
 
@@ -44,7 +32,6 @@ export interface ComponentRendererProps {
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema: EditUserInterfaceProps["onChangeSchema"]
   onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
-  submit?: UserInterfaceProps["submit"]
   onDrop?: DroppableContextType["onDrop"]
   keyPrefix?: string
   id?: string
@@ -58,7 +45,6 @@ export interface ModeProps {
   onChangeRootData: UserInterfaceProps["onChangeRootData"]
   onChangeSchema: ((newComponentDefinition: ComponentDefinition, index?: number) => void) | undefined
   onVisibilityChange?: UserInterfaceProps["onVisibilityChange"]
-  submit: (() => void) | undefined
   userInterfaceData: UserInterfaceProps["data"]
 }
 
