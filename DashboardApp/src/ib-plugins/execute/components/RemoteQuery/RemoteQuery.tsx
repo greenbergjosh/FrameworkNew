@@ -111,7 +111,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
       onChangeRootData={onChangeRootData}
       onSubmit={handleSubmit}
       onMount={(queryFormValues, satisfiedByParentParams, setParameterValues) =>
-        props.onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
+        onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
       }
       parentSubmitting={parentSubmitting}
       setParentSubmitting={setParentSubmitting}

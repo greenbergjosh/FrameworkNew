@@ -179,7 +179,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       layout={queryConfig.layout}
       onSubmit={handleSubmit}
       onMount={(queryFormValues, satisfiedByParentParams, setParameterValues) =>
-        props.onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
+        onMount(() => handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues))
       }
       parentSubmitting={parentSubmitting}
       setParentSubmitting={setParentSubmitting}

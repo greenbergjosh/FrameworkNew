@@ -1,16 +1,16 @@
 import * as Formik from "formik"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
-import { AdminUserInterfaceContextManagerProvider } from "../../../../contexts/AdminUserInterfaceContextManager"
-import { AppDispatch } from "../../../../state/store.types"
+import { AdminUserInterfaceContextManagerProvider } from "../../../contexts/AdminUserInterfaceContextManager"
+import { AppDispatch } from "../../../state/store.types"
 import { Form } from "antd"
 import { Identity } from "fp-ts/lib/Identity"
-import { isWhitespace } from "../../../../lib/string"
-import { JSONRecord } from "../../../../lib/JSONRecord"
+import { isWhitespace } from "../../../lib/string"
+import { JSONRecord } from "../../../lib/JSONRecord"
 import { none, some, tryCatch } from "fp-ts/lib/Option"
 import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
 import { mapData } from "./mapData"
-import { ReportDetailsType, Values } from "./types"
+import { ReportDetailsType, Values } from "../types"
 
 export interface ReportDetailsProps {
   details: ReportDetailsType

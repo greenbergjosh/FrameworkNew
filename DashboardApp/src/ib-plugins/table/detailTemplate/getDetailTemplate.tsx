@@ -1,21 +1,19 @@
-import { AppDispatch } from "../../../../state/store.types"
+import { AppDispatch } from "../../../state/store.types"
 import {
   GlobalConfigReference,
   IReportDetailsAsReport,
   LocalReportConfig,
   ReportDetailsAsReport,
   SimpleLayoutConfig,
-} from "../../../../api/ReportCodecs"
-import { JSONRecord } from "../../../../lib/JSONRecord"
-import { Report } from "../Report"
+} from "../../../api/ReportCodecs"
+import { JSONRecord } from "../../../lib/JSONRecord"
 import React from "react"
 import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
 import { mapData, unMapData } from "./mapData"
-import { ReportDetailsType } from "./types"
 import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"
 import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
-import { ColumnConfig } from "../../types"
+import { ColumnConfig, ReportDetailsType } from "../types"
 
 /***************************************************************************
  *
@@ -60,19 +58,6 @@ export const getDetailTemplate = ({
   const resolved = resolveDetails(columnDetails)
 
   if (!resolved) return
-  if (resolved.type === "GlobalConfigReference" || resolved.type === "ReportConfig") {
-    return (rowData: JSONRecord) => (
-      <Report
-        getRootUserInterfaceData={getRootUserInterfaceData}
-        onChangeRootData={onChangeRootData}
-        isChildReport
-        report={resolved}
-        data={getData(columnDetails, parentData, parameterValues, rowData)}
-        withoutHeader
-        getDefinitionDefaultValue={getDefinitionDefaultValue}
-      />
-    )
-  }
   if (resolved.type === "SimpleLayoutConfig") {
     return (rowData: JSONRecord) => (
       <ReportDetails
@@ -135,7 +120,6 @@ function getReportConfig(reportDetails: ReportDetailsAsReport) {
       return null
   }
 }
-
 function getData(
   details: ReportDetailsProps["details"],
   parentData: JSONRecord | undefined,
