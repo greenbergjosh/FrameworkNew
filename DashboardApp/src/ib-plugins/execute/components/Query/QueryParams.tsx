@@ -2,21 +2,21 @@ import React from "react"
 import * as record from "fp-ts/lib/Record"
 import { none, Option, some } from "fp-ts/lib/Option"
 import { determineSatisfiedParameters } from "./determineSatisfiedParameters"
-import { JSONRecord } from "../../../lib/JSONRecord"
-import { useRematch } from "../../../hooks"
+import { JSONRecord } from "../../../../lib/JSONRecord"
+import { useRematch } from "../../../../hooks"
 import queryString, { ParsedQuery } from "query-string"
-import { decodeGloballyPersistedParams } from "../../../state/queries/persistedParams"
-import { PrivilegedUserInterfaceContextManager, QueryParamsProps } from "./types"
+import { decodeGloballyPersistedParams } from "../../../../state/queries/persistedParams"
 import {
   AbstractBaseInterfaceComponentType,
   ComponentDefinition,
   getDefaultsFromComponentDefinitions,
 } from "@opg/interface-builder"
 import { merge } from "lodash/fp"
-import { ParameterItem, QueryConfig } from "../../../api/ReportCodecs"
-import { AppState } from "../../../state/store.types"
-import { store } from "../../../state/store"
-import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
+import { ParameterItem, QueryConfig } from "../../../../api/ReportCodecs"
+import { AppState } from "../../../../state/store.types"
+import { store } from "../../../../state/store"
+import { PersistedConfig } from "../../../../api/GlobalConfigCodecs"
+import { PrivilegedUserInterfaceContextManager, QueryParamsProps } from "../../types"
 
 export const QueryParams = React.memo((props: QueryParamsProps) => {
   const [fromStore /* dispatch */] = useRematch((appState) => {

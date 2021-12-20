@@ -4,10 +4,9 @@ import React from "react"
 import { QueryConfig } from "../../../../api/ReportCodecs"
 import { JSONRecord } from "../../../../lib/JSONRecord"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { ErrorResponse, LOADSTATUSCODES, RemoteQueryProps } from "../../types"
-import { QueryParams } from "../../query/QueryParams"
+import { ErrorResponse, LOADSTATUSCODES, OnSubmitType, RemoteQueryProps } from "../../types"
+import { QueryParams } from "../Query/QueryParams"
 import { executeRemoteQuery } from "./executeRemoteQuery"
-import { OnSubmitType } from "../../query/types"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
   const {

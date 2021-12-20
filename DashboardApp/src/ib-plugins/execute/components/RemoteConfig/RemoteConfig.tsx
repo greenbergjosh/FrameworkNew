@@ -5,8 +5,15 @@ import React from "react"
 import { QueryConfig } from "../../../../api/ReportCodecs"
 import { JSONRecord } from "../../../../lib/JSONRecord"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { LoadStatus, LoadStatusCode, LOADSTATUSCODES, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
-import { QueryParams } from "../../query/QueryParams"
+import {
+  LoadStatus,
+  LoadStatusCode,
+  LOADSTATUSCODES,
+  OnSubmitType,
+  RemoteConfigFromStore,
+  RemoteConfigProps,
+} from "../../types"
+import { QueryParams } from "../Query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
@@ -14,7 +21,6 @@ import { AppDispatch } from "../../../../state/store.types"
 import { isEmpty, merge } from "lodash/fp"
 import { PersistedConfig } from "../../../../api/GlobalConfigCodecs"
 import { NotifyConfig } from "../../../../state/feedback"
-import { OnSubmitType } from "../../query/types"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
