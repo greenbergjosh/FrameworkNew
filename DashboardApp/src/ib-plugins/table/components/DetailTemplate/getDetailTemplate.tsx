@@ -1,19 +1,19 @@
-import { AppDispatch } from "../../../state/store.types"
+import { AppDispatch } from "../../../../state/store.types"
 import {
   GlobalConfigReference,
   IReportDetailsAsReport,
   LocalReportConfig,
   ReportDetailsAsReport,
   SimpleLayoutConfig,
-} from "../../../api/ReportCodecs"
-import { JSONRecord } from "../../../lib/JSONRecord"
+} from "../../../../api/ReportCodecs"
+import { JSONRecord } from "../../../../lib/JSONRecord"
 import React from "react"
 import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
 import { mapData, unMapData } from "./mapData"
 import { AbstractBaseInterfaceComponentType, UserInterfaceProps } from "@opg/interface-builder"
 import { StandardGridTypes } from "@opg/interface-builder-plugins/lib/syncfusion/table"
-import { ColumnConfig, ReportDetailsType } from "../types"
+import { ColumnConfig, ReportDetailsType } from "../../types"
 
 /***************************************************************************
  *
