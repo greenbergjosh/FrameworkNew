@@ -65,7 +65,7 @@ namespace EdwRollupLib
             _scheduler.Context["exclusiveQueueCurrentlyRunningId"] = 0;
             _scheduler.Context["exclusiveLock"] = new object();
 
-            var rsConfigId = _fw.StartupConfiguration.GetS("Config/RsConfigId");
+            var rsConfigId = _fw.StartupConfiguration.GetS("Config.RsConfigId");
 
             var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonSerializer.Serialize(new
             {
@@ -76,7 +76,7 @@ namespace EdwRollupLib
             {
                 var threadGroupName = await threadGroup.GetS("Name");
 
-                if (await threadGroup.GetB("Config.paused"))
+                if (await threadGroup.GetB("Config.paused", false))
                 {
                     await _fw.Log("EdwRollupService.InitScheduler", $"{threadGroupName} is paused.");
 #if DEBUG
@@ -95,7 +95,7 @@ namespace EdwRollupLib
                 foreach (var rollupGroupPeriod in await threadGroup.GetL("Config.rollup_group_periods"))
                 {
                     var period = await rollupGroupPeriod.GetS("period");
-                    var rollupFrequency = await rollupGroupPeriod.GetS("rollup_frequency") ?? period;
+                    var rollupFrequency = await rollupGroupPeriod.GetS("rollup_frequency", null) ?? period;
 
                     var jobDetail = JobBuilder.Create<RollupJob>()
                         .WithIdentity($"{threadGroupName}_{period}", "RollupJob")
@@ -129,7 +129,7 @@ namespace EdwRollupLib
 
             foreach (var maintenanceTask in await maintenanceTasks.GetL(""))
             {
-                var enabled = await maintenanceTask.GetB("Config.enabled");
+                var enabled = await maintenanceTask.GetB("Config.enabled", true);
                 if (!enabled)
                 {
                     continue;
@@ -137,7 +137,7 @@ namespace EdwRollupLib
 
                 var name = await maintenanceTask.GetS("Name");
                 var cronExpression = await maintenanceTask.GetS("Config.cron_expression");
-                var exclusive = await maintenanceTask.GetB("Config.exclusive");
+                var exclusive = await maintenanceTask.GetB("Config.exclusive", false);
 
                 IDictionary<string, object> parameters = new Dictionary<string, object>
                 {
@@ -160,7 +160,8 @@ namespace EdwRollupLib
 
                 var trigger = TriggerBuilder.Create()
                     .WithIdentity(name, exclusive ? MaintenanceJob.ExclusiveJobGroup : MaintenanceJob.JobGroup)
-                    .WithCronSchedule(cronExpression)
+                    //.WithCronSchedule(cronExpression)
+                    .StartNow()
                     .UsingJobData(new JobDataMap(parameters))
                     .ForJob(jobDetail)
                     .Build();
