@@ -112,7 +112,7 @@ namespace Utility.EDW.Reporting
                 ["id"] = rsId,
                 ["ts"] = rsTimestamp.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.ffffff"),
                 ["payload"] = payload,
-                ["rsid"] = rsConfigId
+                ["rs_config_id"] = rsConfigId
             };
 
             _rsTypes[type].Add(rs);
