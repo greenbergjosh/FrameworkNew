@@ -1,0 +1,1 @@
+remote-data-client contains redux state. move that into the /state folder and properly name what remains.

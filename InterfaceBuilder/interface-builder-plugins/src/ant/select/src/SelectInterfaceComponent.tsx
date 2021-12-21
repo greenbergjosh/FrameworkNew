@@ -5,6 +5,7 @@ import { ISelectProps, SelectProps, SelectState } from "./types"
 import { MODES, Selectable, SelectableChildProps, SelectableProps } from "@opg/interface-builder-plugins/lib/ant/shared"
 import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
+import { isEmpty } from "lodash/fp"
 
 export default class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
   constructor(props: SelectProps) {
@@ -103,7 +104,7 @@ export default class SelectInterfaceComponent extends BaseInterfaceComponent<Sel
           size={size}>
           {options.map((option) => (
             <Select.Option key={`${option.value}`} value={option.value}>
-              {typeof option.icon !== "undefined" ? <Icon type={option.icon} style={{ marginRight: "8px" }} /> : null}
+              {isEmpty(option.icon) ? null : <Icon type={option.icon} style={{ marginRight: "8px" }} />}
               {option.label}
             </Select.Option>
           ))}

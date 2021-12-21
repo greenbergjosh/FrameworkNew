@@ -33,6 +33,7 @@ export const QueryForm = React.memo(
      * State
      */
 
+    const isMountedRef = React.useRef(true)
     const [formState, updateFormState] = React.useState({})
     const [loading, setLoading] = React.useState(false)
     const [submitting, setSubmitting] = React.useState(false)
@@ -60,33 +61,46 @@ export const QueryForm = React.memo(
      */
 
     /*
+     * PREVENT MEMORY LEAKS
+     *
+     * We can't use the usual way of checking mounted status by setting
+     * an isMounted variable in the useEffect and then checking its value
+     * before setting state.
+     *
+     * Since a submit can be kicked off outside of useEffect, we use a ref
+     * and this "unmount" useEffect to track the mounted status.
+     * Other useEffects in this component must check the isMounted.current ref
+     * before setting state.
+     *
+     * We can't use the traditional way of
+     * https://stackoverflow.com/questions/58038008/how-to-stop-memory-leak-in-useeffect-hook-react
+     */
+    React.useEffect(() => {
+      return () => {
+        isMountedRef.current = false
+      }
+    }, [])
+
+    /*
      * Trigger onMount event only on component mount.
      * For instance the parent may want to execute this
      * query form immediately when the page loads.
      */
     React.useEffect(() => {
-      let isMounted = true
       if (!onMount) return
       const newState = getDefaultFormValues(layout, parameters, parameterValues, getDefinitionDefaultValue)
       const promise = onMount(newState)
 
       updateFormState(newState)
-      if (promise && isMounted) {
+      if (promise) {
         setLoading(true)
         promise.finally(() => {
-          if (isMounted) {
+          if (isMountedRef.current) {
             setLoading(false)
           }
         })
       }
-      if (isMounted) {
-        setSubmitting(false)
-      }
-
-      /* Prevent memory leaks */
-      return () => {
-        isMounted = false
-      }
+      setSubmitting(false)
     }, [])
 
     /*
@@ -103,30 +117,22 @@ export const QueryForm = React.memo(
      * Wait until state is updated to submit the form so we don't submit old data.
      */
     React.useEffect(() => {
-      let isMounted = true
       // This effect triggers whenever state updates,
       // so we check first for submitting.
       if (!submitting) {
         return
       }
       const promise = onSubmit(formState)
-      if (promise && isMounted) {
+      if (promise) {
         setLoading(true)
         promise.finally(() => {
-          if (isMounted) {
+          if (isMountedRef.current) {
             setLoading(false)
           }
         })
       }
-      if (isMounted) {
-        setSubmitting(false)
-        setParentSubmitting && setParentSubmitting(false)
-      }
-
-      /* Prevent memory leaks */
-      return () => {
-        isMounted = false
-      }
+      setSubmitting(false)
+      setParentSubmitting && setParentSubmitting(false)
     }, [submitting, onSubmit, setParentSubmitting, formState])
 
     /*
@@ -134,15 +140,8 @@ export const QueryForm = React.memo(
      * Allow parent components to trigger a submit
      */
     React.useEffect(() => {
-      let isMounted = true
-
-      if (parentSubmitting && isMounted) {
+      if (parentSubmitting) {
         setSubmitting(true)
-      }
-
-      /* Prevent memory leaks */
-      return () => {
-        isMounted = false
       }
     }, [parentSubmitting, setSubmitting])
 
@@ -209,7 +208,7 @@ export function getDefaultFormValues(
   parameters: QueryFormProps["parameters"],
   parameterValues: JSONRecord,
   getDefinitionDefaultValue: AbstractBaseInterfaceComponentType["getDefinitionDefaultValue"]
-) {
+): JSONRecord {
   const defaultComponentValues = getDefaultComponentValues(layout, getDefinitionDefaultValue)
   const defaultParameters = getDefaultParameters(parameters)
 

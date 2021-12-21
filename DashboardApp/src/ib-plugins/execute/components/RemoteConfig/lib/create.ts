@@ -1,5 +1,5 @@
 import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams } from "../../../types"
-import { get, isEmpty } from "lodash/fp"
+import { get, isEmpty, isString } from "lodash/fp"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { CreateConfigEventPayload } from "../../../../../state/global-config/types"
 import { PersistedConfig } from "../../../../../api/GlobalConfigCodecs"
@@ -40,8 +40,11 @@ export function create({
     return getErrorStatePromise("Config name already taken.")
   }
 
+  const stringifiedConfig = isString(uiDataSlice.config)
+    ? uiDataSlice.config
+    : JSON.stringify(uiDataSlice.config, null, 2)
   const nextState: CreateConfigEventPayload["nextState"] = {
-    config: JSON.stringify(uiDataSlice.config, null, 2),
+    config: stringifiedConfig,
     name,
     type: parent.name,
     type_id: parent.id,
@@ -55,10 +58,11 @@ export function create({
   return dispatch.globalConfig
     .createRemoteConfig(payload)
     .then((notifyConfig) => {
+      const data = { ...notifyConfig.result, config: uiDataSlice.config }
       if (notifyConfig && notifyConfig.type === "error") {
-        return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.error } as LoadStatus
+        return { data, loadStatus: LOADSTATUSCODES.error } as LoadStatus
       }
-      return { data: notifyConfig.result, loadStatus: LOADSTATUSCODES.created } as LoadStatus
+      return { data, loadStatus: LOADSTATUSCODES.created } as LoadStatus
     })
     .catch((e: Error) => getErrorState(e))
 }

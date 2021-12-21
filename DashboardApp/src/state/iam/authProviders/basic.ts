@@ -3,7 +3,7 @@ import { Branded } from "io-ts"
 import { none, some } from "fp-ts/lib/Option"
 import * as Store from "../../store.types"
 import { HttpError } from "../../../api/http"
-import { ApiResponse } from "../../../api/AdminApi"
+import { ApiResponse } from "../../../api/AdminApiCodecs"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { NotifyConfig } from "../../feedback"
 

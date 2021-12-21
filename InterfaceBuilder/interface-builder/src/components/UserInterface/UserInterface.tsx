@@ -2,7 +2,7 @@ import { Layout } from "antd"
 import classNames from "classnames"
 import { getOr, set } from "lodash/fp"
 import React from "react"
-import { ComponentRenderer, UI_ROOT } from "../ComponentRenderer"
+import { RenderComponents, UI_ROOT } from "../RenderComponents"
 import { EditableContext, EditableContextProps } from "../../contexts/EditableContext"
 import { ComponentRegistryContext, registry } from "../../services/ComponentRegistry"
 import { UserInterfaceContext } from "../../contexts/UserInterfaceContext"
@@ -65,7 +65,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     }
 
     const content = (
-      <ComponentRenderer
+      <RenderComponents
         components={components}
         getComponents={getComponents} // See CHN-551 Workaround
         data={data}

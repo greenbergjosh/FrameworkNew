@@ -44,14 +44,23 @@ export const SettingsModal = (props: SettingsModalProps): JSX.Element | null => 
    * Get the component from the registry
    */
   React.useEffect(() => {
+    let isMounted = true
+
     setComponent(undefined)
     setDraftComponentDefinition(null)
     if (props.componentDefinition && props.componentDefinition.component) {
       registry.lookup(props.componentDefinition.component).then((component) => {
-        // Why do we need to set an anonymous function into state?
-        // Otherwise we get "Can't set props of undefined" error.
-        setComponent(() => component)
+        if (isMounted) {
+          // Why do we need to set an anonymous function into state?
+          // Otherwise we get "Can't set props of undefined" error.
+          setComponent(() => component)
+        }
       })
+    }
+
+    /* Prevent memory leaks */
+    return () => {
+      isMounted = false
     }
   }, [props.componentDefinition])
 

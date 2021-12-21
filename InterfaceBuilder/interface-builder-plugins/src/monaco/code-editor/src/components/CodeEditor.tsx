@@ -229,11 +229,15 @@ export const CodeEditor = React.memo(function CodeEditor(props: CodeEditorProps)
  * @param language
  */
 function formatDocument(doc: CodeEditorProps["document"], language: EditorLang): string {
+  if (language === "csharp" && isEmpty(doc)) {
+    return "/* Enter C# code here */"
+  }
+
   if (isEmpty(doc)) {
     return isString(doc) ? doc : ""
   }
 
-  /* Stringfiy json */
+  /* Reformat json */
   if (language === "json" && isString(doc)) {
     const value = tryCatch(() => JSON.parse(doc)).getOrElse({})
     return JSON.stringify(value, null, 2)
