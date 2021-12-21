@@ -160,8 +160,7 @@ namespace EdwRollupLib
 
                 var trigger = TriggerBuilder.Create()
                     .WithIdentity(name, exclusive ? MaintenanceJob.ExclusiveJobGroup : MaintenanceJob.JobGroup)
-                    //.WithCronSchedule(cronExpression)
-                    .StartNow()
+                    .WithCronSchedule(cronExpression)
                     .UsingJobData(new JobDataMap(parameters))
                     .ForJob(jobDetail)
                     .Build();
