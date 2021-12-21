@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Utility.DataLayer;
+using Utility.Entity.Implementations;
 using Utility.OpgAuth.Sso;
 using Random = Utility.Crypto.Random;
 
@@ -133,7 +134,7 @@ namespace Utility.OpgAuth
                 throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.ToString() ?? "[null]"}");
             }
 
-            if (!(await res.GetS("t")).IsNullOrWhitespace())
+            if (!string.IsNullOrWhiteSpace(await res.GetS("t", null)))
             {
                 return new UserDetails(loginToken: await res.GetS("t"), name: await res.GetS("name"), email: await res.GetS("primaryemail"), phone: "", imageUrl: await res.GetS("image"), id: null, raw: res.ToString());
             }
@@ -159,12 +160,14 @@ namespace Utility.OpgAuth
             var saltHash = Random.GenerateRandomString(32, 32, Random.hex);
             var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(JsonSerializer.Serialize(new { loginPayload, platform.PlatformType, userDetails })));
 
-            //loginPayload.Set("platform", platform.PlatformType);
+            var loginPayloadStacked = new EntityDocumentStack();
+            loginPayloadStacked.Push(loginPayload);
+            loginPayloadStacked.Push(loginPayload.Create(new { platform = platform.PlatformType }));
 
             try
             {
-                var res = await Data.CallFn(ConnName, "RegisterSsoUser", JsonSerializer.Serialize(userDetails), JsonSerializer.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = loginPayload }));
-                return (await res.GetS("t")).IsNullOrWhitespace()
+                var res = await Data.CallFn(ConnName, "RegisterSsoUser", JsonSerializer.Serialize(userDetails), JsonSerializer.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = loginPayload.Create(loginPayloadStacked) }));
+                return (await res.GetS("t", null)).IsNullOrWhitespace()
                     ? throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res}")
                     : new UserDetails(loginToken: await res.GetS("t"), name: await res.GetS("name"), email: await res.GetS("primaryemail"), phone: "", imageUrl: await res.GetS("image"), id: null, raw: res.ToString());
             }
