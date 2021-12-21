@@ -2297,7 +2297,11 @@ namespace UnsubLib
                 _queuedCampaigns = new HashSet<string>();
                 foreach (var campaign in await queued.GetL())
                 {
-                    _ = _queuedCampaigns.Add(await campaign.GetS("CampaignUId"));
+                    var campaignId = await campaign.GetS("CampaignUId", null);
+                    if (!string.IsNullOrWhiteSpace(campaignId))
+                    {
+                        _ = _queuedCampaigns.Add(campaignId);
+                    }
                 }
             }
         }
