@@ -65,7 +65,7 @@ namespace EdwRollupLib
             _scheduler.Context["exclusiveQueueCurrentlyRunningId"] = 0;
             _scheduler.Context["exclusiveLock"] = new object();
 
-            var rsConfigId = _fw.StartupConfiguration.GetS("Config.RsConfigId");
+            var rsConfigId = await _fw.StartupConfiguration.GetS("Config.RsConfigId");
 
             var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonSerializer.Serialize(new
             {
