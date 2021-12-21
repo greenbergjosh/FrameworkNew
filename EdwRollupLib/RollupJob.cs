@@ -105,17 +105,17 @@ namespace EdwRollupLib
                 throw new Exception(description);
             }
 
-            var sessionId = await prepareThreadGroupResult.GetS("session_id");
-            var workingSetTableName = await prepareThreadGroupResult.GetS("working_set_table_name");
+            var sessionId = await prepareThreadGroupResult.GetS("session_id", null);
+            var workingSetTableName = await prepareThreadGroupResult.GetS("working_set_table_name", null);
 
             var threadGroupParameters = parameters with { SessionId = sessionId, WorkingSetTableName = workingSetTableName };
 
-            var message = await prepareThreadGroupResult.GetS("message");
+            var message = await prepareThreadGroupResult.GetS("message", null);
             if (!string.IsNullOrWhiteSpace(message))
             {
                 await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{await ThreadGroup.GetS("Name")} {Period}: {message}");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period}: {message}");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period}: {message}");
 #endif
                 return new[] { threadGroupParameters };
             }
@@ -141,7 +141,7 @@ namespace EdwRollupLib
         {
             var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs());
 
-            if (!string.IsNullOrWhiteSpace(await processRsResult.GetS("message")))
+            if (!string.IsNullOrWhiteSpace(await processRsResult.GetS("message", null)))
             {
                 throw new Exception(await processRsResult.GetS("message"));
             }
@@ -234,7 +234,7 @@ namespace EdwRollupLib
                 trigger_frequency = TriggerFrequency
             });
 
-            public string ProcessRollup() => RollupArgs.ToString();
+            public string ProcessRollup() => JsonSerializer.Serialize(RollupArgs);
 
             public string Cleanup() => JsonSerializer.Serialize(new
             {
@@ -283,7 +283,7 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs.ToString() ?? "null"
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs)
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
@@ -302,7 +302,7 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs.ToString() ?? "null"
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs)
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
@@ -320,7 +320,7 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs.ToString() ?? "null",
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs),
                 message = ex.ToString()
             };
 
@@ -337,7 +337,7 @@ namespace EdwRollupLib
 
         private async Task<ITargetBlock<Parameters>> PrepareDataflow(CancellationToken cancellationToken)
         {
-            var degreesOfParallelism = int.Parse(await FrameworkWrapper.StartupConfiguration.GetS("Config.Parallelism") ?? "16");
+            var degreesOfParallelism = await FrameworkWrapper.StartupConfiguration.GetI("Config.Parallelism", 16);
 
             var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = degreesOfParallelism, EnsureOrdered = false, BoundedCapacity = -1, CancellationToken = cancellationToken };
 
