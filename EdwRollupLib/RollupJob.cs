@@ -97,7 +97,7 @@ namespace EdwRollupLib
         #region Dataflow Tasks
         private async Task<IEnumerable<Parameters>> PrepareThreadGroup(Parameters parameters)
         {
-            var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup());
+            var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup(), timeout: 600);
 
             if (await prepareThreadGroupResult.GetS("status") != "ok")
             {
@@ -139,7 +139,7 @@ namespace EdwRollupLib
 
         private static async Task<IEnumerable<Parameters>> ProcessReportSequence(Parameters parameters)
         {
-            var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs());
+            var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs(), timeout: 600);
 
             if (!string.IsNullOrWhiteSpace(await processRsResult.GetS("message", null)))
             {
@@ -170,7 +170,7 @@ namespace EdwRollupLib
         {
             while (true)
             {
-                var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup());
+                var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup(), timeout: 600);
 
                 var status = await rollupResult.GetS("status");
                 if (status == "deadlock detected")
