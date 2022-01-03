@@ -106,14 +106,22 @@ namespace QuickTester
         class SequenceEvaluator : IEvaluatable
         {
             private readonly IReadOnlyList<Entity> _entities;
-            private int _index;
 
             public SequenceEvaluator(IReadOnlyList<Entity> entities) => _entities = entities;
 
-            public Task<EvaluatableResponse> Evaluate(EvaluatableRequest request) => Task.FromResult(new EvaluatableResponse(
-                Entity: _entities[_index++],
-                Complete: _index == _entities.Count
-            ));
+            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            {
+                var index = await request.ReadLocation.EvalI("index", 0);
+
+                var current = _entities[index++];
+
+                request.WriteLocation["index"] = index;
+
+                return new EvaluatableResponse(
+                    Entity: current,
+                    Complete: index == _entities.Count
+                );
+            }
         }
 
         private static async Task EvaluateSequence(FrameworkWrapper fw)
@@ -265,7 +273,7 @@ namespace QuickTester
                 },
                 ["$evaluate"] = new
                 {
-                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await EvalI(\"parameters.left\") + await EvalI(\"parameters.right\"), Complete: true);"
+                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await Parameters.EvalI(\"left\") + await Parameters.EvalI(\"right\"), Complete: true);"
                 }
             });
 
@@ -287,7 +295,7 @@ namespace QuickTester
             {
                 ["$evaluate"] = new
                 {
-                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await EvalI(\"parameters.value\"), Complete: true);",
+                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await Parameters.EvalI(\"value\"), Complete: true);",
                     actualParameters = new { value }
                 }
             });
@@ -318,7 +326,7 @@ namespace QuickTester
             {
                 ["$evaluate"] = new
                 {
-                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await EvalI(\"parameters.left\") + await EvalI(\"parameters.right\"), Complete: true);",
+                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await Parameters.EvalI(\".left\") + await Parameters.EvalI(\"right\"), Complete: true);",
                     actualParameters = new { right }
                 }
             });

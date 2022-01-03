@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Utility.Entity.Implementations
 {
@@ -21,6 +22,8 @@ namespace Utility.Entity.Implementations
 
         public Entity Pop() => _entities.Pop();
 
+        public int StackCount => _entities.Count;
+
         #region EntityDocument Implementation
         public override EntityValueType ValueType => _entities.FirstOrDefault()?.ValueType ?? EntityValueType.Null;
 
@@ -28,15 +31,15 @@ namespace Utility.Entity.Implementations
 
         public override T Value<T>() => _entities.Any() ? _entities.First().Document.Value<T>() : throw new InvalidOperationException();
 
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => _entities.FirstOrDefault()?.Document.EnumerateArrayCore() ?? throw new InvalidOperationException();
+        protected internal override IAsyncEnumerable<EntityDocument> EnumerateArrayCore() => _entities.FirstOrDefault()?.Document.EnumerateArrayCore() ?? throw new InvalidOperationException();
 
-        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+        protected internal override async IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
         {
             var properties = new Dictionary<string, List<Entity>>();
 
             foreach (var entity in _entities)
             {
-                foreach (var property in entity.Document.EnumerateObject())
+                await foreach (var property in entity.Document.EnumerateObject())
                 {
                     if (!properties.TryGetValue(property.name, out var values))
                     {
@@ -50,43 +53,51 @@ namespace Utility.Entity.Implementations
 
             foreach (var (property, values) in properties.OrderBy(kvp => kvp.Key))
             {
-                values.Reverse();
-
-                var valueStack = new EntityDocumentStack();
-                foreach (var value in values)
+                if (values.Count == 1)
                 {
-                    valueStack.Push(value);
+                    yield return (property, values[0].Document);
                 }
+                else
+                {
+                    values.Reverse();
 
-                yield return (property, valueStack);
+                    var valueStack = new EntityDocumentStack();
+                    foreach (var value in values)
+                    {
+                        valueStack.Push(value);
+                    }
+
+                    yield return (property, valueStack);
+                }
             }
         }
 
-        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        protected internal override async Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name)
         {
             var child = new EntityDocumentStack();
             var found = false;
 
             foreach (var entity in _entities.Reverse())
             {
-                if (entity.Document.TryGetPropertyCore(name, out var childEntityDocument))
+                var result = await entity.Document.TryGetPropertyCore(name);
+                if (result.found)
                 {
                     found = true;
-                    child.Push(Entity.Create(childEntityDocument, $"{Entity.Query}.{name}", Entity));
+                    child.Push(Entity.Create(result.propertyEntityDocument, $"{Entity.Query}.{name}", Entity));
                 }
             }
 
-            propertyEntityDocument = child;
-            return found;
+            var propertyEntityDocument = child.StackCount == 1 ? child.Pop().Document : child;
+            return (found, propertyEntityDocument);
         }
 
-        public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options)
+        public override async void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options)
         {
             var first = _entities.FirstOrDefault();
             if (first?.ValueType == EntityValueType.Object)
             {
                 writer.WriteStartObject();
-                foreach (var (name, value) in EnumerateObjectCore())
+                await foreach (var (name, value) in EnumerateObjectCore())
                 {
                     writer.WritePropertyName(name);
                     JsonSerializer.Serialize(writer, value, options);
@@ -101,6 +112,8 @@ namespace Utility.Entity.Implementations
         }
 
         public override string ToString() => JsonSerializer.Serialize(_entities);
+
+        public override bool Equals(EntityDocument other) => ReferenceEquals(this, other) || base.Equals(other);
         #endregion
     }
 }

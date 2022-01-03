@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Utility.Entity.Implementations
 {
@@ -15,6 +16,7 @@ namespace Utility.Entity.Implementations
             EntityValueType.Null,
             EntityValueType.Number,
             EntityValueType.String,
+            EntityValueType.UUID,
             EntityValueType.Undefined
         };
 
@@ -37,11 +39,11 @@ namespace Utility.Entity.Implementations
             _valueType = valueType;
         }
 
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
+        protected internal override IAsyncEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
-        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
+        protected internal override IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
 
-        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument) => throw new NotImplementedException();
+        protected internal override Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name) => throw new NotImplementedException();
 
         public override T Value<T>() => (T)_value;
 

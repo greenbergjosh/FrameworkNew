@@ -7,7 +7,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
     {
         protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
         {
-            foreach (var target in targetEntity.Document.EnumerateArray())
+            await foreach (var target in targetEntity.Document.EnumerateArray())
             {
                 if (target.Document.IsObject)
                 {

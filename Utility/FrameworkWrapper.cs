@@ -22,7 +22,7 @@ namespace Utility
         private ConfigEntityRepo _entities;
 
         public string[] ConfigurationKeys { get; private set; }
-        private RoslynWrapper<Entity.Entity, EvaluatableResponse> RoslynWrapper { get; set; }
+        private RoslynWrapper<EvaluatableRequest, EvaluatableResponse> RoslynWrapper { get; set; }
         public Entity.Entity StartupConfiguration { get; private set; }
         public EdwSiloLoadBalancedWriter EdwWriter { get; private set; }
         public ErrorSiloLoadBalancedWriter ErrorWriter { get; private set; }
@@ -92,7 +92,7 @@ namespace Utility
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
-                    fw.RoslynWrapper = new RoslynWrapper<Entity.Entity, EvaluatableResponse>(Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                    fw.RoslynWrapper = new RoslynWrapper<EvaluatableRequest, EvaluatableResponse>(Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
                     evaluatorConfig.RoslynWrapper ??= fw.RoslynWrapper;
                 }
 
@@ -199,7 +199,7 @@ namespace Utility
                 parameters = stackedParameters
             });
 
-            var result = await RoslynWrapper.Evaluate(evaluatableId, await evaluatableEntity.EvalS("Code"), evaluationParameters);
+            var result = await RoslynWrapper.Evaluate(evaluatableId, await evaluatableEntity.EvalS("Code"), new EvaluatableRequest(Entity: entity, Parameters: evaluationParameters, default, default));
 
             return result.Entity;
         }
@@ -212,7 +212,7 @@ namespace Utility
                 parameters
             });
 
-            var result = await RoslynWrapper.Evaluate(code, evaluationParameters);
+            var result = await RoslynWrapper.Evaluate(code, new EvaluatableRequest(Entity: Entity.Create<object>(null), Parameters: evaluationParameters, default, default));
 
             return result.Entity;
         }

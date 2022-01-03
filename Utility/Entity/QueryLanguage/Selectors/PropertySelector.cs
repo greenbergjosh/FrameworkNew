@@ -19,18 +19,18 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
             var matched = new List<Entity>();
 
-            foreach (var target in targetEntity.Document.EnumerateArray())
+            await foreach (var target in targetEntity.Document.EnumerateArray())
             {
                 // TODO: Replace with Wildcard once evaluator provides state
                 if (propertySelector._name == null)
                 {
                     if (target.Document.IsObject)
                     {
-                        matched.AddRange(target.Document.EnumerateObject().Select(property => property.value));
+                        matched.AddRange(await target.Document.EnumerateObject().Select(property => property.value).ToList());
                     }
                     else if (target.Document.IsArray)
                     {
-                        matched.AddRange(target.Document.EnumerateArray());
+                        matched.AddRange(await target.Document.EnumerateArray().ToList());
                     }
                 }
                 else if (target.Document.IsObject)

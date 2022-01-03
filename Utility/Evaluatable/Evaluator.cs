@@ -10,9 +10,9 @@ namespace Utility.Evaluatable
     public class EvaluatorConfig
     {
         public EntityMutator EntityMutator { get; init; }
-        public RoslynWrapper<Entity.Entity, EvaluatableResponse> RoslynWrapper { get; internal set; }
+        public RoslynWrapper<EvaluatableRequest, EvaluatableResponse> RoslynWrapper { get; internal set; }
 
-        public EvaluatorConfig(EntityMutator entityMutator = null, RoslynWrapper<Entity.Entity, EvaluatableResponse> roslynWrapper = null)
+        public EvaluatorConfig(EntityMutator entityMutator = null, RoslynWrapper<EvaluatableRequest, EvaluatableResponse> roslynWrapper = null)
         {
             EntityMutator = entityMutator;
             RoslynWrapper = roslynWrapper;
@@ -29,40 +29,59 @@ namespace Utility.Evaluatable
 
         public async IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity, Entity.Entity parameters)
         {
-            var stack = new Stack<(Entity.Entity entity, bool handled)>();
-            stack.Push((entity, false));
+            var threadState = new Dictionary<Guid, Dictionary<string, Entity.Entity>>();
+
+            Guid CreateMemoryLocation()
+            {
+                var memoryLocation = Guid.NewGuid();
+                threadState.Add(memoryLocation, new Dictionary<string, Entity.Entity>());
+                return memoryLocation;
+            }
+
+            var stack = new Stack<(Entity.Entity entity, bool handled, Guid memoryLocation)>();
+            stack.Push((entity, false, default));
 
             while (stack.Any())
             {
-                var current = stack.Pop();
+                var (currentEntity, handled, memoryLocation) = stack.Pop();
 
-                if (!current.handled)
+                if (!handled)
                 {
-                    await foreach (var child in HandleEntity(current.entity, parameters))
+                    await foreach (var child in HandleEntity(currentEntity, parameters))
                     {
-                        stack.Push((child, true));
+                        stack.Push((child, true, child == currentEntity ? memoryLocation : default));
                     }
                 }
                 else
                 {
                     EvaluatableResponse evaluationResult;
-                    if (current.entity.Document is IEvaluatable evaluatable)
+                    if (currentEntity.Document is IEvaluatable evaluatable)
                     {
-                        evaluationResult = await evaluatable.Evaluate(new EvaluatableRequest(Entity: current.entity, Parameters: parameters));
+                        if (memoryLocation == default)
+                        {
+                            memoryLocation = CreateMemoryLocation();
+                        }
+                        evaluationResult = await evaluatable.Evaluate(new EvaluatableRequest(Entity: currentEntity, Parameters: parameters, currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]));
                     }
                     else
                     {
                         Entity.Entity evaluate = null;
 
-                        if (current.entity.IsObject)
+                        if (currentEntity.IsObject)
                         {
-                            evaluate = await current.entity.Eval("$evaluate").SingleOrDefault();
+                            evaluate = await currentEntity.Eval("$evaluate").SingleOrDefault();
                         }
 
                         if (evaluate == null)
                         {
                             // Entity has no evaluate method, short-cut for a constant
-                            yield return current.entity;
+#if DEBUG
+                            if (memoryLocation != default)
+                            {
+                                throw new InvalidOperationException("Allocated memory for a constant");
+                            }
+#endif
+                            yield return currentEntity;
                             continue;
                         }
                         else
@@ -101,34 +120,46 @@ namespace Utility.Evaluatable
                                 throw new InvalidOperationException("No code found");
                             }
 
-                            var evaluationParameters = current.entity.Create(new
+                            if (memoryLocation == default)
                             {
-                                parameters = stackedParameters
-                            });
+                                memoryLocation = CreateMemoryLocation();
+                            }
 
-                            evaluationResult = await _config.RoslynWrapper.Evaluate(code.Value<string>(), evaluationParameters);
+                            var evaluatableRequest = new EvaluatableRequest(Entity: currentEntity, Parameters: currentEntity.Create(stackedParameters), ReadLocation: currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]);
+                            evaluationResult = await _config.RoslynWrapper.Evaluate(code.Value<string>(), evaluatableRequest);
                         }
                     }
 
                     if (!evaluationResult.Complete)
                     {
-                        stack.Push(current);
+                        stack.Push((currentEntity, handled, memoryLocation));
+                    }
+                    else
+                    {
+                        _ = threadState.Remove(memoryLocation);
                     }
 
                     var next = evaluationResult.Entity;
                     if (next != null)
                     {
-                        if (current.entity.Equals(next))
+                        if (currentEntity.Equals(next))
                         {
                             yield return next;
                         }
                         else
                         {
-                            stack.Push((next, false));
+                            stack.Push((next, false, default));
                         }
                     }
                 }
             }
+
+#if DEBUG
+            if (threadState.Count > 0)
+            {
+                throw new InvalidOperationException("ThreadState not empty");
+            }
+#endif
         }
 
         private async IAsyncEnumerable<Entity.Entity> HandleEntity(Entity.Entity entity, Entity.Entity parameters)

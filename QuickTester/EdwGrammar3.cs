@@ -1219,9 +1219,9 @@ namespace QuickTester
 
         private static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
 
-        private static async IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
+        private static async IAsyncEnumerable<Entity> FunctionHandler(IAsyncEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
         {
-            foreach (var entity in entities)
+            await foreach (var entity in entities)
             { //$meta.id  // EvalL("@")
                 switch (functionName)
                 {

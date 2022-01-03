@@ -150,9 +150,9 @@ namespace QuickTester
                 return false;
             }
 
-            static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
+            static async IAsyncEnumerable<Entity> functionHandler(IAsyncEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
             {
-                foreach (var entity in entities)
+                await foreach (var entity in entities)
                 {
                     if (entity.ValueType == EntityValueType.Array)
                     {

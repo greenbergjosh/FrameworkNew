@@ -17,7 +17,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
         {
             var indexSelector = (IndexSelector)selector;
 
-            foreach (var target in targetEntity.Document.EnumerateArray())
+            await foreach (var target in targetEntity.Document.EnumerateArray())
             {
                 var matched = Enumerable.Empty<Entity>();
 
@@ -29,7 +29,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     // TODO: Replace with Wildcard once evaluator provides state
                     if (indexSelector._indexExpressions == null)
                     {
-                        matched = target.Document.EnumerateArray();
+                        matched = await target.Document.EnumerateArray().ToList();
                     }
                     else
                     {
@@ -47,7 +47,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
                         indexes = returnedIndexes;
 
-                        matched = target.Document.EnumerateArray().Select((entity, index) => (entity, index)).Where(item => indexes.Contains(item.index)).OrderBy(match => match.index).Select(match => match.entity);
+                        matched = await target.Document.EnumerateArray().Select((entity, index) => (entity, index)).Where(item => indexes.Contains(item.index)).OrderBy(match => match.index).Select(match => match.entity);
                     }
                 }
                 else if (target.Document.IsObject)
@@ -55,7 +55,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
                     // TODO: Replace with Wildcard once evaluator provides state
                     if (indexSelector._indexExpressions == null)
                     {
-                        matched = target.Document.EnumerateObject().Select(item => item.value);
+                        matched = await target.Document.EnumerateObject().Select(item => item.value).ToList();
                     }
                     else
                     {

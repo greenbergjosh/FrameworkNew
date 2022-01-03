@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 namespace System.Collections.Generic
 {
@@ -51,15 +52,16 @@ namespace System.Collections.Generic
             return count;
         }
 
-        public static async Task<IEnumerable<TSource>> Distinct<TSource>(this IAsyncEnumerable<TSource> source)
+        public static async IAsyncEnumerable<TSource> Distinct<TSource>(this IAsyncEnumerable<TSource> source)
         {
             var distinct = new HashSet<TSource>();
             await foreach (var item in source)
             {
-                _ = distinct.Add(item);
+                if (distinct.Add(item))
+                {
+                    yield return item;
+                }
             }
-
-            return distinct;
         }
 
         public static async Task<TSource> FirstOrDefault<TSource>(this IAsyncEnumerable<TSource> source)
@@ -86,6 +88,14 @@ namespace System.Collections.Generic
 
         public static async Task<string> Join(this IAsyncEnumerable<string> source, string separator) => string.Join(separator, await source.ToList());
 
+        public static async Task<IOrderedEnumerable<TSource>> OrderBy<TSource, TKey>(this IAsyncEnumerable<TSource> source, Func<TSource, TKey> keySelector) => (await source.ToList()).OrderBy(keySelector);
+
+        public static async Task<IOrderedEnumerable<TSource>> OrderBy<TSource, TKey>(this IAsyncEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) => (await source.ToList()).OrderBy(keySelector, comparer);
+
+        public static async Task<IOrderedEnumerable<TSource>> OrderByDescending<TSource, TKey>(this IAsyncEnumerable<TSource> source, Func<TSource, TKey> keySelector) => (await source.ToList()).OrderByDescending(keySelector);
+
+        public static async Task<IOrderedEnumerable<TSource>> OrderByDescending<TSource, TKey>(this IAsyncEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) => (await source.ToList()).OrderByDescending(keySelector, comparer);
+
         public static async IAsyncEnumerable<TResult> Select<TSource, TResult>(this IAsyncEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             await foreach (var item in source)
@@ -100,6 +110,31 @@ namespace System.Collections.Generic
             {
                 yield return await selector(item);
             }
+        }
+
+        public static async IAsyncEnumerable<TResult> Select<TSource, TResult>(this IAsyncEnumerable<TSource> source, Func<TSource, int, TResult> selector)
+        {
+            var index = 0;
+
+            await foreach (var item in source)
+            {
+                yield return selector(item, index++);
+            }
+        }
+
+        public static async Task<bool> SequenceEqual<TSource>(this IAsyncEnumerable<TSource> source, IEnumerable<TSource> second)
+        {
+            var first = await source.ToList();
+
+            return first.SequenceEqual(second);
+        }
+
+        public static async Task<bool> SequenceEqual<TSource>(this IAsyncEnumerable<TSource> source, IAsyncEnumerable<TSource> second)
+        {
+            var first = await source.ToList();
+            var secondList = await second.ToList();
+
+            return first.SequenceEqual(secondList);
         }
 
         public static async Task<TSource> Single<TSource>(this IAsyncEnumerable<TSource> source)

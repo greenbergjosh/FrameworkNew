@@ -10,14 +10,6 @@ using Utility.Entity.Implementations;
 
 namespace Utility.Entity
 {
-    public static class EntityExtensions
-    {
-        public static async Task<string> GetS(this Entity e, string query, string defaultValue)
-        {
-            var entity = await e.EvalE(query);
-            return entity == null ? defaultValue : entity.Value<string>();
-        }
-    }
 }
 
 //namespace QuickTester
