@@ -895,7 +895,7 @@ from datasets.{mergedTableName};";
             var filename = $"{await export.GetS("output_file_name")}.csv";
             var importPath = $"{path}/{filename}";
 
-            _ = await ExecuteSSHCommand($"sudo chmod 666 {path}/*");
+            _ = await ExecuteSSHCommand($"sudo chmod 666 {importPath}");
 
             _ = await ExecuteClickhouseQuery($"TRUNCATE TABLE datasets.{tableName}");
 

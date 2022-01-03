@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Quartz;
+using Renci.SshNet;
+using Renci.SshNet.Async;
 using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
@@ -144,6 +146,35 @@ namespace EdwRollupLib
             if (!string.IsNullOrWhiteSpace(await processRsResult.GetS("message", null)))
             {
                 throw new Exception(await processRsResult.GetS("message"));
+            }
+
+            var rs = await FrameworkWrapper.Entities.GetEntity(parameters.RsConfigId);
+
+            if (await rs.GetB("Config.export_to_clickhouse", false))
+            {
+                var rsName = await rs.GetS("Name");
+                var query = $"INSERT INTO datasets.`{rsName}` FORMAT CSVWithNames";
+
+                var clickhouseConfig = await rs.GetE("Config.clickhouse");
+                var host = await clickhouseConfig.GetS("host");
+                var sshUser = await clickhouseConfig.GetS("ssh.user");
+                var sshPassword = await clickhouseConfig.GetS("ssh.password");
+
+                var clickhouseUser = await clickhouseConfig.GetS("clickhouse.user");
+                var clickhousePassword = await clickhouseConfig.GetS("clickhouse.password");
+
+                var importPath = await clickhouseConfig.GetS("import_path");
+                var worksetNormalizedPayloadTable = await processRsResult.GetS("workset_normalized_payload_table");
+
+                var fullPath = $"{importPath}/{parameters.RsConfigId:N}/{worksetNormalizedPayloadTable[^8..]}";
+
+                _ = await ExecuteClickhouseQuery(host, sshUser, sshPassword, clickhouseUser, clickhousePassword, query, fullPath);
+
+                var donePath = $"{importPath}/{parameters.RsConfigId:N}/done/";
+
+                var moveCommand = $"mv {fullPath} {donePath}";
+
+                _ = await ExecuteSSHCommand(host, sshUser, sshPassword, moveCommand);
             }
 
             var rollups = new List<Parameters>();
@@ -382,6 +413,38 @@ namespace EdwRollupLib
             {
                 text
             }), "application/json");
+        }
+
+        private static Task<string> ExecuteClickhouseQuery(string host, string sshUser, string sshPassword, string clickhouseUser, string clickhousePassword, string query, string pipeIn = null)
+        {
+            var commandText = $"clickhouse-client -u {clickhouseUser} --password {clickhousePassword} --query \"{query.Replace("`", "\\`")}\"";
+            if (!string.IsNullOrWhiteSpace(pipeIn))
+            {
+                commandText += $" < {pipeIn}";
+#if DEBUG
+                Console.WriteLine(query + " < " + pipeIn);
+                Console.WriteLine();
+
+            }
+            else
+            {
+                Console.WriteLine(query);
+                Console.WriteLine();
+#endif
+            }
+
+            return ExecuteSSHCommand(host, sshUser, sshPassword, commandText);
+        }
+
+        private static async Task<string> ExecuteSSHCommand(string host, string user, string password, string commandText)
+        {
+            using var client = new SshClient(host, user, password);
+            client.Connect();
+            using var command = client.CreateCommand(commandText);
+
+            var result = await command.ExecuteAsync();
+
+            return !string.IsNullOrWhiteSpace(command.Error) ? throw new Exception($"{command.Error}\r\nCommand:\r\n{commandText}") : result;
         }
         #endregion
     }
