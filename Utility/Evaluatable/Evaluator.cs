@@ -10,9 +10,9 @@ namespace Utility.Evaluatable
     public class EvaluatorConfig
     {
         public EntityMutator EntityMutator { get; init; }
-        public RoslynWrapper<EvaluatableRequest, EvaluatableResponse> RoslynWrapper { get; internal set; }
+        public RoslynWrapper<EvaluateRequest, EvaluateResponse> RoslynWrapper { get; internal set; }
 
-        public EvaluatorConfig(EntityMutator entityMutator = null, RoslynWrapper<EvaluatableRequest, EvaluatableResponse> roslynWrapper = null)
+        public EvaluatorConfig(EntityMutator entityMutator = null, RoslynWrapper<EvaluateRequest, EvaluateResponse> roslynWrapper = null)
         {
             EntityMutator = entityMutator;
             RoslynWrapper = roslynWrapper;
@@ -27,19 +27,41 @@ namespace Utility.Evaluatable
 
         public static Evaluator Create(EvaluatorConfig config) => new(config ?? throw new ArgumentNullException(nameof(config)));
 
-        public async IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity, Entity.Entity parameters)
-        {
-            var threadState = new Dictionary<Guid, Dictionary<string, Entity.Entity>>();
+        public IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity, Entity.Entity parameters) => Evaluate(entity, default, parameters);
 
-            Guid CreateMemoryLocation()
+        public IAsyncEnumerable<Entity.Entity> Evaluate(Guid g, Entity.Entity parameters) => Evaluate(default, g, parameters);
+
+        private static Dictionary<Guid, Dictionary<Guid, Dictionary<string, Entity.Entity>>> _gToThreadState = new();
+
+        public async IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity, Guid g, Entity.Entity parameters)
+        {
+            if (entity == default && g == default)
+            {
+                throw new InvalidOperationException($"One of {nameof(entity)} or {nameof(g)} must be provided.");
+            }
+
+            Dictionary<Guid, Dictionary<string, Entity.Entity>> threadState = null;
+            if (entity == default)
+            {
+                threadState = _gToThreadState[g];
+            }
+
+            Guid CreateStackFrame()
             {
                 var memoryLocation = Guid.NewGuid();
+
+                if (threadState == null)
+                {
+                    threadState = new Dictionary<Guid, Dictionary<string, Entity.Entity>>();
+                    _gToThreadState[memoryLocation] = threadState;
+                }
+
                 threadState.Add(memoryLocation, new Dictionary<string, Entity.Entity>());
                 return memoryLocation;
             }
 
             var stack = new Stack<(Entity.Entity entity, bool handled, Guid memoryLocation)>();
-            stack.Push((entity, false, default));
+            stack.Push((entity, false, g));
 
             while (stack.Any())
             {
@@ -54,14 +76,14 @@ namespace Utility.Evaluatable
                 }
                 else
                 {
-                    EvaluatableResponse evaluationResult;
+                    EvaluateResponse evaluationResult;
                     if (currentEntity.Document is IEvaluatable evaluatable)
                     {
                         if (memoryLocation == default)
                         {
-                            memoryLocation = CreateMemoryLocation();
+                            memoryLocation = CreateStackFrame();
                         }
-                        evaluationResult = await evaluatable.Evaluate(new EvaluatableRequest(Entity: currentEntity, Parameters: parameters, currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]));
+                        evaluationResult = await evaluatable.Evaluate(new EvaluateRequest(Entity: currentEntity, Parameters: parameters, currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]));
                     }
                     else
                     {
@@ -122,10 +144,10 @@ namespace Utility.Evaluatable
 
                             if (memoryLocation == default)
                             {
-                                memoryLocation = CreateMemoryLocation();
+                                memoryLocation = CreateStackFrame();
                             }
 
-                            var evaluatableRequest = new EvaluatableRequest(Entity: currentEntity, Parameters: currentEntity.Create(stackedParameters), ReadLocation: currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]);
+                            var evaluatableRequest = new EvaluateRequest(Entity: currentEntity, Parameters: currentEntity.Create(stackedParameters), ReadLocation: currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]);
                             evaluationResult = await _config.RoslynWrapper.Evaluate(code.Value<string>(), evaluatableRequest);
                         }
                     }
@@ -155,7 +177,7 @@ namespace Utility.Evaluatable
             }
 
 #if DEBUG
-            if (threadState.Count > 0)
+            if (threadState?.Count > 0)
             {
                 throw new InvalidOperationException("ThreadState not empty");
             }

@@ -18,7 +18,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
             _query = $"{_functionName}({string.Join<object>(", ", functionArguments.Select(arg => arg.Query))})";
         }
 
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request)
         {
             var functionSelector = (FunctionSelector)selector;
 

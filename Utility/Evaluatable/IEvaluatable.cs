@@ -4,6 +4,6 @@ namespace Utility.Evaluatable
 {
     public interface IEvaluatable
     {
-        Task<EvaluatableResponse> Evaluate(EvaluatableRequest request);
+        Task<EvaluateResponse> Evaluate(EvaluateRequest request);
     }
 }

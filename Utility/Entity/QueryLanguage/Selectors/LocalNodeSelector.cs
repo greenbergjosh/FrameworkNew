@@ -5,7 +5,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 {
     internal sealed class LocalNodeSelector : Selector
     {
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request)
         {
             await foreach (var entity in targetEntity.Document.EnumerateArray())
             {

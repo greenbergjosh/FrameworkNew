@@ -25,7 +25,7 @@ namespace QuickTester
                 _symbolSetter = symbolSetter;
             }
 
-            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 // TODO: Seperate evaluation order from concat order
                 var sb = new StringBuilder();
@@ -74,7 +74,7 @@ namespace QuickTester
                     }
                 }
 
-                return new EvaluatableResponse(
+                return new EvaluateResponse(
                     Entity: body,
                     Complete: true
                 );
@@ -103,7 +103,7 @@ namespace QuickTester
             private IList<Entity> _result;
             private int _index = 0;
 
-            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 if (_index == 0)
                 {
@@ -113,7 +113,7 @@ namespace QuickTester
                 if (TreatAsPredicate)
                 {
                     var res = _result.Any();
-                    return new EvaluatableResponse(
+                    return new EvaluateResponse(
                         Entity: res,
                         Complete: true
                     );
@@ -122,7 +122,7 @@ namespace QuickTester
                 {
                     if (_index == 0 && _result.Count == 0)
                     {
-                        return new EvaluatableResponse(
+                        return new EvaluateResponse(
                             Entity: DefaultValue,
                             Complete: true
                         );
@@ -138,14 +138,14 @@ namespace QuickTester
 
                         if (current.ValueType == EntityValueType.String)
                         {
-                            return new EvaluatableResponse(
+                            return new EvaluateResponse(
                                 Entity: Prefix + (await current.EvalAsS("@")) + Suffix,
                                 Complete: complete
                         );
                         }
                         else
                         {
-                            return new EvaluatableResponse(
+                            return new EvaluateResponse(
                                 Entity: current,
                                 Complete: complete
                             );
@@ -163,13 +163,13 @@ namespace QuickTester
 
             public ConditionInstruction(List<(Entity Antecedent, Entity Consequent)> cases) => Cases = cases;
 
-            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 foreach (var c in Cases)
                 {
                     if ((c.Antecedent != null) && (await c.Antecedent.EvalB("@")))
                     {
-                        return new EvaluatableResponse(
+                        return new EvaluateResponse(
                             Entity: c.Consequent,
                             Complete: true
                         );
@@ -178,7 +178,7 @@ namespace QuickTester
                     {
                         if (c.Consequent != null)
                         {
-                            return new EvaluatableResponse(
+                            return new EvaluateResponse(
                                 Entity: c.Consequent,
                                 Complete: true
                             );
@@ -186,7 +186,7 @@ namespace QuickTester
                     }
                 }
 
-                return new EvaluatableResponse(
+                return new EvaluateResponse(
                     Complete: true
                 );
             }
@@ -216,7 +216,7 @@ namespace QuickTester
             private int _repeatCount = 0;
             private readonly HashSet<string> _finished = new();
 
-            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 if (!_initialized)
                 {
@@ -287,14 +287,14 @@ namespace QuickTester
 
                 if (anyProduced)
                 {
-                    return new EvaluatableResponse(
+                    return new EvaluateResponse(
                         Entity: request.Entity.Create(result),
                         Complete: complete
                     );
                 }
                 else
                 {
-                    return new EvaluatableResponse(
+                    return new EvaluateResponse(
                         Complete: true
                     );
                 }
@@ -321,7 +321,7 @@ namespace QuickTester
                 _contextRemover = contextRemover;
             }
 
-            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 var parts = new List<string>();
 
@@ -344,7 +344,7 @@ namespace QuickTester
                     parts.Add(stepContent);
                 }
 
-                return new EvaluatableResponse(
+                return new EvaluateResponse(
                     Entity: string.Join(await Separator.EvalAsS("@"), parts),
                     Complete: true
                 );

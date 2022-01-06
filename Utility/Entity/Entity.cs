@@ -22,18 +22,15 @@ namespace Utility.Entity
     public delegate bool TryParser<T>(string input, out T result) where T : struct;
     #endregion
 
-    public class ReadOnlyEntity : Entity
-    {
-        public ReadOnlyEntity(Entity entity) : base(entity.Document, entity.Root, entity.Config, entity.Query)
-        {
-        }
-    }
-
     [JsonConverter(typeof(EntityConverter))]
-    public class Entity : IEquatable<Entity>
+    public class Entity : IEquatable<Entity>, IReadOnlyEntity
     {
+        #region Fields
+        private readonly EntityConfig _config;
+        #endregion
+
         #region Constructors
-        private Entity(EntityConfig config) => Config = config ?? throw new ArgumentNullException(nameof(config));
+        private Entity(EntityConfig config) => _config = config ?? throw new ArgumentNullException(nameof(config));
 
         protected Entity(EntityDocument value, Entity root, EntityConfig config, string query)
         {
@@ -47,7 +44,7 @@ namespace Utility.Entity
                 Document = EntityDocumentConstant.Null;
             }
 
-            Config = config;
+            _config = config;
 
             Root = root?.Root ?? this;
             Query = query;
@@ -69,27 +66,25 @@ namespace Utility.Entity
 
         internal EntityDocument Document { get; }
 
-        internal Evaluator Evaluator => Config?.Evaluator;
+        internal Evaluator Evaluator => _config?.Evaluator;
 
-        internal FunctionHandler FunctionHandler => Config?.FunctionHandler;
+        internal FunctionHandler FunctionHandler => _config?.FunctionHandler;
 
-        internal MissingPropertyHandler MissingPropertyHandler => Config?.MissingPropertyHandler;
+        internal MissingPropertyHandler MissingPropertyHandler => _config?.MissingPropertyHandler;
 
-        internal EntityRetriever Retriever => Config?.Retriever;
-
-        public EntityConfig Config { get; }
+        internal EntityRetriever Retriever => _config?.Retriever;
         #endregion
 
         #region Methods
         public static Entity Initialize(EntityConfig config) => new(config);
 
-        public ReadOnlyEntity AsReadOnly() => new(this);
+        public IReadOnlyEntity AsReadOnly() => this;
 
         public Entity Clone(string query) => Create(Document, query, Root);
 
-        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), null, Config, query);
+        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), null, _config, query);
 
-        internal Entity Create<T>(T value, string query, Entity root) => new(EntityDocument.MapValue(value), root, Config, query);
+        internal Entity Create<T>(T value, string query, Entity root) => new(EntityDocument.MapValue(value), root, _config, query);
 
         public bool Equals(Entity other) => Document?.Equals(other?.Document) ?? false;
 
@@ -161,14 +156,14 @@ namespace Utility.Entity
 
         public async Task<Entity> Parse(string contentType, string content)
         {
-            if (Config.Parser == null)
+            if (_config.Parser == null)
             {
                 throw new InvalidOperationException("No parser was provided when initializing Entity");
             }
 
-            var entityDocument = await Config.Parser(this, contentType, content);
+            var entityDocument = await _config.Parser(this, contentType, content);
 
-            return new Entity(entityDocument, null, Config, "$");
+            return new Entity(entityDocument, null, _config, "$");
         }
 
         public override string ToString() => Document?.ToString();
@@ -265,7 +260,7 @@ namespace Utility.Entity
         public static implicit operator Entity(int value) => new(EntityDocument.MapValue(value), null, null, null);
         public static implicit operator Entity(long value) => new(EntityDocument.MapValue(value), null, null, null);
         public static implicit operator Entity(string value) => new(EntityDocument.MapValue(value), null, null, null);
-        public static implicit operator Entity(EntityDocument value) => new(value, value?.Entity?.Root, value?.Entity?.Config, value?.Entity.Query);
+        public static implicit operator Entity(EntityDocument value) => new(value, value?.Entity?.Root, value?.Entity?._config, value?.Entity.Query);
         #endregion
     }
 

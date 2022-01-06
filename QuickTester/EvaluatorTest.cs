@@ -50,7 +50,7 @@ namespace QuickTester
 
             public SingleResultEvaluator(Entity result) => _result = result;
 
-            public Task<EvaluatableResponse> Evaluate(EvaluatableRequest request) => Task.FromResult(new EvaluatableResponse(
+            public Task<EvaluateResponse> Evaluate(EvaluateRequest request) => Task.FromResult(new EvaluateResponse(
                 Entity: _result,
                 Complete: true
             ));
@@ -74,7 +74,7 @@ namespace QuickTester
 
         private class NoResultEvaluator : IEvaluatable
         {
-            public Task<EvaluatableResponse> Evaluate(EvaluatableRequest request) => Task.FromResult(new EvaluatableResponse(Complete: true));
+            public Task<EvaluateResponse> Evaluate(EvaluateRequest request) => Task.FromResult(new EvaluateResponse(Complete: true));
         }
 
         private static async Task EvaluateNoResult(FrameworkWrapper fw)
@@ -109,7 +109,7 @@ namespace QuickTester
 
             public SequenceEvaluator(IReadOnlyList<Entity> entities) => _entities = entities;
 
-            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 var index = await request.ReadLocation.EvalI("index", 0);
 
@@ -117,7 +117,7 @@ namespace QuickTester
 
                 request.WriteLocation["index"] = index;
 
-                return new EvaluatableResponse(
+                return new EvaluateResponse(
                     Entity: current,
                     Complete: index == _entities.Count
                 );
@@ -195,12 +195,12 @@ namespace QuickTester
 
         private class AdderEvaluatable : IEvaluatable
         {
-            public async Task<EvaluatableResponse> Evaluate(EvaluatableRequest request)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 var left = await request.Parameters.EvalI("left");
                 var right = await request.Parameters.EvalI("right");
 
-                return new EvaluatableResponse(
+                return new EvaluateResponse(
                     Entity: left + right,
                     Complete: true
                 );
@@ -238,7 +238,7 @@ namespace QuickTester
             {
                 ["$evaluate"] = new
                 {
-                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: 42, Complete: true);"
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: 42, Complete: true);"
                 }
             });
 
@@ -273,7 +273,7 @@ namespace QuickTester
                 },
                 ["$evaluate"] = new
                 {
-                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await Parameters.EvalI(\"left\") + await Parameters.EvalI(\"right\"), Complete: true);"
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: await Parameters.EvalI(\"left\") + await Parameters.EvalI(\"right\"), Complete: true);"
                 }
             });
 
@@ -295,7 +295,7 @@ namespace QuickTester
             {
                 ["$evaluate"] = new
                 {
-                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await Parameters.EvalI(\"value\"), Complete: true);",
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: await Parameters.EvalI(\"value\"), Complete: true);",
                     actualParameters = new { value }
                 }
             });
@@ -326,7 +326,7 @@ namespace QuickTester
             {
                 ["$evaluate"] = new
                 {
-                    code = "return new Utility.Evaluatable.EvaluatableResponse(Entity: await Parameters.EvalI(\".left\") + await Parameters.EvalI(\"right\"), Complete: true);",
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: await Parameters.EvalI(\".left\") + await Parameters.EvalI(\"right\"), Complete: true);",
                     actualParameters = new { right }
                 }
             });

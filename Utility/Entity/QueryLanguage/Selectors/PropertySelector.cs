@@ -13,7 +13,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public PropertySelector(string name) => _name = name;
 
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request)
         {
             var propertySelector = (PropertySelector)selector;
 

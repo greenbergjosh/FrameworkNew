@@ -10,6 +10,6 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public ErrorSelector(string message) => Message = message;
 
-        protected override IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request) => throw new NotImplementedException();
+        protected override IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request) => throw new NotImplementedException();
     }
 }

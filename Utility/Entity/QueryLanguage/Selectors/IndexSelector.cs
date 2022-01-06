@@ -13,7 +13,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
 
         public IndexSelector(IEnumerable<IIndexExpression> indexExpressions) => _indexExpressions = indexExpressions;
 
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluatableRequest request)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request)
         {
             var indexSelector = (IndexSelector)selector;
 

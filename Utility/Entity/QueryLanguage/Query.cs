@@ -59,7 +59,7 @@ namespace Utility.Entity.QueryLanguage
             return false;
         }
 
-        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase sequence, Entity targetEntity, EvaluatableRequest request)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase sequence, Entity targetEntity, EvaluateRequest request)
         {
             var query = (Query)sequence;
             IEnumerable<Entity> entities;
