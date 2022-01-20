@@ -7,8 +7,9 @@ namespace QuickTester
 
         private static async Task Main()
         {
-            YamlTest.Run();
-            CastedEntity.Run();
+            await CliWrapperTester.Run();
+            //YamlTest.Run();
+            await CastedEntity.Run();
             await EdwGrammar3.Run();
             await EntityTest.Run();
             await EvaluatorTest.Run();

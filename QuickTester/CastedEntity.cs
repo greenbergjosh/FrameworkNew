@@ -22,15 +22,17 @@ namespace QuickTester
 
         public CastedEntity(string b) { e = e.Create(b); }
 
-        public CastedEntity(object o) { e = e.Create(o); }
+        public CastedEntity(dynamic d) { e = e.Create(d); }
 
-        //public CastedEntity(Dictionary<string, CastedEntity> d) { e = e.Create(d); }
+        //public CastedEntity(var o) { e = e.Create(o); }
+
+        public CastedEntity(Dictionary<string, CastedEntity> d) { e = e.Create(d); }
 
         public static implicit operator CastedEntity(int b) => new CastedEntity(b);
         public static implicit operator CastedEntity(bool b) => new CastedEntity(b);
         public static implicit operator CastedEntity(string s) => new CastedEntity(s);
         public static implicit operator CastedEntity(Dictionary<string, CastedEntity> d) => new CastedEntity(d);
-        //public static implicit operator CastedEntity(object o) => new CastedEntity(o);
+        //public static implicit operator CastedEntity(dynamic o) => new CastedEntity(o);
 
         public CastedEntity this[string index]
         {
@@ -42,7 +44,7 @@ namespace QuickTester
 
         public static CastedEntity TestReturn(Dictionary<string, CastedEntity> d) { return d; }
 
-        public static async void Run()
+        public static async Task<int> Run()
         {
             var threadState = new EntityDocumentDictionary(new Dictionary<string, object>()
             {
@@ -54,7 +56,7 @@ namespace QuickTester
                 {
                     "entity" => uri.Host switch
                     {
-                        
+
                         _ => throw new InvalidOperationException($"Unknown entity: {uri.Host}")
                     },
                     "memory" => (new[] {entity.Create(uri.Host switch
@@ -159,19 +161,40 @@ namespace QuickTester
                 }
             }
 
-            e = fw.Entity;
-            TestEntity("hello");
-            CastedEntity i = 3;
-            CastedEntity s = "bob";
-            CastedEntity b = false;
-            //CastedEntity d = new { a = 1, b = true };
-            CastedEntity d2 = CastedEntity.TestReturn(new() { ["a"] = 1, ["b"] = true });
+            try
+            {
+                e = fw.Entity;
+                TestEntity("hello");
+                CastedEntity i = 3;
+                CastedEntity s = "bob";
+                CastedEntity b = false;
+                CastedEntity d = new() { ["a"] = 1, ["b"] = true };
+                CastedEntity d2 = (dynamic)new { a = 1, b = true };
+                CastedEntity d3 = CastedEntity.TestReturn(new() { ["a"] = 1, ["b"] = true });
+            }
+            catch (Exception e)
+            {
+                int i = 1;
+            }
+
+            return 1;
 
         }
 
         public static void TestEntity(CastedEntity e)
         {
 
+        }
+
+        
+    }
+
+    public static class CastedEntityExtension
+    {
+        static CastedEntity ToDictionary(this object obj)
+        {
+            CastedEntity.e = CastedEntity.e.Create(obj.GetType().GetProperties().Where(prop => prop.CanRead).ToDictionary(prop => prop.Name, prop => prop.GetValue(obj, null)));
+            return new CastedEntity();
         }
 
     }

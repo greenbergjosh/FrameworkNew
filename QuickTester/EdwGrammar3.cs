@@ -705,7 +705,7 @@ DO NOTHING
                 E.Create(@""")")
             }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
 
-            // "root_campaign_id" IS NOT NULL
+            // "root_campaign_id" 
             var checked_transform_all_keys_without_satisfaction = new Production(new[]
             {
                 E.Create(@""""),
@@ -713,7 +713,7 @@ DO NOTHING
                 E.Create(@"""")
             }, (key, value) => symbolTable[key] = E.Create(value), new[] { E.Create("") });
 
-            // COALESCE("is_repeat_user", CASE WHEN satisfaction_expires < NOW() THEN 'f'::BOOLEAN END) IS NOT NULL
+            // COALESCE("is_repeat_user", CASE WHEN satisfaction_expires < NOW() THEN 'f'::BOOLEAN END)
             var checked_transform_all_keys_with_satisfaction = new Production(new[]
             {
                 E.Create(@"COALESCE("""),
