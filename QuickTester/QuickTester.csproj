@@ -47,12 +47,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="CastedEntity.cs">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="json2.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

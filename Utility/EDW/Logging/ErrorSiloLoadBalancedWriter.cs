@@ -23,26 +23,29 @@ namespace Utility.EDW.Logging
                 selector, novalid, invalid, unhandled)
         { }
 
+        private static List<IEndpoint> _endpoints;
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.EvalL("ErrSilos"))
+            await foreach (var silo in config.EvalL("ErrSilos"))
             {
                 endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
             }
 
+            _endpoints = endpoints;
             return endpoints;
         }
 
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
-            var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.EvalL("ErrSilos"))
-            {
-                endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
-            }
+            return _endpoints;
+            //var endpoints = new List<IEndpoint>();
+            //await foreach (var silo in config.EvalL("ErrSilos"))
+            //{
+            //    endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
+            //}
 
-            return endpoints;
+            //return endpoints;
         }
 
         public static Task InitiateWalkaway(object w, string errorFilePath)

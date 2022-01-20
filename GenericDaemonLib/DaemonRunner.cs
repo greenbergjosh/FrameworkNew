@@ -35,16 +35,16 @@ namespace GenericDaemonLib
                     continue;
                 }
 
-                var parameters = _fw.Entity.Create(new Dictionary<string, object>
+                var parameters = new Dictionary<string, object>
                 {
                     ["daemonName"] = daemonName,
                     ["cancellationToken"] = _cancellationTokenSource.Token
-                });
+                };
 
                 await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Starting daemon: {daemonName}...");
                 try
                 {
-                    _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, parameters).ContinueWith(async t => await _fw.Error($"{nameof(DaemonRunner)}.RunDaemon", $"Error running daemon ${daemonName}: {t.Exception}"), TaskContinuationOptions.OnlyOnFaulted));
+                    _workerTasks.Add(_fw.EvaluateEntity(daemonEntityId, _fw.Entity.Create(parameters)).ContinueWith(async t => await _fw.Error($"{nameof(DaemonRunner)}.RunDaemon", $"Error running daemon ${daemonName}: {t.Exception}"), TaskContinuationOptions.OnlyOnFaulted));
                     await _fw.Log($"{nameof(DaemonRunner)}.OnStart", $"Started daemon: {daemonName}...");
                 }
                 catch (Exception ex)

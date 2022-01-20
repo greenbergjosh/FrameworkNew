@@ -48,7 +48,7 @@ namespace UnsubLib.NetworkProviders
                         }
 
                         var data = await ge.EvalE("data");
-                        var results = (await data.EvalL("results")).ToList();
+                        var results = await data.EvalL("results").ToList();
 
                         if (!results.Any())
                         {

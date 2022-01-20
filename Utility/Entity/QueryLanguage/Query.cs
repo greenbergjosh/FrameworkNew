@@ -1,87 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Utility.Entity.QueryLanguage.IndexExpressions;
 using Utility.Entity.QueryLanguage.Selectors;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage
 {
-    internal sealed class Query
+    internal sealed class Query : EvaluatableSequenceBase
     {
-        public IReadOnlyList<ISelector> Selectors { get; init; }
-
-        private Query(IReadOnlyList<ISelector> selectors) => Selectors = selectors;
-
-        public static Query Parse(Entity entity, ReadOnlySpan<char> query)
-        {
-            var index = 0;
-            return !TryParse(entity, query, ref index, false, out var value, out var exception) ? throw exception : value;
-        }
-
-        public static bool TryParse(Entity entity, ReadOnlySpan<char> query, out Query value)
-        {
-            var index = 0;
-            return TryParse(entity, query, ref index, false, out value, out var _);
-        }
-
-        internal static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int index, bool allowTrailingContent, out Query value, out QueryParseException exception)
-        {
-            var selectors = new List<ISelector>();
-
-            while (index < query.Length)
-            {
-                var selector = query[index] switch
-                {
-                    '$' => AddRootNode(entity, query, ref index),
-                    '@' => AddLocalNode(ref index),
-                    '.' => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index),
-                    '[' => AddIndex(entity, query, ref index),
-                    char ch when IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index, true),
-                    _ => null
-                };
-
-                if (selector is null)
-                {
-                    if (allowTrailingContent)
-                    {
-                        break;
-                    }
-
-                    value = null;
-                    exception = new QueryParseException(index, $"Could not identify selector at index {index}");
-                    return false;
-                }
-
-                if (selector is ErrorSelector errorSelector)
-                {
-                    if (allowTrailingContent)
-                    {
-                        break;
-                    }
-
-                    value = null;
-                    exception = new QueryParseException(index, errorSelector.Message);
-                    return false;
-                }
-
-                selectors.Add(selector);
-            }
-
-            if (selectors.Count == 0)
-            {
-                value = null;
-                exception = new QueryParseException(index, "No query found");
-                return false;
-            }
-
-            value = new Query(selectors);
-            exception = null;
-            return true;
-        }
-
-        #region Private Implementation
-        private delegate bool TryParseMethod(ReadOnlySpan<char> span, ref int i, out IIndexExpression index);
-        private delegate bool TryParseWithEntityMethod(Entity entity, ReadOnlySpan<char> span, ref int i, out IIndexExpression index);
-
+        #region Fields
         private static readonly List<TryParseMethod> _indexParseMethods =
             new()
             {
@@ -97,13 +25,157 @@ namespace Utility.Entity.QueryLanguage
                 ContainerQueryIndexExpression.TryParse
             };
 
-        private static ISelector AddIndex(Entity entity, ReadOnlySpan<char> query, ref int index)
+        private readonly string _query;
+        #endregion
+
+        #region Constructors
+        public Query(string query) => _query = query;
+        #endregion
+
+        #region Delegates
+        private delegate bool TryParseMethod(ReadOnlySpan<char> span, ref int i, out IIndexExpression index);
+
+        private delegate bool TryParseWithEntityMethod(Entity entity, ReadOnlySpan<char> span, ref int i, out IIndexExpression index);
+        #endregion
+
+        #region Properties
+        public bool IsLocal => _query == "@";
+        #endregion
+
+        #region Methods
+        public override string ToString() => _query;
+
+        internal static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int index, bool allowTrailingContent, out Query result)
+        {
+            var queryEndIndex = index;
+            if (TryParse(entity, query, ref queryEndIndex, allowTrailingContent, out var _, out var _))
+            {
+                result = new Query(query[index..queryEndIndex].ToString());
+                index = queryEndIndex;
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
+
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase sequence, Entity targetEntity, EvaluateRequest request)
+        {
+            var query = (Query)sequence;
+            IEnumerable<Entity> entities;
+
+            string queryToParse;
+            if (Uri.TryCreate(query._query, UriKind.Absolute, out var uri))
+            {
+                if (targetEntity.Retriever is null)
+                {
+                    throw new InvalidOperationException($"Absolute queries are not allowed unless a retriever has been provided.");
+                }
+
+                var result = await targetEntity.Retriever(targetEntity, uri);
+                entities = result.entities;
+
+                if (entities is null || !entities.Any())
+                {
+                    throw new InvalidOperationException("Absolute query did not return an entity");
+                }
+
+                queryToParse = string.IsNullOrWhiteSpace(result.query) ? "@" : result.query;
+            }
+            else
+            {
+                if (targetEntity.Document is null)
+                {
+                    throw new InvalidOperationException("Cannot run a relative query on a null entity");
+                }
+
+                entities = new[] { targetEntity };
+                queryToParse = query._query;
+            }
+
+            var index = 0;
+            var selectors = Parse(targetEntity, queryToParse, ref index, false).ToList();
+
+            var current = entities;
+
+            for (var i = 0; i < selectors.Count && current.Any(); i++)
+            {
+                var selector = selectors[i];
+
+                var next = new List<Entity>();
+                await foreach (var child in targetEntity.Evaluator.Evaluate(targetEntity.Create(selector), targetEntity.Create(new { target = current, request.Parameters })))
+                {
+                    var processReference = i == selectors.Count - 1 || selectors[i + 1] is not RefSelector;
+
+                    await foreach (var handledChild in HandleChild(child, processReference, request.Parameters))
+                    {
+                        next.Add(handledChild);
+                    }
+                }
+
+                current = next;
+            }
+
+            foreach (var item in current)
+            {
+                yield return item;
+            }
+
+            static async IAsyncEnumerable<Entity> HandleChild(Entity child, bool processReference, Entity evaluationParameters)
+            {
+                var hadReference = false;
+                if (processReference)
+                {
+                    await foreach (var referenceChild in child.Document.ProcessReference())
+                    {
+                        hadReference = true;
+                        referenceChild.Query = referenceChild.Query.Replace("$", child.Query);
+                        await foreach (var handledChild in HandleChild(referenceChild, processReference, evaluationParameters))
+                        {
+                            yield return handledChild;
+                        }
+                    }
+
+                    if (hadReference)
+                    {
+                        yield break;
+                    }
+                }
+
+                if (child.Evaluator != null)
+                {
+                    await foreach (var evaluationChild in child.Evaluator.Evaluate(child, null))
+                    {
+                        if (!child.Equals(evaluationChild))
+                        {
+                            await foreach (var handledChild in HandleChild(evaluationChild, processReference, evaluationParameters))
+                            {
+                                yield return handledChild;
+                            }
+                        }
+                        else
+                        {
+                            yield return child;
+                        }
+                    }
+                }
+                else
+                {
+                    yield return child;
+                }
+            }
+        }
+
+        private static Selector AddIndex(Entity entity, ReadOnlySpan<char> query, ref int index)
         {
             var slice = query[index..];
             if (slice.StartsWith("[*]"))
             {
                 index += 3;
-                return IndexSelector.Wildcard;
+                // TODO: Can't use Wildcard anymore since selectors have state
+                // TODO: Set back to Wildcard once Evaluator provides state
+                //return IndexSelector.Wildcard;
+                return new IndexSelector(null);
             }
 
             index++;
@@ -132,13 +204,13 @@ namespace Utility.Entity.QueryLanguage
             return current != ']' ? new ErrorSelector($"Expected ']' or ',' near position {index}") : new IndexSelector(indexes);
         }
 
-        private static ISelector AddLocalNode(ref int index)
+        private static Selector AddLocalNode(ref int index)
         {
             index++;
             return new LocalNodeSelector();
         }
 
-        private static ISelector AddPropertyOrNestedDescentOrRefOrFunction(Entity entity, ReadOnlySpan<char> query, ref int index, bool noDot = false)
+        private static Selector AddPropertyOrNestedDescentOrRefOrFunction(Entity entity, ReadOnlySpan<char> query, ref int index, bool noDot = false)
         {
             var slice = query[index..];
 
@@ -162,7 +234,9 @@ namespace Utility.Entity.QueryLanguage
                 else if (slice.StartsWith(".*"))
                 {
                     index += 2;
-                    return PropertySelector.Wildcard;
+                    // TODO: Can't use static Wildcard anymore since selectors have state
+                    return new PropertySelector(null);
+                    //return PropertySelector.Wildcard;
                 }
 
                 slice = slice[1..];
@@ -198,7 +272,7 @@ namespace Utility.Entity.QueryLanguage
                         Helpers.ConsumeWhitespace(query, ref index);
                         if (Helpers.TryParseEntityDocument(query, ref index, out var argumentEntityDocument))
                         {
-                            functionArguments.Add(entity.Create(argumentEntityDocument, argumentEntityDocument.ToString()));
+                            functionArguments.Add(entity.Create(argumentEntityDocument, argumentEntityDocument.ToString(), null));
                         }
                         else
                         {
@@ -218,7 +292,7 @@ namespace Utility.Entity.QueryLanguage
             }
         }
 
-        private static ISelector AddRootNode(Entity entity, ReadOnlySpan<char> query, ref int index)
+        private static Selector AddRootNode(Entity entity, ReadOnlySpan<char> query, ref int index)
         {
             if (index + 1 < query.Length && IsValidForPropertyName(query[index + 1]))
             {
@@ -238,8 +312,18 @@ namespace Utility.Entity.QueryLanguage
             (ch >= '0' && ch <= '9') ||
             ch == '_' || ch == '-' ||
             (ch >= 0x80 && ch < 0x10FFFF);
-#pragma warning restore IDE0078 // Use pattern matching
 
+        private static IList<Selector> Parse(Entity entity, ReadOnlySpan<char> query, ref int index, bool allowTrailingContent)
+        {
+            if (!TryParse(entity, query, ref index, allowTrailingContent, out var selectors, out var exception))
+            {
+                throw exception;
+            }
+
+            return selectors;
+        }
+
+#pragma warning restore IDE0078 // Use pattern matching
         private static bool ParseIndex(Entity entity, ReadOnlySpan<char> query, ref int index, out IIndexExpression indexExpression)
         {
             foreach (var tryParse in _indexParseMethods)
@@ -279,8 +363,57 @@ namespace Utility.Entity.QueryLanguage
             indexExpression = null;
             return false;
         }
-        #endregion
 
-        public override string ToString() => string.Concat(Selectors);
+        private static bool TryParse(Entity entity, ReadOnlySpan<char> query, ref int index, bool allowTrailingContent, out IList<Selector> selectors, out QueryParseException exception)
+        {
+            selectors = new List<Selector>();
+
+            while (index < query.Length)
+            {
+                var selector = query[index] switch
+                {
+                    '$' => AddRootNode(entity, query, ref index),
+                    '@' => AddLocalNode(ref index),
+                    '.' => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index),
+                    '[' => AddIndex(entity, query, ref index),
+                    char ch when IsValidForPropertyName(ch) && index == 0 => AddPropertyOrNestedDescentOrRefOrFunction(entity, query, ref index, true),
+                    _ => null
+                };
+
+                if (selector is null)
+                {
+                    if (allowTrailingContent)
+                    {
+                        break;
+                    }
+
+                    exception = new QueryParseException(index, $"Could not identify selector at index {index}");
+                    return false;
+                }
+
+                if (selector is ErrorSelector errorSelector)
+                {
+                    if (allowTrailingContent)
+                    {
+                        break;
+                    }
+
+                    exception = new QueryParseException(index, errorSelector.Message);
+                    return false;
+                }
+
+                selectors.Add(selector);
+            }
+
+            if (selectors.Count == 0)
+            {
+                exception = new QueryParseException(index, "No query found");
+                return false;
+            }
+
+            exception = default;
+            return true;
+        }
+        #endregion
     }
 }

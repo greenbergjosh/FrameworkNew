@@ -98,7 +98,7 @@ namespace QuickTester
                         "reftestparentdocument" => (new[] { await entity.Parse("application/json", refTestParentDocument) }, UnescapeQueryString(uri)),
                         "reftestchilddocument" => (new[] { await entity.Parse("application/json", refTestChildDocument) }, UnescapeQueryString(uri)),
                         "reftestchilddocument2" => (new[] { await entity.Parse("application/json", refTestChildDocument2) }, UnescapeQueryString(uri)),
-                        "testclass" => (new[] { entity.Create(EntityDocumentObject.Create(testClass)) }, UnescapeQueryString(uri)),
+                        "testclass" => (new[] { entity.Create(testClass) }, UnescapeQueryString(uri)),
                         _ => throw new InvalidOperationException($"Unknown entity: {uri.Host}")
                     },
                     "memory" => (new[] {entity.Create(uri.Host switch
@@ -111,7 +111,7 @@ namespace QuickTester
                 },
                 MissingPropertyHandler: (entity, propertyName) =>
                 {
-                    if (propertyName != "$evaluate")
+                    if (propertyName is not "$evaluate" and not "Entity")
                     {
                         Console.WriteLine($"Missing property `{propertyName}` in entity: {entity.Query}");
                     }
@@ -150,15 +150,15 @@ namespace QuickTester
                 return false;
             }
 
-            static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
+            static async IAsyncEnumerable<Entity> functionHandler(IAsyncEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
             {
-                foreach (var entity in entities)
+                await foreach (var entity in entities)
                 {
                     if (entity.ValueType == EntityValueType.Array)
                     {
                         var index = 0;
                         var yielded = false;
-                        foreach (var child in await entity.Eval("@.*"))
+                        await foreach (var child in entity.Eval("@.*"))
                         {
                             if (tryInvokeStringMethod(child, functionName, functionArguments, out var value))
                             {
@@ -214,6 +214,7 @@ namespace QuickTester
 
             var queries = new[]
             {
+                "$..[?(@.color==$.targetColor)]", // root selector in an operator
                 "$.a.b.*",
                 "$.a.b.d",
                 "$.a.b.d.length",
@@ -255,7 +256,7 @@ namespace QuickTester
                 Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", jsonPathResult.Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
                 Console.WriteLine("Entity:");
 
-                foreach (var result in await testEntity.Eval(query))
+                await foreach (var result in testEntity.Eval(query))
                 {
                     Console.WriteLine($"\tQuery: {result?.Query} Data: {result?.ToString() ?? "null"}");
                 }
@@ -289,17 +290,18 @@ namespace QuickTester
             Console.WriteLine($"JsonPath:");
             Console.WriteLine($"\t{string.Join($"{Environment.NewLine}\t", JsonPath.Parse(arrayQuery).Evaluate(testJsonDocument.RootElement).Matches.Select(m => $"Query: {m.Location} Data: {m.Value}"))}");
             Console.WriteLine("Entity:");
-            foreach (var result in await testEntity.Eval(arrayQuery))
+            await foreach (var result in testEntity.Eval(arrayQuery))
             {
-                Console.WriteLine($"\t{result} GetS: {await result.EvalS("@")}");
+                Console.WriteLine($"\tQuery: {result.Query} Data: {result} GetS: {await result.EvalS("@")}");
             }
 
             Console.WriteLine();
 
             var absoluteQueries = new[]
             {
+                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@==\"multiton\")]",
                 "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id.thread_group_type[?(@!=\"multiton\")]",
-                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$id",
+                "config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.id",
                 "entity://testDocument?$.a.b",
                 "entity://refTestParentDocument?a.x",
                 "entity://refTestParentDocument?a.$ref",
@@ -326,7 +328,7 @@ namespace QuickTester
             {
                 Console.WriteLine($"Query: {absoluteQuery}");
                 Console.WriteLine("Entity:");
-                foreach (var result in await E.Eval(absoluteQuery))
+                await foreach (var result in E.Eval(absoluteQuery))
                 {
                     Console.WriteLine($"\t{result?.ToString() ?? "null"}");
                 }

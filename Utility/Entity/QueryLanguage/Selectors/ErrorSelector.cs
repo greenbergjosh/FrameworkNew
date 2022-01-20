@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal sealed class ErrorSelector : ISelector
+    internal sealed class ErrorSelector : Selector
     {
         public string Message { get; init; }
 
         public ErrorSelector(string message) => Message = message;
 
-        public IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities, Entity evaluationParameters) => throw new NotImplementedException();
+        protected override IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request) => throw new NotImplementedException();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
@@ -22,7 +23,7 @@ namespace GenericDataService
                 FrameworkWrapper = await FrameworkWrapper.Create();
 
                 var filePath = await FrameworkWrapper.StartupConfiguration.EvalS("DataServiceAssemblyFilePath");
-                var assemblyDirs = await FrameworkWrapper.StartupConfiguration.EvalL<string>("AssemblyDirs");
+                var assemblyDirs = await FrameworkWrapper.StartupConfiguration.EvalL<string>("AssemblyDirs").ToList();
                 var typeName = await FrameworkWrapper.StartupConfiguration.EvalS("DataServiceTypeName");
 
                 using (var dynamicContext = new AssemblyResolver(filePath, assemblyDirs))

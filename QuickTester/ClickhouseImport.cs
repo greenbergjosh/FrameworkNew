@@ -22,7 +22,7 @@ namespace QuickTester
             }));
 
             DateTime nextStartDate = default;
-            foreach (var entry in await cacheResult.EvalL("result"))
+            await foreach (var entry in cacheResult.EvalL("result"))
             {
                 nextStartDate = DateTime.Parse(await entry.EvalS("payload")).Date;
                 break;

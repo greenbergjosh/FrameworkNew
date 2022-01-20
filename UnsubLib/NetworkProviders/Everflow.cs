@@ -148,7 +148,7 @@ namespace UnsubLib.NetworkProviders
                 }
 
                 var response = await network.Parse("application/json", respBody);
-                foreach (var downloadUrlPath in await network.EvalL<string>("Credentials.DownloadUrlPaths"))
+                await foreach (var downloadUrlPath in network.EvalL<string>("Credentials.DownloadUrlPaths"))
                 {
                     var (found, dlUrl) = await response.TryEvalS(downloadUrlPath.Replace("/", "."));
 

@@ -1,12 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 
-namespace Utility.Entity
+namespace System.Collections.Generic
 {
-    public static class Extensions
+    public static class IEnumerableExtensions
     {
+        public static Task<IOrderedEnumerable<TSource>> OrderBy<TSource, TKey>(this Task<IEnumerable<TSource>> source, Func<TSource, TKey> keySelector) => OrderBy(source, keySelector, Comparer<TKey>.Default);
+
+        public static async Task<IOrderedEnumerable<TSource>> OrderBy<TSource, TKey>(this Task<IEnumerable<TSource>> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
+        {
+            var sequence = await source;
+
+            if (sequence is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (keySelector is null)
+            {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            return sequence.OrderBy(keySelector, comparer);
+        }
+
         public static Task<IOrderedEnumerable<TSource>> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector) => OrderByDescending(source, keySelector, Comparer<TKey>.Default);
 
         public static async Task<IOrderedEnumerable<TSource>> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, Task<TKey>> keySelector, IComparer<TKey> comparer)
@@ -30,6 +47,23 @@ namespace Utility.Entity
             }
 
             return source.OrderByDescending(item => keys[item], comparer);
+        }
+
+        public static async Task<IEnumerable<TResult>> Select<TSource, TResult>(this Task<IOrderedEnumerable<TSource>> source, Func<TSource, TResult> selector)
+        {
+            var sequence = await source;
+
+            if (sequence is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (selector is null)
+            {
+                throw new ArgumentNullException(nameof(selector));
+            }
+
+            return sequence.Select(selector);
         }
 
         public static async Task<IEnumerable<TResult>> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, Task<TResult>> selector)

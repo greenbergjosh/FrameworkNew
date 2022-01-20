@@ -26,7 +26,7 @@ namespace Utility.EDW.Reporting
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.EvalL("EdwSilos"))
+            await foreach (var silo in config.EvalL("EdwSilos"))
             {
                 endpoints.Add(new EdwSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
             }
@@ -37,10 +37,10 @@ namespace Utility.EDW.Reporting
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.EvalL("EdwSilos"))
-            {
-                endpoints.Add(new EdwSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
-            }
+            //await foreach (var silo in config.EvalL("EdwSilos"))
+            //{
+            //    endpoints.Add(new EdwSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
+            //}
 
             return endpoints;
         }
@@ -95,9 +95,7 @@ namespace Utility.EDW.Reporting
 
         public static async Task<EdwSiloLoadBalancedWriter> InitializeEdwSiloLoadBalancedWriter(Entity.Entity config)
         {
-            var siloConns = await config.Eval("EdwSilos");
-
-            if (!siloConns.Any())
+            if (!await config.Eval("EdwSilos").Any())
             {
                 return null;
             }

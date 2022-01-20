@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Utility.Entity.Implementations
 {
@@ -30,11 +31,19 @@ namespace Utility.Entity.Implementations
 
         public EntityDocumentArray(IEnumerable<T> array) => _array = array;
 
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => _array.Select(item => MapValue(item));
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        protected internal override async IAsyncEnumerable<EntityDocument> EnumerateArrayCore()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            foreach (var item in _array.Select(item => MapValue(item)))
+            {
+                yield return item;
+            }
+        }
 
-        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
+        protected internal override IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
 
-        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument) => throw new NotImplementedException();
+        protected internal override Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name) => throw new NotImplementedException();
 
         public override TOut Value<TOut>() => (TOut)_array;
 

@@ -14,7 +14,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public async IAsyncEnumerable<int> GetIndexes(Entity entity, Entity evaluationParameters)
         {
-            foreach (var (child, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
+            await foreach (var (child, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
             {
                 if (await Evaluate(child, evaluationParameters))
                 {
@@ -25,7 +25,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         public async IAsyncEnumerable<string> GetProperties(Entity entity, Entity evaluationParameters)
         {
-            foreach (var (name, value) in entity.Document.EnumerateObject())
+            await foreach (var (name, value) in entity.Document.EnumerateObject())
             {
                 if (await Evaluate(value, evaluationParameters))
                 {

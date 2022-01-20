@@ -32,7 +32,7 @@ namespace QuickTester
 
         private static async Task EvaluateConstant(FrameworkWrapper fw)
         {
-            var constant = fw.Entity.Create(5);
+            var constant = 5;
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(constant, null))
@@ -50,16 +50,15 @@ namespace QuickTester
 
             public SingleResultEvaluator(Entity result) => _result = result;
 
-            public Task<Entity> Evaluate(Entity entity, Entity parameters) => Task.FromResult(entity.Create(new
-            {
-                Entity = _result,
-                Complete = true
-            }));
+            public Task<EvaluateResponse> Evaluate(EvaluateRequest request) => Task.FromResult(new EvaluateResponse(
+                Entity: _result,
+                Complete: true
+            ));
         }
 
         private static async Task EvaluateSingleResult(FrameworkWrapper fw)
         {
-            var constant = fw.Entity.Create(5);
+            var constant = 5;
 
             var singleResult = fw.Entity.Create(new SingleResultEvaluator(constant));
 
@@ -75,7 +74,7 @@ namespace QuickTester
 
         private class NoResultEvaluator : IEvaluatable
         {
-            public Task<Entity> Evaluate(Entity entity, Entity parameters) => Task.FromResult(entity.Create(new { Complete = true }));
+            public Task<EvaluateResponse> Evaluate(EvaluateRequest request) => Task.FromResult(new EvaluateResponse(Complete: true));
         }
 
         private static async Task EvaluateNoResult(FrameworkWrapper fw)
@@ -93,7 +92,7 @@ namespace QuickTester
 
         private static async Task EntityPathEvaluateSingleResult(FrameworkWrapper fw)
         {
-            var constant = fw.Entity.Create(5);
+            var constant = 5;
 
             var singleResult = fw.Entity.Create(new SingleResultEvaluator(constant));
 
@@ -107,15 +106,22 @@ namespace QuickTester
         class SequenceEvaluator : IEvaluatable
         {
             private readonly IReadOnlyList<Entity> _entities;
-            private int _index;
 
             public SequenceEvaluator(IReadOnlyList<Entity> entities) => _entities = entities;
 
-            public Task<Entity> Evaluate(Entity entity, Entity parameters) => Task.FromResult(entity.Create(new
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
-                Entity = _entities[_index++],
-                Complete = _index == _entities.Count
-            }));
+                var index = await request.ReadLocation.EvalI("index", 0);
+
+                var current = _entities[index++];
+
+                request.WriteLocation["index"] = index;
+
+                return new EvaluateResponse(
+                    Entity: current,
+                    Complete: index == _entities.Count
+                );
+            }
         }
 
         private static async Task EvaluateSequence(FrameworkWrapper fw)
@@ -143,7 +149,7 @@ namespace QuickTester
 
             var parent = fw.Entity.Create(new { a = sequenceEvaluator });
 
-            var results = (await parent.Eval("a")).ToList();
+            var results = await parent.Eval("a").ToList();
 
             Assert.AreEqual(entities.Count, results.Count);
             CollectionAssert.AreEqual(entities, results);
@@ -157,13 +163,13 @@ namespace QuickTester
             {
                 if (entity.ValueType == EntityValueType.Number && entity.Value<int>() == 42)
                 {
-                    yield return entity.Create(420);
+                    yield return 420;
                 }
             }
 
             var fw = await FrameworkWrapper.Create(evaluatorConfig: new EvaluatorConfig(entityMutator: Mutate42));
 
-            var constant10 = fw.Entity.Create(10);
+            var constant10 = 10;
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(constant10, null))
@@ -174,8 +180,8 @@ namespace QuickTester
 
             Assert.AreEqual(1, count);
 
-            var constant42 = fw.Entity.Create(42);
-            var constant420 = fw.Entity.Create(420);
+            var constant42 = 42;
+            var constant420 = 420;
 
             count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(constant42, null))
@@ -189,16 +195,15 @@ namespace QuickTester
 
         private class AdderEvaluatable : IEvaluatable
         {
-            public async Task<Entity> Evaluate(Entity entity, Entity parameters)
+            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
-                var left = await parameters.EvalI("left");
-                var right = await parameters.EvalI("right");
+                var left = await request.Parameters.EvalI("left");
+                var right = await request.Parameters.EvalI("right");
 
-                return entity.Create(new
-                {
-                    Entity = left + right,
-                    Complete = true
-                });
+                return new EvaluateResponse(
+                    Entity: left + right,
+                    Complete: true
+                );
             }
         }
 
@@ -229,13 +234,19 @@ namespace QuickTester
 
         private static async Task EvaluatableEntity(FrameworkWrapper fw)
         {
-            var entity = await fw.Entity.Parse("application/json", @"{ ""$evaluate"": { ""code"": ""return Create(new { Entity = 42, Complete = true});"" } }");
+            var entity = fw.Entity.Create(new Dictionary<string, object>
+            {
+                ["$evaluate"] = new
+                {
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: 42, Complete: true);"
+                }
+            });
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(entity, null))
             {
                 count++;
-                Assert.AreEqual(fw.Entity.Create(42), result);
+                Assert.AreEqual(42, result);
             }
 
             Assert.AreEqual(1, count);
@@ -254,7 +265,17 @@ namespace QuickTester
                 right
             });
 
-            var adder = await fw.Entity.Parse("application/json", @"{ ""$evaluate"": { ""code"": ""return Create(new { Entity = await EvalI(\""parameters.left\"") + await EvalI(\""parameters.right\""), Complete = true});"" } }");
+            var adder = fw.Entity.Create(new Dictionary<string, object>
+            {
+                ["$meta"] = new
+                {
+                    id = Guid.NewGuid()
+                },
+                ["$evaluate"] = new
+                {
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: await Parameters.EvalI(\"left\") + await Parameters.EvalI(\"right\"), Complete: true);"
+                }
+            });
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(adder, parameters))
@@ -270,13 +291,20 @@ namespace QuickTester
         {
             var value = 7;
 
-            var entity = await fw.Entity.Parse("application/json", $@"{{ ""$evaluate"": {{ ""code"": ""return Create(new {{ Entity = await EvalI(\""parameters.value\""), Complete = true}});"", ""actualParameters"": {{ ""value"": {value} }} }} }}");
+            var entity = fw.Entity.Create(new Dictionary<string, object>
+            {
+                ["$evaluate"] = new
+                {
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: await Parameters.EvalI(\"value\"), Complete: true);",
+                    actualParameters = new { value }
+                }
+            });
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(entity, null))
             {
                 count++;
-                Assert.AreEqual(fw.Entity.Create(value), result);
+                Assert.AreEqual(value, result);
             }
 
             Assert.AreEqual(1, count);
@@ -294,7 +322,14 @@ namespace QuickTester
                 left,
             });
 
-            var adder = await fw.Entity.Parse("application/json", $@"{{ ""$evaluate"": {{ ""code"": ""return Create(new {{ Entity = await EvalI(\""parameters.left\"") + await EvalI(\""parameters.right\""), Complete = true}});"", ""actualParameters"": {{ ""right"": {right} }} }} }}");
+            var adder = fw.Entity.Create(new Dictionary<string, object>
+            {
+                ["$evaluate"] = new
+                {
+                    code = "return new Utility.Evaluatable.EvaluateResponse(Entity: await Parameters.EvalI(\".left\") + await Parameters.EvalI(\"right\"), Complete: true);",
+                    actualParameters = new { right }
+                }
+            });
 
             var count = 0;
             await foreach (var result in fw.Evaluator.Evaluate(adder, parameters))

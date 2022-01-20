@@ -22,7 +22,7 @@ namespace Utility
         private ConfigEntityRepo _entities;
 
         public string[] ConfigurationKeys { get; private set; }
-        private RoslynWrapper<Entity.Entity, Entity.Entity> RoslynWrapper { get; set; }
+        private RoslynWrapper<EvaluateRequest, EvaluateResponse> RoslynWrapper { get; set; }
         public Entity.Entity StartupConfiguration { get; private set; }
         public EdwSiloLoadBalancedWriter EdwWriter { get; private set; }
         public ErrorSiloLoadBalancedWriter ErrorWriter { get; private set; }
@@ -92,7 +92,7 @@ namespace Utility
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
-                    fw.RoslynWrapper = new RoslynWrapper<Entity.Entity, Entity.Entity>(Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                    fw.RoslynWrapper = new RoslynWrapper<EvaluateRequest, EvaluateResponse>(Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
                     evaluatorConfig.RoslynWrapper ??= fw.RoslynWrapper;
                 }
 
@@ -199,9 +199,9 @@ namespace Utility
                 parameters = stackedParameters
             });
 
-            var result = await RoslynWrapper.Evaluate(evaluatableId, await evaluatableEntity.EvalS("Code"), evaluationParameters);
+            var result = await RoslynWrapper.Evaluate(evaluatableId, await evaluatableEntity.EvalS("Code"), new EvaluateRequest(Entity: entity, Parameters: evaluationParameters, default, default));
 
-            return result;
+            return result.Entity;
         }
 
         public async Task<Entity.Entity> EvaluateEntity(string code, Entity.Entity parameters = null)
@@ -212,9 +212,9 @@ namespace Utility
                 parameters
             });
 
-            var result = await RoslynWrapper.Evaluate(code, evaluationParameters);
+            var result = await RoslynWrapper.Evaluate(code, new EvaluateRequest(Entity: Entity.Create<object>(null), Parameters: evaluationParameters, default, default));
 
-            return result;
+            return result.Entity;
         }
     }
 }

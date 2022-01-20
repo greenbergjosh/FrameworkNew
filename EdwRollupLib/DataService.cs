@@ -72,7 +72,7 @@ namespace EdwRollupLib
                 ConfigType = "EDW.ThreadGroup"
             }), "");
 
-            foreach (var threadGroup in await threadGroups.EvalL(""))
+            await foreach (var threadGroup in threadGroups.EvalL(""))
             {
                 var threadGroupName = await threadGroup.EvalS("Name");
 
@@ -92,7 +92,7 @@ namespace EdwRollupLib
                     ["RsConfigId"] = rsConfigId
                 };
 
-                foreach (var rollupGroupPeriod in await threadGroup.EvalL("rollup_group_periods"))
+                await foreach (var rollupGroupPeriod in threadGroup.EvalL("rollup_group_periods"))
                 {
                     var period = await rollupGroupPeriod.EvalS("period");
                     var rollupFrequency = await rollupGroupPeriod.EvalS("rollup_frequency") ?? period;
@@ -127,7 +127,7 @@ namespace EdwRollupLib
                 ConfigType = "EDW.MaintenanceTask"
             }), "");
 
-            foreach (var maintenanceTask in await maintenanceTasks.EvalL(""))
+            await foreach (var maintenanceTask in maintenanceTasks.EvalL(""))
             {
                 var enabled = await maintenanceTask.EvalB("enabled");
                 if (!enabled)

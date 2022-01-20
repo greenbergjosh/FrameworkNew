@@ -95,7 +95,7 @@ namespace UnsubLib.NetworkProviders
         {
             var campaigns = await GetCampaigns(network);
 
-            var campaign = (await campaigns.Eval($"[NetworkCampaignId='{unsubRelationshipId}']")).SingleOrDefault();
+            var campaign = await campaigns.Eval($"[NetworkCampaignId='{unsubRelationshipId}']").SingleOrDefault();
 
             if (campaign == null)
             {
@@ -116,7 +116,7 @@ namespace UnsubLib.NetworkProviders
         {
             var enriched = new List<Entity>();
 
-            foreach (var campaign in await campaigns.EvalL("@"))
+            await foreach (var campaign in campaigns.EvalL("@"))
             {
                 var offerId = await campaign.EvalS("NetworkCampaignId");
                 if (!tuneCampaigns.TryGetValue(offerId, out var tuneCampaign))
@@ -135,7 +135,7 @@ namespace UnsubLib.NetworkProviders
 
                 serialized["UnsubFileDownloadUri"] = campaigns.Create(unsubFileDownloadUri);
 
-                enriched.Add(campaigns.Create(serialized));
+                enriched.Add(campaign.Create(serialized));
             }
 
             return campaigns.Create(enriched);

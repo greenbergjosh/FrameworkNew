@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Utility.Entity.Implementations
 {
@@ -15,9 +16,11 @@ namespace Utility.Entity.Implementations
 
         public EntityDocumentDictionary(IDictionary dictionary) => _dictionary = dictionary;
 
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
+        protected internal override IAsyncEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
-        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        protected internal override async IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             foreach (var key in _dictionary.Keys)
             {
@@ -27,17 +30,15 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        protected internal override Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name)
         {
             if (_dictionary.Contains(name))
             {
                 var value = _dictionary[name];
-                propertyEntityDocument = MapValue(value);
-                return true;
+                return Task.FromResult((true, MapValue(value)));
             }
 
-            propertyEntityDocument = default;
-            return false;
+            return Task.FromResult((false, (EntityDocument)default));
         }
 
         public override T Value<T>() => (T)_dictionary;

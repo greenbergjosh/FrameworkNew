@@ -140,7 +140,7 @@ namespace QueueProcessorLib
         {
             var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            foreach (var item in await data.EvalL("@"))
+            await foreach (var item in data.EvalL("@"))
             {
                 yield return new QueueItem(
                     long.Parse(await item.EvalS("id")),
@@ -155,7 +155,7 @@ namespace QueueProcessorLib
         {
             var data = await Data.CallFn("QueueProcessor", $"{queue}ListPending", JsonSerializer.Serialize(new { batchSize }));
 
-            foreach (var item in await data.EvalL("@"))
+            await foreach (var item in data.EvalL("@"))
             {
                 yield return new QueueItem(
                     long.Parse(await item.EvalS("id")),

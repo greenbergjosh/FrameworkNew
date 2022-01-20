@@ -24,7 +24,7 @@ namespace UnsubLib.UnsubFileProviders
 
         public static async Task<Optizmo> Create(FrameworkWrapper fw)
         {
-            var fileTokenRxs = (await fw.StartupConfiguration.EvalL("OptizmoFilePatterns")).Select(ge =>
+            var fileTokenRxs = await fw.StartupConfiguration.EvalL("OptizmoFilePatterns").Select(ge =>
             {
                 string rxStr = null;
 
