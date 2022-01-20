@@ -19,6 +19,7 @@ import {
 import { encodeGloballyPersistedParams } from "./persistedParams"
 import { tryCatch } from "fp-ts/lib/Option"
 import { NotifyConfig } from "../feedback"
+import { Params } from "./types"
 
 declare module "../store.types" {
   interface AppModels {
@@ -56,21 +57,21 @@ export interface Effects {
   executeQuery(payload: {
     resultURI: string
     query: QueryConfig
-    params: JSONRecord | JSONArray
+    params: Params
     notifyOptions?: NotifyOptions
   }): Promise<any>
 
   executeQueryUpdate(payload: {
     resultURI: string
     query: QueryConfig
-    params: JSONRecord | JSONArray
+    params: Params
     notifyOptions?: NotifyOptions
   }): Promise<any>
 
   executeHTTPRequestQuery(payload: {
     resultURI: string
     query: HTTPRequestQueryConfig
-    params: JSONRecord | JSONArray
+    params: Params
     notifyOptions?: NotifyOptions
   }): Promise<any>
 }
@@ -112,7 +113,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
       return dispatch.remoteDataClient
         .reportQueryGet({
           query: query.query,
-          params,
+          params: params || {},
         })
         .then((x) =>
           x.fold(
@@ -173,7 +174,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
       return dispatch.remoteDataClient
         .reportQueryUpdate({
           query: query.query,
-          params,
+          params: params || {},
         })
         .then((x) =>
           x.fold(
@@ -228,9 +229,12 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
         .httpRequest({
           uri: query.query,
           method: query.method,
-          body: query.body.format === "raw" ? prepareQueryBody(query, params) : new URLSearchParams(query.body.content),
+          body:
+            query.body.format === "raw"
+              ? prepareQueryBody(query, params || {})
+              : new URLSearchParams(query.body.content),
           headers: query.headers,
-          params: query.body.format === "raw" && query.body.lang === "json-tokenized" ? {} : params,
+          params: query.body.format === "raw" && query.body.lang === "json-tokenized" ? {} : params || {},
         })
         .then((x) =>
           x.fold(

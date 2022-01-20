@@ -3,7 +3,6 @@ import createLoadingPlugin from "@rematch/loading"
 import createPersistPlugin from "@rematch/persist"
 import createSelectPlugin from "@rematch/select"
 import storage from "redux-persist/lib/storage"
-import { Omit } from "utility-types"
 import { apps } from "./apps"
 import { feedback } from "./feedback"
 import { globalConfig } from "./global-config"
@@ -15,20 +14,19 @@ import { reports } from "./queries/reports"
 import { queries } from "./queries/queries"
 import * as Store from "./store.types"
 
-const appModels: Omit<Store.AppModelConfigs, "loading"> = {
-  apps,
-  feedback,
-  globalConfig,
-  iam,
-  logger,
-  navigation,
-  remoteDataClient,
-  reports,
-  queries,
-}
-
-const _store = Rematch.init({
-  models: appModels as unknown as Rematch.Models, // Rematch types are difficult to work with :(
+// Rematch types are difficult to work with :(
+const initConfig: Rematch.InitConfig<any, any> = {
+  models: {
+    apps,
+    feedback,
+    globalConfig,
+    iam,
+    logger,
+    navigation,
+    remoteDataClient,
+    reports,
+    queries,
+  },
   plugins: [
     createLoadingPlugin({}),
     createPersistPlugin({
@@ -38,7 +36,9 @@ const _store = Rematch.init({
     }),
     createSelectPlugin(),
   ],
-})
+}
+
+const _store = Rematch.init(initConfig)
 
 // exporting a customized version of the store with better type annotations
 export const store = {

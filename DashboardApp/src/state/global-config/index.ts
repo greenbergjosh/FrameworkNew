@@ -1,7 +1,7 @@
 import effects from "./effects"
 import reducers from "./reducers"
 import selectors from "./selectors"
-import { Config as mockGlobalConfigs } from "./utils/mock-global-config.json"
+import mockGlobalConfigs from "./utils/mock-global-config.json"
 import { fromNullable } from "fp-ts/lib/Option"
 import { GlobalConfigStoreModel } from "./types"
 import { initial, success } from "@devexperts/remote-data-ts"
@@ -12,7 +12,7 @@ export const globalConfig: GlobalConfigStoreModel = {
     configs:
       initial ||
       success(
-        mockGlobalConfigs.map((c) => ({
+        mockGlobalConfigs.Config.map((c) => ({
           id: c.Id,
           name: c.Name,
           config: fromNullable(c.Config),
