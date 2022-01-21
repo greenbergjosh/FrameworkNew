@@ -129,11 +129,16 @@ namespace Utility.Entity
 
         public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, defaultValue);
 
-        public Task<Dictionary<string, Entity>> GetD(string query = "@") => GetD<Entity>(query);
+        public Task<Dictionary<string, Entity>> GetD(string query = "@", bool throwIfMissing = true) => GetD<Entity>(query, throwIfMissing);
 
-        public async Task<Dictionary<string, TValue>> GetD<TValue>(string query = "@")
+        public async Task<Dictionary<string, TValue>> GetD<TValue>(string query = "@", bool throwIfMissing = true)
         {
-            var entity = await GetE(query);
+            var entity = (await Get(query)).SingleOrDefault();
+
+            if (entity == null && !throwIfMissing)
+            {
+                return new Dictionary<string, TValue>();
+            }
 
             return new Dictionary<string, TValue>(entity.Document.EnumerateObject().Select(item => new KeyValuePair<string, TValue>(item.name, item.value.Value<TValue>())));
         }

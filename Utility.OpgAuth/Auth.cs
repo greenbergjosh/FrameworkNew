@@ -42,7 +42,7 @@ namespace Utility.OpgAuth
 
                         SsoPlatforms.Clear();
 
-                        foreach (var sso in await conf.GetD("Sso"))
+                        foreach (var sso in await conf.GetD("Sso", false))
                         {
                             var key = sso.Key;
 

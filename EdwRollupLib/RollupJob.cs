@@ -170,11 +170,9 @@ namespace EdwRollupLib
 
                 _ = await ExecuteClickhouseQuery(host, sshUser, sshPassword, clickhouseUser, clickhousePassword, query, fullPath);
 
-                var donePath = $"{importPath}/{parameters.RsConfigId:N}/done/";
+                var deleteCommand = $"rm -f {fullPath}";
 
-                var moveCommand = $"mv {fullPath} {donePath}";
-
-                _ = await ExecuteSSHCommand(host, sshUser, sshPassword, moveCommand);
+                _ = await ExecuteSSHCommand(host, sshUser, sshPassword, deleteCommand);
             }
 
             var rollups = new List<Parameters>();
@@ -314,7 +312,8 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs)
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs),
+                parameters = input
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
@@ -333,7 +332,8 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs)
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs),
+                parameters = input
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
@@ -352,7 +352,8 @@ namespace EdwRollupLib
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
                 rollupArgs = JsonSerializer.Serialize(input?.RollupArgs),
-                message = ex.ToString()
+                message = ex.ToString(),
+                parameters = input
             };
 
             await FrameworkWrapper.Error($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
