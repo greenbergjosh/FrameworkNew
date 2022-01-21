@@ -21,7 +21,7 @@ namespace GenericApi
         public static async Task Main(string[] args)
         {
             FrameworkWrapper = await FrameworkWrapper.Create(args);
-            if (Guid.TryParse(await FrameworkWrapper.StartupConfiguration.GetS("Config.RsConfigId"), out var rsConfigId))
+            if (Guid.TryParse(await FrameworkWrapper.StartupConfiguration.GetS("Config.RsConfigId", ""), out var rsConfigId))
             {
                 RsConfigId = rsConfigId;
             }
