@@ -79,6 +79,7 @@ export type AppPaths = {
 export interface State {
   appPaths: AppPaths
   configs: RemoteData<Error, Array<PersistedConfig>>
+  appPageModel: AppPageModel
 }
 
 export interface Reducers {

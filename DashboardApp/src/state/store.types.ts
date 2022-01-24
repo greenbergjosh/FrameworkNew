@@ -67,7 +67,6 @@ export type Connect<
  * autocompletion againt the interfaces already defined
  * and registered
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export interface AppModel<S, R extends object, E extends object, PublicSelectors extends object> {
   state: S
   reducers: {
@@ -81,7 +80,6 @@ export interface AppModel<S, R extends object, E extends object, PublicSelectors
   selectors: AppModelToSelectorFactory<S, PublicSelectors>
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type PublicEffects2EffectConfig<Effects extends object> = {
   [K in keyof Effects]: Effects[K] extends (payload: infer P, meta: infer M) => infer R
     ? (payload: P, rootState: AppState, meta: M) => R
