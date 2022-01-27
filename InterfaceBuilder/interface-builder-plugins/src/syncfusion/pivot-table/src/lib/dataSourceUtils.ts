@@ -53,7 +53,7 @@ export async function refreshSession({
   proxyUrl?: string
 }): Promise<{ ok: boolean; statusText: string }> {
   const init: RequestInit | undefined = {
-    method: "OPTIONS",
+    method: "POST",
     headers: [],
     body: "",
     redirect: "error",
