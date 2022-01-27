@@ -11,6 +11,8 @@ import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview
  */
 export interface PivotTableSettings {
   dataSourceSettings: DataSourceSettingsModel
+  useProxy?: boolean
+  proxyUrl?: string
   enableVirtualization: boolean
   height: number
   heightKey: "auto" | "full" | "fieldlist" | "value"

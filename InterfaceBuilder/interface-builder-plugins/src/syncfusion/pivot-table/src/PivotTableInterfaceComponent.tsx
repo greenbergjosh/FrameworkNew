@@ -12,6 +12,7 @@ import { EditMode } from "./components/EditMode"
 import { PivotTableInterfaceComponentProps, PivotTableInterfaceComponentState } from "./types"
 import { set } from "lodash/fp"
 import { settings } from "./settings"
+import { getProxiedDataSourceSettings } from "lib/dataSourceUtils"
 
 export default class PivotTableInterfaceComponent extends BaseInterfaceComponent<
   PivotTableInterfaceComponentProps,
@@ -54,12 +55,22 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
     )
   }
 
-  render(): JSX.Element {
-    let dataSourceSettings: DataSourceSettingsModel
+  render(): JSX.Element | null {
+    const useProxy = this.props.useProxy || true
+    const proxyUrl = this.props.proxyUrl || "https://adminapi.data.techopg.com/cube"
+    const persistedDataSourceSettings = this.getValue(this.props.valueKey) as DataSourceSettingsModel | undefined
+    if (!persistedDataSourceSettings) {
+      return null
+    }
+    const dataSourceSettings = getProxiedDataSourceSettings({
+      persistedDataSourceSettings,
+      refreshSession: false,
+      useProxy,
+      proxyUrl,
+    })
 
     switch (this.props.mode) {
       case "display":
-        dataSourceSettings = this.getValue(this.props.valueKey)
         return (
           <DisplayMode
             dataSourceSettings={dataSourceSettings}
@@ -74,6 +85,8 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             onChange={(newSchema: DataSourceSettingsModel) => {
               this.setValue([this.props.valueKey, newSchema])
             }}
+            proxyUrl={proxyUrl}
+            useProxy={useProxy}
           />
         )
       case "edit":
@@ -84,6 +97,7 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             height={this.props.height}
             heightKey={this.props.heightKey}
             openFieldList={this.props.openFieldList}
+            proxyUrl={proxyUrl}
             showGroupingBar={this.props.showGroupingBar}
             onChange={(newSchema) => {
               if (this.props.mode === "edit") {
@@ -93,11 +107,11 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
                   onChangeSchema(set("dataSourceSettings", newSchema, userInterfaceSchema))
               }
             }}
+            useProxy={useProxy}
           />
         )
       default:
         // "preview" mode
-        dataSourceSettings = this.getValue(this.props.valueKey)
         return (
           <DisplayMode
             dataSourceSettings={dataSourceSettings}
@@ -110,7 +124,9 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             name={this.props.name}
             onChange={() => void 0}
             openFieldList={this.props.openFieldList}
+            proxyUrl={proxyUrl}
             showGroupingBar={this.props.showGroupingBar}
+            useProxy={useProxy}
           />
         )
     }

@@ -15,6 +15,7 @@ import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "../lib/usePrevious"
 import { validateDataConnection } from "lib/validateDataConnection"
 import { Alert } from "antd"
+import { getPersistableDataSourceSettings } from "lib/dataSourceUtils"
 
 export function EditMode(props: EditModeProps): JSX.Element {
   const prevSettings = usePrevious<DataSourceSettingsModel>(props.dataSourceSettings)
@@ -23,14 +24,19 @@ export function EditMode(props: EditModeProps): JSX.Element {
   const allowCalculatedField = !isEmpty(dataSourceSettings.calculatedFieldSettings)
   const isValidDataConnection = validateDataConnection(dataSourceSettings)
   const { onChange } = props
+  const persistedUrl = props.dataSourceSettings ? props.dataSourceSettings.url : undefined
 
+  /**
+   * Put FieldList changes into model
+   */
   const handleEnginePopulated = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
       if (!prevSettings) {
         return
       }
-      const dataSourceSettings = sanitizeDataSourceSettings(e.dataSourceSettings)
-      dataSourceSettings && onChange(dataSourceSettings)
+      const fieldListDataSourceSettings = sanitizeDataSourceSettings(e.dataSourceSettings)
+      const persistableDataSourceSettings = getPersistableDataSourceSettings(fieldListDataSourceSettings, persistedUrl)
+      persistableDataSourceSettings && onChange(persistableDataSourceSettings)
     },
     [prevSettings, onChange]
   )

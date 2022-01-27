@@ -109,6 +109,22 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 ],
                 name: "Data Source",
               },
+              {
+                key: "useProxy",
+                valueKey: "useProxy",
+                label: "Use Proxy",
+                component: "toggle",
+                defaultValue: true,
+                bindable: true,
+              },
+              {
+                key: "proxyUrl",
+                valueKey: "proxyUrl",
+                placeholder: "https://adminapi.data.techopg.com/cube",
+                label: "Proxy URL",
+                component: "input",
+                bindable: true,
+              },
             ],
           },
           {
