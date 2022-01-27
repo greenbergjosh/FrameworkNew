@@ -54,7 +54,7 @@ export async function refreshSession({
 }): Promise<{ ok: boolean; statusText: string }> {
   const init: RequestInit | undefined = {
     method: "POST",
-    headers: [],
+    headers: {},
     body: "",
     redirect: "error",
   }
