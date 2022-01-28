@@ -9,12 +9,16 @@ namespace Utility.DataLayer
 {
     public class PostgreSqlDataLayerClient : IDataLayerClient
     {
-        private static string PrepareConnectionString(string connectionString)
+        private readonly string _appName;
+
+        public PostgreSqlDataLayerClient(string appName) => _appName = appName;
+
+        private string PrepareConnectionString(string connectionString)
         {
             var builder = new NpgsqlConnectionStringBuilder(connectionString);
             if (string.IsNullOrWhiteSpace(builder.ApplicationName))
             {
-                builder.ApplicationName = Path.GetFileName(Directory.GetCurrentDirectory());
+                builder.ApplicationName = _appName;
             }
 
             return builder.ToString();
@@ -115,8 +119,7 @@ namespace Utility.DataLayer
             return outval;
         }
 
-        public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
-             string process, string method, string descriptor, string message, int timeout = 120)
+        public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity, string process, string method, string descriptor, string message, int timeout = 120)
         {
             string outval = null;
 

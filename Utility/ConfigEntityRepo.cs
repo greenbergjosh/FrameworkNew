@@ -80,12 +80,13 @@ namespace Utility
                 Id = await entity.GetS("Id"),
                 Name = name,
                 Type = type,
-                Config =  config
+                Config = config
             });
 
+#if !DEBUG
             _ = _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
             _ = _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
-
+#endif
             return entity;
         }
     }

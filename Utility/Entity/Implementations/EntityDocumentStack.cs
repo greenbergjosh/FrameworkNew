@@ -21,13 +21,22 @@ namespace Utility.Entity.Implementations
 
         public Entity Pop() => _entities.Pop();
 
-        public override EntityValueType ValueType => _entities.FirstOrDefault()?.ValueType ?? EntityValueType.Undefined;
+        public override EntityValueType ValueType => _entities.Select(entity => entity.ValueType).Distinct().SingleOrDefault();
 
         public override int Length => _entities.FirstOrDefault()?.Document.Length ?? throw new InvalidOperationException();
 
         public override T Value<T>() => _entities.Any() ? _entities.First().Document.Value<T>() : throw new InvalidOperationException();
 
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => _entities.FirstOrDefault()?.Document.EnumerateArrayCore() ?? throw new InvalidOperationException();
+        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore()
+        {
+            foreach (var entity in _entities)
+            {
+                foreach (var document in entity.Document.EnumerateArrayCore())
+                {
+                    yield return document;
+                }
+            }
+        }
 
         protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
         {

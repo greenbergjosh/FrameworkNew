@@ -25,10 +25,12 @@ namespace Utility.EDW.Logging
 
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
+            var appName = await config.GetS("Config.ErrorLogAppName", "");
+
             var endpoints = new List<IEndpoint>();
             foreach (var silo in await config.GetL("Config.ErrSilos"))
             {
-                endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
+                endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString"), appName));
             }
 
             return endpoints;
@@ -36,10 +38,12 @@ namespace Utility.EDW.Logging
 
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
+            var appName = await config.GetS("Config.ErrorLogAppName", "");
+
             var endpoints = new List<IEndpoint>();
             foreach (var silo in await config.GetL("Config.ErrSilos"))
             {
-                endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString")));
+                endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString"), appName));
             }
 
             return endpoints;

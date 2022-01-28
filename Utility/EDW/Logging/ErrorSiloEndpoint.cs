@@ -11,10 +11,10 @@ namespace Utility.EDW.Logging
 
         public string ConnectionString { get; }
 
-        public ErrorSiloEndpoint(string dataLayerType, string connectionString)
+        public ErrorSiloEndpoint(string dataLayerType, string connectionString,string appName)
         {
             ConnectionString = connectionString;
-            _dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
+            _dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType, appName);
         }
         public async Task<bool> Audit()
         {

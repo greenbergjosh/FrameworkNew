@@ -14,6 +14,7 @@ namespace Utility.Entity
     public delegate Task<(IEnumerable<Entity> entities, string query)> EntityRetriever(Entity baseEntity, Uri uri);
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
     public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query);
+    public delegate bool TryParser<T>(string input, out T result) where T : struct;
 
     public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 
@@ -129,6 +130,10 @@ namespace Utility.Entity
 
         public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, defaultValue);
 
+        public async Task<Guid> GetGuid(string query) => Guid.Parse(await GetS(query));
+
+        public Task<Guid?> GetGuid(string query, Guid? defaultValue) => ParseWithDefault(query, Guid.TryParse, defaultValue);
+
         public Task<Dictionary<string, Entity>> GetD(string query = "@", bool throwIfMissing = true) => GetD<Entity>(query, throwIfMissing);
 
         public async Task<Dictionary<string, TValue>> GetD<TValue>(string query = "@", bool throwIfMissing = true)
@@ -147,6 +152,21 @@ namespace Utility.Entity
         {
             var result = (await Get(query)).ToList();
             return result.Count == 1 ? result[0].Value<T>() : defaultValue;
+        }
+
+        private async Task<T?> ParseWithDefault<T>(string query, TryParser<T> parser, T? defaultValue) where T : struct
+        {
+            var value = await GetS(query, null);
+
+            if (value != null)
+            {
+                if (parser(value, out var result))
+                {
+                    return result;
+                }
+            }
+
+            return defaultValue;
         }
 
         public T Value<T>() => Document is null ? default : typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();

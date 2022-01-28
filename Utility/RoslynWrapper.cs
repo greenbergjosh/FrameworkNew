@@ -48,6 +48,10 @@ namespace Utility
         // Probably just a bool argument called forceRecompile
         public ScriptDescriptor CompileAndCache(ScriptDescriptor sd, bool update = false)
         {
+#if DEBUG
+            update = true;
+#endif
+
             Lazy<ScriptDescriptor> valueFactory(string __) => new(() =>
                                                                             {
                                                                                 var dynamicAssemblies = Regex.Matches(sd.Code, @"#r\s+""([A-Za-z][^ \r\n]+)\.dll""\s*\r\n").Select(match => Assembly.Load(match.Groups[1].Value)).ToArray();
