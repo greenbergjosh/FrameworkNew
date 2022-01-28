@@ -11,7 +11,7 @@ import {
 import classNames from "classnames"
 import styles from "../styles.scss"
 import { Browser } from "@syncfusion/ej2-base"
-import { Alert, Button } from "antd"
+import { Alert, Button, notification } from "antd"
 import { DisplayModeProps } from "../types"
 import { getHeight } from "../lib/getHeight"
 import { isEmpty } from "lodash/fp"
@@ -22,6 +22,7 @@ import { validateDataConnection } from "lib/validateDataConnection"
 import { usePrevious } from "lib/usePrevious"
 import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
 import { ErrorBoundary } from "react-error-boundary"
+import { getPersistableDataSourceSettings, refreshSession } from "../lib/dataSourceUtils"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -33,6 +34,7 @@ import { ErrorBoundary } from "react-error-boundary"
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element {
   const prevSettings = usePrevious<DataSourceSettingsModel>(props.dataSourceSettings)
+  const [isRefreshLoading, setIsRefreshLoading] = React.useState(false)
   const [openConfigPanel, setOpenConfigPanel] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
   const pivotRef = React.useRef<PivotViewComponent>(null)
@@ -41,6 +43,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
   const dataSourceSettings = sanitizeDataSourceSettings(props.dataSourceSettings)
   const allowCalculatedField = !isEmpty(dataSourceSettings.calculatedFieldSettings)
   const { onChange } = props
+  const persistedUrl = props.dataSourceSettings ? props.dataSourceSettings.url : undefined
 
   React.useEffect(() => {
     setOpenConfigPanel(props.openFieldList)
@@ -66,6 +69,37 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
     }
   }, [prevSettings, dataSourceSettings])
 
+  const handleRefreshClick = React.useCallback(() => {
+    setIsRefreshLoading(true)
+    refreshSession({
+      useProxy: props.useProxy,
+      url: persistedUrl,
+      proxyUrl: props.proxyUrl,
+    }).then((refreshSessionResult) => {
+      if (!refreshSessionResult.ok) {
+        console.warn("Refresh failed!", { result: refreshSessionResult })
+        notification.error({
+          message: `Refresh failed! (${refreshSessionResult.statusText})`,
+        })
+        setIsRefreshLoading(false)
+        return
+      }
+      if (!pivotRef.current) {
+        console.warn("Refresh failed! (pivotRef is null)")
+        notification.error({
+          message: "Refresh failed! (pivotRef is null)",
+        })
+        setIsRefreshLoading(false)
+        return
+      }
+      pivotRef.current.refreshData()
+      setIsRefreshLoading(false)
+    })
+  }, [persistedUrl, props.proxyUrl, props.useProxy])
+
+  /**
+   * Sync FieldList with PivotView and model
+   */
   const handleEnginePopulated_FieldList = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
       // Sync PivotView with FieldList
@@ -74,11 +108,15 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
       }
       if (prevSettings) {
         // Put FieldList changes into model
-        const dataSourceSettings = sanitizeDataSourceSettings(e.dataSourceSettings)
-        dataSourceSettings && onChange(dataSourceSettings)
+        const fieldListDataSourceSettings = sanitizeDataSourceSettings(e.dataSourceSettings)
+        const persistableDataSourceSettings = getPersistableDataSourceSettings(
+          fieldListDataSourceSettings,
+          persistedUrl
+        )
+        persistableDataSourceSettings && onChange(persistableDataSourceSettings)
       }
     },
-    [prevSettings, onChange]
+    [prevSettings, onChange, persistedUrl]
   )
 
   function handleEnginePopulated_PivotTable() {
@@ -136,6 +174,15 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
             PDF Export
           </Button>
         )}
+        <Button
+          className={styles.exportButton}
+          type="link"
+          size="small"
+          icon="reload"
+          onClick={handleRefreshClick}
+          loading={isRefreshLoading}>
+          Refresh
+        </Button>
       </>
     )
   }
