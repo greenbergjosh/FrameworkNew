@@ -16,7 +16,6 @@ using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
 using Utility.Entity;
-using Utility.Http;
 using Utility.OpgAuth;
 
 namespace GenericApi
@@ -26,17 +25,19 @@ namespace GenericApi
         private FrameworkWrapper _fw;
         private ILogger<Startup> _logger;
         private Guid _rsConfigId;
+        private string _instanceName;
 
         public void ConfigureServices(IServiceCollection services) => services.AddCors(options => options.AddPolicy("CorsPolicy", builder =>
-    builder.AllowAnyMethod().
-            AllowAnyHeader().
-            AllowCredentials().
-            SetIsOriginAllowed(x => true)
-                )).Configure<CookiePolicyOptions>(options =>
+                builder.AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()
+                .SetIsOriginAllowed(x => true)
+            )).Configure<CookiePolicyOptions>(options =>
             {
                 options.CheckConsentNeeded = _ => false;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
-            }).Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto).AddHttpContextAccessor();
+            }).Configure<ForwardedHeadersOptions>(options =>
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
 
         public void UnobservedTaskExceptionEventHandler(object sender, UnobservedTaskExceptionEventArgs args)
         {
@@ -66,6 +67,7 @@ namespace GenericApi
 
             _fw = Program.FrameworkWrapper;
             _rsConfigId = Program.RsConfigId;
+            _instanceName = Program.InstanceName;
 
             TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
 
@@ -76,36 +78,19 @@ namespace GenericApi
         {
             try
             {
-                if (context.Request.Path.HasValue && context.Request.Path.Value.Contains("favicon.ico"))
+                foreach (var requestHandler in Program.RequestHandlers)
                 {
-                    context.Response.StatusCode = 404;
-                    return;
-                }
-                else if (context.IsLocal() && context.Request.Query["m"] == "config")
-                {
-                    await context.WriteSuccessRespAsync(JsonSerializer.Serialize(_fw.StartupConfiguration));
-                    return;
-                }
-                else if (context.Request.Query["m"] == "reinit")
-                {
-                    var success = await _fw.ReInitialize();
-
-                    if (success)
+                    var handled = await _fw.EvaluateEntity<Entity>(requestHandler.handlerEntityId, _fw.Entity.Create(new
                     {
-                        await Program.LoadLbms();
-                        await context.WriteSuccessRespAsync(JsonSerializer.Serialize(new { result = "success" }));
-                    }
-                    else
-                    {
-                        var traceLog = Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ?? $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
-                        await context.WriteFailureRespAsync(JsonSerializer.Serialize(new { result = "failed", traceLog }));
-                    }
+                        context,
+                        requestHandler.handlerName,
+                        requestHandler.handlerParameters
+                    }));
 
-                    return;
-                }
-                else if (await HealthCheckHandler.Handle(context, _fw))
-                {
-                    return;
+                    if (await handled.GetB("@"))
+                    {
+                        return;
+                    }
                 }
 
                 var requestBody = await context.GetRawBodyStringAsync();
@@ -161,7 +146,7 @@ namespace GenericApi
 
                 var results = new Dictionary<string, object>()
                 {
-                    ["requestInfo"] = new { r = 0, requestRsId, requestRsTimestamp }
+                    ["requestInfo"] = new { r = 0, requestRsId, requestRsTimestamp, instanceName = _instanceName }
                 };
 
                 var identity = await request.GetS("i", null);
@@ -265,13 +250,11 @@ namespace GenericApi
                         }
 
                         var r = (await result?.Get("r")).FirstOrDefault();
-                        results[kvp.Key] = r != null
-                            ? result
-                            : (object)(new
-                            {
-                                r = 0,
-                                result
-                            });
+                        results[kvp.Key] = r != null ? result : new
+                        {
+                            r = 0,
+                            result
+                        };
 
                         _ = await DropEvent(requestRsId, requestRsTimestamp, new
                         {
