@@ -1003,6 +1003,17 @@ namespace UnsubLib
 
                             await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToSearchDirectory for Digest file {fdest} {srcPath} -> {searchDest} Exists: {File.Exists(searchDest)}");
 
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Creating Partition for Digest file {fdest}");
+
+                            _ = await Data.CallFn(Conn, "CreateUnsubFile", JsonSerializer.Serialize(new
+                            {
+                                filePath = $"{FileImportDBDirectory}/{fdest}.txt.srt",
+                                fileId = fdest,
+                                fileType = cf.ContainsKey(MD5HANDLER) ? "md5" : "sha512"
+                            }), timeout: 600);
+
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Created Partition for Digest file {fdest}");
+
                             await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDatabase for Digest file {fdest}");
 
                             _ = await Data.CallFn(Conn, "UploadUnsubFile", JsonSerializer.Serialize(new
@@ -1012,7 +1023,7 @@ namespace UnsubLib
                                 fileType = cf.ContainsKey(MD5HANDLER) ? "md5" : "sha512"
                             }), timeout: 600);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDatabase for Digest file {fdest}");
+                            await _fw.Trace($"{ nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDatabase for Digest file {fdest}");
                         }
 
                         _ = Fs.TryDeleteFile(src);
@@ -1113,10 +1124,10 @@ namespace UnsubLib
             {
                 try
                 {
-                    var refreshPeriod = (await c.GetS("UnsubRefreshPeriod")).ParseInt() ?? (await _fw.StartupConfiguration.GetS("Config.DefaultUnsubRefreshPeriod")).ParseInt() ?? 10;
+                    var refreshPeriod = (await c.GetS("UnsubRefreshPeriod", null)).ParseInt() ?? (await _fw.StartupConfiguration.GetS("Config.DefaultUnsubRefreshPeriod", null)).ParseInt() ?? 10;
                     if (!string.IsNullOrWhiteSpace(await c.GetS("MostRecentUnsubFileId")) && (DateTime.Now - DateTime.Parse(await c.GetS("MostRecentUnsubFileDate"))).TotalDays <= refreshPeriod)
                     {
-                        refdFiles.Add((await c.GetS("MostRecentUnsubFileId")).ToLower());
+                        _ = refdFiles.Add((await c.GetS("MostRecentUnsubFileId")).ToLower());
                     }
                 }
                 catch
@@ -1135,7 +1146,7 @@ namespace UnsubLib
                     var fileParts = file.Name.Split(new char[] { '.' });
                     if (!refdFiles.Contains(fileParts[0].ToLower()))
                     {
-                        Fs.TryDeleteFile(file);
+                        _ = Fs.TryDeleteFile(file);
                     }
                 }
             }
@@ -1172,7 +1183,7 @@ namespace UnsubLib
                     if ((DateTime.UtcNow.Subtract(file.LastAccessTimeUtc).TotalDays > 1)
                         && (!refdFiles.Contains(fileParts[0].ToLower())))
                     {
-                        Fs.TryDeleteFile(file);
+                        _ = Fs.TryDeleteFile(file);
                     }
                 }
             }
@@ -1181,7 +1192,7 @@ namespace UnsubLib
             files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
-                Fs.TryDeleteFile(file);
+                _ = Fs.TryDeleteFile(file);
             }
 
             sourceDir = new DirectoryInfo(SearchDirectory);
@@ -1191,61 +1202,22 @@ namespace UnsubLib
                 var fileParts = file.Name.Split(new char[] { '.' });
                 if (!refdFiles.Contains(fileParts[0].ToLower()))
                 {
-                    Fs.TryDeleteFile(file);
+                    _ = Fs.TryDeleteFile(file);
                 }
             }
-
-#if DEBUG
-            if (!System.Diagnostics.Debugger.IsAttached)
-            {
-#endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
-
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, JsonSerializer.Serialize(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
-
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-                }
-#if DEBUG
-            }
-#endif
 
             try
             {
-                await Data.CallFn(Conn, "CleanUnsubFiles");
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting Database CleanUnsubFiles");
+
+                _ = await Data.CallFn(Conn, "CleanUnsubFiles");
+
+                await _fw.Log(nameof(CleanUnusedFiles), "Completed Database CleanUnsubFiles");
             }
             catch (Exception ex)
             {
                 await _fw.Error(nameof(CleanUnusedFiles), $"Database CleanUnsubFiles: {ex}");
             }
-        }
-
-        public async Task<string> CleanUnusedFilesServer()
-        {
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFilesServer), $"Starting CleanUnusedFilesServer");
-
-                var sourceDirLocal = new DirectoryInfo(ServerWorkingDirectory);
-                var filesLocal = sourceDirLocal.GetFiles("*", SearchOption.TopDirectoryOnly);
-                foreach (var file in filesLocal)
-                {
-                    _ = Fs.TryDeleteFile(file);
-                }
-
-                await _fw.Trace(nameof(CleanUnusedFilesServer), $"Completed CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFilesServer), $"CleanUnusedFilesServer: " + exClean.ToString());
-            }
-
-            return JsonSerializer.Serialize(new { Result = "Success" });
         }
 
         public async Task<string> LoadUnsubFiles(Entity dtve)

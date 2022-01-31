@@ -77,7 +77,7 @@ namespace Utility
 
                 fw.Entities = new ConfigEntityRepo(fw.Entity, Data.GlobalConfigConnName);
                 var scripts = new List<ScriptDescriptor>();
-                var scriptsPath = await fw.StartupConfiguration.GetS("Config.RoslynScriptsPath");
+                var scriptsPath = await fw.StartupConfiguration.GetS("Config.RoslynScriptsPath", null);
 
                 fw.TraceLogging = await fw.StartupConfiguration.GetB("Config.EnableTraceLogging", true);
                 fw.TraceToConsole = (await fw.StartupConfiguration.GetB("Config.TraceToConsole", false)) || Debugger.IsAttached;
