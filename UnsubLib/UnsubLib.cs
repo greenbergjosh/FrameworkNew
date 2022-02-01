@@ -756,7 +756,7 @@ namespace UnsubLib
                 task = campaigns.ForEachAsync(parallelism, async campaign =>
                 {
                     var campaignId = await campaign.GetS("NetworkCampaignId");
-                    var fileDownloadUri = await campaign.GetS("UnsubFileDownloadUri");
+                    var fileDownloadUri = await campaign.GetS("UnsubFileDownloadUri", null);
 
                     (string url, IDictionary<string, string> postData) uri = default;
 

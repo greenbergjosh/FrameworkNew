@@ -32,18 +32,19 @@ namespace UnsubLib.NetworkProviders
             var url = baseUrl.Replace("{affiliateId}", affiliateId).Replace("{apiKey}", apiKey);
 
             string responseBody = null;
+            bool success;
 
             try
             {
                 await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
-                var (success, body) = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
+                (success, responseBody) = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
 
                 if (success == false)
                 {
                     throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
                 }
 
-                var campaigns = await network.Parse("application/json", body);
+                var campaigns = await network.Parse("application/json", responseBody);
 
                 await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
