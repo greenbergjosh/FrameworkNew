@@ -1210,9 +1210,9 @@ namespace UnsubLib
             {
                 await _fw.Log(nameof(CleanUnusedFiles), "Starting Database CleanUnsubFiles");
 
-                _ = await Data.CallFn(Conn, "CleanUnsubFiles");
+                var cleanResult = await Data.CallFn(Conn, "CleanUnsubFiles");
 
-                await _fw.Log(nameof(CleanUnusedFiles), "Completed Database CleanUnsubFiles");
+                await _fw.Log(nameof(CleanUnusedFiles), $"Completed Database CleanUnsubFiles: {JsonSerializer.Serialize(cleanResult)}");
             }
             catch (Exception ex)
             {

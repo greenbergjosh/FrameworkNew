@@ -119,7 +119,7 @@ namespace UnsubLib.NetworkProviders
                     throw new InvalidOperationException(await ge.GetS("message"));
                 }
 
-                var data = await ge.GetE("data");
+                var data = await network.Parse("application/json", await ge.GetS("data"));
                 var suppressionUrl = await data.GetS("download_link");
 
                 await _fw.Log(_logMethod, $"Got URL {networkName} {campaignId}:{url}:{suppressionUrl}:{resp.body}");

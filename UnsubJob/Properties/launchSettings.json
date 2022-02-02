@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "skipQueuedCampaigns n:\"Amobee - New API Test\" c:2751"
+      "commandLineArgs": "skipQueuedCampaigns n:\"W4Cathy\" c:26620"
     }
   }
 }
