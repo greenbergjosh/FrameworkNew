@@ -26,6 +26,11 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
   const [data, setData] = useState<UserInterfaceProps["data"]>({ ...fromStore.appPageModel })
   const prevData = usePrevious<UserInterfaceProps["data"]>(data)
 
+  const updateData = React.useCallback((newData: UserInterfaceProps["data"]) => {
+    setData({ ...data, ...newData })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Make sure that remote configs are loaded
   React.useEffect(() => {
     if (fromStore.profile.isSome()) {
@@ -44,9 +49,9 @@ export function ThemeLoader(props: RouteComponentProps<ThemeLoaderProps>): JSX.E
         setData({ ...fromStore.appPageModel })
         dispatch.apps.updateAppPaths(props.location)
       }
-      setData({ ...data, ...fromStore.appPageModel })
+      updateData(fromStore.appPageModel)
     }
-  }, [dispatch, fromStore.appPaths.currentUrl, props.location, fromStore.appPageModel])
+  }, [updateData, dispatch, fromStore.appPaths.currentUrl, props.location, fromStore.appPageModel])
 
   // Keep the Querystring updated from the app model
   React.useEffect(() => {

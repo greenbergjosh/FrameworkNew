@@ -6,6 +6,7 @@ import { DisplayMode } from "./DisplayMode"
 import { registry } from "../../../services/ComponentRegistry"
 import { AbstractBaseInterfaceComponentType } from "../../BaseInterfaceComponent/types"
 import { ComponentDefinition } from "globalTypes"
+import { Icon } from "antd"
 
 export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Element | null {
   const {
@@ -22,17 +23,20 @@ export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Eleme
     submit,
     userInterfaceData,
   } = props
+  const [isLoading, setIsLoading] = React.useState(false)
   const [Component, setComponent] = React.useState<AbstractBaseInterfaceComponentType>()
   const [CodeEditor, setCodeEditor] = React.useState<AbstractBaseInterfaceComponentType>()
 
   React.useEffect(() => {
     let isMounted = true
+    setIsLoading(true)
     registry.lookup(props.componentDefinition.component).then((component) => {
       // isMounted check prevents setting state on unmounted component
       if (isMounted && setComponent) {
         // Why do we need to set an anonymous function into state?
         // Otherwise we get "Can't set props of undefined" error.
         setComponent(() => component)
+        setIsLoading(false)
       }
     })
     registry.lookup("code-editor").then((codeEditor) => {
@@ -41,6 +45,7 @@ export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Eleme
         // We set an anonymous function into state,
         // otherwise we get "Can't set props of undefined" error.
         setCodeEditor(() => codeEditor)
+        setIsLoading(false)
       }
     })
 
@@ -54,8 +59,21 @@ export function RenderComponent(props: RenderInterfaceComponentProps): JSX.Eleme
     return props.onChangeSchema && props.onChangeSchema(schema, props.index)
   }
 
-  if (!Component) {
-    return null
+  if (!Component || isLoading) {
+    return (
+      <div
+        style={{
+          padding: "10px 0",
+          margin: 2,
+          borderRadius: 7,
+          backgroundColor: "ghostwhite",
+          textAlign: "center",
+          color: "gray",
+        }}>
+        <Icon type="loading" style={{ marginRight: 5 }} /> Loading{" "}
+        {props.componentDefinition.name || props.componentDefinition.component}...
+      </div>
+    )
   }
 
   switch (props.mode) {

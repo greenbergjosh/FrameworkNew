@@ -1,7 +1,7 @@
 import { isEmpty, isNumber } from "lodash/fp"
-import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
+import { DataSource } from "types"
 
-export function validateDataConnection(datasource: DataSourceSettingsModel): boolean {
+export function validateDataConnection(datasource: DataSource): boolean {
   return (
     validateUrl(datasource.url) &&
     validateString(datasource.cube) &&

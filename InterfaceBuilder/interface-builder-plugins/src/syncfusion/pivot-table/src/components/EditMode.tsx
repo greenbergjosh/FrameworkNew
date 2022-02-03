@@ -7,63 +7,93 @@ import {
   PivotFieldListComponent,
 } from "@syncfusion/ej2-react-pivotview"
 import styles from "../styles.scss"
-import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
-import { EditModeProps } from "../types"
+import { EditModeProps, ModelDataSource } from "../types"
 import { isEmpty } from "lodash/fp"
-import { sanitizeDataSourceSettings } from "../lib/sanitizeDataSourceSettings"
 import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "../lib/usePrevious"
 import { validateDataConnection } from "lib/validateDataConnection"
 import { Alert } from "antd"
-import { getPersistableDataSourceSettings } from "lib/dataSourceUtils"
+import { ErrorBoundary } from "react-error-boundary"
+import { modelToViewDataSource, viewToModelDataSource } from "lib/dataSourceUtils"
+import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 
-export function EditMode(props: EditModeProps): JSX.Element {
-  const prevSettings = usePrevious<DataSourceSettingsModel>(props.dataSourceSettings)
+export function EditMode(props: EditModeProps): JSX.Element | null {
+  const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
+  const [error, setError] = React.useState<Error | null>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
-  const dataSourceSettings = sanitizeDataSourceSettings(props.dataSourceSettings)
-  const allowCalculatedField = !isEmpty(dataSourceSettings.calculatedFieldSettings)
-  const isValidDataConnection = validateDataConnection(dataSourceSettings)
-  const { onChange } = props
-  const persistedUrl = props.dataSourceSettings ? props.dataSourceSettings.url : undefined
+  const { onChange } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+
+  /* *************************************************
+   *
+   * PROP WATCHERS & EFFECTS
+   */
+
+  const viewDataSource = React.useMemo(() => {
+    return modelToViewDataSource({
+      modelDataSource: props.modelDataSource,
+      settingsDataSource: props.settingsDataSource,
+      useProxy: props.useProxy,
+      proxyUrl: props.proxyUrl,
+    })
+  }, [props.modelDataSource, props.settingsDataSource, props.useProxy, props.proxyUrl])
+
+  React.useEffect(() => {
+    if (!validateDataConnection(viewDataSource)) {
+      setError(new Error("The data connection is invalid. Please check the PivotTable settings."))
+    }
+  }, [viewDataSource])
+
+  /* *************************************************
+   *
+   * EVENT HANDLERS
+   */
 
   /**
    * Put FieldList changes into model
    */
   const handleEnginePopulated = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
-      if (!prevSettings) {
-        return
+      if (!prevModelDataSource && e.dataSourceSettings) {
+        // Put FieldList changes into model
+        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
+        const newModelDataSource = viewToModelDataSource({
+          viewDataSource: newViewDataSource,
+          settingsDataSource: props.settingsDataSource,
+        })
+        newModelDataSource && onChange(newModelDataSource)
       }
-      const fieldListDataSourceSettings = sanitizeDataSourceSettings(e.dataSourceSettings)
-      const persistableDataSourceSettings = getPersistableDataSourceSettings(fieldListDataSourceSettings, persistedUrl)
-      persistableDataSourceSettings && onChange(persistableDataSourceSettings)
     },
-    [prevSettings, onChange]
+    [prevModelDataSource, onChange, props.settingsDataSource]
   )
 
-  if (!isValidDataConnection) {
-    return (
-      <Alert
-        message="Invalid Data Connection"
-        description="The pivot table settings cannot be displayed. Please provide a valid data connection."
-        type="error"
-        showIcon
-      />
-    )
+  /* *************************************************
+   *
+   * RENDERING
+   */
+
+  if (error) {
+    return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
   return (
     <Undraggable>
       <div className={styles.editModePanel}>
-        <PivotFieldListComponent
-          ref={fieldListRef}
-          id="PivotFieldList"
-          dataSourceSettings={dataSourceSettings}
-          renderMode={"Fixed"}
-          allowCalculatedField={allowCalculatedField}
-          enginePopulated={handleEnginePopulated}>
-          <Inject services={[CalculatedField, FieldList]} />
-        </PivotFieldListComponent>
+        <ErrorBoundary
+          onError={(e) => {
+            if (e.message.includes("hasAllMember")) {
+              setError(new Error("There was an error communicating with the cube server."))
+            }
+          }}
+          fallbackRender={() => <></>}>
+          <PivotFieldListComponent
+            allowCalculatedField={!isEmpty(viewDataSource.calculatedFieldSettings)}
+            dataSourceSettings={viewDataSource}
+            enginePopulated={handleEnginePopulated}
+            ref={fieldListRef}
+            renderMode={"Fixed"}>
+            <Inject services={[CalculatedField, FieldList]} />
+          </PivotFieldListComponent>
+        </ErrorBoundary>
       </div>
     </Undraggable>
   )
