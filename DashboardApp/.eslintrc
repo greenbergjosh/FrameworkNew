@@ -53,19 +53,20 @@
     "@typescript-eslint/explicit-member-accessibility": 0,
     "@typescript-eslint/interface-name-prefix": 0,
     "@typescript-eslint/no-empty-interface": 0,
+    "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/no-parameter-properties": 0,
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/prefer-interface": 0,
+    "no-console": 0,
+    "no-multi-str": 0,
     "no-use-before-define": 0,
     "no-useless-constructor": 0,
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "error",
     "react-hooks/rules-of-hooks": "error",
     "react/display-name": 0,
     "react/no-children-prop": 0,
-    "react/prop-types": 0,
-    "no-console": 0,
-    "no-multi-str": 0
+    "react/prop-types": 0
   },
   "settings": {
     "react": {

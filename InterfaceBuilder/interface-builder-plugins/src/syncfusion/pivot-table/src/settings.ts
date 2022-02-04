@@ -25,10 +25,14 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "valueKey",
-                defaultValue: "pivotTableDataSourceSettings",
-                help: "Model path to store and retrieve data source settings (optional).",
+                defaultValue: "dataSourceSettings",
+                label: "Pivot Field List Settings Key",
+                help: "Location of the Pivot Field List settings",
               },
               {
+                name: "Data Source",
+                key: "dataSourceSettings",
+                valueKey: "data",
                 handlerFunctionSrc:
                   "return function({props, lib: { getValue, setValue, raiseEvent }, args}) {\n  // Do stuff here\n}",
                 style: "&.container {}",
@@ -40,15 +44,14 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hidden: false,
                 extra: "",
                 title: "Data Connection",
-                valueKey: "dataSourceSettings",
                 label: "",
                 hideLabel: true,
                 component: "card",
-                bindable: true,
+                bindable: false,
                 components: [
                   {
-                    key: "url",
-                    valueKey: "url",
+                    key: "dataSourceSettings.url",
+                    valueKey: "dataSourceSettings.url",
                     placeholder: "https://",
                     label: "URL",
                     component: "input",
@@ -56,8 +59,8 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                     bindable: true,
                   },
                   {
-                    key: "catalog",
-                    valueKey: "catalog",
+                    key: "dataSourceSettings.catalog",
+                    valueKey: "dataSourceSettings.catalog",
                     placeholder: "Catalog Name",
                     label: "Catalog",
                     component: "input",
@@ -65,8 +68,8 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                     bindable: true,
                   },
                   {
-                    key: "cube",
-                    valueKey: "cube",
+                    key: "dataSourceSettings.cube",
+                    valueKey: "dataSourceSettings.cube",
                     placeholder: "Cube Name",
                     label: "Cube",
                     component: "input",
@@ -74,8 +77,8 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                     bindable: true,
                   },
                   {
-                    key: "providerType",
-                    valueKey: "providerType",
+                    key: "dataSourceSettings.providerType",
+                    valueKey: "dataSourceSettings.providerType",
                     label: "Provider Type",
                     component: "radio",
                     dataHandlerType: "local",
@@ -99,15 +102,23 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                     },
                   },
                   {
-                    key: "localeIdentifier",
-                    valueKey: "localeIdentifier",
+                    key: "dataSourceSettings.localeIdentifier",
+                    valueKey: "dataSourceSettings.localeIdentifier",
                     label: "Locale",
                     component: "number-input",
                     defaultValue: 1033,
                     bindable: true,
                   },
+                  {
+                    key: "dataSourceSettings.source",
+                    valueKey: "dataSourceSettings.source",
+                    label: "Cube",
+                    component: "input",
+                    defaultValue: "settings",
+                    bindable: true,
+                    invisible: true,
+                  },
                 ],
-                name: "Data Source",
               },
               {
                 key: "useProxy",
@@ -120,7 +131,8 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "proxyUrl",
                 valueKey: "proxyUrl",
-                placeholder: "https://adminapi.data.techopg.com/cube",
+                placeholder: "https://",
+                defaultValue: "https://adminapi.data.techopg.com/cube",
                 label: "Proxy URL",
                 component: "input",
                 bindable: true,
@@ -130,6 +142,39 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
           {
             key: "appearance",
             components: [
+              {
+                key: "overrideMode",
+                valueKey: "overrideMode",
+                label: "Mode",
+                component: "radio",
+                dataHandlerType: "local",
+                hidden: false,
+                hideLabel: false,
+                invisible: false,
+                size: "default",
+                defaultValue: "default",
+                bindable: true,
+                data: {
+                  values: [
+                    {
+                      label: "Default",
+                      value: "default",
+                    },
+                    {
+                      label: "Display",
+                      value: "display",
+                    },
+                    {
+                      label: "Edit",
+                      value: "edit",
+                    },
+                    {
+                      label: "Preview",
+                      value: "preview",
+                    },
+                  ],
+                },
+              },
               {
                 key: "enableSorting",
                 valueKey: "enableSorting",

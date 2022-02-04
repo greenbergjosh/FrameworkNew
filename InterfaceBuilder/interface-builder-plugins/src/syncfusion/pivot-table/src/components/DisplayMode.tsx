@@ -12,17 +12,16 @@ import classNames from "classnames"
 import styles from "../styles.scss"
 import { Browser } from "@syncfusion/ej2-base"
 import { Alert, Button, notification } from "antd"
-import { DisplayModeProps } from "../types"
+import { DisplayModeProps, ModelDataSource } from "../types"
 import { getHeight } from "../lib/getHeight"
 import { isEmpty } from "lodash/fp"
 import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
-import { sanitizeDataSourceSettings } from "../lib/sanitizeDataSourceSettings"
 import { Undraggable } from "@opg/interface-builder"
 import { validateDataConnection } from "lib/validateDataConnection"
 import { usePrevious } from "lib/usePrevious"
-import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
 import { ErrorBoundary } from "react-error-boundary"
-import { getPersistableDataSourceSettings, refreshSession } from "../lib/dataSourceUtils"
+import { modelToViewDataSource, refreshSession, viewToModelDataSource } from "../lib/dataSourceUtils"
+import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -32,48 +31,64 @@ import { getPersistableDataSourceSettings, refreshSession } from "../lib/dataSou
  * "relative" or "absolute".
  */
 
-export function DisplayMode(props: DisplayModeProps): JSX.Element {
-  const prevSettings = usePrevious<DataSourceSettingsModel>(props.dataSourceSettings)
+export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
+  const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
   const [isRefreshLoading, setIsRefreshLoading] = React.useState(false)
   const [openConfigPanel, setOpenConfigPanel] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
   const height = getHeight(props.heightKey, props.height)
-  const dataSourceSettings = sanitizeDataSourceSettings(props.dataSourceSettings)
-  const allowCalculatedField = !isEmpty(dataSourceSettings.calculatedFieldSettings)
-  const { onChange } = props
-  const persistedUrl = props.dataSourceSettings ? props.dataSourceSettings.url : undefined
+  const { onChange } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+
+  /* *************************************************
+   *
+   * PROP WATCHERS & EFFECTS
+   */
+
+  const viewDataSource = React.useMemo(() => {
+    return modelToViewDataSource({
+      modelDataSource: props.modelDataSource,
+      settingsDataSource: props.settingsDataSource,
+      useProxy: props.useProxy,
+      proxyUrl: props.proxyUrl,
+    })
+  }, [props.modelDataSource, props.settingsDataSource, props.useProxy, props.proxyUrl])
+
+  const services = React.useMemo(() => {
+    const services = []
+    const allowCalculatedField = !isEmpty(viewDataSource.calculatedFieldSettings)
+    allowCalculatedField ? services.push(CalculatedField) : void 0
+    props.showGroupingBar ? services.push(GroupingBar) : void 0
+    props.enableVirtualization ? services.push(VirtualScroll) : void 0
+    return services
+  }, [viewDataSource.calculatedFieldSettings, props.showGroupingBar, props.enableVirtualization])
 
   React.useEffect(() => {
     setOpenConfigPanel(props.openFieldList)
   }, [props.openFieldList])
 
-  const services = React.useMemo(() => {
-    const services = []
-    allowCalculatedField ? services.push(CalculatedField) : void 0
-    props.showGroupingBar ? services.push(GroupingBar) : void 0
-    props.enableVirtualization ? services.push(VirtualScroll) : void 0
-    return services
-  }, [allowCalculatedField, props.showGroupingBar, props.enableVirtualization])
-
+  /**
+   * Sync when viewDataSource changes
+   */
   React.useEffect(() => {
-    if (!prevSettings && fieldListRef.current && pivotRef.current) {
-      if (validateDataConnection(dataSourceSettings)) {
-        // Sync PivotView with FieldList
-        fieldListRef.current.updateView(pivotRef.current)
-        fieldListRef.current.update(pivotRef.current)
-      } else {
-        setError(new Error("The data connection settings are invalid."))
-      }
+    if (!prevModelDataSource && fieldListRef.current && pivotRef.current && validateDataConnection(viewDataSource)) {
+      // Sync PivotView with FieldList
+      fieldListRef.current.updateView(pivotRef.current)
+      fieldListRef.current.update(pivotRef.current)
     }
-  }, [prevSettings, dataSourceSettings])
+  }, [prevModelDataSource, viewDataSource])
+
+  /* *************************************************
+   *
+   * EVENT HANDLERS
+   */
 
   const handleRefreshClick = React.useCallback(() => {
     setIsRefreshLoading(true)
     refreshSession({
       useProxy: props.useProxy,
-      url: persistedUrl,
+      url: props.settingsDataSource.url,
       proxyUrl: props.proxyUrl,
     }).then((refreshSessionResult) => {
       if (!refreshSessionResult.ok) {
@@ -95,7 +110,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
       pivotRef.current.refreshData()
       setIsRefreshLoading(false)
     })
-  }, [persistedUrl, props.proxyUrl, props.useProxy])
+  }, [props.settingsDataSource.url, props.proxyUrl, props.useProxy])
 
   /**
    * Sync FieldList with PivotView and model
@@ -106,20 +121,20 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
       if (fieldListRef.current && pivotRef.current) {
         fieldListRef.current.updateView(pivotRef.current)
       }
-      if (prevSettings) {
+      if (prevModelDataSource && e.dataSourceSettings) {
         // Put FieldList changes into model
-        const fieldListDataSourceSettings = sanitizeDataSourceSettings(e.dataSourceSettings)
-        const persistableDataSourceSettings = getPersistableDataSourceSettings(
-          fieldListDataSourceSettings,
-          persistedUrl
-        )
-        persistableDataSourceSettings && onChange(persistableDataSourceSettings)
+        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
+        const newModelDataSource = viewToModelDataSource({
+          viewDataSource: newViewDataSource,
+          settingsDataSource: props.settingsDataSource,
+        })
+        newModelDataSource && onChange(newModelDataSource)
       }
     },
-    [prevSettings, onChange, persistedUrl]
+    [prevModelDataSource, onChange, props.settingsDataSource]
   )
 
-  function handleEnginePopulated_PivotTable() {
+  function handleEnginePopulated_PivotTable(/* e: EnginePopulatedEventArgs */) {
     if (!Browser.isDevice && fieldListRef.current && pivotRef.current) {
       fieldListRef.current.update(pivotRef.current)
     }
@@ -137,8 +152,17 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
     }
   }
 
-  if (!props.dataSourceSettings) {
-    return <div style={{ textAlign: "center" }}>Loading...</div>
+  /* *************************************************
+   *
+   * RENDERING
+   */
+
+  if (!props.modelDataSource) {
+    return null
+  }
+
+  if (error) {
+    return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
   function getExportButtons() {
@@ -199,12 +223,9 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
         }}
       />
       {getExportButtons()}
-      {error && (
-        <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
-      )}
       <PivotViewComponent
         ref={pivotRef}
-        allowCalculatedField={allowCalculatedField}
+        allowCalculatedField={!isEmpty(viewDataSource.calculatedFieldSettings)}
         allowPdfExport={props.exportPDF}
         allowExcelExport={props.exportExcel}
         enableVirtualization={props.enableVirtualization}
@@ -237,11 +258,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element {
         }}
         fallbackRender={() => <></>}>
         <PivotFieldListComponent
-          ref={fieldListRef}
+          allowCalculatedField={!isEmpty(viewDataSource.calculatedFieldSettings)}
+          dataSourceSettings={viewDataSource}
           enginePopulated={handleEnginePopulated_FieldList}
-          dataSourceSettings={dataSourceSettings}
-          renderMode={"Fixed"}
-          allowCalculatedField={allowCalculatedField}>
+          ref={fieldListRef}
+          renderMode={"Fixed"}>
           <Inject services={[...services]} />
         </PivotFieldListComponent>
       </ErrorBoundary>
