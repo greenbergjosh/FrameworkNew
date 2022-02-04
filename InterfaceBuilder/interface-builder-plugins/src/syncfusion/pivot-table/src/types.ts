@@ -27,6 +27,7 @@ export interface SettingsDataSource extends DataSource {
  * Extra props used to configure pivotview
  */
 export interface PivotTableSettings {
+  allowCalculatedField?: boolean
   enableVirtualization: boolean
   height: number
   heightKey: "auto" | "full" | "fieldlist" | "value"
@@ -64,6 +65,7 @@ export interface PivotTableInterfaceComponentProps extends ComponentDefinitionNa
   valueKey: string
 
   // Additional props
+  allowCalculatedField?: boolean
   dataSourceSettings: SettingsDataSource
   exportCSV: boolean
   exportExcel: boolean

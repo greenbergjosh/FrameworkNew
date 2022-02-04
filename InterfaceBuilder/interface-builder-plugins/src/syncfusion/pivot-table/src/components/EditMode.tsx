@@ -8,7 +8,6 @@ import {
 } from "@syncfusion/ej2-react-pivotview"
 import styles from "../styles.scss"
 import { EditModeProps, ModelDataSource } from "../types"
-import { isEmpty } from "lodash/fp"
 import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "../lib/usePrevious"
 import { validateDataConnection } from "lib/validateDataConnection"
@@ -86,7 +85,7 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
           }}
           fallbackRender={() => <></>}>
           <PivotFieldListComponent
-            allowCalculatedField={!isEmpty(viewDataSource.calculatedFieldSettings)}
+            allowCalculatedField={props.allowCalculatedField}
             dataSourceSettings={viewDataSource}
             enginePopulated={handleEnginePopulated}
             ref={fieldListRef}

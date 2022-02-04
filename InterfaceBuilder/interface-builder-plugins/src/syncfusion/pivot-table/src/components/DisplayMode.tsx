@@ -14,7 +14,6 @@ import { Browser } from "@syncfusion/ej2-base"
 import { Alert, Button, notification } from "antd"
 import { DisplayModeProps, ModelDataSource } from "../types"
 import { getHeight } from "../lib/getHeight"
-import { isEmpty } from "lodash/fp"
 import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
 import { Undraggable } from "@opg/interface-builder"
 import { validateDataConnection } from "lib/validateDataConnection"
@@ -57,12 +56,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
 
   const services = React.useMemo(() => {
     const services = []
-    const allowCalculatedField = !isEmpty(viewDataSource.calculatedFieldSettings)
-    allowCalculatedField ? services.push(CalculatedField) : void 0
+    props.allowCalculatedField ? services.push(CalculatedField) : void 0
     props.showGroupingBar ? services.push(GroupingBar) : void 0
     props.enableVirtualization ? services.push(VirtualScroll) : void 0
     return services
-  }, [viewDataSource.calculatedFieldSettings, props.showGroupingBar, props.enableVirtualization])
+  }, [props.allowCalculatedField, props.showGroupingBar, props.enableVirtualization])
 
   React.useEffect(() => {
     setOpenConfigPanel(props.openFieldList)
@@ -225,7 +223,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
       {getExportButtons()}
       <PivotViewComponent
         ref={pivotRef}
-        allowCalculatedField={!isEmpty(viewDataSource.calculatedFieldSettings)}
+        allowCalculatedField={props.allowCalculatedField}
         allowPdfExport={props.exportPDF}
         allowExcelExport={props.exportExcel}
         enableVirtualization={props.enableVirtualization}
@@ -258,7 +256,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         }}
         fallbackRender={() => <></>}>
         <PivotFieldListComponent
-          allowCalculatedField={!isEmpty(viewDataSource.calculatedFieldSettings)}
+          allowCalculatedField={props.allowCalculatedField}
           dataSourceSettings={viewDataSource}
           enginePopulated={handleEnginePopulated_FieldList}
           ref={fieldListRef}

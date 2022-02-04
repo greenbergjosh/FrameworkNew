@@ -212,6 +212,15 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
+                key: "allowCalculatedField",
+                valueKey: "allowCalculatedField",
+                label: "Calculated Fields",
+                component: "toggle",
+                help: "Insert or add a new calculated field based on the available OLAP cube elements from the bound data source. Calculated fields are customized dimensions or measures that are newly created based on user-defined expressions.",
+                defaultValue: false,
+                bindable: true,
+              },
+              {
                 handlerFunctionSrc:
                   "return function({props, lib: { getValue, setValue, raiseEvent }, args}) {\n  // Do stuff here\n}",
                 outgoingEventMap: {
