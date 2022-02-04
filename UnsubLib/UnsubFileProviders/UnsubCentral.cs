@@ -78,7 +78,7 @@ namespace UnsubLib.UnsubFileProviders
                 }
 
                 // Try new style API first
-                var authInfo = await network.GetS("Credentials.DomainAuthStrings[@=\"api.unsubcentral.com\"]", null);
+                var authInfo = await network.GetS("Credentials.DomainAuthStrings[\"api.unsubcentral.com\"]", null);
 
                 if (!authInfo.IsNullOrWhitespace())
                 {
