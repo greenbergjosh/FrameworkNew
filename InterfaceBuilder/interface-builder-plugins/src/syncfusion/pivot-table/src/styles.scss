@@ -25,20 +25,6 @@
 .viewPanel {
 }
 
-:global {
-  :local(.configPanel) {
-    .e-pivotfieldlist-wrapper.e-static {
-      width: unset;
-      height: unset;
-      border: none;
-    }
-
-    .e-pivotfieldlist-wrapper .e-field-list-title {
-      display: none;
-    }
-  }
-}
-
 .editModePanel {
   cursor: default;
   margin: -5px;
