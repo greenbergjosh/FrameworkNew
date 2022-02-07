@@ -28,6 +28,7 @@ export interface SettingsDataSource extends DataSource {
  */
 export interface PivotTableSettings {
   allowCalculatedField?: boolean
+  enableValueSorting: boolean
   enableVirtualization: boolean
   height: number
   heightKey: "auto" | "full" | "fieldlist" | "value"

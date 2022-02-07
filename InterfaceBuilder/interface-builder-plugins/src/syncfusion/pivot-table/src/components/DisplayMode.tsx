@@ -226,6 +226,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         allowCalculatedField={props.allowCalculatedField}
         allowPdfExport={props.exportPDF}
         allowExcelExport={props.exportExcel}
+        enableValueSorting={props.enableValueSorting}
         enableVirtualization={props.enableVirtualization}
         enginePopulated={handleEnginePopulated_PivotTable}
         height={height}
