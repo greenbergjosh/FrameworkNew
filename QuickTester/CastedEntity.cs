@@ -107,15 +107,15 @@ namespace QuickTester
                 return false;
             }
 
-            static async IAsyncEnumerable<Entity> functionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
+            static async IAsyncEnumerable<Entity> functionHandler(IAsyncEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters)
             {
-                foreach (var entity in entities)
+                await foreach (var entity in entities)
                 {
                     if (entity.ValueType == EntityValueType.Array)
                     {
                         var index = 0;
                         var yielded = false;
-                        foreach (var child in await entity.Eval("@.*"))
+                        await foreach (var child in entity.Eval("@.*"))
                         {
                             if (tryInvokeStringMethod(child, functionName, functionArguments, out var value))
                             {
