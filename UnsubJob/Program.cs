@@ -131,6 +131,12 @@ namespace UnsubJob
             foreach (var network in networks)
             {
                 var name = await network.GetS("Name");
+                var enabled = await network.GetB("Credentials.Enabled", true);
+                if (!enabled)
+                {
+                    await Fw.Log(nameof(Main), $"Skipping({name}) because it is not enabled...");
+                    continue;
+                }
 
                 await Fw.Log(nameof(Main), $"Starting({name})...");
 
