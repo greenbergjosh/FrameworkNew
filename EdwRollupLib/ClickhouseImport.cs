@@ -971,10 +971,15 @@ from datasets.{mergedTableName};";
                 AddField("Step", step);
                 AddField("Error", ex.Message);
 
-                _ = await ProtocolClient.HttpPostAsync(await _fw.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+                var slackAlertUrl = await _fw.StartupConfiguration.GetS("Config.SlackAlertUrl", null);
+
+                if (!slackAlertUrl.IsNullOrWhitespace())
                 {
-                    text
-                }), "application/json");
+                    _ = await ProtocolClient.HttpPostAsync(slackAlertUrl, JsonSerializer.Serialize(new
+                    {
+                        text
+                    }), "application/json");
+                }
             }
 
             _complete.SetException(ex);
