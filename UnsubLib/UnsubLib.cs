@@ -849,7 +849,7 @@ namespace UnsubLib
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling UnzipUnbuffered({networkName}):: for url {uri.Key}");
 
                         var fis = new FileInfo(uri.Key.url);
-                        cfl = await ProtocolClient.UnzipUnbuffered(fis.Name,
+                        cfl = await ProtocolClient.UnzipUnbuffered(_fw, fis.Name,
                                 ZipTester,
                                 new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                                 {
@@ -1124,14 +1124,15 @@ namespace UnsubLib
             {
                 try
                 {
-                    var refreshPeriod = (await c.GetS("UnsubRefreshPeriod", null)).ParseInt() ?? (await _fw.StartupConfiguration.GetS("Config.DefaultUnsubRefreshPeriod", null)).ParseInt() ?? 10;
+                    var refreshPeriod = await c.GetI("UnsubRefreshPeriod", await _fw.StartupConfiguration.GetI("Config.DefaultUnsubRefreshPeriod", 10));
                     if (!string.IsNullOrWhiteSpace(await c.GetS("MostRecentUnsubFileId")) && (DateTime.Now - DateTime.Parse(await c.GetS("MostRecentUnsubFileDate"))).TotalDays <= refreshPeriod)
                     {
                         _ = refdFiles.Add((await c.GetS("MostRecentUnsubFileId")).ToLower());
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"Campaign: {c} {ex}");
                 }
             }
 
@@ -2217,7 +2218,7 @@ namespace UnsubLib
                 await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}");
             }
 
-            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler ?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {GetFileSize2(f.FullName).GetAwaiter().GetResult()}");
+            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler ?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {await GetFileSize2(f.FullName)}");
             return handler ?? UNKNOWNHANDLER;
         }
 

@@ -100,7 +100,7 @@ namespace Utility.Entity
 
         public async Task<bool> GetB(string query = "@") => (await GetE(query)).Value<bool>();
 
-        public Task<bool> GetB(string query = "@", bool defaultValue = false) => GetWithDefault(query, defaultValue);
+        public Task<bool> GetB(string query = "@", bool defaultValue = false) => GetWithDefault(query, EntityValueType.Boolean, defaultValue);
 
         public Task<IEnumerable<Entity>> Get(string query = "@") => Evaluate(query);
 
@@ -112,7 +112,7 @@ namespace Utility.Entity
             return result?.ValueType == EntityValueType.String ? result.Value<string>() : result?.ToString() ?? defaultValue;
         }
 
-        public Task<string> GetS(string query = "@", string defaultValue = null) => GetWithDefault(query, defaultValue);
+        public Task<string> GetS(string query = "@", string defaultValue = null) => GetWithDefault(query, EntityValueType.String, defaultValue);
 
         public async Task<(bool found, string value)> TryGetS(string query = "@")
         {
@@ -128,7 +128,7 @@ namespace Utility.Entity
 
         public async Task<float> GetF(string query = "@") => (await GetE(query)).Value<float>();
 
-        public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, defaultValue);
+        public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, EntityValueType.Number, defaultValue);
 
         public async Task<Guid> GetGuid(string query) => Guid.Parse(await GetS(query));
 
@@ -148,10 +148,10 @@ namespace Utility.Entity
             return new Dictionary<string, TValue>(entity.Document.EnumerateObject().Select(item => new KeyValuePair<string, TValue>(item.name, item.value.Value<TValue>())));
         }
 
-        private async Task<T> GetWithDefault<T>(string query = "@", T defaultValue = default)
+        private async Task<T> GetWithDefault<T>(string query, EntityValueType expectedValueType, T defaultValue = default)
         {
             var result = (await Get(query)).ToList();
-            return result.Count == 1 ? result[0].Value<T>() : defaultValue;
+            return result.Count == 1 && result[0].ValueType == expectedValueType ? result[0].Value<T>() : defaultValue;
         }
 
         private async Task<T?> ParseWithDefault<T>(string query, TryParser<T> parser, T? defaultValue) where T : struct

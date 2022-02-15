@@ -139,7 +139,7 @@ namespace Utility
                 if (await UnixWrapper.IsZip(Path.Combine(workingDirectory, fileName), fw))
                 {
                     await fw.Log(nameof(DownloadUnzipUnbuffered), $"File is zip, calling {nameof(UnzipUnbuffered)} for {url} -> {fileName}");
-                    rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, workingDirectory, workingDirectory);
+                    rs = await UnzipUnbuffered(fw, fileName, zipEntryTester, zipEntryProcessors, workingDirectory, workingDirectory);
                 }
                 else
                 {
@@ -164,7 +164,7 @@ namespace Utility
             return rs;
         }
 
-        public static async Task<Dictionary<string, IEnumerable<T>>> UnzipUnbuffered<T>(string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<T>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory, int? timeout = null)
+        public static async Task<Dictionary<string, IEnumerable<T>>> UnzipUnbuffered<T>(FrameworkWrapper fw, string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<T>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory, int? timeout = null)
         {
             var ufn = Guid.NewGuid().ToString();
             var results = new Dictionary<string, IList<T>>();
@@ -179,10 +179,17 @@ namespace Utility
                     await UnixWrapper.UnzipZip(fileSourceDirectory, fileName, fileDestinationDirectory + "\\" + ufn);
                 }
 
+                await fw.Log(nameof(UnzipUnbuffered), $"Unzipped {fileName} to {fileDestinationDirectory}\\{ufn}");
+
                 var dir = new DirectoryInfo(fileDestinationDirectory + "\\" + ufn);
-                foreach (var f in dir.GetFiles("*", SearchOption.AllDirectories))
+                var files = dir.GetFiles("*", SearchOption.AllDirectories);
+
+                await fw.Log(nameof(UnzipUnbuffered), $"{fileName} contains {files.Length} files");
+
+                foreach (var f in files)
                 {
                     var (tr, pr) = await ProcessFile(f, zipEntryTester, zipEntryProcessors);
+                    await fw.Log(nameof(UnzipUnbuffered), $"ProcessFile {f.Name} returned {tr} {pr}");
                     if (!results.TryGetValue(tr, out var prs))
                     {
                         prs = new List<T>();
