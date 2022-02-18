@@ -174,14 +174,17 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     const { olapEngineModule } = pivotRef.current
     if (!olapEngineModule) {
       showVersionWarning("olapEngineModule")
+      return
     }
     const { xmlDoc } = olapEngineModule
     if (!xmlDoc) {
-      showVersionWarning("olapEngineModule.xmlDoc")
+      /* Report may simply be empty, so don't complain */
+      return
     }
     const documentElement = xmlDoc.documentElement as XMLDocument
     if (!documentElement || !documentElement.getElementsByTagName) {
       showVersionWarning("olapEngineModule.xmlDoc.documentElement")
+      return
     }
 
     /*
