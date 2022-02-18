@@ -104,7 +104,7 @@ namespace Utility
             pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
             pProcess.StartInfo.Verb = "runas";
             pProcess.StartInfo.Arguments = "/c " +
-                Fs.QuotePathParts(exeGrep) + string.Format(" -P -i '{0}' ", pattern) + Fs.QuotePathParts(inf) +
+                Fs.QuotePathParts(exeGrep) + string.Format(" -x -P -i '{0}' ", pattern) + Fs.QuotePathParts(inf) +
                 " > " + Fs.QuotePathParts(outf);
             pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             pProcess.StartInfo.UseShellExecute = true;
@@ -115,7 +115,7 @@ namespace Utility
 
         public const string exeFile = @"C:\Program Files\Git\usr\bin\file";
 
-        public static async Task<bool> IsZip(string file, FrameworkWrapper fw)
+        public static async Task<bool> IsZip(string logName, string file, FrameworkWrapper fw)
         {
             var resultFileName = Path.GetTempFileName();
 
@@ -131,13 +131,13 @@ namespace Utility
             var result = await File.ReadAllTextAsync(resultFileName);
             _ = Fs.TryDeleteFile(resultFileName);
 
-            await fw.Log(nameof(IsZip), $"File {file}: {result}");
+            await fw.Log($"{nameof(IsZip)}-{logName}", $"File {file}: {result}");
             return result?.Contains("zip", StringComparison.OrdinalIgnoreCase) == true;
         }
 
-        public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "^[0-9a-f]{32}$");
+        public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "^[0-9a-f]{32}[\\r\\n]?");
 
-        public static async Task RemoveNonSHA512LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "^(?:0[xX])?[0-9a-f]{128}[\\r\\n]?$");
+        public static async Task RemoveNonSHA512LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "^(?:0[xX])?[0-9a-f]{128}[\\r\\n]?");
 
         private static void OutputRedirection(object sendingProcess, DataReceivedEventArgs outLine)
         {

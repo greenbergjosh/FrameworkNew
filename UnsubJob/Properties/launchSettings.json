@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "skipQueuedCampaigns n:\"W4Cathy\" c:26620"
+      "commandLineArgs": "skipClean skipQueuedCampaigns n:\"Amobee - Roxy\" c:1054"
     }
   }
 }

@@ -112,7 +112,7 @@ namespace UnsubLib.UnsubFileProviders
                         if (success)
                         {
                             var ge = await network.Parse("application/json", body);
-                            var status = int.Parse(await ge.GetS("status"));
+                            var status = await ge.GetI("status");
                             if (status == 1)
                             {
                                 file = await ge.GetS("downloadfile");

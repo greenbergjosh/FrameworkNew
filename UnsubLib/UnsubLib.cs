@@ -849,8 +849,8 @@ namespace UnsubLib
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling UnzipUnbuffered({networkName}):: for url {uri.Key}");
 
                         var fis = new FileInfo(uri.Key.url);
-                        cfl = await ProtocolClient.UnzipUnbuffered(_fw, fis.Name,
-                                ZipTester,
+                        cfl = await ProtocolClient.UnzipUnbuffered(networkName, _fw, fis.Name,
+                                f => ZipTester(networkName, f),
                                 new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                                 {
                                     { MD5HANDLER, f => Md5ZipHandler(f) },
@@ -1016,14 +1016,14 @@ namespace UnsubLib
 
                             await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDatabase for Digest file {fdest}");
 
-                            _ = await Data.CallFn(Conn, "UploadUnsubFile", JsonSerializer.Serialize(new
+                            var uploadResult = await Data.CallFn(Conn, "UploadUnsubFile", JsonSerializer.Serialize(new
                             {
                                 filePath = $"{FileImportDBDirectory}/{fdest}.txt.srt",
                                 fileId = fdest,
                                 fileType = cf.ContainsKey(MD5HANDLER) ? "md5" : "sha512"
                             }), timeout: 600);
 
-                            await _fw.Trace($"{ nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDatabase for Digest file {fdest}");
+                            await _fw.Trace($"{ nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDatabase for Digest file {fdest} Result: {uploadResult}");
                         }
 
                         _ = Fs.TryDeleteFile(src);
@@ -2101,7 +2101,7 @@ namespace UnsubLib
             {
                 try
                 {
-                    dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl.url, authString, ZipTester,
+                    dr = await ProtocolClient.DownloadUnzipUnbuffered(networkName, unsubUrl.url, authString, f => ZipTester(networkName, f),
                       new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                       {
                         { MD5HANDLER, f =>  Md5ZipHandler(f) },
@@ -2192,33 +2192,33 @@ namespace UnsubLib
             return restMatch; // which may be null - in which case we did not match a type
         }
 
-        public async Task<string> ZipTester(FileInfo f)
+        public async Task<string> ZipTester(string networkName, FileInfo f)
         {
             if (f.Length == 0)
             {
-                await _fw.Error(nameof(ZipTester), $"Zero-length file: {f.FullName}");
+                await _fw.Error($"{nameof(ZipTester)}-{networkName}", $"Zero-length file: {f.FullName}");
                 return UNKNOWNHANDLER;
             }
 
-            await _fw.Trace(nameof(ZipTester), $"File size before running {nameof(ZipTester)}: {f.Length} bytes");
+            await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"File size before running {nameof(ZipTester)}: {f.Length} bytes");
 
             if (f.Length < ZipFileMinBytes)
             {
-                await _fw.Trace(nameof(ZipTester), $"File length {f.Length} less than {ZipFileMinBytes} bytes");
+                await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"File length {f.Length} less than {ZipFileMinBytes} bytes");
             }
 
             // We read in xxx bytes, and ignore the last line, to avoid truncation
             var lines = await Fs.ReadLines(f.FullName, ZipFileReadBytes);
 
-            await _fw.Trace(nameof(ZipTester), $"Lines in file: {f.Length}, capped to {ZipFileReadBytes} bytes");
+            await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"Lines in file: {f.Length}, capped to {ZipFileReadBytes} bytes");
 
             var handler = await HandlerType(lines, f);
             if (handler == null)
             {
-                await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}");
+                await _fw.Error($"{nameof(ZipTester)}-{networkName}", $"Unknown file type: {f.FullName}");
             }
 
-            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler ?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {await GetFileSize2(f.FullName)}");
+            await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"Handling file {f.FullName} with {handler ?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {await GetFileSize2(f.FullName)}");
             return handler ?? UNKNOWNHANDLER;
         }
 
