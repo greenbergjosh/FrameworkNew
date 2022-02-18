@@ -10,17 +10,18 @@ import {
 } from "@syncfusion/ej2-react-pivotview"
 import classNames from "classnames"
 import styles from "../styles.scss"
-import { Browser } from "@syncfusion/ej2-base"
 import { Alert, Button, notification } from "antd"
+import { Browser } from "@syncfusion/ej2-base"
+import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 import { DisplayModeProps, ModelDataSource } from "../types"
+import { ErrorBoundary } from "react-error-boundary"
 import { getHeight } from "../lib/getHeight"
+import { isEmpty } from "lodash/fp"
+import { modelToViewDataSource, refreshSession, viewToModelDataSource } from "../lib/dataSourceUtils"
 import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
 import { Undraggable } from "@opg/interface-builder"
-import { validateDataConnection } from "lib/validateDataConnection"
 import { usePrevious } from "lib/usePrevious"
-import { ErrorBoundary } from "react-error-boundary"
-import { modelToViewDataSource, refreshSession, viewToModelDataSource } from "../lib/dataSourceUtils"
-import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
+import { validateDataConnection } from "lib/validateDataConnection"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -150,6 +151,70 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     }
   }
 
+  function showVersionWarning(missingDependency: string) {
+    console.warn(
+      `PivotTable's dependency on the undocumented property "${missingDependency}" in no longer valid.
+        This is most likely due to a version change in Syncfusion PivotView.
+        Olap errors won't be notified and the user will see an infinite spinner.`
+    )
+  }
+
+  /**
+   * Check the response for errors.
+   * NOTE: Syncfusion PivotView 19.x does not check for errors and does not expose an API to check.
+   * We hack into the internals of PivotView to check for errors.
+   * PivotView will show an infinite spinner otherwise.
+   */
+  function handleDataBound_PivotTable() {
+    /*
+     * Attempt to access undocumented response "xmlDoc"
+     */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const { olapEngineModule } = pivotRef.current
+    if (!olapEngineModule) {
+      showVersionWarning("olapEngineModule")
+      return
+    }
+    const { xmlDoc } = olapEngineModule
+    if (!xmlDoc) {
+      /* Report may simply be empty, so don't complain */
+      return
+    }
+    const documentElement = xmlDoc.documentElement as XMLDocument
+    if (!documentElement || !documentElement.getElementsByTagName) {
+      showVersionWarning("olapEngineModule.xmlDoc.documentElement")
+      return
+    }
+
+    /*
+     * Read any errors and display a notification
+     * First try "soap:Fault"...
+     */
+    let faults
+    faults = documentElement.getElementsByTagName("soap:Fault")
+    if (!faults || faults.length < 1) {
+      // Then try "SOAP-ENV:Fault"
+      faults = documentElement.getElementsByTagName("SOAP-ENV:Fault")
+      if (!faults || faults.length < 1 || !faults[0].getElementsByTagName) {
+        // No soap fault errors
+        return
+      }
+    }
+    const faultstring = faults[0].getElementsByTagName("faultstring")
+    if (!faultstring || faultstring.length < 1) {
+      // No fault string node
+      return
+    }
+    const error = faultstring[0].innerHTML
+    if (!isEmpty(error)) {
+      notification.error({
+        message: `Pivot Table error!\n${error}`,
+        duration: 0, // never close
+      })
+    }
+  }
+
   /* *************************************************
    *
    * RENDERING
@@ -226,6 +291,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         allowCalculatedField={props.allowCalculatedField}
         allowPdfExport={props.exportPDF}
         allowExcelExport={props.exportExcel}
+        dataBound={handleDataBound_PivotTable}
         enableValueSorting={props.enableValueSorting}
         enableVirtualization={props.enableVirtualization}
         enginePopulated={handleEnginePopulated_PivotTable}
