@@ -2095,13 +2095,31 @@ namespace UnsubLib
             var networkName = await network.GetS("Name");
             var parallelism = await network.GetI("Credentials.Parallelism");
             var uri = new Uri(unsubUrl.url);
-            var authString = (await network.GetD<string>("Credentials.DomainAuthStrings"))?.FirstOrDefault(d => string.Equals(d.Key, uri.Host, StringComparison.CurrentCultureIgnoreCase)).Value;
+
+            var authStrings = await network.GetD("Credentials.DomainAuthStrings", false);
+            var authStringEntity = authStrings.FirstOrDefault(kvp => string.Equals(kvp.Key, uri.Host, StringComparison.CurrentCultureIgnoreCase)).Value;
+            string authScheme = null;
+            string authParameter = null;
+
+            if (authStringEntity != null)
+            {
+                if (authStringEntity.ValueType == EntityValueType.String)
+                {
+                    authScheme = "Basic";
+                    authParameter = await authStringEntity.GetS("@");
+                }
+                else
+                {
+                    authScheme = await authStringEntity.GetS("scheme");
+                    authParameter = await authStringEntity.GetS("parameter");
+                }
+            }
 
             try
             {
                 try
                 {
-                    dr = await ProtocolClient.DownloadUnzipUnbuffered(networkName, unsubUrl.url, authString, f => ZipTester(networkName, f),
+                    dr = await ProtocolClient.DownloadUnzipUnbuffered(networkName, unsubUrl.url, authScheme, authParameter, f => ZipTester(networkName, f),
                       new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                       {
                         { MD5HANDLER, f =>  Md5ZipHandler(f) },

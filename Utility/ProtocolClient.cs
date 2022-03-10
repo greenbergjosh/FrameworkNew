@@ -95,7 +95,7 @@ namespace Utility
             return resp;
         }
 
-        public static async Task<Dictionary<string, IEnumerable<T>>> DownloadUnzipUnbuffered<T>(string logName, string url, string basicAuthString, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<T>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds, int maxConnectionsPerServer, FrameworkWrapper fw, IDictionary<string, string> postData = null)
+        public static async Task<Dictionary<string, IEnumerable<T>>> DownloadUnzipUnbuffered<T>(string logName, string url, string authScheme, string authParameter, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<T>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds, int maxConnectionsPerServer, FrameworkWrapper fw, IDictionary<string, string> postData = null)
         {
             var responseBody = string.Empty;
 
@@ -107,11 +107,16 @@ namespace Utility
 
             async Task<HttpResponseMessage> GetResponse()
             {
-                if (basicAuthString != null)
+                if (!string.IsNullOrWhiteSpace(authScheme) && !string.IsNullOrWhiteSpace(authParameter))
                 {
-                    var byteArray = Encoding.ASCII.GetBytes(basicAuthString);
+                    if (authScheme == "Basic")
+                    {
+                        var byteArray = Encoding.ASCII.GetBytes(authParameter);
+                        authParameter = Convert.ToBase64String(byteArray);
+                    }
+
                     using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(authScheme, authParameter);
                     return await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
                 }
                 else if (postData?.Count > 0)

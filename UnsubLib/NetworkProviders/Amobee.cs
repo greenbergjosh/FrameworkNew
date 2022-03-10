@@ -99,13 +99,13 @@ namespace UnsubLib.NetworkProviders
 
             try
             {
-                var campaignsUrl = INetworkProvider.BuildUrl(apiUrl, campaignSuppressionUrlPath).Replace("{campaignId}", unsubRelationshipId);
+                var campaignSuppressionUrl = INetworkProvider.BuildUrl(apiUrl, campaignSuppressionUrlPath).Replace("{campaignId}", unsubRelationshipId);
 
-                result = await ProtocolClient.HttpGetAsync(campaignsUrl, requestHeaders);
+                result = await ProtocolClient.HttpGetAsync(campaignSuppressionUrl, requestHeaders);
 
                 if (!result.success)
                 {
-                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaign {unsubRelationshipId} {networkId}::{apiKey}::{apiUrl}\r\nAPI Response:\r\n{result.body}");
+                    await _fw.Error(_logMethod, $"Failed to get {networkName} campaign {unsubRelationshipId} {networkId}::{apiKey}::{campaignSuppressionUrl}\r\nAPI Response:\r\n{result.body}");
                     return null;
                 }
 
