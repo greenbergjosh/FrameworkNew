@@ -133,11 +133,27 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     [prevModelDataSource, onChange, props.settingsDataSource]
   )
 
-  function handleEnginePopulated_PivotTable(/* e: EnginePopulatedEventArgs */) {
-    if (!Browser.isDevice && fieldListRef.current && pivotRef.current) {
-      fieldListRef.current.update(pivotRef.current)
-    }
-  }
+  /**
+   * Sync PivotView with FieldList and model
+   */
+  const handleEnginePopulated_PivotTable = React.useCallback(
+    (e: EnginePopulatedEventArgs) => {
+      // Sync FieldList with PivotView
+      if (pivotRef.current && fieldListRef.current) {
+        fieldListRef.current.update(pivotRef.current)
+      }
+      if (prevModelDataSource && e.dataSourceSettings) {
+        // Put PivotView changes into model
+        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
+        const newModelDataSource = viewToModelDataSource({
+          viewDataSource: newViewDataSource,
+          settingsDataSource: props.settingsDataSource,
+        })
+        newModelDataSource && onChange(newModelDataSource)
+      }
+    },
+    [prevModelDataSource, onChange, props.settingsDataSource]
+  )
 
   const handleExportClick = (format: "excel" | "pdf" | "csv") => () => {
     if (pivotRef && pivotRef.current) {
