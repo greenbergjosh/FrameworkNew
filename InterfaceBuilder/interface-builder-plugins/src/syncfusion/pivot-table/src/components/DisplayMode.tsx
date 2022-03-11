@@ -11,7 +11,6 @@ import {
 import classNames from "classnames"
 import styles from "../styles.scss"
 import { Alert, Button, notification } from "antd"
-import { Browser } from "@syncfusion/ej2-base"
 import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 import { DisplayModeProps, ModelDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
@@ -308,6 +307,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         allowPdfExport={props.exportPDF}
         allowExcelExport={props.exportExcel}
         dataBound={handleDataBound_PivotTable}
+        allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
         enableValueSorting={props.enableValueSorting}
         enableVirtualization={props.enableVirtualization}
         enginePopulated={handleEnginePopulated_PivotTable}
@@ -340,6 +340,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         fallbackRender={() => <></>}>
         <PivotFieldListComponent
           allowCalculatedField={props.allowCalculatedField}
+          allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
           dataSourceSettings={viewDataSource}
           enginePopulated={handleEnginePopulated_FieldList}
           ref={fieldListRef}

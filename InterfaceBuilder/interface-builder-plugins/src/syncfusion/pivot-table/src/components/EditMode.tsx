@@ -86,6 +86,7 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
           fallbackRender={() => <></>}>
           <PivotFieldListComponent
             allowCalculatedField={props.allowCalculatedField}
+            allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
             dataSourceSettings={viewDataSource}
             enginePopulated={handleEnginePopulated}
             ref={fieldListRef}

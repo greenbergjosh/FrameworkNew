@@ -58,6 +58,8 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
         return (
           <DisplayMode
             allowCalculatedField={this.props.allowCalculatedField}
+            allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            enableValueSorting={this.props.enableValueSorting}
             enableVirtualization={this.props.enableVirtualization}
             exportCSV={this.props.exportCSV}
             exportExcel={this.props.exportExcel}
@@ -80,6 +82,8 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
         return (
           <EditMode
             allowCalculatedField={this.props.allowCalculatedField}
+            allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            enableValueSorting={this.props.enableValueSorting}
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
             heightKey={this.props.heightKey}
@@ -101,6 +105,8 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
         return (
           <DisplayMode
             allowCalculatedField={this.props.allowCalculatedField}
+            allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            enableValueSorting={this.props.enableValueSorting}
             enableVirtualization={this.props.enableVirtualization}
             exportCSV={this.props.exportCSV}
             exportExcel={this.props.exportExcel}

@@ -212,6 +212,15 @@ export const pivotTableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 bindable: true,
               },
               {
+                key: "allowDeferLayoutUpdate",
+                valueKey: "allowDeferLayoutUpdate",
+                label: "Defer Layout Update",
+                component: "toggle",
+                help: "Allows user to update the pivot table only on demand to improve performance.",
+                defaultValue: false,
+                bindable: true,
+              },
+              {
                 key: "enableVirtualization",
                 valueKey: "enableVirtualization",
                 label: "Virtual Scrolling",
