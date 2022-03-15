@@ -199,6 +199,19 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
   )
 
+  const handleExportClick = (format: "excel" | "pdf" | "csv") => () => {
+    debugger
+    if (pivotRef && pivotRef.current) {
+      if (format === "excel") {
+        pivotRef.current.excelExport()
+      } else if (format === "pdf") {
+        pivotRef.current.pdfExport()
+      } else if (format === "csv") {
+        pivotRef.current.csvExport()
+      }
+    }
+  }
+
   function showVersionWarning(missingDependency: string) {
     console.warn(
       `PivotTable's dependency on the undocumented property "${missingDependency}" in no longer valid.
@@ -315,6 +328,52 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
+  function getExportButtons() {
+    return (
+      <>
+        {props.allowExcelExport && (
+          <Button
+            className={styles.exportButton}
+            type="link"
+            size="small"
+            icon="file-text"
+            onClick={handleExportClick("csv")}>
+            CSV Export
+          </Button>
+        )}
+        {props.allowExcelExport && (
+          <Button
+            className={styles.exportButton}
+            type="link"
+            size="small"
+            icon="file-excel"
+            onClick={handleExportClick("excel")}>
+            Excel Export
+          </Button>
+        )}
+        {props.allowPdfExport && (
+          <Button
+            className={styles.exportButton}
+            type="link"
+            size="small"
+            icon="file-pdf"
+            onClick={handleExportClick("pdf")}>
+            PDF Export
+          </Button>
+        )}
+        <Button
+          className={styles.exportButton}
+          type="link"
+          size="small"
+          icon="reload"
+          onClick={handleRefreshClick}
+          loading={isLoading}>
+          Refresh
+        </Button>
+      </>
+    )
+  }
+
   const getViewPanel = () => (
     <div id="ViewPanel">
       <Button
@@ -326,6 +385,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           setOpenConfigPanel(true)
         }}
       />
+      {!props.showToolbar && getExportButtons()}
       <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
         <PivotViewComponent
           allowCalculatedField={props.allowCalculatedField}
