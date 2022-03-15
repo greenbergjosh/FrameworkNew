@@ -297,7 +297,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   }
 
   /**
-   * https://ej2.syncfusion.com/react/documentation/pivotview/tool-bar/
+   * https://ej2.syncfusion.com/react/documentation/pivotview/tool-bar/#adding-custom-option-to-the-toolbar
    */
   const handleExpandAllClick = React.useCallback(
     // if (fieldListRef.current) {
