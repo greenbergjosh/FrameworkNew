@@ -200,7 +200,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   )
 
   const handleExportClick = (format: "excel" | "pdf" | "csv") => () => {
-    debugger
     if (pivotRef && pivotRef.current) {
       if (format === "excel") {
         pivotRef.current.excelExport()
@@ -385,7 +384,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           setOpenConfigPanel(true)
         }}
       />
-      {!props.showToolbar && getExportButtons()}
+      {getExportButtons()}
       <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
         <PivotViewComponent
           allowCalculatedField={props.allowCalculatedField}
@@ -403,7 +402,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           ref={pivotRef}
           showFieldList={false}
           showGroupingBar={props.showGroupingBar}
-          showToolbar={props.showToolbar}
+          showToolbar={false}
           style={{ zIndex: 0 }}
           toolbar={toolbar}
           toolbarRender={handleToolbarRender_PivotTable}>
