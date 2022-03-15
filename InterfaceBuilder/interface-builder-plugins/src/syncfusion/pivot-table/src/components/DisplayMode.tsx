@@ -1,7 +1,6 @@
 import React from "react"
 import {
   CalculatedField,
-  ChartSeriesType,
   ConditionalFormatting,
   EnginePopulatedEventArgs,
   ExcelExport,
@@ -22,7 +21,7 @@ import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 import { DisplayModeProps, ModelDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
 import { getHeight } from "../lib/getHeight"
-import { isEmpty } from "lodash/fp"
+import { merge, isEmpty } from "lodash/fp"
 import { modelToViewDataSource, refreshSession, viewToModelDataSource } from "../lib/dataSourceUtils"
 import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
 import { Undraggable } from "@opg/interface-builder"
@@ -48,7 +47,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
   const height = getHeight(props.heightKey, props.height)
   const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
-  const chartTypes: ChartSeriesType[] = ["Column", "Bar", "Line", "Area"]
 
   /* *************************************************
    *
@@ -89,11 +87,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
 
   const toolbar: ToolbarItems[] = React.useMemo(() => {
     const toolbar: ToolbarItems[] = []
-    toolbar.push("Grid")
-    props.allowConditionalFormatting ? toolbar.push("ConditionalFormatting") : void 0
-    props.allowExcelExport || props.allowPdfExport ? toolbar.push("Export") : void 0
-    props.allowNumberFormatting ? toolbar.push("NumberFormatting") : void 0
+    props.showChartsMenu ? toolbar.push("Grid") : void 0
     props.showChartsMenu ? toolbar.push("Chart") : void 0
+    props.allowExcelExport || props.allowPdfExport ? toolbar.push("Export") : void 0
+    props.allowConditionalFormatting ? toolbar.push("ConditionalFormatting") : void 0
+    props.allowNumberFormatting ? toolbar.push("NumberFormatting") : void 0
     props.showGrandTotalMenu ? toolbar.push("GrandTotal") : void 0
     props.showMdxButton ? toolbar.push("MDX") : void 0
     props.showSubTotalMenu ? toolbar.push("SubTotal") : void 0
@@ -265,14 +263,44 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     }
   }
 
+  /**
+   *
+   * @param args
+   */
   function handleToolbarRender_PivotTable(args: ToolbarArgs): void {
-    args.customToolbar &&
+    if (args.customToolbar) {
+      /* Add Reload button */
       args.customToolbar.splice(0, 0, {
         prefixIcon: "e-repeat e-icons",
         tooltipText: "Reload",
         click: handleRefreshClick,
       })
+      /* Add Expand-All button */
+      args.customToolbar.splice(args.customToolbar.length, 0, {
+        prefixIcon: "e-collapse-2 e-icons",
+        tooltipText: "Expand/Collapse",
+        click: handleExpandAllClick,
+      })
+    }
   }
+
+  /**
+   * https://ej2.syncfusion.com/react/documentation/pivotview/tool-bar/
+   */
+  const handleExpandAllClick = React.useCallback(
+    // if (fieldListRef.current) {
+    // fieldListRef.current.dataSourceSettings.expandAll = !fieldListRef.current.dataSourceSettings.expandAll
+    // }
+    (/*args: ToolbarArgs*/) => {
+      if (props.modelDataSource) {
+        // onChangeModelDataSource(props.modelDataSource)
+        // handleEnginePopulated_FieldList({ dataSourceSettings: viewDataSource })
+        const newModelDataSource = merge(props.modelDataSource, { expandAll: !viewDataSource.expandAll })
+        newModelDataSource && onChangeModelDataSource(newModelDataSource)
+      }
+    },
+    [onChangeModelDataSource, props.modelDataSource, viewDataSource.expandAll]
+  )
 
   /* *************************************************
    *
@@ -304,8 +332,8 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           allowConditionalFormatting={props.allowConditionalFormatting}
           allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
           allowExcelExport={props.allowExcelExport}
+          allowNumberFormatting={props.allowNumberFormatting}
           allowPdfExport={props.allowPdfExport}
-          chartTypes={chartTypes}
           dataBound={handleDataBound_PivotTable}
           delayUpdate={true}
           enableValueSorting={props.enableValueSorting}
