@@ -22,10 +22,10 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
    *
    */
   static getSummary(props: Partial<PivotTableInterfaceComponentProps>): JSX.Element | undefined {
-    if (!props.dataSourceSettings) {
+    if (!props.settingsDataSource) {
       return <div>ERROR: Can&rsquo;t read data connection settings.</div>
     }
-    const { catalog, cube, providerType, url, localeIdentifier } = props.dataSourceSettings
+    const { catalog, cube, providerType, url, localeIdentifier } = props.settingsDataSource
     return (
       <Undraggable>
         <div>
@@ -58,23 +58,29 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
         return (
           <DisplayMode
             allowCalculatedField={this.props.allowCalculatedField}
+            allowConditionalFormatting={this.props.allowConditionalFormatting}
             allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            allowExcelExport={this.props.allowExcelExport}
+            allowNumberFormatting={this.props.allowNumberFormatting}
+            allowPdfExport={this.props.allowPdfExport}
             enableValueSorting={this.props.enableValueSorting}
             enableVirtualization={this.props.enableVirtualization}
-            exportCSV={this.props.exportCSV}
-            exportExcel={this.props.exportExcel}
-            exportPDF={this.props.exportPDF}
             height={this.props.height}
             heightKey={this.props.heightKey}
             modelDataSource={modelDataSource}
             name={this.props.name}
-            onChange={(newModelDataSource: ModelDataSource) => {
+            onChangeModelDataSource={(newModelDataSource: ModelDataSource) => {
               this.setValue([this.props.valueKey, newModelDataSource])
             }}
             openFieldList={this.props.openFieldList}
             proxyUrl={proxyUrl}
-            settingsDataSource={this.props.dataSourceSettings}
+            settingsDataSource={this.props.settingsDataSource}
+            showChartsMenu={this.props.showChartsMenu}
+            showGrandTotalMenu={this.props.showGrandTotalMenu}
             showGroupingBar={this.props.showGroupingBar}
+            showMdxButton={this.props.showMdxButton}
+            showSubTotalMenu={this.props.showSubTotalMenu}
+            showToolbar={this.props.showToolbar}
             useProxy={useProxy}
           />
         )
@@ -83,20 +89,13 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
           <EditMode
             allowCalculatedField={this.props.allowCalculatedField}
             allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
-            enableValueSorting={this.props.enableValueSorting}
-            enableVirtualization={this.props.enableVirtualization}
-            height={this.props.height}
-            heightKey={this.props.heightKey}
             modelDataSource={modelDataSource}
             name={this.props.name}
-            onChange={(newModelDataSource) => {
+            onChangeModelDataSource={(newModelDataSource) => {
               this.setValue([this.props.valueKey, newModelDataSource])
             }}
-            openFieldList={this.props.openFieldList}
-            outboundValueKey={this.props.valueKey}
             proxyUrl={proxyUrl}
-            settingsDataSource={this.props.dataSourceSettings}
-            showGroupingBar={this.props.showGroupingBar}
+            settingsDataSource={this.props.settingsDataSource}
             useProxy={useProxy}
           />
         )
@@ -105,21 +104,27 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
         return (
           <DisplayMode
             allowCalculatedField={this.props.allowCalculatedField}
+            allowConditionalFormatting={this.props.allowConditionalFormatting}
             allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            allowExcelExport={this.props.allowExcelExport}
+            allowNumberFormatting={this.props.allowNumberFormatting}
+            allowPdfExport={this.props.allowPdfExport}
             enableValueSorting={this.props.enableValueSorting}
             enableVirtualization={this.props.enableVirtualization}
-            exportCSV={this.props.exportCSV}
-            exportExcel={this.props.exportExcel}
-            exportPDF={this.props.exportPDF}
             height={this.props.height}
             heightKey={this.props.heightKey}
             modelDataSource={modelDataSource}
             name={this.props.name}
-            onChange={() => void 0}
+            onChangeModelDataSource={() => void 0}
             openFieldList={this.props.openFieldList}
             proxyUrl={proxyUrl}
-            settingsDataSource={this.props.dataSourceSettings}
+            settingsDataSource={this.props.settingsDataSource}
+            showChartsMenu={this.props.showChartsMenu}
+            showGrandTotalMenu={this.props.showGrandTotalMenu}
             showGroupingBar={this.props.showGroupingBar}
+            showMdxButton={this.props.showMdxButton}
+            showSubTotalMenu={this.props.showSubTotalMenu}
+            showToolbar={this.props.showToolbar}
             useProxy={useProxy}
           />
         )

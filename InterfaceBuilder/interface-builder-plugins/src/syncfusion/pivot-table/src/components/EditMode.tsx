@@ -20,7 +20,7 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
   const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
   const [error, setError] = React.useState<Error | null>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
-  const { onChange } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+  const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
 
   /* *************************************************
    *
@@ -59,10 +59,10 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
           viewDataSource: newViewDataSource,
           settingsDataSource: props.settingsDataSource,
         })
-        newModelDataSource && onChange(newModelDataSource)
+        newModelDataSource && onChangeModelDataSource(newModelDataSource)
       }
     },
-    [prevModelDataSource, onChange, props.settingsDataSource]
+    [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
   )
 
   /* *************************************************

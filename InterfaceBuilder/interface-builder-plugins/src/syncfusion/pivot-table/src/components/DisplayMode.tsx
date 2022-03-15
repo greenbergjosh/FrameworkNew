@@ -1,16 +1,23 @@
 import React from "react"
 import {
   CalculatedField,
+  ChartSeriesType,
+  ConditionalFormatting,
   EnginePopulatedEventArgs,
+  ExcelExport,
+  FieldList,
   GroupingBar,
   Inject,
+  NumberFormatting,
+  PDFExport,
   PivotFieldListComponent,
   PivotViewComponent,
+  Toolbar,
   VirtualScroll,
 } from "@syncfusion/ej2-react-pivotview"
 import classNames from "classnames"
 import styles from "../styles.scss"
-import { Alert, Button, notification } from "antd"
+import { Alert, Button, Icon, notification, Spin } from "antd"
 import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 import { DisplayModeProps, ModelDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
@@ -21,6 +28,8 @@ import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej
 import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "lib/usePrevious"
 import { validateDataConnection } from "lib/validateDataConnection"
+import { ToolbarArgs } from "@syncfusion/ej2-pivotview/src/common/base/interface"
+import { ToolbarItems } from "@syncfusion/ej2-pivotview/src/common/base/enum"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -32,13 +41,14 @@ import { validateDataConnection } from "lib/validateDataConnection"
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
-  const [isRefreshLoading, setIsRefreshLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
   const [openConfigPanel, setOpenConfigPanel] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
   const height = getHeight(props.heightKey, props.height)
-  const { onChange } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+  const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+  const chartTypes: ChartSeriesType[] = ["Column", "Bar", "Line", "Area"]
 
   /* *************************************************
    *
@@ -57,10 +67,47 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   const services = React.useMemo(() => {
     const services = []
     props.allowCalculatedField ? services.push(CalculatedField) : void 0
-    props.showGroupingBar ? services.push(GroupingBar) : void 0
+    props.allowConditionalFormatting ? services.push(ConditionalFormatting) : void 0
+    props.allowExcelExport ? services.push(ExcelExport) : void 0
+    props.allowNumberFormatting ? services.push(NumberFormatting) : void 0
+    props.allowPdfExport ? services.push(PDFExport) : void 0
     props.enableVirtualization ? services.push(VirtualScroll) : void 0
+    props.showGroupingBar ? services.push(GroupingBar) : void 0
+    props.showToolbar ? services.push(Toolbar) : void 0
+    services.push(FieldList)
     return services
-  }, [props.allowCalculatedField, props.showGroupingBar, props.enableVirtualization])
+  }, [
+    props.allowCalculatedField,
+    props.allowConditionalFormatting,
+    props.allowExcelExport,
+    props.allowNumberFormatting,
+    props.allowPdfExport,
+    props.enableVirtualization,
+    props.showGroupingBar,
+    props.showToolbar,
+  ])
+
+  const toolbar: ToolbarItems[] = React.useMemo(() => {
+    const toolbar: ToolbarItems[] = []
+    toolbar.push("Grid")
+    props.allowConditionalFormatting ? toolbar.push("ConditionalFormatting") : void 0
+    props.allowExcelExport || props.allowPdfExport ? toolbar.push("Export") : void 0
+    props.allowNumberFormatting ? toolbar.push("NumberFormatting") : void 0
+    props.showChartsMenu ? toolbar.push("Chart") : void 0
+    props.showGrandTotalMenu ? toolbar.push("GrandTotal") : void 0
+    props.showMdxButton ? toolbar.push("MDX") : void 0
+    props.showSubTotalMenu ? toolbar.push("SubTotal") : void 0
+    return toolbar
+  }, [
+    props.allowConditionalFormatting,
+    props.allowExcelExport,
+    props.allowNumberFormatting,
+    props.allowPdfExport,
+    props.showChartsMenu,
+    props.showGrandTotalMenu,
+    props.showMdxButton,
+    props.showSubTotalMenu,
+  ])
 
   React.useEffect(() => {
     setOpenConfigPanel(props.openFieldList)
@@ -83,7 +130,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    */
 
   const handleRefreshClick = React.useCallback(() => {
-    setIsRefreshLoading(true)
+    setIsLoading(true)
     refreshSession({
       useProxy: props.useProxy,
       url: props.settingsDataSource.url,
@@ -94,7 +141,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         notification.error({
           message: `Refresh failed! (${refreshSessionResult.statusText})`,
         })
-        setIsRefreshLoading(false)
+        setIsLoading(false)
         return
       }
       if (!pivotRef.current) {
@@ -102,11 +149,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         notification.error({
           message: "Refresh failed! (pivotRef is null)",
         })
-        setIsRefreshLoading(false)
+        setIsLoading(false)
         return
       }
       pivotRef.current.refreshData()
-      setIsRefreshLoading(false)
+      setIsLoading(false)
     })
   }, [props.settingsDataSource.url, props.proxyUrl, props.useProxy])
 
@@ -126,10 +173,10 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           viewDataSource: newViewDataSource,
           settingsDataSource: props.settingsDataSource,
         })
-        newModelDataSource && onChange(newModelDataSource)
+        newModelDataSource && onChangeModelDataSource(newModelDataSource)
       }
     },
-    [prevModelDataSource, onChange, props.settingsDataSource]
+    [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
   )
 
   /**
@@ -148,23 +195,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           viewDataSource: newViewDataSource,
           settingsDataSource: props.settingsDataSource,
         })
-        newModelDataSource && onChange(newModelDataSource)
+        newModelDataSource && onChangeModelDataSource(newModelDataSource)
       }
     },
-    [prevModelDataSource, onChange, props.settingsDataSource]
+    [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
   )
-
-  const handleExportClick = (format: "excel" | "pdf" | "csv") => () => {
-    if (pivotRef && pivotRef.current) {
-      if (format === "excel") {
-        pivotRef.current.excelExport()
-      } else if (format === "pdf") {
-        pivotRef.current.pdfExport()
-      } else if (format === "csv") {
-        pivotRef.current.csvExport()
-      }
-    }
-  }
 
   function showVersionWarning(missingDependency: string) {
     console.warn(
@@ -230,6 +265,15 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     }
   }
 
+  function handleToolbarRender_PivotTable(args: ToolbarArgs): void {
+    args.customToolbar &&
+      args.customToolbar.splice(0, 0, {
+        prefixIcon: "e-repeat e-icons",
+        tooltipText: "Reload",
+        click: handleRefreshClick,
+      })
+  }
+
   /* *************************************************
    *
    * RENDERING
@@ -243,52 +287,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
-  function getExportButtons() {
-    return (
-      <>
-        {props.exportCSV && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-text"
-            onClick={handleExportClick("csv")}>
-            CSV Export
-          </Button>
-        )}
-        {props.exportExcel && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-excel"
-            onClick={handleExportClick("excel")}>
-            Excel Export
-          </Button>
-        )}
-        {props.exportPDF && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-pdf"
-            onClick={handleExportClick("pdf")}>
-            PDF Export
-          </Button>
-        )}
-        <Button
-          className={styles.exportButton}
-          type="link"
-          size="small"
-          icon="reload"
-          onClick={handleRefreshClick}
-          loading={isRefreshLoading}>
-          Refresh
-        </Button>
-      </>
-    )
-  }
-
   const getViewPanel = () => (
     <div id="ViewPanel">
       <Button
@@ -300,23 +298,30 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           setOpenConfigPanel(true)
         }}
       />
-      {getExportButtons()}
-      <PivotViewComponent
-        ref={pivotRef}
-        allowCalculatedField={props.allowCalculatedField}
-        allowPdfExport={props.exportPDF}
-        allowExcelExport={props.exportExcel}
-        dataBound={handleDataBound_PivotTable}
-        allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
-        enableValueSorting={props.enableValueSorting}
-        enableVirtualization={props.enableVirtualization}
-        enginePopulated={handleEnginePopulated_PivotTable}
-        height={height}
-        showGroupingBar={props.showGroupingBar}
-        style={{ zIndex: 0 }}
-        delayUpdate={true}>
-        <Inject services={services} />
-      </PivotViewComponent>
+      <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
+        <PivotViewComponent
+          allowCalculatedField={props.allowCalculatedField}
+          allowConditionalFormatting={props.allowConditionalFormatting}
+          allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
+          allowExcelExport={props.allowExcelExport}
+          allowPdfExport={props.allowPdfExport}
+          chartTypes={chartTypes}
+          dataBound={handleDataBound_PivotTable}
+          delayUpdate={true}
+          enableValueSorting={props.enableValueSorting}
+          enableVirtualization={props.enableVirtualization}
+          enginePopulated={handleEnginePopulated_PivotTable}
+          height={height}
+          ref={pivotRef}
+          showFieldList={false}
+          showGroupingBar={props.showGroupingBar}
+          showToolbar={props.showToolbar}
+          style={{ zIndex: 0 }}
+          toolbar={toolbar}
+          toolbarRender={handleToolbarRender_PivotTable}>
+          <Inject services={services} />
+        </PivotViewComponent>
+      </Spin>
     </div>
   )
 
