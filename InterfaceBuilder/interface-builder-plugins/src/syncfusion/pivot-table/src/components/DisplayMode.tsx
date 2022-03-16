@@ -340,7 +340,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           allowPdfExport={props.allowPdfExport}
           dataBound={handleDataBound_PivotTable}
           // dataSourceSettings={viewDataSource}
-          delayUpdate={false} // TODO
+          delayUpdate={props.defaultDeferLayoutUpdate}
           displayOption={{ view: "Both" }}
           enableValueSorting={props.enableValueSorting}
           enableVirtualization={props.enableVirtualization}
