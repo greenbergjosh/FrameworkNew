@@ -90,11 +90,10 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     props.showChartsMenu ? toolbar.push("Grid") : void 0
     props.showChartsMenu ? toolbar.push("Chart") : void 0
     props.allowExcelExport || props.allowPdfExport ? toolbar.push("Export") : void 0
-    props.allowConditionalFormatting ? toolbar.push("ConditionalFormatting") : void 0
-    props.allowNumberFormatting ? toolbar.push("NumberFormatting") : void 0
-    props.showGrandTotalMenu ? toolbar.push("GrandTotal") : void 0
-    props.showMdxButton ? toolbar.push("MDX") : void 0
     props.showSubTotalMenu ? toolbar.push("SubTotal") : void 0
+    props.showGrandTotalMenu ? toolbar.push("GrandTotal") : void 0
+    props.allowConditionalFormatting || props.allowNumberFormatting ? toolbar.push("Formatting") : void 0
+    props.showMdxButton ? toolbar.push("MDX") : void 0
     return toolbar
   }, [
     props.allowConditionalFormatting,
@@ -156,7 +155,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   }, [props.settingsDataSource.url, props.proxyUrl, props.useProxy])
 
   /**
-   * Sync FieldList with PivotView and model
+   * Sync FieldList changes with PivotView and model
    */
   const handleEnginePopulated_FieldList = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
@@ -178,7 +177,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   )
 
   /**
-   * Sync PivotView with FieldList and model
+   * Sync PivotView changes with FieldList and model
    */
   const handleEnginePopulated_PivotTable = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
@@ -198,18 +197,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     },
     [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
   )
-
-  const handleExportClick = (format: "excel" | "pdf" | "csv") => () => {
-    if (pivotRef && pivotRef.current) {
-      if (format === "excel") {
-        pivotRef.current.excelExport()
-      } else if (format === "pdf") {
-        pivotRef.current.pdfExport()
-      } else if (format === "csv") {
-        pivotRef.current.csvExport()
-      }
-    }
-  }
 
   function showVersionWarning(missingDependency: string) {
     console.warn(
@@ -279,7 +266,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    *
    * @param args
    */
-  function handleToolbarRender_PivotTable(args: ToolbarArgs): void {
+  function handleToolbarRender(args: ToolbarArgs): void {
     if (args.customToolbar) {
       /* Add Reload button */
       args.customToolbar.splice(0, 0, {
@@ -287,32 +274,8 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         tooltipText: "Reload",
         click: handleRefreshClick,
       })
-      /* Add Expand-All button */
-      args.customToolbar.splice(args.customToolbar.length, 0, {
-        prefixIcon: "e-collapse-2 e-icons",
-        tooltipText: "Expand/Collapse",
-        click: handleExpandAllClick,
-      })
     }
   }
-
-  /**
-   * https://ej2.syncfusion.com/react/documentation/pivotview/tool-bar/#adding-custom-option-to-the-toolbar
-   */
-  const handleExpandAllClick = React.useCallback(
-    // if (fieldListRef.current) {
-    // fieldListRef.current.dataSourceSettings.expandAll = !fieldListRef.current.dataSourceSettings.expandAll
-    // }
-    (/*args: ToolbarArgs*/) => {
-      if (props.modelDataSource) {
-        // onChangeModelDataSource(props.modelDataSource)
-        // handleEnginePopulated_FieldList({ dataSourceSettings: viewDataSource })
-        const newModelDataSource = merge(props.modelDataSource, { expandAll: !viewDataSource.expandAll })
-        newModelDataSource && onChangeModelDataSource(newModelDataSource)
-      }
-    },
-    [onChangeModelDataSource, props.modelDataSource, viewDataSource.expandAll]
-  )
 
   /* *************************************************
    *
@@ -327,52 +290,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
-  function getExportButtons() {
-    return (
-      <>
-        {props.allowExcelExport && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-text"
-            onClick={handleExportClick("csv")}>
-            CSV Export
-          </Button>
-        )}
-        {props.allowExcelExport && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-excel"
-            onClick={handleExportClick("excel")}>
-            Excel Export
-          </Button>
-        )}
-        {props.allowPdfExport && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-pdf"
-            onClick={handleExportClick("pdf")}>
-            PDF Export
-          </Button>
-        )}
-        <Button
-          className={styles.exportButton}
-          type="link"
-          size="small"
-          icon="reload"
-          onClick={handleRefreshClick}
-          loading={isLoading}>
-          Refresh
-        </Button>
-      </>
-    )
-  }
-
   const getViewPanel = () => (
     <div id="ViewPanel">
       <Button
@@ -384,7 +301,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           setOpenConfigPanel(true)
         }}
       />
-      {getExportButtons()}
       <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
         <PivotViewComponent
           allowCalculatedField={props.allowCalculatedField}
@@ -394,18 +310,23 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           allowNumberFormatting={props.allowNumberFormatting}
           allowPdfExport={props.allowPdfExport}
           dataBound={handleDataBound_PivotTable}
-          delayUpdate={true}
+          // dataSourceSettings={viewDataSource}
+          delayUpdate={false} // TODO
+          displayOption={{ view: "Both" }}
           enableValueSorting={props.enableValueSorting}
           enableVirtualization={props.enableVirtualization}
           enginePopulated={handleEnginePopulated_PivotTable}
-          height={height}
+          gridSettings={{ columnWidth: 140 }}
+          height={height} // Causes hang when using "height" value?
+          id="PivotView"
           ref={pivotRef}
           showFieldList={false}
           showGroupingBar={props.showGroupingBar}
-          showToolbar={false}
-          style={{ zIndex: 0 }}
+          showToolbar={props.showToolbar}
+          // style={{ zIndex: 0 }}
           toolbar={toolbar}
-          toolbarRender={handleToolbarRender_PivotTable}>
+          width={"100%"}
+          toolbarRender={handleToolbarRender}>
           <Inject services={services} />
         </PivotViewComponent>
       </Spin>

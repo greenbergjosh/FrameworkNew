@@ -1,14 +1,14 @@
-export function getHeight(heightKey: string, height: number): string | number {
+export function getHeight(heightKey: string, height: number): string {
   switch (heightKey) {
     case "auto":
-      return 0
+      return "auto"
     case "full":
-      return 999999999
+      return "100%"
     case "fieldlist":
-      return 629
+      return "629px"
     case "value":
       if (height > 0) {
-        return height
+        return `${height}px`
       }
   }
   return "auto"
