@@ -21,7 +21,7 @@ import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 import { DisplayModeProps, ModelDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
 import { getHeight } from "../lib/getHeight"
-import { merge, isEmpty } from "lodash/fp"
+import { isEmpty } from "lodash/fp"
 import { modelToViewDataSource, refreshSession, viewToModelDataSource } from "../lib/dataSourceUtils"
 import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
 import { Undraggable } from "@opg/interface-builder"
@@ -89,7 +89,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     const toolbar: ToolbarItems[] = []
     props.showChartsMenu ? toolbar.push("Grid") : void 0
     props.showChartsMenu ? toolbar.push("Chart") : void 0
-    props.allowExcelExport || props.allowPdfExport ? toolbar.push("Export") : void 0
     props.showSubTotalMenu ? toolbar.push("SubTotal") : void 0
     props.showGrandTotalMenu ? toolbar.push("GrandTotal") : void 0
     props.allowConditionalFormatting || props.allowNumberFormatting ? toolbar.push("Formatting") : void 0
@@ -97,9 +96,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     return toolbar
   }, [
     props.allowConditionalFormatting,
-    props.allowExcelExport,
     props.allowNumberFormatting,
-    props.allowPdfExport,
     props.showChartsMenu,
     props.showGrandTotalMenu,
     props.showMdxButton,
@@ -274,6 +271,38 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         tooltipText: "Reload",
         click: handleRefreshClick,
       })
+      args.customToolbar.splice(3, 0, {
+        type: "Separator",
+      })
+
+      args.customToolbar.splice(args.customToolbar.length, 0, {
+        type: "Separator",
+      })
+      if (props.allowPdfExport) {
+        /* Add Export PDF button */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-export-pdf e-icons",
+          tooltipText: "Export PDF",
+          type: "Button",
+          click: () => pivotRef.current && pivotRef.current.pdfExport(),
+        })
+      }
+      if (props.allowExcelExport) {
+        /* Add Export Excel button */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-export-excel e-icons",
+          tooltipText: "Export Excel",
+          type: "Button",
+          click: () => pivotRef.current && pivotRef.current.excelExport(),
+        })
+        /* Add Export CSV button */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-export-csv e-icons",
+          tooltipText: "Export CSV",
+          type: "Button",
+          click: () => pivotRef.current && pivotRef.current.csvExport(),
+        })
+      }
     }
   }
 
