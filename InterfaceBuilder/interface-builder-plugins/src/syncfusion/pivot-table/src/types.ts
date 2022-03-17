@@ -31,7 +31,6 @@ export interface PivotTableSettings {
   allowExcelExport: boolean
   allowNumberFormatting: boolean
   allowPdfExport: boolean
-  defaultDeferLayoutUpdate: boolean
   enableValueSorting: boolean
   enableVirtualization: boolean
   height: number

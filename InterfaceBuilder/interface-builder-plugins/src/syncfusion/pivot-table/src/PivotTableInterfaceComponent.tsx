@@ -63,7 +63,6 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             allowExcelExport={this.props.allowExcelExport}
             allowNumberFormatting={this.props.allowNumberFormatting}
             allowPdfExport={this.props.allowPdfExport}
-            defaultDeferLayoutUpdate={this.props.defaultDeferLayoutUpdate}
             enableValueSorting={this.props.enableValueSorting}
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
@@ -110,7 +109,6 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             allowExcelExport={this.props.allowExcelExport}
             allowNumberFormatting={this.props.allowNumberFormatting}
             allowPdfExport={this.props.allowPdfExport}
-            defaultDeferLayoutUpdate={this.props.defaultDeferLayoutUpdate}
             enableValueSorting={this.props.enableValueSorting}
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}

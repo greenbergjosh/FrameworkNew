@@ -334,13 +334,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         <PivotViewComponent
           allowCalculatedField={props.allowCalculatedField}
           allowConditionalFormatting={props.allowConditionalFormatting}
-          allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
           allowExcelExport={props.allowExcelExport}
           allowNumberFormatting={props.allowNumberFormatting}
           allowPdfExport={props.allowPdfExport}
           dataBound={handleDataBound_PivotTable}
           // dataSourceSettings={viewDataSource}
-          delayUpdate={props.defaultDeferLayoutUpdate}
           displayOption={{ view: "Both" }}
           enableValueSorting={props.enableValueSorting}
           enableVirtualization={props.enableVirtualization}
