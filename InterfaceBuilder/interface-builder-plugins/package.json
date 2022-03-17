@@ -83,7 +83,8 @@
     "build:router": "cd ./src/reach-router/router && yarn && yarn build",
     "build:table": "cd ./src/syncfusion/table && yarn && yarn build",
     "build:pivot-table": "cd ./src/syncfusion/pivot-table && yarn && yarn build",
-    "lint": "eslint './src/**/*.{ts,tsx}' --fix"
+    "lint": "eslint './src/**/*.{ts,tsx}' --fix",
+    "postinstall": "patch-package"
   },
   "keywords": [
     "react",
@@ -150,6 +151,8 @@
     "lodash": "4.17.21",
     "moment": "2.29.1",
     "monaco-editor": "0.30.1",
+    "patch-package": "^6.4.7",
+    "postinstall-postinstall": "^2.1.0",
     "react-awesome-query-builder": "link:../react-awesome-query-builder",
     "react-colorful": "5.5.1",
     "react-error-boundary": "3.1.4",
