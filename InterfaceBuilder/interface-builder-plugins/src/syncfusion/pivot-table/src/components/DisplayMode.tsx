@@ -17,18 +17,19 @@ import {
 import classNames from "classnames"
 import styles from "../styles.scss"
 import { Alert, Button, Icon, notification, Spin } from "antd"
-import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
 import { DisplayModeProps, ModelDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
 import { getHeight } from "../lib/getHeight"
-import { isEmpty } from "lodash/fp"
-import { modelToViewDataSource, refreshSession, viewToModelDataSource } from "../lib/dataSourceUtils"
+import { refreshSession } from "../data/dataSourceUtils"
 import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
 import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "lib/usePrevious"
-import { validateDataConnection } from "lib/validateDataConnection"
+import { validateDataConnection } from "data/validateDataConnection"
 import { ToolbarArgs } from "@syncfusion/ej2-pivotview/src/common/base/interface"
 import { ToolbarItems } from "@syncfusion/ej2-pivotview/src/common/base/enum"
+import { validateOlapResponse } from "data/validateOlapResponse"
+import { viewToModelDataSource } from "data/toModelDataSource"
+import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -195,67 +196,13 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
   )
 
-  function showVersionWarning(missingDependency: string) {
-    console.warn(
-      `PivotTable's dependency on the undocumented property "${missingDependency}" in no longer valid.
-        This is most likely due to a version change in Syncfusion PivotView.
-        Olap errors won't be notified and the user will see an infinite spinner.`
-    )
-  }
-
   /**
-   * Check the response for errors.
-   * NOTE: Syncfusion PivotView 19.x does not check for errors and does not expose an API to check.
-   * We hack into the internals of PivotView to check for errors.
-   * PivotView will show an infinite spinner otherwise.
+   * Check the OLAP response for errors.
    */
   function handleDataBound_PivotTable() {
-    /*
-     * Attempt to access undocumented response "xmlDoc"
-     */
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const { olapEngineModule } = pivotRef.current
-    if (!olapEngineModule) {
-      showVersionWarning("olapEngineModule")
-      return
-    }
-    const { xmlDoc } = olapEngineModule
-    if (!xmlDoc) {
-      /* Report may simply be empty, so don't complain */
-      return
-    }
-    const documentElement = xmlDoc.documentElement as XMLDocument
-    if (!documentElement || !documentElement.getElementsByTagName) {
-      showVersionWarning("olapEngineModule.xmlDoc.documentElement")
-      return
-    }
-
-    /*
-     * Read any errors and display a notification
-     * First try "soap:Fault"...
-     */
-    let faults
-    faults = documentElement.getElementsByTagName("soap:Fault")
-    if (!faults || faults.length < 1) {
-      // Then try "SOAP-ENV:Fault"
-      faults = documentElement.getElementsByTagName("SOAP-ENV:Fault")
-      if (!faults || faults.length < 1 || !faults[0].getElementsByTagName) {
-        // No soap fault errors
-        return
-      }
-    }
-    const faultstring = faults[0].getElementsByTagName("faultstring")
-    if (!faultstring || faultstring.length < 1) {
-      // No fault string node
-      return
-    }
-    const error = faultstring[0].innerHTML
-    if (!isEmpty(error)) {
-      notification.error({
-        message: `Pivot Table error!\n${error}`,
-        duration: 0, // never close
-      })
+    if (pivotRef.current) {
+      const msg = validateOlapResponse(pivotRef.current.olapEngineModule)
+      msg && notification.error(msg)
     }
   }
 

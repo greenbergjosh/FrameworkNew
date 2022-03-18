@@ -10,11 +10,11 @@ import styles from "../styles.scss"
 import { EditModeProps, ModelDataSource } from "../types"
 import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "../lib/usePrevious"
-import { validateDataConnection } from "lib/validateDataConnection"
+import { validateDataConnection } from "data/validateDataConnection"
 import { Alert } from "antd"
 import { ErrorBoundary } from "react-error-boundary"
-import { modelToViewDataSource, viewToModelDataSource } from "lib/dataSourceUtils"
-import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
+import { viewToModelDataSource } from "data/toModelDataSource"
+import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
 
 export function EditMode(props: EditModeProps): JSX.Element | null {
   const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
