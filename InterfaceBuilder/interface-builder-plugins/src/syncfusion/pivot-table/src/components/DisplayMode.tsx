@@ -14,22 +14,21 @@ import {
   Toolbar,
   VirtualScroll,
 } from "@syncfusion/ej2-react-pivotview"
-import classNames from "classnames"
+import ResizableDrawer from "./ResizableDrawer"
 import styles from "../styles.scss"
 import { Alert, Button, Icon, notification, Spin } from "antd"
+import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
 import { DisplayModeProps, ModelDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
 import { getHeight } from "../lib/getHeight"
 import { refreshSession } from "../data/dataSourceUtils"
-import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
+import { ToolbarArgs } from "@syncfusion/ej2-pivotview/src/common/base/interface"
+import { ToolbarItems } from "@syncfusion/ej2-pivotview/src/common/base/enum"
 import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "lib/usePrevious"
 import { validateDataConnection } from "data/validateDataConnection"
-import { ToolbarArgs } from "@syncfusion/ej2-pivotview/src/common/base/interface"
-import { ToolbarItems } from "@syncfusion/ej2-pivotview/src/common/base/enum"
 import { validateOlapResponse } from "data/validateOlapResponse"
 import { viewToModelDataSource } from "data/toModelDataSource"
-import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -42,7 +41,7 @@ import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewD
 export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
   const [isLoading, setIsLoading] = React.useState(false)
-  const [openConfigPanel, setOpenConfigPanel] = React.useState(props.openFieldList)
+  const [openFieldList, setOpenFieldList] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
@@ -105,7 +104,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   ])
 
   React.useEffect(() => {
-    setOpenConfigPanel(props.openFieldList)
+    setOpenFieldList(props.openFieldList)
   }, [props.openFieldList])
 
   /**
@@ -153,7 +152,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   }, [props.settingsDataSource.url, props.proxyUrl, props.useProxy])
 
   /**
-   * Sync FieldList changes with PivotView and model
+   * Sync FieldList changes to PivotView and model
    */
   const handleEnginePopulated_FieldList = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
@@ -175,7 +174,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   )
 
   /**
-   * Sync PivotView changes with FieldList and model
+   * Sync PivotView changes to FieldList and model
    */
   const handleEnginePopulated_PivotTable = React.useCallback(
     (e: EnginePopulatedEventArgs) => {
@@ -199,15 +198,15 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   /**
    * Check the OLAP response for errors.
    */
-  function handleDataBound_PivotTable() {
+  const handleDataBound_PivotTable = React.useCallback(() => {
     if (pivotRef.current) {
       const msg = validateOlapResponse(pivotRef.current.olapEngineModule)
       msg && notification.error(msg)
     }
-  }
+  }, [])
 
   /**
-   *
+   * Add custom buttons to the toolbar.
    * @param args
    */
   function handleToolbarRender(args: ToolbarArgs): void {
@@ -249,6 +248,14 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           type: "Button",
           click: () => pivotRef.current && pivotRef.current.csvExport(),
         })
+        /* Add Open FieldList button */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-settings e-icons",
+          tooltipText: "Open Field List",
+          type: "Button",
+          align: "Right",
+          click: () => setOpenFieldList(true),
+        })
       }
     }
   }
@@ -266,78 +273,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
 
-  const getViewPanel = () => (
-    <div id="ViewPanel">
-      <Button
-        className={styles.configPanelOpenButton}
-        type="link"
-        icon="setting"
-        size="small"
-        onClick={() => {
-          setOpenConfigPanel(true)
-        }}
-      />
-      <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
-        <PivotViewComponent
-          allowCalculatedField={props.allowCalculatedField}
-          allowConditionalFormatting={props.allowConditionalFormatting}
-          allowExcelExport={props.allowExcelExport}
-          allowNumberFormatting={props.allowNumberFormatting}
-          allowPdfExport={props.allowPdfExport}
-          dataBound={handleDataBound_PivotTable}
-          // dataSourceSettings={viewDataSource}
-          displayOption={{ view: "Both" }}
-          enableValueSorting={props.enableValueSorting}
-          enableVirtualization={props.enableVirtualization}
-          enginePopulated={handleEnginePopulated_PivotTable}
-          gridSettings={{ columnWidth: 140 }}
-          height={height} // Causes hang when using "height" value?
-          id="PivotView"
-          ref={pivotRef}
-          showFieldList={false}
-          showGroupingBar={props.showGroupingBar}
-          showToolbar={props.showToolbar}
-          // style={{ zIndex: 0 }}
-          toolbar={toolbar}
-          width={"100%"}
-          toolbarRender={handleToolbarRender}>
-          <Inject services={services} />
-        </PivotViewComponent>
-      </Spin>
-    </div>
-  )
-
-  const getConfigPanel = () => (
-    <div id="ConfigPanel">
-      <Button
-        className={styles.configPanelCloseButton}
-        type="link"
-        icon="close"
-        size="small"
-        onClick={() => {
-          setOpenConfigPanel(false)
-        }}
-      />
-      <ErrorBoundary
-        onError={(e) => {
-          if (e.message.includes("hasAllMember")) {
-            setError(new Error("There was an error communicating with the cube server."))
-          }
-        }}
-        fallbackRender={() => <></>}>
-        <PivotFieldListComponent
-          allowCalculatedField={props.allowCalculatedField}
-          allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
-          dataSourceSettings={viewDataSource}
-          enginePopulated={handleEnginePopulated_FieldList}
-          ref={fieldListRef}
-          renderMode={"Fixed"}>
-          <Inject services={[...services]} />
-        </PivotFieldListComponent>
-      </ErrorBoundary>
-    </div>
-  )
-
   /*
    * NOTE: We wrap PivotViewComponent in a div to prevent the error:
    * "React DOMException: Failed to execute 'removeChild' on 'Node':
@@ -353,23 +288,63 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   return (
     <Undraggable>
       {/* THIS NEXT DIV IS NECESSARY! SEE NOTE ABOVE */}
-      <div>
-        {getViewPanel()}
-        {getConfigPanel()}
-        <SplitterComponent separatorSize={4} className={styles.splitView}>
-          <PanesDirective>
-            <PaneDirective content="#ViewPanel" cssClass={styles.viewPanel} min="0" />
-            <PaneDirective
-              content="#ConfigPanel"
-              cssClass={classNames(styles.configPanel)}
-              min="24px"
-              size="300px"
-              max="700px"
-              resizable={openConfigPanel}
-              collapsed={!openConfigPanel}
-            />
-          </PanesDirective>
-        </SplitterComponent>
+      <div className={styles.pivotTableWrapper}>
+        {/* ************************
+         *
+         * PIVOT TABLE
+         *
+         */}
+        <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
+          <PivotViewComponent
+            allowCalculatedField={props.allowCalculatedField}
+            allowConditionalFormatting={props.allowConditionalFormatting}
+            allowExcelExport={props.allowExcelExport}
+            allowNumberFormatting={props.allowNumberFormatting}
+            allowPdfExport={props.allowPdfExport}
+            dataBound={handleDataBound_PivotTable}
+            // dataSourceSettings={viewDataSource}
+            displayOption={{ view: "Both" }}
+            enableValueSorting={props.enableValueSorting}
+            enableVirtualization={props.enableVirtualization}
+            enginePopulated={handleEnginePopulated_PivotTable}
+            gridSettings={{ columnWidth: 140 }}
+            height={height} // Causes hang when using "height" value?
+            id="PivotView"
+            ref={pivotRef}
+            showFieldList={false}
+            showGroupingBar={props.showGroupingBar}
+            showToolbar={props.showToolbar}
+            toolbar={toolbar}
+            width={"100%"}
+            toolbarRender={handleToolbarRender}>
+            <Inject services={services} />
+          </PivotViewComponent>
+        </Spin>
+        {/* ************************
+         *
+         * FIELD LIST
+         *
+         */}
+        <ResizableDrawer isOpen={openFieldList} setOpen={setOpenFieldList}>
+          <ErrorBoundary
+            onError={(e) => {
+              if (e.message.includes("hasAllMember")) {
+                setError(new Error("There was an error communicating with the cube server."))
+              }
+            }}
+            fallbackRender={() => <></>}>
+            <PivotFieldListComponent
+              cssClass={styles.fieldListPanel}
+              allowCalculatedField={props.allowCalculatedField}
+              allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
+              dataSourceSettings={viewDataSource}
+              enginePopulated={handleEnginePopulated_FieldList}
+              ref={fieldListRef}
+              renderMode={"Fixed"}>
+              <Inject services={[...services]} />
+            </PivotFieldListComponent>
+          </ErrorBoundary>
+        </ResizableDrawer>
       </div>
     </Undraggable>
   )

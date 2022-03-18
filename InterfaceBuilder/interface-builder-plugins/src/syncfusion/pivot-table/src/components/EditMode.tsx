@@ -76,7 +76,7 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
 
   return (
     <Undraggable>
-      <div className={styles.editModePanel}>
+      <div className={styles.fieldListPanel}>
         <ErrorBoundary
           onError={(e) => {
             if (e.message.includes("hasAllMember")) {

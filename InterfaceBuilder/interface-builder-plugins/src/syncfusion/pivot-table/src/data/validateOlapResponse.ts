@@ -33,18 +33,15 @@ export function validateOlapResponse(olapEngineModule: OlapEngine): ArgsProps | 
 
   const faults = getFaults(documentElement)
   if (faults && faults.length > 0) {
-    const errorCode = getErrorCode(faults[0])
-
-    /*
-     * The report doesn't have any measures. MDX doesn't run single axis queries.
-     * So just ignore this error and let the user add the measures.
-     */
-    if (errorCode === "3238658121") {
-      return null
-    }
-
     const errorMessage = getErrorMessage(faults[0])
-    if (!isEmpty(errorMessage)) {
+    if (errorMessage && !isEmpty(errorMessage)) {
+      /*
+       * The report doesn't have any measures. MDX doesn't run single axis queries.
+       * So just ignore this error and let the user add the measures. */
+      if (errorMessage.includes("Axis 0 (COLUMNS) is missing.")) {
+        return null
+      }
+
       return {
         message: `Pivot Table error!\n${errorMessage}`,
         duration: 0, // never close
@@ -72,39 +69,6 @@ function getFaults(documentElement: XMLDocument): HTMLCollectionOf<Element> | nu
     }
   }
   return faults
-}
-
-/**
- *
- * @param fault
- */
-function getErrorCode(fault: Element): string | null {
-  const detailEls = fault.getElementsByTagName("detail")
-  if (!detailEls || detailEls.length < 1) {
-    // No 0th detail node
-    return null
-  }
-
-  const errorEls = detailEls[0].getElementsByTagName("Error")
-  if (!errorEls || errorEls.length < 1) {
-    // No 0th error node
-    return null
-  }
-
-  const attrs = errorEls[0].attributes
-  if (!attrs || attrs.length < 1) {
-    // No 0th error attribute
-    return null
-  }
-
-  const errorCode = attrs.getNamedItem("ErrorCode")
-  if (errorCode) {
-    // Hopefully an error code
-    return errorCode.value
-  }
-
-  // No error code
-  return null
 }
 
 /**
