@@ -99,7 +99,7 @@ namespace EdwRollupLib
         #region Dataflow Tasks
         private async Task<IEnumerable<Parameters>> PrepareThreadGroup(Parameters parameters)
         {
-            var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup(), timeout: 600);
+            var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup(), timeout: 900);
 
             if (await prepareThreadGroupResult.GetS("status") != "ok")
             {
@@ -141,7 +141,7 @@ namespace EdwRollupLib
 
         private static async Task<IEnumerable<Parameters>> ProcessReportSequence(Parameters parameters)
         {
-            var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs(), timeout: 600);
+            var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs(), timeout: 900);
 
             if (!string.IsNullOrWhiteSpace(await processRsResult.GetS("message", null)))
             {
@@ -152,10 +152,14 @@ namespace EdwRollupLib
 
             if (await rs.GetB("Config.export_to_clickhouse", false))
             {
-                var rsName = await rs.GetS("Name");
-                var query = $"INSERT INTO datasets.`{rsName}` FORMAT CSVWithNames";
-
                 var clickhouseConfig = await rs.GetE("Config.clickhouse");
+
+                var rsName = await rs.GetS("Name");
+                var tableName = await clickhouseConfig.GetS("table.name", rsName);
+                var schema = await clickhouseConfig.GetS("table.schema", "datasets");
+
+                var query = $"INSERT INTO `{schema}`.`{tableName}` FORMAT CSVWithNames";
+
                 var host = await clickhouseConfig.GetS("host");
                 var sshUser = await clickhouseConfig.GetS("ssh.user");
                 var sshPassword = await clickhouseConfig.GetS("ssh.password");
@@ -199,7 +203,7 @@ namespace EdwRollupLib
         {
             while (true)
             {
-                var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup(), timeout: 600);
+                var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup(), timeout: 900);
 
                 var status = await rollupResult.GetS("status");
                 if (status == "deadlock detected")
