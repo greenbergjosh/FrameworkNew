@@ -85,50 +85,5 @@ export function settingsToViewDataSource({
  * @param dataOptions
  */
 export function dataOptionsToViewDataSource(dataOptions: IDataOptions): ViewDataSource {
-  return {
-    //
-    // Datasource props
-    catalog: dataOptions.catalog,
-    cube: dataOptions.cube,
-    dataSource: dataOptions.dataSource,
-    localeIdentifier: dataOptions.localeIdentifier,
-    providerType: dataOptions.providerType,
-    url: dataOptions.url,
-    //
-    // Other props
-    allowLabelFilter: dataOptions.allowLabelFilter,
-    allowMemberFilter: dataOptions.allowMemberFilter,
-    allowValueFilter: dataOptions.allowValueFilter,
-    alwaysShowValueHeader: dataOptions.alwaysShowValueHeader,
-    authentication: dataOptions.authentication,
-    calculatedFieldSettings: dataOptions.calculatedFieldSettings,
-    columns: dataOptions.columns,
-    conditionalFormatSettings: dataOptions.conditionalFormatSettings,
-    drilledMembers: dataOptions.drilledMembers,
-    emptyCellsTextContent: dataOptions.emptyCellsTextContent,
-    enableSorting: dataOptions.enableSorting,
-    excludeFields: dataOptions.excludeFields || [],
-    expandAll: false,
-    fieldMapping: dataOptions.fieldMapping,
-    filters: dataOptions.filters,
-    filterSettings: dataOptions.filterSettings,
-    formatSettings: dataOptions.formatSettings,
-    groupSettings: dataOptions.groupSettings,
-    rows: dataOptions.rows,
-    showAggregationOnValueField: dataOptions.showAggregationOnValueField,
-    showColumnGrandTotals: dataOptions.showColumnGrandTotals,
-    showColumnSubTotals: dataOptions.showColumnSubTotals,
-    showGrandTotals: dataOptions.showGrandTotals,
-    showHeaderWhenEmpty: dataOptions.showHeaderWhenEmpty,
-    showRowGrandTotals: dataOptions.showRowGrandTotals,
-    showRowSubTotals: dataOptions.showRowSubTotals,
-    showSubTotals: dataOptions.showSubTotals,
-    sortSettings: dataOptions.sortSettings,
-    type: dataOptions.type,
-    valueAxis: dataOptions.valueAxis,
-    valueIndex: dataOptions.valueIndex,
-    values: dataOptions.values,
-    valueSortSettings: dataOptions.valueSortSettings,
-    source: "view",
-  }
+  return sanitizeDataSource<ViewDataSource>(dataOptions as ViewDataSource)
 }

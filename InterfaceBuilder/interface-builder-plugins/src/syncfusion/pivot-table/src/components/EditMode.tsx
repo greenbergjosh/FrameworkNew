@@ -54,12 +54,12 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
     (e: EnginePopulatedEventArgs) => {
       if (!prevModelDataSource && e.dataSourceSettings) {
         // Put FieldList changes into model
-        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
-        const newModelDataSource = viewToModelDataSource({
-          viewDataSource: newViewDataSource,
+        const nextViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
+        const nextModelDataSource = viewToModelDataSource({
+          viewDataSource: nextViewDataSource,
           settingsDataSource: props.settingsDataSource,
         })
-        newModelDataSource && onChangeModelDataSource(newModelDataSource)
+        nextModelDataSource && onChangeModelDataSource(nextModelDataSource)
       }
     },
     [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]

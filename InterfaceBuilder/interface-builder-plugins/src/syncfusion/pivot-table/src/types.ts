@@ -85,4 +85,6 @@ export interface PivotTableInterfaceComponentProps
   settingsDataSource: SettingsDataSource
 }
 
-export interface PivotTableInterfaceComponentState {}
+export interface PivotTableInterfaceComponentState {
+  modelDataSource?: ModelDataSource
+}

@@ -16,16 +16,17 @@ import {
 } from "@syncfusion/ej2-react-pivotview"
 import ResizableDrawer from "./ResizableDrawer"
 import styles from "../styles.scss"
-import { Alert, Button, Icon, notification, Spin } from "antd"
+import { Alert, Icon, notification, Spin } from "antd"
 import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
-import { DisplayModeProps, ModelDataSource } from "../types"
+import { DisplayModeProps, ModelDataSource, ViewDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
 import { getHeight } from "../lib/getHeight"
+import { IDataOptions } from "@syncfusion/ej2-pivotview"
+import { isEqual } from "lodash/fp"
 import { refreshSession } from "../data/dataSourceUtils"
 import { ToolbarArgs } from "@syncfusion/ej2-pivotview/src/common/base/interface"
 import { ToolbarItems } from "@syncfusion/ej2-pivotview/src/common/base/enum"
 import { Undraggable } from "@opg/interface-builder"
-import { usePrevious } from "lib/usePrevious"
 import { validateDataConnection } from "data/validateDataConnection"
 import { validateOlapResponse } from "data/validateOlapResponse"
 import { viewToModelDataSource } from "data/toModelDataSource"
@@ -39,12 +40,15 @@ import { viewToModelDataSource } from "data/toModelDataSource"
  */
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
-  const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [openFieldList, setOpenFieldList] = React.useState(props.openFieldList)
-  const [error, setError] = React.useState<Error | null>(null)
+  const prevModelDataSourceRef = React.useRef<ModelDataSource>()
+  const prevDataOptionsRef = React.useRef<IDataOptions>()
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [viewDataSource, setViewDataSource] = React.useState<ViewDataSource>()
+  const [nextViewDataSource_fromView, setNextViewDataSource_fromView] = React.useState<ViewDataSource>()
+  const [openFieldList, setOpenFieldList] = React.useState(props.openFieldList)
+  const [error, setError] = React.useState<Error | null>(null)
   const height = getHeight(props.heightKey, props.height)
   const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
 
@@ -53,14 +57,53 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * PROP WATCHERS & EFFECTS
    */
 
-  const viewDataSource = React.useMemo(() => {
-    return modelToViewDataSource({
-      modelDataSource: props.modelDataSource,
-      settingsDataSource: props.settingsDataSource,
-      useProxy: props.useProxy,
-      proxyUrl: props.proxyUrl,
-    })
-  }, [props.modelDataSource, props.settingsDataSource, props.useProxy, props.proxyUrl])
+  /**
+   * Sync model and view
+   */
+  React.useEffect(() => {
+    /*
+     * Model's modelDataSource has changed.
+     * If the change originated from the model, then update the view's dataOptions.
+     * If the change originated from the view, then do nothing.
+     */
+    if (props.modelDataSource && prevModelDataSourceRef.current !== props.modelDataSource) {
+      const nextViewDataSource_fromModel = modelToViewDataSource({
+        modelDataSource: props.modelDataSource,
+        proxyUrl: props.proxyUrl,
+        settingsDataSource: props.settingsDataSource,
+        useProxy: props.useProxy,
+      })
+      const isChangeFromModel = !isEqual(nextViewDataSource_fromModel, nextViewDataSource_fromView)
+      const isValidConn = validateDataConnection(nextViewDataSource_fromModel)
+      if (isChangeFromModel && isValidConn) {
+        /* NOTE: FieldList and PivotView are manually updated
+         * by another useEffect because we have to wait
+         * until this state change is triggered */
+        setViewDataSource(nextViewDataSource_fromModel)
+      }
+    }
+    /*
+     * View's dataOptions has changed,
+     * so update the model's modelDataSource.
+     */
+    if (nextViewDataSource_fromView && prevDataOptionsRef.current !== nextViewDataSource_fromView) {
+      const nextModelDataSource = viewToModelDataSource({
+        settingsDataSource: props.settingsDataSource,
+        viewDataSource: nextViewDataSource_fromView,
+      })
+      nextModelDataSource && onChangeModelDataSource(nextModelDataSource)
+    }
+    /* Update previous state */
+    prevDataOptionsRef.current = nextViewDataSource_fromView
+    prevModelDataSourceRef.current = props.modelDataSource
+  }, [
+    nextViewDataSource_fromView,
+    onChangeModelDataSource,
+    props.modelDataSource,
+    props.proxyUrl,
+    props.settingsDataSource,
+    props.useProxy,
+  ])
 
   const services = React.useMemo(() => {
     const services = []
@@ -108,15 +151,14 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   }, [props.openFieldList])
 
   /**
-   * Sync when viewDataSource changes
+   * Update view (FieldList and PivotView) when viewDataSource changes
    */
   React.useEffect(() => {
-    if (!prevModelDataSource && fieldListRef.current && pivotRef.current && validateDataConnection(viewDataSource)) {
-      // Sync PivotView with FieldList
+    if (viewDataSource && fieldListRef.current && pivotRef.current && validateDataConnection(viewDataSource)) {
       fieldListRef.current.updateView(pivotRef.current)
       fieldListRef.current.update(pivotRef.current)
     }
-  }, [prevModelDataSource, viewDataSource])
+  }, [viewDataSource])
 
   /* *************************************************
    *
@@ -154,56 +196,36 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   /**
    * Sync FieldList changes to PivotView and model
    */
-  const handleEnginePopulated_FieldList = React.useCallback(
-    (e: EnginePopulatedEventArgs) => {
-      // Sync PivotView with FieldList
-      if (fieldListRef.current && pivotRef.current) {
-        fieldListRef.current.updateView(pivotRef.current)
-      }
-      if (prevModelDataSource && e.dataSourceSettings) {
-        // Put FieldList changes into model
-        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
-        const newModelDataSource = viewToModelDataSource({
-          viewDataSource: newViewDataSource,
-          settingsDataSource: props.settingsDataSource,
-        })
-        newModelDataSource && onChangeModelDataSource(newModelDataSource)
-      }
-    },
-    [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
-  )
+  const handleEnginePopulated_FieldList = (e: EnginePopulatedEventArgs) => {
+    if (fieldListRef.current && pivotRef.current) {
+      fieldListRef.current.updateView(pivotRef.current)
+    }
+    if (e.dataSourceSettings) {
+      setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
+    }
+  }
 
   /**
    * Sync PivotView changes to FieldList and model
    */
-  const handleEnginePopulated_PivotTable = React.useCallback(
-    (e: EnginePopulatedEventArgs) => {
-      // Sync FieldList with PivotView
-      if (pivotRef.current && fieldListRef.current) {
-        fieldListRef.current.update(pivotRef.current)
-      }
-      if (prevModelDataSource && e.dataSourceSettings) {
-        // Put PivotView changes into model
-        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
-        const newModelDataSource = viewToModelDataSource({
-          viewDataSource: newViewDataSource,
-          settingsDataSource: props.settingsDataSource,
-        })
-        newModelDataSource && onChangeModelDataSource(newModelDataSource)
-      }
-    },
-    [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
-  )
+  const handleEnginePopulated_PivotTable = (e: EnginePopulatedEventArgs) => {
+    if (pivotRef.current && fieldListRef.current) {
+      fieldListRef.current.update(pivotRef.current)
+    }
+    if (e.dataSourceSettings) {
+      setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
+    }
+  }
 
   /**
    * Check the OLAP response for errors.
    */
-  const handleDataBound_PivotTable = React.useCallback(() => {
+  const handleDataBound_PivotTable = () => {
     if (pivotRef.current) {
       const msg = validateOlapResponse(pivotRef.current.olapEngineModule)
       msg && notification.error(msg)
     }
-  }, [])
+  }
 
   /**
    * Add custom buttons to the toolbar.
@@ -225,7 +247,11 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         type: "Separator",
       })
       if (props.allowPdfExport) {
-        /* Add Export PDF button */
+        /*
+         * Add Export PDF button
+         * We're adding this export button manually because the built-in button
+         * is triggering multiple downloads for an unknown reason.
+         */
         args.customToolbar.splice(args.customToolbar.length, 0, {
           prefixIcon: "e-export-pdf e-icons",
           tooltipText: "Export PDF",
@@ -234,14 +260,22 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         })
       }
       if (props.allowExcelExport) {
-        /* Add Export Excel button */
+        /*
+         * Add Export Excel button
+         * We're adding this export button manually because the built-in button
+         * is triggering multiple downloads for an unknown reason.
+         */
         args.customToolbar.splice(args.customToolbar.length, 0, {
           prefixIcon: "e-export-excel e-icons",
           tooltipText: "Export Excel",
           type: "Button",
           click: () => pivotRef.current && pivotRef.current.excelExport(),
         })
-        /* Add Export CSV button */
+        /*
+         * Add Export CSV button
+         * We're adding this export button manually because the built-in button
+         * is triggering multiple downloads for an unknown reason.
+         */
         args.customToolbar.splice(args.customToolbar.length, 0, {
           prefixIcon: "e-export-csv e-icons",
           tooltipText: "Export CSV",
@@ -265,7 +299,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * RENDERING
    */
 
-  if (!props.modelDataSource) {
+  if (!viewDataSource) {
     return null
   }
 

@@ -93,7 +93,7 @@ export function sanitizeDataSource<T extends DataSource>(dataSource: T): T {
  * @param typename
  * @param dirtyArray
  */
-function sanitizeArray<T>(typename: string, dirtyArray?: T[]) {
+export function sanitizeArray<T>(typename: string, dirtyArray?: T[]) {
   if (!dirtyArray) return
   const cleanArray: T[] = []
   dirtyArray.forEach((obj) => {
@@ -108,7 +108,7 @@ function sanitizeArray<T>(typename: string, dirtyArray?: T[]) {
  * @param typename
  * @param dirtyObject
  */
-function sanitizeObject<T>(typename: string, dirtyObject?: T) {
+export function sanitizeObject<T>(typename: string, dirtyObject?: T) {
   if (!dirtyObject) return
   const cleanObject: JSONRecord = {}
   const keys = getModelKeys(typename)
@@ -125,7 +125,7 @@ function sanitizeObject<T>(typename: string, dirtyObject?: T) {
  *
  * @param typename
  */
-function getModelKeys(typename: string): string[] {
+export function getModelKeys(typename: string): string[] {
   switch (typename) {
     case "AuthenticationModel":
       return modelKeys.AuthenticationModelKeys

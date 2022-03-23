@@ -5,6 +5,7 @@ import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
 import { ModelDataSource, PivotTableInterfaceComponentProps, PivotTableInterfaceComponentState } from "./types"
 import { settings } from "./settings"
+import { isEqual } from "lodash/fp"
 
 export default class PivotTableInterfaceComponent extends BaseInterfaceComponent<
   PivotTableInterfaceComponentProps,
@@ -17,6 +18,26 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
   }
 
   static manageForm = settings
+
+  constructor(props: PivotTableInterfaceComponentProps) {
+    super(props)
+
+    this.state = {
+      modelDataSource: undefined,
+    }
+  }
+
+  componentDidUpdate(prevProps: Readonly<PivotTableInterfaceComponentProps>): void {
+    const prevModelDataSource = this.getValue(
+      prevProps.valueKey,
+      prevProps.userInterfaceData,
+      prevProps.getRootUserInterfaceData
+    )
+    const nextModelDataSource = this.getValue(this.props.valueKey) as ModelDataSource | undefined
+    if (!isEqual(prevModelDataSource, nextModelDataSource)) {
+      this.setState({ modelDataSource: nextModelDataSource })
+    }
+  }
 
   /**
    *
@@ -51,7 +72,6 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
     const useProxy = this.props.useProxy || true
     const proxyUrl = this.props.proxyUrl || "https://adminapi.data.techopg.com/cube"
     const overrideMode = this.props.overrideMode !== "default" ? this.props.overrideMode : undefined
-    const modelDataSource = this.getValue(this.props.valueKey) as ModelDataSource | undefined
 
     switch (overrideMode || this.props.mode) {
       case "display":
@@ -67,7 +87,7 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
             heightKey={this.props.heightKey}
-            modelDataSource={modelDataSource}
+            modelDataSource={this.state.modelDataSource}
             name={this.props.name}
             onChangeModelDataSource={(newModelDataSource: ModelDataSource) => {
               this.setValue([this.props.valueKey, newModelDataSource])
@@ -89,7 +109,7 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
           <EditMode
             allowCalculatedField={this.props.allowCalculatedField}
             allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
-            modelDataSource={modelDataSource}
+            modelDataSource={this.state.modelDataSource}
             name={this.props.name}
             onChangeModelDataSource={(newModelDataSource) => {
               this.setValue([this.props.valueKey, newModelDataSource])
@@ -113,7 +133,7 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
             enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
             heightKey={this.props.heightKey}
-            modelDataSource={modelDataSource}
+            modelDataSource={this.state.modelDataSource}
             name={this.props.name}
             onChangeModelDataSource={() => void 0}
             openFieldList={this.props.openFieldList}
