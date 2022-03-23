@@ -6,6 +6,35 @@
   min-height: 700px;
 }
 
+
+/*******************************************************
+ *
+ * HACK TO FIX SYNCFUSION HEIGHT
+ */
+
+:global {
+  :local(.height-auto) {
+    .e-pivotview .e-grid div.e-content {
+      // No style
+    }
+  }
+  :local(.height-full) {
+    .e-pivotview .e-grid div.e-content {
+      height: 100% !important;
+    }
+  }
+  :local(.height-fieldlist) {
+    .e-pivotview .e-grid div.e-content {
+      height: 629px !important;
+    }
+  }
+  :local(.height-value) {
+    .e-pivotview .e-grid div.e-content {
+      // No style
+    }
+  }
+}
+
 /*******************************************************
  *
  * RESIZABLE DRAWER

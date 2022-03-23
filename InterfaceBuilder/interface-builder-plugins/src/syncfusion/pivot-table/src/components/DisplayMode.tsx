@@ -322,7 +322,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   return (
     <Undraggable>
       {/* THIS NEXT DIV IS NECESSARY! SEE NOTE ABOVE */}
-      <div className={styles.pivotTableWrapper}>
+      <div className={[styles.pivotTableWrapper, styles[`height-${props.heightKey}`]].join(" ")}>
         {/* ************************
          *
          * PIVOT TABLE
