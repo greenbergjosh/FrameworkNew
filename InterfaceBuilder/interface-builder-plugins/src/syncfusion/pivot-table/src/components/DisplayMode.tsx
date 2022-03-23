@@ -74,6 +74,9 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         useProxy: props.useProxy,
       })
       const isChangeFromModel = !isEqual(nextViewDataSource_fromModel, nextViewDataSource_fromView)
+      /* Diagnostic code - next two lines */
+      // const changes = deepDiff(nextViewDataSource_fromModel, nextViewDataSource_fromView)
+      // console.log("DisplayMode", "useEffect: Model change?", { changes })
       const isValidConn = validateDataConnection(nextViewDataSource_fromModel)
       if (isChangeFromModel && isValidConn) {
         /* NOTE: FieldList and PivotView are manually updated
@@ -87,6 +90,10 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
      * so update the model's modelDataSource.
      */
     if (nextViewDataSource_fromView && prevDataOptionsRef.current !== nextViewDataSource_fromView) {
+      /* Diagnostic code - next two lines */
+      // const changes = deepDiff(prevDataOptionsRef.current, nextViewDataSource_fromView)
+      // console.log("DisplayMode", "useEffect: View change?", { changes })
+      debugger
       const nextModelDataSource = viewToModelDataSource({
         settingsDataSource: props.settingsDataSource,
         viewDataSource: nextViewDataSource_fromView,

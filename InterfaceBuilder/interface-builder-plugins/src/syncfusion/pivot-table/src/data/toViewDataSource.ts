@@ -85,5 +85,7 @@ export function settingsToViewDataSource({
  * @param dataOptions
  */
 export function dataOptionsToViewDataSource(dataOptions: IDataOptions): ViewDataSource {
-  return sanitizeDataSource<ViewDataSource>(dataOptions as ViewDataSource)
+  const ds = sanitizeDataSource<ViewDataSource>(dataOptions as ViewDataSource)
+  ds.source = "view"
+  return ds
 }
