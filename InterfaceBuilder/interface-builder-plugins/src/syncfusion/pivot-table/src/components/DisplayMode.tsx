@@ -93,7 +93,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
       /* Diagnostic code - next two lines */
       // const changes = deepDiff(prevDataOptionsRef.current, nextViewDataSource_fromView)
       // console.log("DisplayMode", "useEffect: View change?", { changes })
-      debugger
       const nextModelDataSource = viewToModelDataSource({
         settingsDataSource: props.settingsDataSource,
         viewDataSource: nextViewDataSource_fromView,
@@ -204,6 +203,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * Sync FieldList changes to PivotView and model
    */
   const handleEnginePopulated_FieldList = (e: EnginePopulatedEventArgs) => {
+    setIsLoading(true)
     if (fieldListRef.current && pivotRef.current) {
       fieldListRef.current.updateView(pivotRef.current)
     }
@@ -228,6 +228,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * Check the OLAP response for errors.
    */
   const handleDataBound_PivotTable = () => {
+    setIsLoading(false)
     if (pivotRef.current) {
       const msg = validateOlapResponse(pivotRef.current.olapEngineModule)
       msg && notification.error(msg)
@@ -335,32 +336,46 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
          * PIVOT TABLE
          *
          */}
-        <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
-          <PivotViewComponent
-            allowCalculatedField={props.allowCalculatedField}
-            allowConditionalFormatting={props.allowConditionalFormatting}
-            allowExcelExport={props.allowExcelExport}
-            allowNumberFormatting={props.allowNumberFormatting}
-            allowPdfExport={props.allowPdfExport}
-            dataBound={handleDataBound_PivotTable}
-            // dataSourceSettings={viewDataSource}
-            displayOption={{ view: "Both" }}
-            enableValueSorting={props.enableValueSorting}
-            enableVirtualization={props.enableVirtualization}
-            enginePopulated={handleEnginePopulated_PivotTable}
-            gridSettings={{ columnWidth: 140 }}
-            height={height} // Causes hang when using "height" value?
-            id="PivotView"
-            ref={pivotRef}
-            showFieldList={false}
-            showGroupingBar={props.showGroupingBar}
-            showToolbar={props.showToolbar}
-            toolbar={toolbar}
-            width={"100%"}
-            toolbarRender={handleToolbarRender}>
-            <Inject services={services} />
-          </PivotViewComponent>
-        </Spin>
+        <PivotViewComponent
+          spinnerTemplate={"<div></div>"}
+          actionBegin={(e: any) => {
+            if (e.actionName === "Drill down" || e.actionName === "Drill up") {
+              setIsLoading(true)
+            }
+          }}
+          actionComplete={(e: any) => {
+            if (e.actionName === "Drill down" || e.actionName === "Drill up") {
+              setIsLoading(false)
+            }
+          }}
+          actionFailure={(e: any) => {
+            if (e.actionName === "Drill down" || e.actionName === "Drill up") {
+              setIsLoading(false)
+            }
+          }}
+          allowCalculatedField={props.allowCalculatedField}
+          allowConditionalFormatting={props.allowConditionalFormatting}
+          allowExcelExport={props.allowExcelExport}
+          allowNumberFormatting={props.allowNumberFormatting}
+          allowPdfExport={props.allowPdfExport}
+          dataBound={handleDataBound_PivotTable}
+          // dataSourceSettings={viewDataSource}
+          displayOption={{ view: "Both" }}
+          enableValueSorting={props.enableValueSorting}
+          enableVirtualization={props.enableVirtualization}
+          enginePopulated={handleEnginePopulated_PivotTable}
+          gridSettings={{ columnWidth: 140 }}
+          height={height} // Causes hang when using "height" value?
+          id="PivotView"
+          ref={pivotRef}
+          showFieldList={false}
+          showGroupingBar={props.showGroupingBar}
+          showToolbar={props.showToolbar}
+          toolbar={toolbar}
+          width={"100%"}
+          toolbarRender={handleToolbarRender}>
+          <Inject services={services} />
+        </PivotViewComponent>
         {/* ************************
          *
          * FIELD LIST
@@ -386,6 +401,15 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
             </PivotFieldListComponent>
           </ErrorBoundary>
         </ResizableDrawer>
+        {isLoading && (
+          <div className={styles.opgSpinner}>
+            <Spin
+              spinning={true}
+              size="large"
+              indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}
+            />
+          </div>
+        )}
       </div>
     </Undraggable>
   )
