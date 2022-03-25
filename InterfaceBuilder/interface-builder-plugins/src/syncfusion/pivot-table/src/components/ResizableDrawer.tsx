@@ -48,20 +48,7 @@ const ResizableDrawer = (props: ResizableDrawerProps) => {
       style={{ position: "absolute" }}
       visible={props.isOpen}
       width={width}>
-      <div
-        style={{
-          position: "absolute",
-          width: "5px",
-          padding: "4px 0 0",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          zIndex: 100,
-          cursor: "ew-resize",
-          backgroundColor: "#f4f7f9",
-        }}
-        onMouseDown={onMouseDown}
-      />
+      <div className={styles.divider} onMouseDown={onMouseDown} />
       {props.children}
     </Drawer>
   )

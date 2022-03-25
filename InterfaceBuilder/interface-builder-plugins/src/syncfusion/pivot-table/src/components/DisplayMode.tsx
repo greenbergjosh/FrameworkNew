@@ -30,6 +30,7 @@ import { Undraggable } from "@opg/interface-builder"
 import { validateDataConnection } from "data/validateDataConnection"
 import { validateOlapResponse } from "data/validateOlapResponse"
 import { viewToModelDataSource } from "data/toModelDataSource"
+import useWindowSize from "lib/useWindowSize"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -45,12 +46,16 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
   const [isLoading, setIsLoading] = React.useState(false)
+  const [gridContentHeight, setGridContentHeight] = React.useState<string>()
+  const [isPivotViewCreated, setIsPivotViewCreated] = React.useState(false)
+  const [isHeightChanged, setIsHeightChanged] = React.useState(false)
   const [viewDataSource, setViewDataSource] = React.useState<ViewDataSource>()
   const [nextViewDataSource_fromView, setNextViewDataSource_fromView] = React.useState<ViewDataSource>()
   const [openFieldList, setOpenFieldList] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
   const height = getHeight(props.heightKey, props.height)
   const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+  const windowSize = useWindowSize(250)
 
   /* *************************************************
    *
@@ -166,6 +171,22 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     }
   }, [viewDataSource])
 
+  /**
+   * Resize the PivotView to fit the viewport
+   */
+  React.useEffect(() => {
+    console.log("PivotTableInterfaceComponent", "DisplayMode", { isHeightChanged })
+    if (isPivotViewCreated && pivotRef.current && windowSize.height) {
+      const bottomMargin = 20
+      const pivotTableEl = pivotRef.current.element
+      const gridContent = pivotTableEl.getElementsByClassName("e-gridcontent")[0]
+      const gridContentTop = gridContent.getBoundingClientRect().top
+      const h = windowSize.height - gridContentTop - bottomMargin
+      setGridContentHeight(`${h}px`)
+      setIsHeightChanged(false)
+    }
+  }, [isHeightChanged, isPivotViewCreated, windowSize.height])
+
   /* *************************************************
    *
    * EVENT HANDLERS
@@ -203,12 +224,12 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * Sync FieldList changes to PivotView and model
    */
   const handleEnginePopulated_FieldList = (e: EnginePopulatedEventArgs) => {
-    setIsLoading(true)
     if (fieldListRef.current && pivotRef.current) {
       fieldListRef.current.updateView(pivotRef.current)
     }
     if (e.dataSourceSettings) {
       setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
+      setIsHeightChanged(true)
     }
   }
 
@@ -221,6 +242,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     }
     if (e.dataSourceSettings) {
       setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
+      setIsHeightChanged(true)
     }
   }
 
@@ -228,11 +250,17 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * Check the OLAP response for errors.
    */
   const handleDataBound_PivotTable = () => {
-    setIsLoading(false)
     if (pivotRef.current) {
       const msg = validateOlapResponse(pivotRef.current.olapEngineModule)
       msg && notification.error(msg)
     }
+  }
+
+  /**
+   * Notify hooks that the PivotView is created.
+   */
+  const handleCreated_PivotTable = () => {
+    setIsPivotViewCreated(true)
   }
 
   /**
@@ -330,52 +358,43 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   return (
     <Undraggable>
       {/* THIS NEXT DIV IS NECESSARY! SEE NOTE ABOVE */}
-      <div className={[styles.pivotTableWrapper, styles[`height-${props.heightKey}`]].join(" ")}>
+      <div
+        className={[styles.pivotTableWrapper, styles[`height-${props.heightKey}`]].join(" ")}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        style={{ "--gridcontent-height": gridContentHeight }}>
         {/* ************************
          *
          * PIVOT TABLE
          *
          */}
-        <PivotViewComponent
-          spinnerTemplate={"<div></div>"}
-          actionBegin={(e: any) => {
-            if (e.actionName === "Drill down" || e.actionName === "Drill up") {
-              setIsLoading(true)
-            }
-          }}
-          actionComplete={(e: any) => {
-            if (e.actionName === "Drill down" || e.actionName === "Drill up") {
-              setIsLoading(false)
-            }
-          }}
-          actionFailure={(e: any) => {
-            if (e.actionName === "Drill down" || e.actionName === "Drill up") {
-              setIsLoading(false)
-            }
-          }}
-          allowCalculatedField={props.allowCalculatedField}
-          allowConditionalFormatting={props.allowConditionalFormatting}
-          allowExcelExport={props.allowExcelExport}
-          allowNumberFormatting={props.allowNumberFormatting}
-          allowPdfExport={props.allowPdfExport}
-          dataBound={handleDataBound_PivotTable}
-          // dataSourceSettings={viewDataSource}
-          displayOption={{ view: "Both" }}
-          enableValueSorting={props.enableValueSorting}
-          enableVirtualization={props.enableVirtualization}
-          enginePopulated={handleEnginePopulated_PivotTable}
-          gridSettings={{ columnWidth: 140 }}
-          height={height} // Causes hang when using "height" value?
-          id="PivotView"
-          ref={pivotRef}
-          showFieldList={false}
-          showGroupingBar={props.showGroupingBar}
-          showToolbar={props.showToolbar}
-          toolbar={toolbar}
-          width={"100%"}
-          toolbarRender={handleToolbarRender}>
-          <Inject services={services} />
-        </PivotViewComponent>
+        <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
+          <PivotViewComponent
+            allowCalculatedField={props.allowCalculatedField}
+            allowConditionalFormatting={props.allowConditionalFormatting}
+            allowExcelExport={props.allowExcelExport}
+            allowNumberFormatting={props.allowNumberFormatting}
+            allowPdfExport={props.allowPdfExport}
+            created={handleCreated_PivotTable}
+            dataBound={handleDataBound_PivotTable}
+            // dataSourceSettings={viewDataSource}
+            displayOption={{ view: "Both" }}
+            enableValueSorting={props.enableValueSorting}
+            enableVirtualization={props.enableVirtualization}
+            enginePopulated={handleEnginePopulated_PivotTable}
+            gridSettings={{ columnWidth: 140 }}
+            height={height} // Causes hang when using "height" value?
+            id="PivotView"
+            ref={pivotRef}
+            showFieldList={false}
+            showGroupingBar={props.showGroupingBar}
+            showToolbar={props.showToolbar}
+            toolbar={toolbar}
+            width={"100%"}
+            toolbarRender={handleToolbarRender}>
+            <Inject services={services} />
+          </PivotViewComponent>
+        </Spin>
         {/* ************************
          *
          * FIELD LIST
@@ -401,15 +420,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
             </PivotFieldListComponent>
           </ErrorBoundary>
         </ResizableDrawer>
-        {isLoading && (
-          <div className={styles.opgSpinner}>
-            <Spin
-              spinning={true}
-              size="large"
-              indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}
-            />
-          </div>
-        )}
       </div>
     </Undraggable>
   )
