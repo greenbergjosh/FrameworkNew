@@ -63,29 +63,31 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
         appRootPath={appPaths.appRootPath}
         pagePath={props.pagePath}
       />
-      <PageHeader
-        style={{ padding: "16px 0 20px 0" }}
-        title={
-          <>
-            {appPageConfig.icon && <Icon type={appPageConfig.icon} style={{ marginRight: 10 }} />}
-            {appPageConfig.id ? (
-              <Tooltip
-                title={
-                  <Link to={`${globalConfigPath}/${appPageConfig.id}`}>
-                    <Button type="link" icon="edit" size="small">
-                      Edit Page
-                    </Button>
-                  </Link>
-                }>
-                {appPageConfig.title}
-              </Tooltip>
-            ) : (
-              <>{appPageConfig.title}</>
-            )}
-          </>
-        }
-        subTitle={appPageConfig.description}
-      />
+      {!appPageConfig.hideTitle && (
+        <PageHeader
+          style={{ padding: "16px 0 20px 0" }}
+          title={
+            <>
+              {appPageConfig.icon && <Icon type={appPageConfig.icon} style={{ marginRight: 10 }} />}
+              {appPageConfig.id ? (
+                <Tooltip
+                  title={
+                    <Link to={`${globalConfigPath}/${appPageConfig.id}`}>
+                      <Button type="link" icon="edit" size="small">
+                        Edit Page
+                      </Button>
+                    </Link>
+                  }>
+                  {appPageConfig.title}
+                </Tooltip>
+              ) : (
+                <>{appPageConfig.title}</>
+              )}
+            </>
+          }
+          subTitle={appPageConfig.description}
+        />
+      )}
       <Router>
         <RouteRenderer
           components={(appPageConfig && appPageConfig.layout) || []}

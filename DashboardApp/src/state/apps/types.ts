@@ -33,6 +33,7 @@ export interface AppConfig extends AppEntity {
 }
 
 export interface AppPageConfig extends AppEntity {
+  hideTitle: boolean
   layout: ComponentDefinition[]
 }
 
