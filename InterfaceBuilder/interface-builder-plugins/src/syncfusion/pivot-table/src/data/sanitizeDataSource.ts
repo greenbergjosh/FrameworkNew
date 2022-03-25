@@ -1,3 +1,6 @@
+import * as modelKeys from "./constants"
+import { DataSource } from "types"
+import { cloneDeep } from "lodash/fp"
 import {
   AuthenticationModel,
   CalculatedFieldSettingsModel,
@@ -10,65 +13,7 @@ import {
   SortModel,
   ValueSortSettingsModel,
 } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
-import * as modelKeys from "./constants"
-import { cloneDeep } from "lodash/fp"
 import { JSONRecord } from "@opg/interface-builder"
-import { DataSource, ViewDataSource } from "types"
-import { IDataOptions } from "@syncfusion/ej2-pivotview"
-
-/**
- * Convert Syncfusion's IDataOptions to ViewDataSource.
- * IDataOptions uses getters on most properties, so dataOptions can't be directly cast to ViewDataSource.
- * @param dataOptions
- */
-export function dataOptionsToViewDataSource(dataOptions: IDataOptions): ViewDataSource {
-  return {
-    //
-    // Datasource props
-    catalog: dataOptions.catalog,
-    cube: dataOptions.cube,
-    dataSource: dataOptions.dataSource,
-    localeIdentifier: dataOptions.localeIdentifier,
-    providerType: dataOptions.providerType,
-    url: dataOptions.url,
-    //
-    // Other props
-    allowLabelFilter: dataOptions.allowLabelFilter,
-    allowMemberFilter: dataOptions.allowMemberFilter,
-    allowValueFilter: dataOptions.allowValueFilter,
-    alwaysShowValueHeader: dataOptions.alwaysShowValueHeader,
-    authentication: dataOptions.authentication,
-    calculatedFieldSettings: dataOptions.calculatedFieldSettings,
-    columns: dataOptions.columns,
-    conditionalFormatSettings: dataOptions.conditionalFormatSettings,
-    drilledMembers: dataOptions.drilledMembers,
-    emptyCellsTextContent: dataOptions.emptyCellsTextContent,
-    enableSorting: dataOptions.enableSorting,
-    excludeFields: dataOptions.excludeFields || [],
-    expandAll: dataOptions.expandAll,
-    fieldMapping: dataOptions.fieldMapping,
-    filters: dataOptions.filters,
-    filterSettings: dataOptions.filterSettings,
-    formatSettings: dataOptions.formatSettings,
-    groupSettings: dataOptions.groupSettings,
-    rows: dataOptions.rows,
-    showAggregationOnValueField: dataOptions.showAggregationOnValueField,
-    showColumnGrandTotals: dataOptions.showColumnGrandTotals,
-    showColumnSubTotals: dataOptions.showColumnSubTotals,
-    showGrandTotals: dataOptions.showGrandTotals,
-    showHeaderWhenEmpty: dataOptions.showHeaderWhenEmpty,
-    showRowGrandTotals: dataOptions.showRowGrandTotals,
-    showRowSubTotals: dataOptions.showRowSubTotals,
-    showSubTotals: dataOptions.showSubTotals,
-    sortSettings: dataOptions.sortSettings,
-    type: dataOptions.type,
-    valueAxis: dataOptions.valueAxis,
-    valueIndex: dataOptions.valueIndex,
-    values: dataOptions.values,
-    valueSortSettings: dataOptions.valueSortSettings,
-    source: "view",
-  }
-}
 
 /**
  * Returns a sanitized deep copy of the data source.
@@ -112,7 +57,7 @@ export function sanitizeDataSource<T extends DataSource>(dataSource: T): T {
     emptyCellsTextContent: dataSourceClone.emptyCellsTextContent || null,
     enableSorting: dataSourceClone.enableSorting || false,
     excludeFields: dataSourceClone.excludeFields || [],
-    expandAll: dataSourceClone.expandAll || false,
+    expandAll: false,
     fieldMapping: sanitizeArray<FieldOptionsModel>("FieldOptionsModel", dataSourceClone.fieldMapping) || [],
     filters: sanitizeArray<FieldOptionsModel>("FieldOptionsModel", dataSourceClone.filters) || [],
     filterSettings: sanitizeArray<FilterModel>("FilterModel", dataSourceClone.filterSettings) || [],
@@ -148,7 +93,7 @@ export function sanitizeDataSource<T extends DataSource>(dataSource: T): T {
  * @param typename
  * @param dirtyArray
  */
-function sanitizeArray<T>(typename: string, dirtyArray?: T[]) {
+export function sanitizeArray<T>(typename: string, dirtyArray?: T[]) {
   if (!dirtyArray) return
   const cleanArray: T[] = []
   dirtyArray.forEach((obj) => {
@@ -163,7 +108,7 @@ function sanitizeArray<T>(typename: string, dirtyArray?: T[]) {
  * @param typename
  * @param dirtyObject
  */
-function sanitizeObject<T>(typename: string, dirtyObject?: T) {
+export function sanitizeObject<T>(typename: string, dirtyObject?: T) {
   if (!dirtyObject) return
   const cleanObject: JSONRecord = {}
   const keys = getModelKeys(typename)
@@ -180,7 +125,7 @@ function sanitizeObject<T>(typename: string, dirtyObject?: T) {
  *
  * @param typename
  */
-function getModelKeys(typename: string): string[] {
+export function getModelKeys(typename: string): string[] {
   switch (typename) {
     case "AuthenticationModel":
       return modelKeys.AuthenticationModelKeys

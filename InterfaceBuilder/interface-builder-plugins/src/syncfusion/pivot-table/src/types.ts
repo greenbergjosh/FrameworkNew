@@ -27,51 +27,64 @@ export interface SettingsDataSource extends DataSource {
  * Extra props used to configure pivotview
  */
 export interface PivotTableSettings {
-  allowCalculatedField?: boolean
+  allowConditionalFormatting: boolean
+  allowExcelExport: boolean
+  allowNumberFormatting: boolean
+  allowPdfExport: boolean
   enableValueSorting: boolean
   enableVirtualization: boolean
   height: number
   heightKey: "auto" | "full" | "fieldlist" | "value"
   openFieldList: boolean
-  proxyUrl?: string
+  showChartsMenu: boolean
+  showGrandTotalMenu: boolean
   showGroupingBar: boolean
+  showMdxButton: boolean
+  showSubTotalMenu: boolean
+  showToolbar: boolean
+}
+
+/**
+ * Extra props used to configure FieldList
+ */
+export interface FieldListSettings {
   useProxy?: boolean
+  proxyUrl?: string
+  allowCalculatedField?: boolean
+  allowDeferLayoutUpdate?: boolean
 }
 
-export interface DisplayModeProps extends PivotTableSettings {
-  exportCSV: boolean
-  exportExcel: boolean
-  exportPDF: boolean
+export interface DisplayModeProps extends PivotTableSettings, FieldListSettings {
   modelDataSource?: ModelDataSource
   name?: string
-  onChange: (modelDataSource: ModelDataSource) => void
+  onChangeModelDataSource: (modelDataSource: ModelDataSource) => void
   settingsDataSource: SettingsDataSource
 }
 
-export interface EditModeProps extends PivotTableSettings {
+export interface EditModeProps extends FieldListSettings {
   modelDataSource?: ModelDataSource
   name?: string
-  onChange: (modelDataSource: ModelDataSource) => void
-  outboundValueKey: string
+  onChangeModelDataSource: (modelDataSource: ModelDataSource) => void
   settingsDataSource: SettingsDataSource
 }
 
-export interface PivotTableInterfaceComponentProps extends ComponentDefinitionNamedProps, PivotTableSettings {
+export interface PivotTableInterfaceComponentProps
+  extends ComponentDefinitionNamedProps,
+    PivotTableSettings,
+    FieldListSettings {
   // Core props
   components: ComponentDefinition[]
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeSchema: ComponentRenderMetaProps["onChangeSchema"]
   userInterfaceSchema?: ComponentDefinition
-  valueKey: string
+  valueKey: string // location of ModelDataSource
 
   // Additional props
-  allowCalculatedField?: boolean
-  dataSourceSettings: SettingsDataSource
-  exportCSV: boolean
-  exportExcel: boolean
-  exportPDF: boolean
   overrideMode: UserInterfaceProps["mode"] | "default"
+  settingsDataSource: SettingsDataSource
 }
 
-export interface PivotTableInterfaceComponentState {}
+export interface PivotTableInterfaceComponentState {
+  modelDataSource?: ModelDataSource
+}

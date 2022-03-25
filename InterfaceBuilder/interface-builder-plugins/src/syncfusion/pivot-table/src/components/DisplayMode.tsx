@@ -1,27 +1,35 @@
 import React from "react"
 import {
   CalculatedField,
+  ConditionalFormatting,
   EnginePopulatedEventArgs,
+  ExcelExport,
+  FieldList,
   GroupingBar,
   Inject,
+  NumberFormatting,
+  PDFExport,
   PivotFieldListComponent,
   PivotViewComponent,
+  Toolbar,
   VirtualScroll,
 } from "@syncfusion/ej2-react-pivotview"
-import classNames from "classnames"
+import ResizableDrawer from "./ResizableDrawer"
 import styles from "../styles.scss"
-import { Alert, Button, notification } from "antd"
-import { Browser } from "@syncfusion/ej2-base"
-import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
-import { DisplayModeProps, ModelDataSource } from "../types"
+import { Alert, Icon, notification, Spin } from "antd"
+import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
+import { DisplayModeProps, ModelDataSource, ViewDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
 import { getHeight } from "../lib/getHeight"
-import { isEmpty } from "lodash/fp"
-import { modelToViewDataSource, refreshSession, viewToModelDataSource } from "../lib/dataSourceUtils"
-import { PaneDirective, PanesDirective, SplitterComponent } from "@syncfusion/ej2-react-layouts"
+import { IDataOptions } from "@syncfusion/ej2-pivotview"
+import { isEqual } from "lodash/fp"
+import { refreshSession } from "../data/dataSourceUtils"
+import { ToolbarArgs } from "@syncfusion/ej2-pivotview/src/common/base/interface"
+import { ToolbarItems } from "@syncfusion/ej2-pivotview/src/common/base/enum"
 import { Undraggable } from "@opg/interface-builder"
-import { usePrevious } from "lib/usePrevious"
-import { validateDataConnection } from "lib/validateDataConnection"
+import { validateDataConnection } from "data/validateDataConnection"
+import { validateOlapResponse } from "data/validateOlapResponse"
+import { viewToModelDataSource } from "data/toModelDataSource"
 
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
@@ -32,51 +40,132 @@ import { validateDataConnection } from "lib/validateDataConnection"
  */
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
-  const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
-  const [isRefreshLoading, setIsRefreshLoading] = React.useState(false)
-  const [openConfigPanel, setOpenConfigPanel] = React.useState(props.openFieldList)
-  const [error, setError] = React.useState<Error | null>(null)
+  const prevModelDataSourceRef = React.useRef<ModelDataSource>()
+  const prevDataOptionsRef = React.useRef<IDataOptions>()
   const pivotRef = React.useRef<PivotViewComponent>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [viewDataSource, setViewDataSource] = React.useState<ViewDataSource>()
+  const [nextViewDataSource_fromView, setNextViewDataSource_fromView] = React.useState<ViewDataSource>()
+  const [openFieldList, setOpenFieldList] = React.useState(props.openFieldList)
+  const [error, setError] = React.useState<Error | null>(null)
   const height = getHeight(props.heightKey, props.height)
-  const { onChange } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+  const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
 
   /* *************************************************
    *
    * PROP WATCHERS & EFFECTS
    */
 
-  const viewDataSource = React.useMemo(() => {
-    return modelToViewDataSource({
-      modelDataSource: props.modelDataSource,
-      settingsDataSource: props.settingsDataSource,
-      useProxy: props.useProxy,
-      proxyUrl: props.proxyUrl,
-    })
-  }, [props.modelDataSource, props.settingsDataSource, props.useProxy, props.proxyUrl])
+  /**
+   * Sync model and view
+   */
+  React.useEffect(() => {
+    /*
+     * Model's modelDataSource has changed.
+     * If the change originated from the model, then update the view's dataOptions.
+     * If the change originated from the view, then do nothing.
+     */
+    if (props.modelDataSource && prevModelDataSourceRef.current !== props.modelDataSource) {
+      const nextViewDataSource_fromModel = modelToViewDataSource({
+        modelDataSource: props.modelDataSource,
+        proxyUrl: props.proxyUrl,
+        settingsDataSource: props.settingsDataSource,
+        useProxy: props.useProxy,
+      })
+      const isChangeFromModel = !isEqual(nextViewDataSource_fromModel, nextViewDataSource_fromView)
+      /* Diagnostic code - next two lines */
+      // const changes = deepDiff(nextViewDataSource_fromModel, nextViewDataSource_fromView)
+      // console.log("DisplayMode", "useEffect: Model change?", { changes })
+      const isValidConn = validateDataConnection(nextViewDataSource_fromModel)
+      if (isChangeFromModel && isValidConn) {
+        /* NOTE: FieldList and PivotView are manually updated
+         * by another useEffect because we have to wait
+         * until this state change is triggered */
+        setViewDataSource(nextViewDataSource_fromModel)
+      }
+    }
+    /*
+     * View's dataOptions has changed,
+     * so update the model's modelDataSource.
+     */
+    if (nextViewDataSource_fromView && prevDataOptionsRef.current !== nextViewDataSource_fromView) {
+      /* Diagnostic code - next two lines */
+      // const changes = deepDiff(prevDataOptionsRef.current, nextViewDataSource_fromView)
+      // console.log("DisplayMode", "useEffect: View change?", { changes })
+      debugger
+      const nextModelDataSource = viewToModelDataSource({
+        settingsDataSource: props.settingsDataSource,
+        viewDataSource: nextViewDataSource_fromView,
+      })
+      nextModelDataSource && onChangeModelDataSource(nextModelDataSource)
+    }
+    /* Update previous state */
+    prevDataOptionsRef.current = nextViewDataSource_fromView
+    prevModelDataSourceRef.current = props.modelDataSource
+  }, [
+    nextViewDataSource_fromView,
+    onChangeModelDataSource,
+    props.modelDataSource,
+    props.proxyUrl,
+    props.settingsDataSource,
+    props.useProxy,
+  ])
 
   const services = React.useMemo(() => {
     const services = []
     props.allowCalculatedField ? services.push(CalculatedField) : void 0
-    props.showGroupingBar ? services.push(GroupingBar) : void 0
+    props.allowConditionalFormatting ? services.push(ConditionalFormatting) : void 0
+    props.allowExcelExport ? services.push(ExcelExport) : void 0
+    props.allowNumberFormatting ? services.push(NumberFormatting) : void 0
+    props.allowPdfExport ? services.push(PDFExport) : void 0
     props.enableVirtualization ? services.push(VirtualScroll) : void 0
+    props.showGroupingBar ? services.push(GroupingBar) : void 0
+    props.showToolbar ? services.push(Toolbar) : void 0
+    services.push(FieldList)
     return services
-  }, [props.allowCalculatedField, props.showGroupingBar, props.enableVirtualization])
+  }, [
+    props.allowCalculatedField,
+    props.allowConditionalFormatting,
+    props.allowExcelExport,
+    props.allowNumberFormatting,
+    props.allowPdfExport,
+    props.enableVirtualization,
+    props.showGroupingBar,
+    props.showToolbar,
+  ])
+
+  const toolbar: ToolbarItems[] = React.useMemo(() => {
+    const toolbar: ToolbarItems[] = []
+    props.showChartsMenu ? toolbar.push("Grid") : void 0
+    props.showChartsMenu ? toolbar.push("Chart") : void 0
+    props.showSubTotalMenu ? toolbar.push("SubTotal") : void 0
+    props.showGrandTotalMenu ? toolbar.push("GrandTotal") : void 0
+    props.allowConditionalFormatting || props.allowNumberFormatting ? toolbar.push("Formatting") : void 0
+    props.showMdxButton ? toolbar.push("MDX") : void 0
+    return toolbar
+  }, [
+    props.allowConditionalFormatting,
+    props.allowNumberFormatting,
+    props.showChartsMenu,
+    props.showGrandTotalMenu,
+    props.showMdxButton,
+    props.showSubTotalMenu,
+  ])
 
   React.useEffect(() => {
-    setOpenConfigPanel(props.openFieldList)
+    setOpenFieldList(props.openFieldList)
   }, [props.openFieldList])
 
   /**
-   * Sync when viewDataSource changes
+   * Update view (FieldList and PivotView) when viewDataSource changes
    */
   React.useEffect(() => {
-    if (!prevModelDataSource && fieldListRef.current && pivotRef.current && validateDataConnection(viewDataSource)) {
-      // Sync PivotView with FieldList
+    if (viewDataSource && fieldListRef.current && pivotRef.current && validateDataConnection(viewDataSource)) {
       fieldListRef.current.updateView(pivotRef.current)
       fieldListRef.current.update(pivotRef.current)
     }
-  }, [prevModelDataSource, viewDataSource])
+  }, [viewDataSource])
 
   /* *************************************************
    *
@@ -84,7 +173,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    */
 
   const handleRefreshClick = React.useCallback(() => {
-    setIsRefreshLoading(true)
+    setIsLoading(true)
     refreshSession({
       useProxy: props.useProxy,
       url: props.settingsDataSource.url,
@@ -95,7 +184,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         notification.error({
           message: `Refresh failed! (${refreshSessionResult.statusText})`,
         })
-        setIsRefreshLoading(false)
+        setIsLoading(false)
         return
       }
       if (!pivotRef.current) {
@@ -103,115 +192,112 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         notification.error({
           message: "Refresh failed! (pivotRef is null)",
         })
-        setIsRefreshLoading(false)
+        setIsLoading(false)
         return
       }
       pivotRef.current.refreshData()
-      setIsRefreshLoading(false)
+      setIsLoading(false)
     })
   }, [props.settingsDataSource.url, props.proxyUrl, props.useProxy])
 
   /**
-   * Sync FieldList with PivotView and model
+   * Sync FieldList changes to PivotView and model
    */
-  const handleEnginePopulated_FieldList = React.useCallback(
-    (e: EnginePopulatedEventArgs) => {
-      // Sync PivotView with FieldList
-      if (fieldListRef.current && pivotRef.current) {
-        fieldListRef.current.updateView(pivotRef.current)
-      }
-      if (prevModelDataSource && e.dataSourceSettings) {
-        // Put FieldList changes into model
-        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
-        const newModelDataSource = viewToModelDataSource({
-          viewDataSource: newViewDataSource,
-          settingsDataSource: props.settingsDataSource,
-        })
-        newModelDataSource && onChange(newModelDataSource)
-      }
-    },
-    [prevModelDataSource, onChange, props.settingsDataSource]
-  )
-
-  function handleEnginePopulated_PivotTable(/* e: EnginePopulatedEventArgs */) {
-    if (!Browser.isDevice && fieldListRef.current && pivotRef.current) {
-      fieldListRef.current.update(pivotRef.current)
+  const handleEnginePopulated_FieldList = (e: EnginePopulatedEventArgs) => {
+    if (fieldListRef.current && pivotRef.current) {
+      fieldListRef.current.updateView(pivotRef.current)
     }
-  }
-
-  const handleExportClick = (format: "excel" | "pdf" | "csv") => () => {
-    if (pivotRef && pivotRef.current) {
-      if (format === "excel") {
-        pivotRef.current.excelExport()
-      } else if (format === "pdf") {
-        pivotRef.current.pdfExport()
-      } else if (format === "csv") {
-        pivotRef.current.csvExport()
-      }
+    if (e.dataSourceSettings) {
+      setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
     }
-  }
-
-  function showVersionWarning(missingDependency: string) {
-    console.warn(
-      `PivotTable's dependency on the undocumented property "${missingDependency}" in no longer valid.
-        This is most likely due to a version change in Syncfusion PivotView.
-        Olap errors won't be notified and the user will see an infinite spinner.`
-    )
   }
 
   /**
-   * Check the response for errors.
-   * NOTE: Syncfusion PivotView 19.x does not check for errors and does not expose an API to check.
-   * We hack into the internals of PivotView to check for errors.
-   * PivotView will show an infinite spinner otherwise.
+   * Sync PivotView changes to FieldList and model
    */
-  function handleDataBound_PivotTable() {
-    /*
-     * Attempt to access undocumented response "xmlDoc"
-     */
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const { olapEngineModule } = pivotRef.current
-    if (!olapEngineModule) {
-      showVersionWarning("olapEngineModule")
-      return
+  const handleEnginePopulated_PivotTable = (e: EnginePopulatedEventArgs) => {
+    if (pivotRef.current && fieldListRef.current) {
+      fieldListRef.current.update(pivotRef.current)
     }
-    const { xmlDoc } = olapEngineModule
-    if (!xmlDoc) {
-      /* Report may simply be empty, so don't complain */
-      return
+    if (e.dataSourceSettings) {
+      setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
     }
-    const documentElement = xmlDoc.documentElement as XMLDocument
-    if (!documentElement || !documentElement.getElementsByTagName) {
-      showVersionWarning("olapEngineModule.xmlDoc.documentElement")
-      return
-    }
+  }
 
-    /*
-     * Read any errors and display a notification
-     * First try "soap:Fault"...
-     */
-    let faults
-    faults = documentElement.getElementsByTagName("soap:Fault")
-    if (!faults || faults.length < 1) {
-      // Then try "SOAP-ENV:Fault"
-      faults = documentElement.getElementsByTagName("SOAP-ENV:Fault")
-      if (!faults || faults.length < 1 || !faults[0].getElementsByTagName) {
-        // No soap fault errors
-        return
-      }
+  /**
+   * Check the OLAP response for errors.
+   */
+  const handleDataBound_PivotTable = () => {
+    if (pivotRef.current) {
+      const msg = validateOlapResponse(pivotRef.current.olapEngineModule)
+      msg && notification.error(msg)
     }
-    const faultstring = faults[0].getElementsByTagName("faultstring")
-    if (!faultstring || faultstring.length < 1) {
-      // No fault string node
-      return
-    }
-    const error = faultstring[0].innerHTML
-    if (!isEmpty(error)) {
-      notification.error({
-        message: `Pivot Table error!\n${error}`,
-        duration: 0, // never close
+  }
+
+  /**
+   * Add custom buttons to the toolbar.
+   * @param args
+   */
+  function handleToolbarRender(args: ToolbarArgs): void {
+    if (args.customToolbar) {
+      /* Add Reload button */
+      args.customToolbar.splice(0, 0, {
+        prefixIcon: "e-repeat e-icons",
+        tooltipText: "Reload",
+        click: handleRefreshClick,
       })
+      args.customToolbar.splice(3, 0, {
+        type: "Separator",
+      })
+
+      args.customToolbar.splice(args.customToolbar.length, 0, {
+        type: "Separator",
+      })
+      if (props.allowPdfExport) {
+        /*
+         * Add Export PDF button
+         * We're adding this export button manually because the built-in button
+         * is triggering multiple downloads for an unknown reason.
+         */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-export-pdf e-icons",
+          tooltipText: "Export PDF",
+          type: "Button",
+          click: () => pivotRef.current && pivotRef.current.pdfExport(),
+        })
+      }
+      if (props.allowExcelExport) {
+        /*
+         * Add Export Excel button
+         * We're adding this export button manually because the built-in button
+         * is triggering multiple downloads for an unknown reason.
+         */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-export-excel e-icons",
+          tooltipText: "Export Excel",
+          type: "Button",
+          click: () => pivotRef.current && pivotRef.current.excelExport(),
+        })
+        /*
+         * Add Export CSV button
+         * We're adding this export button manually because the built-in button
+         * is triggering multiple downloads for an unknown reason.
+         */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-export-csv e-icons",
+          tooltipText: "Export CSV",
+          type: "Button",
+          click: () => pivotRef.current && pivotRef.current.csvExport(),
+        })
+        /* Add Open FieldList button */
+        args.customToolbar.splice(args.customToolbar.length, 0, {
+          prefixIcon: "e-settings e-icons",
+          tooltipText: "Open Field List",
+          type: "Button",
+          align: "Right",
+          click: () => setOpenFieldList(true),
+        })
+      }
     }
   }
 
@@ -220,119 +306,13 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * RENDERING
    */
 
-  if (!props.modelDataSource) {
+  if (!viewDataSource) {
     return null
   }
 
   if (error) {
     return <Alert message={`${props.name || "Pivot Table"} Error`} description={error.message} type="error" showIcon />
   }
-
-  function getExportButtons() {
-    return (
-      <>
-        {props.exportCSV && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-text"
-            onClick={handleExportClick("csv")}>
-            CSV Export
-          </Button>
-        )}
-        {props.exportExcel && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-excel"
-            onClick={handleExportClick("excel")}>
-            Excel Export
-          </Button>
-        )}
-        {props.exportPDF && (
-          <Button
-            className={styles.exportButton}
-            type="link"
-            size="small"
-            icon="file-pdf"
-            onClick={handleExportClick("pdf")}>
-            PDF Export
-          </Button>
-        )}
-        <Button
-          className={styles.exportButton}
-          type="link"
-          size="small"
-          icon="reload"
-          onClick={handleRefreshClick}
-          loading={isRefreshLoading}>
-          Refresh
-        </Button>
-      </>
-    )
-  }
-
-  const getViewPanel = () => (
-    <div id="ViewPanel">
-      <Button
-        className={styles.configPanelOpenButton}
-        type="link"
-        icon="setting"
-        size="small"
-        onClick={() => {
-          setOpenConfigPanel(true)
-        }}
-      />
-      {getExportButtons()}
-      <PivotViewComponent
-        ref={pivotRef}
-        allowCalculatedField={props.allowCalculatedField}
-        allowPdfExport={props.exportPDF}
-        allowExcelExport={props.exportExcel}
-        dataBound={handleDataBound_PivotTable}
-        enableValueSorting={props.enableValueSorting}
-        enableVirtualization={props.enableVirtualization}
-        enginePopulated={handleEnginePopulated_PivotTable}
-        height={height}
-        showGroupingBar={props.showGroupingBar}
-        style={{ zIndex: 0 }}
-        delayUpdate={true}>
-        <Inject services={services} />
-      </PivotViewComponent>
-    </div>
-  )
-
-  const getConfigPanel = () => (
-    <div id="ConfigPanel">
-      <Button
-        className={styles.configPanelCloseButton}
-        type="link"
-        icon="close"
-        size="small"
-        onClick={() => {
-          setOpenConfigPanel(false)
-        }}
-      />
-      <ErrorBoundary
-        onError={(e) => {
-          if (e.message.includes("hasAllMember")) {
-            setError(new Error("There was an error communicating with the cube server."))
-          }
-        }}
-        fallbackRender={() => <></>}>
-        <PivotFieldListComponent
-          allowCalculatedField={props.allowCalculatedField}
-          dataSourceSettings={viewDataSource}
-          enginePopulated={handleEnginePopulated_FieldList}
-          ref={fieldListRef}
-          renderMode={"Fixed"}>
-          <Inject services={[...services]} />
-        </PivotFieldListComponent>
-      </ErrorBoundary>
-    </div>
-  )
 
   /*
    * NOTE: We wrap PivotViewComponent in a div to prevent the error:
@@ -349,23 +329,63 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   return (
     <Undraggable>
       {/* THIS NEXT DIV IS NECESSARY! SEE NOTE ABOVE */}
-      <div>
-        {getViewPanel()}
-        {getConfigPanel()}
-        <SplitterComponent separatorSize={4} className={styles.splitView}>
-          <PanesDirective>
-            <PaneDirective content="#ViewPanel" cssClass={styles.viewPanel} min="0" />
-            <PaneDirective
-              content="#ConfigPanel"
-              cssClass={classNames(styles.configPanel)}
-              min="24px"
-              size="300px"
-              max="700px"
-              resizable={openConfigPanel}
-              collapsed={!openConfigPanel}
-            />
-          </PanesDirective>
-        </SplitterComponent>
+      <div className={[styles.pivotTableWrapper, styles[`height-${props.heightKey}`]].join(" ")}>
+        {/* ************************
+         *
+         * PIVOT TABLE
+         *
+         */}
+        <Spin spinning={isLoading} indicator={<Icon type="loading" />}>
+          <PivotViewComponent
+            allowCalculatedField={props.allowCalculatedField}
+            allowConditionalFormatting={props.allowConditionalFormatting}
+            allowExcelExport={props.allowExcelExport}
+            allowNumberFormatting={props.allowNumberFormatting}
+            allowPdfExport={props.allowPdfExport}
+            dataBound={handleDataBound_PivotTable}
+            // dataSourceSettings={viewDataSource}
+            displayOption={{ view: "Both" }}
+            enableValueSorting={props.enableValueSorting}
+            enableVirtualization={props.enableVirtualization}
+            enginePopulated={handleEnginePopulated_PivotTable}
+            gridSettings={{ columnWidth: 140 }}
+            height={height} // Causes hang when using "height" value?
+            id="PivotView"
+            ref={pivotRef}
+            showFieldList={false}
+            showGroupingBar={props.showGroupingBar}
+            showToolbar={props.showToolbar}
+            toolbar={toolbar}
+            width={"100%"}
+            toolbarRender={handleToolbarRender}>
+            <Inject services={services} />
+          </PivotViewComponent>
+        </Spin>
+        {/* ************************
+         *
+         * FIELD LIST
+         *
+         */}
+        <ResizableDrawer isOpen={openFieldList} setOpen={setOpenFieldList}>
+          <ErrorBoundary
+            onError={(e) => {
+              if (e.message.includes("hasAllMember")) {
+                setError(new Error("There was an error communicating with the cube server."))
+              }
+            }}
+            fallbackRender={() => <></>}>
+            <PivotFieldListComponent
+              cssClass={styles.fieldListPanel}
+              allowCalculatedField={props.allowCalculatedField}
+              allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
+              dataSourceSettings={viewDataSource}
+              enginePopulated={handleEnginePopulated_FieldList}
+              ref={fieldListRef}
+              renderMode={"Fixed"}>
+              <Inject services={[...services]} />
+            </PivotFieldListComponent>
+          </ErrorBoundary>
+        </ResizableDrawer>
       </div>
     </Undraggable>
   )

@@ -1,46 +1,68 @@
 @import "~@opg/interface-builder/dist/styles/colors.scss";
 
-.configPanelOpenButton {
-  position: absolute;
-  right: 5px;
-  z-index: 1;
-  border-radius: 24px;
-  background-color: #e0e0e0;
-  color: $ib-grey-darkest;
+.pivotTableWrapper {
+  position: relative;
+  overflow-x: hidden;
+  min-height: 700px;
+}
 
-  &:hover {
-    background-color: #e0e0e0;
+
+/*******************************************************
+ *
+ * HACK TO FIX SYNCFUSION HEIGHT
+ */
+
+:global {
+  :local(.height-auto) {
+    .e-pivotview .e-grid div.e-content {
+      // No style
+    }
+  }
+  :local(.height-full) {
+    .e-pivotview .e-grid div.e-content {
+      height: 100% !important;
+    }
+  }
+  :local(.height-fieldlist) {
+    .e-pivotview .e-grid div.e-content {
+      height: 629px !important;
+    }
+  }
+  :local(.height-value) {
+    .e-pivotview .e-grid div.e-content {
+      // No style
+    }
   }
 }
 
-.configPanelCloseButton {
-  color: $ib-grey-darkest;
-}
+/*******************************************************
+ *
+ * RESIZABLE DRAWER
+ */
 
-.splitView {
-  border-radius: 4px;
-  background-color: #fafafa;
-}
+:global {
+  :local(.resizableDrawer) {
+    border-top: solid 1px $ib-grey-light;
+    border-right: solid 1px $ib-grey-light;
+    border-bottom: solid 1px $ib-grey-light;
+    min-height: 651px;
 
-.viewPanel {
-}
-
-.editModePanel {
-  cursor: default;
-  margin: -5px;
-}
-
-.exportButton {
-  margin: 4px;
-  padding: 0 4px 0 4px;
-  border-radius: 0;
-  color: $ib-grey-darkest;
-
-  &:hover {
-    background-color: #dcdcdc;
-    color: $ib-grey-darkest;
+    .ant-drawer-close {
+      background-color: white;
+    }
   }
-  &:visited {
-    color: $ib-grey-darkest;
+}
+
+/*
+ * Override Syncfusion's PivotView styles
+ */
+:global {
+  :local(.fieldListPanel) {
+    .e-pivotfieldlist-wrapper.e-static {
+      border: none;
+    }
+    .e-title-content {
+      display: none;
+    }
   }
 }

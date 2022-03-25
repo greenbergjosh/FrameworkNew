@@ -10,17 +10,17 @@ import styles from "../styles.scss"
 import { EditModeProps, ModelDataSource } from "../types"
 import { Undraggable } from "@opg/interface-builder"
 import { usePrevious } from "../lib/usePrevious"
-import { validateDataConnection } from "lib/validateDataConnection"
+import { validateDataConnection } from "data/validateDataConnection"
 import { Alert } from "antd"
 import { ErrorBoundary } from "react-error-boundary"
-import { modelToViewDataSource, viewToModelDataSource } from "lib/dataSourceUtils"
-import { dataOptionsToViewDataSource } from "lib/syncfusionUtils"
+import { viewToModelDataSource } from "data/toModelDataSource"
+import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
 
 export function EditMode(props: EditModeProps): JSX.Element | null {
   const prevModelDataSource = usePrevious<ModelDataSource | undefined>(props.modelDataSource)
   const [error, setError] = React.useState<Error | null>(null)
   const fieldListRef = React.useRef<PivotFieldListComponent>(null)
-  const { onChange } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+  const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
 
   /* *************************************************
    *
@@ -54,15 +54,15 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
     (e: EnginePopulatedEventArgs) => {
       if (!prevModelDataSource && e.dataSourceSettings) {
         // Put FieldList changes into model
-        const newViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
-        const newModelDataSource = viewToModelDataSource({
-          viewDataSource: newViewDataSource,
+        const nextViewDataSource = dataOptionsToViewDataSource(e.dataSourceSettings)
+        const nextModelDataSource = viewToModelDataSource({
+          viewDataSource: nextViewDataSource,
           settingsDataSource: props.settingsDataSource,
         })
-        newModelDataSource && onChange(newModelDataSource)
+        nextModelDataSource && onChangeModelDataSource(nextModelDataSource)
       }
     },
-    [prevModelDataSource, onChange, props.settingsDataSource]
+    [prevModelDataSource, onChangeModelDataSource, props.settingsDataSource]
   )
 
   /* *************************************************
@@ -76,7 +76,7 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
 
   return (
     <Undraggable>
-      <div className={styles.editModePanel}>
+      <div className={styles.fieldListPanel}>
         <ErrorBoundary
           onError={(e) => {
             if (e.message.includes("hasAllMember")) {
@@ -86,6 +86,7 @@ export function EditMode(props: EditModeProps): JSX.Element | null {
           fallbackRender={() => <></>}>
           <PivotFieldListComponent
             allowCalculatedField={props.allowCalculatedField}
+            allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
             dataSourceSettings={viewDataSource}
             enginePopulated={handleEnginePopulated}
             ref={fieldListRef}
