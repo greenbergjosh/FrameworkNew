@@ -889,6 +889,7 @@ from datasets.{mergedTableName};";
         private async Task ImportFileSimple()
         {
             var tableName = await _config.GetS("Config.merged_table_name");
+            var schemaName = await _config.GetS("Config.merged_table_schema");
 
             var export = await _config.GetE("Config.export");
             var path = await export.GetS("target_path");
@@ -897,9 +898,9 @@ from datasets.{mergedTableName};";
 
             _ = await ExecuteSSHCommand($"sudo chmod 666 {importPath}");
 
-            _ = await ExecuteClickhouseQuery($"TRUNCATE TABLE datasets.{tableName}");
+            _ = await ExecuteClickhouseQuery($"TRUNCATE TABLE `{schemaName}`.`{tableName}`");
 
-            _ = await ExecuteClickhouseQuery($"INSERT INTO datasets.{tableName} FORMAT CSVWithNames", importPath);
+            _ = await ExecuteClickhouseQuery($"INSERT INTO `{schemaName}`.`{tableName}` FORMAT CSVWithNames", importPath);
         }
 
         private async Task CleanupSimple()
