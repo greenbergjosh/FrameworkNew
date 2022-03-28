@@ -2,10 +2,8 @@
 
 .pivotTableWrapper {
   position: relative;
-  overflow-x: hidden;
-  min-height: 700px;
+  overflow: hidden;
 }
-
 
 /*******************************************************
  *
@@ -14,24 +12,24 @@
 
 :global {
   :local(.height-auto) {
-    .e-pivotview .e-grid div.e-content {
-      // No style
-    }
   }
   :local(.height-full) {
     .e-pivotview .e-grid div.e-content {
-      height: 100% !important;
+      height: var(--gridcontent-height) !important;
+    }
+    .e-pivotview .e-grid div.e-gridcontent {
+      height: var(--gridcontent-height) !important;
     }
   }
   :local(.height-fieldlist) {
     .e-pivotview .e-grid div.e-content {
-      height: 629px !important;
+      height: var(--gridcontent-height) !important;
+    }
+    .e-pivotview .e-grid div.e-gridcontent {
+      height: var(--gridcontent-height) !important;
     }
   }
   :local(.height-value) {
-    .e-pivotview .e-grid div.e-content {
-      // No style
-    }
   }
 }
 
@@ -45,7 +43,25 @@
     border-top: solid 1px $ib-grey-light;
     border-right: solid 1px $ib-grey-light;
     border-bottom: solid 1px $ib-grey-light;
-    min-height: 651px;
+
+    :local(.divider) {
+      background-color: #f4f7f9;
+      bottom: 0;
+      cursor: ew-resize;
+      left: 0;
+      margin-left: 1px;
+      padding: 4px 0 0;
+      position: absolute;
+      top: 0;
+      width: 5px;
+      z-index: 100;
+    }
+
+    .ant-drawer-content {
+      /* make the drawer clear the right side of the table */
+      border-left: solid 1px $ib-grey-light;
+      cursor: default;
+    }
 
     .ant-drawer-close {
       background-color: white;
