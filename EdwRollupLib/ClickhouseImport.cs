@@ -898,9 +898,13 @@ from datasets.{mergedTableName};";
 
             _ = await ExecuteSSHCommand($"sudo chmod 666 {importPath}");
 
-            _ = await ExecuteClickhouseQuery($"TRUNCATE TABLE `{schemaName}`.`{tableName}`");
+            _ = await ExecuteClickhouseQuery($"CREATE TABLE `{schemaName}`.`{tableName}_import` AS `{schemaName}`.`{tableName}`");
 
-            _ = await ExecuteClickhouseQuery($"INSERT INTO `{schemaName}`.`{tableName}` FORMAT CSVWithNames", importPath);
+            _ = await ExecuteClickhouseQuery($"INSERT INTO `{schemaName}`.`{tableName}_import` FORMAT CSVWithNames", importPath);
+
+            _ = await ExecuteClickhouseQuery($"EXCHANGE TABLES `{schemaName}`.`{tableName}_import` AND `{schemaName}`.`{tableName}`");
+
+            _ = await ExecuteClickhouseQuery($"DROP TABLE `{schemaName}`.`{tableName}_import`");
         }
 
         private async Task CleanupSimple()
