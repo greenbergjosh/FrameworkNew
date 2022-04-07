@@ -27,6 +27,13 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
     }
   }
 
+  componentDidMount() {
+    const nextModelDataSource = this.getValue(this.props.valueKey) as ModelDataSource | undefined
+    if (nextModelDataSource) {
+      this.setState({ modelDataSource: nextModelDataSource })
+    }
+  }
+
   componentDidUpdate(prevProps: Readonly<PivotTableInterfaceComponentProps>): void {
     const prevModelDataSource = this.getValue(
       prevProps.valueKey,

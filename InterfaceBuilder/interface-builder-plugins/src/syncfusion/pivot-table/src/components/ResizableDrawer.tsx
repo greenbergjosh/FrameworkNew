@@ -8,7 +8,7 @@ interface ResizableDrawerProps extends React.PropsWithChildren<any> {
 }
 
 const ResizableDrawer = (props: ResizableDrawerProps) => {
-  const initialWidth = 300
+  const initialWidth = 305
   const minWidth = 48 // Accommodate close button
   const maxWidth = 700
   const [isResizing, setIsResizing] = useState(false)
