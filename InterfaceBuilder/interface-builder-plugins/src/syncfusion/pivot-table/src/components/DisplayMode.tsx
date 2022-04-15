@@ -32,6 +32,10 @@ import { validateOlapResponse } from "data/validateOlapResponse"
 import { viewToModelDataSource } from "data/toModelDataSource"
 import useWindowSize from "lib/useWindowSize"
 
+interface EJ2Element<T> extends HTMLElement {
+  ej2_instances: T[]
+}
+
 /*
  * NOTE: If you ever want to use the PivotFieldListComponent as a dialog,
  * use a separate PivotFieldListComponent dialog instead of the built-in one
@@ -41,10 +45,15 @@ import useWindowSize from "lib/useWindowSize"
  */
 
 export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
+  const windowSize = useWindowSize(250)
   const prevModelDataSourceRef = React.useRef<ModelDataSource>()
   const prevDataOptionsRef = React.useRef<IDataOptions>()
-  const pivotRef = React.useRef<PivotViewComponent>(null)
-  const fieldListRef = React.useRef<PivotFieldListComponent>(null)
+
+  // Don't access _pivotRef directly. Use getSyncfusionRefs() to get a singleton instead.
+  const _pivotRef = React.useRef<PivotViewComponent | null>(null)
+  // Don't access _fieldListRef directly. Use getSyncfusionRefs() to get a singleton instead.
+  const _fieldListRef = React.useRef<PivotFieldListComponent | null>(null)
+
   const [isLoading, setIsLoading] = React.useState(false)
   const [gridContentHeight, setGridContentHeight] = React.useState<string>()
   const [isPivotViewCreated, setIsPivotViewCreated] = React.useState(false)
@@ -53,9 +62,23 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   const [nextViewDataSource_fromView, setNextViewDataSource_fromView] = React.useState<ViewDataSource>()
   const [openFieldList, setOpenFieldList] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
-  const height = getHeight(props.heightKey, props.height)
+  const height = getHeight(props.heightKey, props.height, windowSize, props.enableVirtualization)
   const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
-  const windowSize = useWindowSize(250)
+
+  /**
+   * Get pivot component singleton instances
+   */
+  const getSyncfusionRefs = React.useCallback(() => {
+    if (!_pivotRef.current) {
+      const el = document.getElementById("PivotView") as EJ2Element<PivotViewComponent> | null
+      _pivotRef.current = el ? el.ej2_instances[0] : null
+    }
+    if (!_fieldListRef.current) {
+      const el2 = document.getElementById("PivotFieldList") as EJ2Element<PivotFieldListComponent> | null
+      _fieldListRef.current = el2 ? el2.ej2_instances[0] : null
+    }
+    return { pivotRef: _pivotRef.current, fieldListRef: _fieldListRef.current }
+  }, [])
 
   /* *************************************************
    *
@@ -165,33 +188,41 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * Update view (FieldList and PivotView) when viewDataSource changes
    */
   React.useEffect(() => {
-    if (viewDataSource && fieldListRef.current && pivotRef.current && validateDataConnection(viewDataSource)) {
-      fieldListRef.current.updateView(pivotRef.current)
-      fieldListRef.current.update(pivotRef.current)
+    const { pivotRef, fieldListRef } = getSyncfusionRefs()
+    if (viewDataSource && fieldListRef && pivotRef && validateDataConnection(viewDataSource)) {
+      // Update PivotTable from FieldList
+      fieldListRef.updateView(pivotRef)
+      // Update FieldList from PivotTable
+      fieldListRef.update(pivotRef)
     }
-  }, [viewDataSource])
+  }, [getSyncfusionRefs, viewDataSource])
 
   /**
    * Resize the PivotView to fit the viewport
    */
   React.useEffect(() => {
+    const { pivotRef } = getSyncfusionRefs()
     console.log("PivotTableInterfaceComponent", "DisplayMode", { isHeightChanged })
-    if (isPivotViewCreated && pivotRef.current && windowSize.height) {
+    if (isPivotViewCreated && pivotRef && windowSize.height) {
       const bottomMargin = 20
-      const pivotTableEl = pivotRef.current.element
+      const pivotTableEl = pivotRef.element
       const gridContent = pivotTableEl.getElementsByClassName("e-gridcontent")[0]
       const gridContentTop = gridContent.getBoundingClientRect().top
       const h = windowSize.height - gridContentTop - bottomMargin
       setGridContentHeight(`${h}px`)
       setIsHeightChanged(false)
     }
-  }, [isHeightChanged, isPivotViewCreated, windowSize.height])
+  }, [getSyncfusionRefs, isHeightChanged, isPivotViewCreated, windowSize.height])
 
   /* *************************************************
    *
    * EVENT HANDLERS
    */
 
+  /**
+   * Refresh data by first refreshing the server session
+   * and then fetching the data again.
+   */
   const handleRefreshClick = React.useCallback(() => {
     setIsLoading(true)
     refreshSession({
@@ -199,6 +230,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
       url: props.settingsDataSource.url,
       proxyUrl: props.proxyUrl,
     }).then((refreshSessionResult) => {
+      const { pivotRef } = getSyncfusionRefs()
       if (!refreshSessionResult.ok) {
         console.warn("Refresh failed!", { result: refreshSessionResult })
         notification.error({
@@ -207,7 +239,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         setIsLoading(false)
         return
       }
-      if (!pivotRef.current) {
+      if (!pivotRef) {
         console.warn("Refresh failed! (pivotRef is null)")
         notification.error({
           message: "Refresh failed! (pivotRef is null)",
@@ -215,17 +247,36 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         setIsLoading(false)
         return
       }
-      pivotRef.current.refreshData()
+      pivotRef.refreshData()
       setIsLoading(false)
     })
-  }, [props.settingsDataSource.url, props.proxyUrl, props.useProxy])
+  }, [props.useProxy, props.settingsDataSource.url, props.proxyUrl, getSyncfusionRefs])
+
+  /**
+   * Initialize PivotView settings
+   */
+  function handleLoad_FieldList() {
+    const { pivotRef, fieldListRef } = getSyncfusionRefs()
+    if (fieldListRef && pivotRef) {
+      // Assigning the report to pivot table component
+      pivotRef.dataSourceSettings = fieldListRef.dataSourceSettings
+
+      // Generating page settings based on pivot table component’s size
+      pivotRef.updatePageSettings(true)
+
+      // Assigning page settings to field list component
+      fieldListRef.pageSettings = pivotRef.pageSettings
+    }
+  }
 
   /**
    * Sync FieldList changes to PivotView and model
    */
   const handleEnginePopulated_FieldList = (e: EnginePopulatedEventArgs) => {
-    if (fieldListRef.current && pivotRef.current) {
-      fieldListRef.current.updateView(pivotRef.current)
+    const { pivotRef, fieldListRef } = getSyncfusionRefs()
+    if (fieldListRef && pivotRef) {
+      // Update PivotTable from FieldList
+      fieldListRef.updateView(pivotRef)
     }
     if (e.dataSourceSettings) {
       setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
@@ -237,8 +288,10 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * Sync PivotView changes to FieldList and model
    */
   const handleEnginePopulated_PivotTable = (e: EnginePopulatedEventArgs) => {
-    if (pivotRef.current && fieldListRef.current) {
-      fieldListRef.current.update(pivotRef.current)
+    const { pivotRef, fieldListRef } = getSyncfusionRefs()
+    if (pivotRef && fieldListRef) {
+      // Update FieldList from PivotTable
+      fieldListRef.update(pivotRef)
     }
     if (e.dataSourceSettings) {
       setNextViewDataSource_fromView(dataOptionsToViewDataSource(e.dataSourceSettings))
@@ -250,8 +303,9 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * Check the OLAP response for errors.
    */
   const handleDataBound_PivotTable = () => {
-    if (pivotRef.current) {
-      const msg = validateOlapResponse(pivotRef.current.olapEngineModule)
+    const { pivotRef } = getSyncfusionRefs()
+    if (pivotRef) {
+      const msg = validateOlapResponse(pivotRef.olapEngineModule)
       msg && notification.error(msg)
     }
   }
@@ -268,6 +322,14 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    * @param args
    */
   function handleToolbarRender(args: ToolbarArgs): void {
+    /*
+     * For some reason we can't use the global getSyncfusionRefs,
+     * and since this is not the hill I want to die on,
+     * we get the pivotRef directly here.
+     */
+    const el = document.getElementById("PivotView") as EJ2Element<PivotViewComponent> | null
+    const pivotRef = el && el.ej2_instances[0]
+
     if (args.customToolbar) {
       /* Add Reload button */
       args.customToolbar.splice(0, 0, {
@@ -292,7 +354,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           prefixIcon: "e-export-pdf e-icons",
           tooltipText: "Export PDF",
           type: "Button",
-          click: () => pivotRef.current && pivotRef.current.pdfExport(),
+          click: () => pivotRef && pivotRef.pdfExport(),
         })
       }
       if (props.allowExcelExport) {
@@ -305,7 +367,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           prefixIcon: "e-export-excel e-icons",
           tooltipText: "Export Excel",
           type: "Button",
-          click: () => pivotRef.current && pivotRef.current.excelExport(),
+          click: () => pivotRef && pivotRef.excelExport(),
         })
         /*
          * Add Export CSV button
@@ -316,17 +378,17 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
           prefixIcon: "e-export-csv e-icons",
           tooltipText: "Export CSV",
           type: "Button",
-          click: () => pivotRef.current && pivotRef.current.csvExport(),
-        })
-        /* Add Open FieldList button */
-        args.customToolbar.splice(args.customToolbar.length, 0, {
-          prefixIcon: "e-settings e-icons",
-          tooltipText: "Open Field List",
-          type: "Button",
-          align: "Right",
-          click: () => setOpenFieldList(true),
+          click: () => pivotRef && pivotRef.csvExport(),
         })
       }
+      /* Add Open FieldList button */
+      args.customToolbar.splice(args.customToolbar.length, 0, {
+        prefixIcon: "e-settings e-icons",
+        tooltipText: "Open Field List",
+        type: "Button",
+        align: "Right",
+        click: () => setOpenFieldList(true),
+      })
     }
   }
 
@@ -360,6 +422,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
       {/* THIS NEXT DIV IS NECESSARY! SEE NOTE ABOVE */}
       <div
         className={[styles.pivotTableWrapper, styles[`height-${props.heightKey}`]].join(" ")}
+        // Using a CSS variable --gridcontent-height, see styles file.
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         style={{ "--gridcontent-height": gridContentHeight }}>
@@ -385,7 +448,6 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
             gridSettings={{ columnWidth: 140 }}
             height={height} // Causes hang when using "height" value?
             id="PivotView"
-            ref={pivotRef}
             showFieldList={false}
             showGroupingBar={props.showGroupingBar}
             showToolbar={props.showToolbar}
@@ -409,12 +471,13 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
             }}
             fallbackRender={() => <></>}>
             <PivotFieldListComponent
-              cssClass={styles.fieldListPanel}
               allowCalculatedField={props.allowCalculatedField}
               allowDeferLayoutUpdate={props.allowDeferLayoutUpdate}
+              cssClass={styles.fieldListPanel}
               dataSourceSettings={viewDataSource}
               enginePopulated={handleEnginePopulated_FieldList}
-              ref={fieldListRef}
+              id="PivotFieldList"
+              load={handleLoad_FieldList}
               renderMode={"Fixed"}>
               <Inject services={[...services]} />
             </PivotFieldListComponent>
