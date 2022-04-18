@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import debounce from "lodash/debounce"
 
 export interface Size {
-  width: number | undefined
-  height: number | undefined
+  width: number
+  height: number
 }
 
 /**

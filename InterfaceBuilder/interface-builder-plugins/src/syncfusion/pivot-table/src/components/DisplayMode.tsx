@@ -20,7 +20,7 @@ import { Alert, Icon, notification, Spin } from "antd"
 import { dataOptionsToViewDataSource, modelToViewDataSource } from "data/toViewDataSource"
 import { DisplayModeProps, ModelDataSource, ViewDataSource } from "../types"
 import { ErrorBoundary } from "react-error-boundary"
-import { getHeight } from "../lib/getHeight"
+import { getPivotViewContentHeight, getHeightKeyValue } from "../lib/getHeightKeyValue"
 import { IDataOptions } from "@syncfusion/ej2-pivotview"
 import { isEqual } from "lodash/fp"
 import { refreshSession } from "../data/dataSourceUtils"
@@ -55,15 +55,22 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
   const _fieldListRef = React.useRef<PivotFieldListComponent | null>(null)
 
   const [isLoading, setIsLoading] = React.useState(false)
-  const [gridContentHeight, setGridContentHeight] = React.useState<string>()
+  const [gridContentHeight, setGridContentHeight] = React.useState<number>()
   const [isPivotViewCreated, setIsPivotViewCreated] = React.useState(false)
   const [isHeightChanged, setIsHeightChanged] = React.useState(false)
   const [viewDataSource, setViewDataSource] = React.useState<ViewDataSource>()
   const [nextViewDataSource_fromView, setNextViewDataSource_fromView] = React.useState<ViewDataSource>()
   const [openFieldList, setOpenFieldList] = React.useState(props.openFieldList)
   const [error, setError] = React.useState<Error | null>(null)
-  const height = getHeight(props.heightKey, props.height, windowSize, props.enableVirtualization)
   const { onChangeModelDataSource } = props // Prevent handleEnginePopulated useCallback from requiring "props" as a dependency
+
+  const height = getHeightKeyValue({
+    height: props.height,
+    heightKey: props.heightKey,
+    isVirtualScrolling: props.enableVirtualization,
+    pivotRef: _pivotRef.current,
+    windowSize,
+  })
 
   /**
    * Get pivot component singleton instances
@@ -202,17 +209,12 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
    */
   React.useEffect(() => {
     const { pivotRef } = getSyncfusionRefs()
-    console.log("PivotTableInterfaceComponent", "DisplayMode", { isHeightChanged })
-    if (isPivotViewCreated && pivotRef && windowSize.height) {
-      const bottomMargin = 20
-      const pivotTableEl = pivotRef.element
-      const gridContent = pivotTableEl.getElementsByClassName("e-gridcontent")[0]
-      const gridContentTop = gridContent.getBoundingClientRect().top
-      const h = windowSize.height - gridContentTop - bottomMargin
-      setGridContentHeight(`${h}px`)
+    if (props.heightKey === "full" && isPivotViewCreated && pivotRef && windowSize.height) {
+      const contentHeight = getPivotViewContentHeight(pivotRef, windowSize)
+      setGridContentHeight(contentHeight)
       setIsHeightChanged(false)
     }
-  }, [getSyncfusionRefs, isHeightChanged, isPivotViewCreated, windowSize.height])
+  }, [getSyncfusionRefs, isHeightChanged, isPivotViewCreated, props.heightKey, windowSize, windowSize.height])
 
   /* *************************************************
    *
@@ -425,7 +427,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
         // Using a CSS variable --gridcontent-height, see styles file.
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        style={{ "--gridcontent-height": gridContentHeight }}>
+        style={props.heightKey === "full" && { "--gridcontent-height": `${gridContentHeight}px` }}>
         {/* ************************
          *
          * PIVOT TABLE
