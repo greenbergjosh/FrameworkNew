@@ -37,8 +37,16 @@ $border-color: #ebeff2;
         border: 0;
       }
 
+      .e-detailcell > .e-grid > .e-gridheader {
+        z-index: 1;
+      }
+
       .e-gridheader {
         border: 0;
+        // http://www.syncfusion.com/forums/153304/sfgrid-how-to-freeze-headers-upon-scroll?reply=NfS8ue
+        position: sticky;
+        top: 0;
+        z-index: 2;
       }
 
       .e-headercell,

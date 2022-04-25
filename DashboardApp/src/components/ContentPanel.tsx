@@ -10,6 +10,7 @@ import BreadcrumbNav from "./BreadcrumbNav"
 import { ContentPanelProps } from "../themes/types"
 import { AppPageConfig, AppPaths } from "../state/apps"
 import { PageBeacon } from "./PageBeacon"
+import useWindowDimensions from "../hooks/useWindowDimensions"
 
 function RouteRenderer(
   props: {
@@ -51,9 +52,11 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
   }))
 
   const { appPageConfig, appPaths, globalConfigPath } = fromStore
+  const { width, height } = useWindowDimensions()
+  const isMobile = width < 768
 
   return (
-    <div style={{ padding: "8px 30px 30px 30px" }}>
+    <div style={{ padding: isMobile ? "8px 15px 15px 15px" : "8px 30px 30px 30px" }}>
       <Helmet>
         <title>{appPageConfig.title} | Channel Admin | OPG</title>
       </Helmet>

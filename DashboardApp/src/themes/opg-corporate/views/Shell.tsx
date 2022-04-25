@@ -8,6 +8,7 @@ import { Sidebar } from "../components/Sidebar/Sidebar"
 import { ThemeProps } from "../../types"
 import { UserInterfaceProps } from "@opg/interface-builder"
 import { RouteComponentProps } from "@reach/router"
+import useWindowDimensions from "../../../hooks/useWindowDimensions"
 
 export function Shell(props: RouteComponentProps<ThemeProps>): JSX.Element | null {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
@@ -15,8 +16,11 @@ export function Shell(props: RouteComponentProps<ThemeProps>): JSX.Element | nul
     globalConfigPath: appState.navigation.routes.globalConfig.abs,
   }))
 
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
+  const { width, height } = useWindowDimensions()
+  const isMobile = width < 768
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(isMobile)
   const [sidebarPinned, setSidebarPinned] = React.useState(true)
+  const desktopOffset = sidebarPinned ? 225 : 60
 
   if (!props.appConfig || !props.appRootPath) return null
 
@@ -36,10 +40,15 @@ export function Shell(props: RouteComponentProps<ThemeProps>): JSX.Element | nul
       />
       <Layout
         style={{
-          marginLeft: sidebarPinned ? 225 : 60,
+          marginLeft: isMobile ? 0 : desktopOffset, // sidebar offset with mobile breakpoint
           transition: "margin-left ease-out 0.1s",
         }}>
-        <Header appConfig={props.appConfig} appRootPath={props.appRootPath} sidebarCollapsed={sidebarCollapsed} />
+        <Header
+          appConfig={props.appConfig}
+          appRootPath={props.appRootPath}
+          sidebarCollapsed={sidebarCollapsed}
+          setCollapsed={setSidebarCollapsed}
+        />
         <Layout.Content
           style={{
             minHeight: "initial !important",

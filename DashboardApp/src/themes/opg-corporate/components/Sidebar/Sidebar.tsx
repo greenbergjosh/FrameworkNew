@@ -6,6 +6,7 @@ import { AppConfig } from "../../../../state/apps"
 import { VerticalInlineMenu } from "../../../../components/VerticalInlineMenu/VerticalInlineMenu"
 import { IRouteMeta } from "../../../../state/navigation"
 import styles from "./sidebar.module.scss"
+import useWindowDimensions from "../../../../hooks/useWindowDimensions"
 
 export function Sidebar(props: {
   appConfig: AppConfig
@@ -21,9 +22,11 @@ export function Sidebar(props: {
 }): JSX.Element {
   const [enterDelayHandler, setEnterDelayHandler] = React.useState<any>(null)
   const [leaveDelayHandler, setLeaveDelayHandler] = React.useState<any>(null)
+  const { width, height } = useWindowDimensions()
+  const isMobile = width < 768
 
-  const handleMouseEnter = () => {
-    if (props.pinned) {
+  const handleDesktopMouseEnter = () => {
+    if (isMobile || props.pinned) {
       return
     }
     clearTimeout(leaveDelayHandler)
@@ -34,8 +37,8 @@ export function Sidebar(props: {
     )
   }
 
-  const handleMouseLeave = () => {
-    if (props.pinned) {
+  const handleDesktopMouseLeave = () => {
+    if (isMobile || props.pinned) {
       return
     }
     clearTimeout(enterDelayHandler)
@@ -48,14 +51,16 @@ export function Sidebar(props: {
 
   return (
     <Layout.Sider
-      collapsedWidth={60}
+      breakpoint="md"
+      collapsedWidth={isMobile ? 0 : 60} // mobile breakpoint
       className={styles.sidebar}
       collapsed={props.collapsed}
       collapsible={!props.pinned}
       onCollapse={props.setCollapsed}
       style={{ position: "absolute", height: "100vh", zIndex: 999, marginRight: 20 }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={handleDesktopMouseEnter}
+      onMouseLeave={handleDesktopMouseLeave}
+      // trigger={isMobile ? undefined : null} // undefined shows the trigger, null hides it
       trigger={null}
       width={225}>
       <SidebarHeader

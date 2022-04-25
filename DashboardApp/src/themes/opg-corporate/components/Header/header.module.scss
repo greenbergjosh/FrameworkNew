@@ -9,7 +9,7 @@
   background-color: white;
   height: $header-height;
   line-height: $header-height;
-  padding: 0 30px;
+  padding: 0 10px 0 0; // mobile layout
   border-bottom: solid 1px $opg-gray;
   overflow: hidden;
 
@@ -19,6 +19,14 @@
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: flex-start;
+
+  .appTitle {
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+    font-size: 0.9em;
+    line-height: $header-height;
+  }
 
   .appDescription {
     order: 0;
@@ -32,6 +40,38 @@
     order: 0;
     flex: 0 0 auto;
     align-self: auto;
+  }
+}
+
+.sidebarToggle {
+  flex: 0 1 auto;
+  align-self: auto;
+  line-height: $header-height;
+  height: $header-height;
+  background-color: $opg-orange;
+  border-radius: 0;
+  margin-right: 10px;
+}
+
+.sidebarToggleIcon {
+  @extend .appIcon;
+  font-size: 18px;
+  color: white !important;
+
+  &:hover {
+    color: $opg-orange-light !important;
+  }
+  &:active {
+    color: $opg-orange-dark !important;
+  }
+  &.selected {
+    color: darken($opg-orange, 20%) !important;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .header {
+    padding: 0 30px; // desktop layout
   }
 }
 
