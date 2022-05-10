@@ -1,8 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utility;
 using Utility.Entity;
 using Utility.Evaluatable;
@@ -15,19 +19,39 @@ namespace QuickTester
         {
             var fw = await FrameworkWrapper.Create();
 
-            await EvaluateConstant(fw);
-            await EvaluateSingleResult(fw);
-            await EvaluateNoResult(fw);
-            await EntityPathEvaluateSingleResult(fw);
-            await EvaluateSequence(fw);
-            await EntityPathEvaluateSequence(fw);
-            await EntityPathEvaluateSequence(fw);
-            await EntityMutator();
-            await EvaluateWithParameters(fw);
-            await EvaluatableEntity(fw);
-            await EvaluatableEntityWithParameters(fw);
-            await EvaluatableEntityWithActualParameters(fw);
-            await EvaluatableEntityWithMergedParameters(fw);
+            WebHost.CreateDefaultBuilder()
+                .Configure(app =>
+                {
+                    // configure application pipeline
+                    app.Run(async c =>
+                    {
+                        var entityWithRequestScope = fw.Entity.Wrap(null); // Retriever that handles request://
+
+                        Guid topLevelRequestHandlerEntityFromConfig = Guid.Empty;
+
+                        var result = entityWithRequestScope.Eval($"entity://{topLevelRequestHandlerEntityFromConfig}");
+
+                        await c.Response.WriteAsync("Hello World!");
+                    });
+                })
+                .Build().Run();
+            // Initialize memory, entity, etc...
+            // If this was a webAPI, translate HTTP request to eval request
+            // If a console app, translate input to eval request
+
+            //await EvaluateConstant(fw);
+            //await EvaluateSingleResult(fw);
+            //await EvaluateNoResult(fw);
+            //await EntityPathEvaluateSingleResult(fw);
+            //await EvaluateSequence(fw);
+            //await EntityPathEvaluateSequence(fw);
+            //await EntityPathEvaluateSequence(fw);
+            //await EntityMutator();
+            //await EvaluateWithParameters(fw);
+            //await EvaluatableEntity(fw);
+            //await EvaluatableEntityWithParameters(fw);
+            //await EvaluatableEntityWithActualParameters(fw);
+            //await EvaluatableEntityWithMergedParameters(fw);
         }
 
         private static async Task EvaluateConstant(FrameworkWrapper fw)

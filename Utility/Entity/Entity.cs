@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
@@ -26,13 +25,13 @@ namespace Utility.Entity
     public class Entity : IEquatable<Entity>, IReadOnlyEntity
     {
         #region Fields
-        private readonly EntityConfig _config;
+        private readonly IEntityConfig _config;
         #endregion
 
         #region Constructors
-        private Entity(EntityConfig config) => _config = config ?? throw new ArgumentNullException(nameof(config));
+        private Entity(IEntityConfig config) => _config = config ?? throw new ArgumentNullException(nameof(config));
 
-        protected Entity(EntityDocument value, Entity root, EntityConfig config, string query)
+        protected Entity(EntityDocument value, Entity root, IEntityConfig config, string query)
         {
             if (value != null)
             {
@@ -76,7 +75,7 @@ namespace Utility.Entity
         #endregion
 
         #region Methods
-        public static Entity Initialize(EntityConfig config) => new(config);
+        public static Entity Initialize(IEntityConfig config) => new(config);
 
         public IReadOnlyEntity AsReadOnly() => this;
 
@@ -93,6 +92,13 @@ namespace Utility.Entity
         public async Task<T> Eval<T>(string query, Entity evaluationParameters = null) => (await EvalE(query, evaluationParameters)).Value<T>();
 
         public IAsyncEnumerable<Entity> Eval(string query, Entity evaluationParameters = null) => Evaluate(query, evaluationParameters);
+
+        public async Task EvalVoid(string query, Entity evaluationParameters = null)
+        {
+            await foreach (var _ in Evaluate(query, evaluationParameters))
+            {
+            }
+        }
 
         public Task<T> Eval<T>(string query, T defaultValue, Entity evaluationParameters = null) => GetWithDefault(query, evaluationParameters, defaultValue);
 
@@ -208,6 +214,8 @@ namespace Utility.Entity
 
         public T Value<T>() => Document is null ? default : typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();
 
+        public Entity Wrap(IEntityConfig config) => new(new EntityConfigSchemeWrapper(_config, config));
+
         internal async IAsyncEnumerable<Entity> Evaluate(Query query, Entity parameters)
         {
             if (Evaluator is null && Document is EntityDocumentConstant)
@@ -263,15 +271,4 @@ namespace Utility.Entity
         public static implicit operator Entity(EntityDocument value) => new(value, value?.Entity?.Root, value?.Entity?._config, value?.Entity.Query);
         #endregion
     }
-
-    public class EntityConverter : JsonConverter<Entity>
-    {
-        #region Methods
-        public override Entity Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
-
-        public override void Write(Utf8JsonWriter writer, Entity value, JsonSerializerOptions options) => value.Document?.SerializeToJson(writer, options);
-        #endregion
-    }
-
-    public record EntityConfig(EntityParser Parser = null, EntityRetriever Retriever = null, Evaluator Evaluator = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
 }

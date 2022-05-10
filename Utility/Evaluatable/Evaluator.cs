@@ -31,7 +31,7 @@ namespace Utility.Evaluatable
 
         public IAsyncEnumerable<Entity.Entity> Evaluate(Guid g, Entity.Entity parameters) => Evaluate(default, g, parameters);
 
-        private static Dictionary<Guid, Dictionary<Guid, Dictionary<string, Entity.Entity>>> _gToThreadState = new();
+        private static readonly Dictionary<Guid, Dictionary<Guid, Dictionary<string, Entity.Entity>>> _gToThreadState = new();
 
         public async IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity, Guid g, Entity.Entity parameters)
         {
@@ -83,7 +83,8 @@ namespace Utility.Evaluatable
                         {
                             memoryLocation = CreateStackFrame();
                         }
-                        evaluationResult = await evaluatable.Evaluate(new EvaluateRequest(Entity: currentEntity, Parameters: parameters, currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]));
+
+                        evaluationResult = await evaluatable.Evaluate(new EvaluateRequest(Entity: currentEntity, Parameters: parameters, ReadLocation: currentEntity.Create(threadState[memoryLocation]).AsReadOnly(), WriteLocation: threadState[memoryLocation]));
                     }
                     else
                     {
