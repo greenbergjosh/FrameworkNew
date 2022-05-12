@@ -3,7 +3,7 @@ import { ColumnConfig, TableInterfaceComponentProps } from "../types"
 import { SortableGroupableColumnModel } from "@opg/interface-builder-plugins/lib/syncfusion/table"
 import TableInterfaceComponent from "@opg/interface-builder-plugins/lib/syncfusion/table/TableInterfaceComponent"
 import { cloneDeep } from "lodash/fp"
-import { getDetailTemplate } from "../../../components/report/detailTemplate/getDetailTemplate"
+import { getDetailTemplate } from "../report/detailTemplate/getDetailTemplate"
 import { getCustomCellFormatter } from "../customFormatters/customCellFormatter"
 import { getCustomAggregateFunction } from "../customFormatters/customAggregateFunction"
 import { useRematch } from "../../../hooks"
@@ -27,9 +27,6 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
 
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
-    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
-    isExecutingQuery: appState.loading.effects.reports.executeQuery,
-    reportDataByQuery: appState.reports.reportDataByQuery,
   }))
 
   /*
@@ -66,14 +63,15 @@ export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
       return { ...cloneDeep(column), template, formatter, customAggregateFunction }
     })
   }, [
-    onChangeData,
+    columns,
     dispatch,
     fromStore.configsById,
-    columns,
+    getDefinitionDefaultValue,
+    getRootUserInterfaceData,
+    onChangeData,
+    onChangeRootData,
     parameterValues,
     parentData,
-    getRootUserInterfaceData,
-    onChangeRootData,
   ])
 
   return <TableInterfaceComponent {...props} columns={enrichedColumns} />

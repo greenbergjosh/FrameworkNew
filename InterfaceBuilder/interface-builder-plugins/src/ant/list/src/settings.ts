@@ -41,8 +41,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "interleave",
                 valueKey: "interleave",
                 label: "Interleave",
-                help:
-                  "None - Single component repeated; Round Robin - Each component used in turn; Whole Set - Each component used every time.",
+                help: "None - Single component repeated; Round Robin - Each component used in turn; Whole Set - Each component used every time.",
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "none",

@@ -22,7 +22,7 @@ namespace Utility.Entity.Implementations
 
         public Entity Pop() => _entities.Pop();
 
-        public int StackCount => _entities.Count;
+        public override EntityValueType ValueType => _entities.FirstOrDefault()?.ValueType ?? EntityValueType.Undefined;
 
         #region EntityDocument Implementation
         public override EntityValueType ValueType => _entities.FirstOrDefault()?.ValueType ?? EntityValueType.Null;
@@ -31,7 +31,16 @@ namespace Utility.Entity.Implementations
 
         public override T Value<T>() => _entities.Any() ? _entities.First().Document.Value<T>() : throw new InvalidOperationException();
 
-        protected internal override IAsyncEnumerable<EntityDocument> EnumerateArrayCore() => _entities.FirstOrDefault()?.Document.EnumerateArrayCore() ?? throw new InvalidOperationException();
+        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore()
+        {
+            foreach (var entity in _entities)
+            {
+                foreach (var document in entity.Document.EnumerateArrayCore())
+                {
+                    yield return document;
+                }
+            }
+        }
 
         protected internal override async IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
         {

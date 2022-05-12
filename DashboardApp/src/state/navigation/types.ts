@@ -3,11 +3,8 @@ import * as iots from "io-ts"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import React from "react"
 import * as Reach from "@reach/router"
-import { Option } from "fp-ts/lib/Option"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
-import { Profile } from "../iam/iam"
+import { Profile } from "../iam/types"
 import { routes } from "./routes"
-import { appRoutes } from "./appRoutes"
 
 export type NavigationGroupAutomaticChildType = iots.TypeOf<typeof NavigationGroupAutomaticChildTypeCodec>
 const NavigationGroupAutomaticChildTypeCodec = iots.type({
@@ -48,7 +45,7 @@ export const NavigationItemCodec = iots.type({
 declare module "../store.types" {
   interface AppModels {
     navigation: {
-      state: State<RoutesMap, AppRoutesMap>
+      state: State<RoutesMap>
       reducers: Reducers
       effects: Effects
       selectors: Selectors
@@ -57,27 +54,17 @@ declare module "../store.types" {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export interface State<RouteMap extends object, AppRoutesMap extends object> {
+export interface State<RouteMap extends object> {
   routes: { [K in keyof RouteMap]: RouteMap[K] }
-  appRoutes: { [K in keyof AppRoutesMap]: AppRoutesMap[K] }
 }
 
 export interface Selectors {
-  primaryNavigation(app: Store.AppState): (NavigationItem | NavigationGroupWithChildren)[]
   routes(app: Store.AppState): RoutesMap
 }
 
 export interface Reducers {}
 
 export interface Effects {
-  goToDashboard<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
-  showGlobalConfigById(params: {
-    id: PersistedConfig["id"]
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    navOpts?: Reach.NavigateOptions<object>
-  }): void
-  goToGlobalConfigs<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
-  goToLanding<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
   navigate: typeof Reach.navigate
 }
 
@@ -118,4 +105,3 @@ export type WithRouteProps<P> = P &
   RouteMeta &
   Required<Reach.RouteComponentProps> & { "*"?: string; children: JSX.Element }
 export type RoutesMap = typeof routes
-export type AppRoutesMap = typeof appRoutes

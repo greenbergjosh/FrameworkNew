@@ -10,9 +10,10 @@
   },
   "homepage": "https://github.com/onpointglobal/interface-builder#readme",
   "scripts": {
-    "start": "rollup -cw --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/syncfusion/pivot-table",
+    "start": "rollup -cw --config ../../../rolup.config.js --input src/index.ts --dir ../../../lib/syncfusion/pivot-table",
     "build": "rollup --config ../../../rollup.config.js --input src/index.ts --dir ../../../lib/syncfusion/pivot-table",
-    "lint": "eslint './src/**/*.{ts,tsx}' --fix"
+    "lint": "eslint './src/**/*.{ts,tsx}' --fix",
+    "postinstall": "cd ../../../ && yarn postinstall"
   },
   "keywords": [
     "react",

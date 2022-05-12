@@ -28,7 +28,7 @@ export const OneLoginAuth = (): JSX.Element => {
   }
 
   return (
-    <Button block={true} htmlType="button" loading={isSigningIn} onClick={handleClick}>
+    <Button block={true} htmlType="button" loading={isSigningIn} size="large" type="primary" onClick={handleClick}>
       {isSigningIn ? <OneLoginIcon color="transparent" /> : <OneLoginIcon />} Sign In With OneLogin
     </Button>
   )

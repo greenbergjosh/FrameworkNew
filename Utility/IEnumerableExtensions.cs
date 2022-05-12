@@ -78,6 +78,18 @@ namespace System.Collections.Generic
             return result;
         }
 
+        public static async Task<IEnumerable<TResult>> Select<TSource, TResult>(this Task<IEnumerable<TSource>> source, Func<TSource, Task<TResult>> selector)
+        {
+            var result = new List<TResult>();
+
+            foreach (var entity in await source)
+            {
+                result.Add(await selector(entity));
+            }
+
+            return result;
+        }
+
         public static async Task<TSource> SingleOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, Task<bool>> predicate)
         {
             TSource found = default;

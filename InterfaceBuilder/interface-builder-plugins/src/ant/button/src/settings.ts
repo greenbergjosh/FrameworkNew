@@ -64,8 +64,7 @@ const dataTab = {
       label: "onClick Function",
       defaultTheme: "vs-dark",
       defaultLanguage: "javascript",
-      help:
-        "Return a function that receives props and lib. Lib contains getValue and setValue which can interact with the data model.",
+      help: "Return a function that receives props and lib. Lib contains getValue and setValue which can interact with the data model.",
       defaultValue: `/*
  * props: {
  *   block: boolean

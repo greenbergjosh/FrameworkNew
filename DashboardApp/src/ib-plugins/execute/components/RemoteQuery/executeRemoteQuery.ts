@@ -1,5 +1,5 @@
-import { QueryConfig } from "../../../../data/Report"
-import { JSONRecord } from "../../../../data/JSON"
+import { QueryConfig } from "../../../../api/ReportCodecs"
+import { JSONRecord } from "../../../../lib/JSONRecord"
 import { ExecuteInterfaceComponentState, LoadStatus, LOADSTATUSCODES, RemoteQueryFromStore } from "../../types"
 import { cheapHash } from "../../../../lib/json"
 import { getErrorState } from "../utils"

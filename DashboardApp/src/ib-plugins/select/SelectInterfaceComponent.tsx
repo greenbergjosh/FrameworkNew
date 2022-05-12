@@ -5,7 +5,7 @@ import { MODES, ModeType, SelectableChildProps, SelectableProps } from "../_shar
 import { Selectable } from "../_shared/selectable/Selectable"
 import { settings } from "./settings"
 import { SelectProps, SelectState } from "./types"
-import { isUndefined, isString } from "lodash/fp"
+import { isEmpty, isString, isUndefined } from "lodash/fp"
 import { AbstractSelectProps } from "antd/lib/select"
 import layoutDefinition from "./layoutDefinition"
 
@@ -117,7 +117,7 @@ export default class SelectInterfaceComponent extends BaseInterfaceComponent<Sel
           size={size}>
           {options.map((option) => (
             <Select.Option key={`${option.value}`} value={option.value}>
-              {typeof option.icon !== "undefined" ? <Icon type={option.icon} style={{ marginRight: "8px" }} /> : null}
+              {isEmpty(option.icon) ? null : <Icon type={option.icon} style={{ marginRight: "8px" }} />}
               {option.label}
             </Select.Option>
           ))}

@@ -748,7 +748,7 @@ namespace UnsubLib
                 task = campaigns.ForEachAsync(parallelism, async campaign =>
                 {
                     var campaignId = await campaign.EvalS("NetworkCampaignId");
-                    var fileDownloadUri = await campaign.EvalS("UnsubFileDownloadUri");
+                    var fileDownloadUri = await campaign.EvalS("UnsubFileDownloadUri", null);
 
                     (string url, IDictionary<string, string> postData) uri = default;
 
@@ -841,8 +841,8 @@ namespace UnsubLib
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling UnzipUnbuffered({networkName}):: for url {uri.Key}");
 
                         var fis = new FileInfo(uri.Key.url);
-                        cfl = await ProtocolClient.UnzipUnbuffered(fis.Name,
-                                ZipTester,
+                        cfl = await ProtocolClient.UnzipUnbuffered(networkName, _fw, fis.Name,
+                                f => ZipTester(networkName, f),
                                 new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                                 {
                                     { MD5HANDLER, f => Md5ZipHandler(f) },
@@ -995,16 +995,27 @@ namespace UnsubLib
 
                             await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToSearchDirectory for Digest file {fdest} {srcPath} -> {searchDest} Exists: {File.Exists(searchDest)}");
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDatabase for Digest file {fdest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Creating Partition for Digest file {fdest}");
 
-                            _ = await Data.CallFn(Conn, "UploadUnsubFile", JsonSerializer.Serialize(new
+                            _ = await Data.CallFn(Conn, "CreateUnsubFile", JsonSerializer.Serialize(new
                             {
                                 filePath = $"{FileImportDBDirectory}/{fdest}.txt.srt",
                                 fileId = fdest,
                                 fileType = cf.ContainsKey(MD5HANDLER) ? "md5" : "sha512"
                             }), timeout: 600);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDatabase for Digest file {fdest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Created Partition for Digest file {fdest}");
+
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDatabase for Digest file {fdest}");
+
+                            var uploadResult = await Data.CallFn(Conn, "UploadUnsubFile", JsonSerializer.Serialize(new
+                            {
+                                filePath = $"{FileImportDBDirectory}/{fdest}.txt.srt",
+                                fileId = fdest,
+                                fileType = cf.ContainsKey(MD5HANDLER) ? "md5" : "sha512"
+                            }), timeout: 600);
+
+                            await _fw.Trace($"{ nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDatabase for Digest file {fdest} Result: {uploadResult}");
                         }
 
                         _ = Fs.TryDeleteFile(src);
@@ -1108,11 +1119,12 @@ namespace UnsubLib
                     var refreshPeriod = (await c.EvalS("UnsubRefreshPeriod")).ParseInt() ?? (await _fw.StartupConfiguration.EvalS("DefaultUnsubRefreshPeriod")).ParseInt() ?? 10;
                     if (!string.IsNullOrWhiteSpace(await c.EvalS("MostRecentUnsubFileId")) && (DateTime.Now - (await c.EvalDateTime("MostRecentUnsubFileDate"))).TotalDays <= refreshPeriod)
                     {
-                        refdFiles.Add((await c.EvalS("MostRecentUnsubFileId")).ToLower());
+                        _ = refdFiles.Add((await c.EvalS("MostRecentUnsubFileId")).ToLower());
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"Campaign: {c} {ex}");
                 }
             }
 
@@ -1127,7 +1139,7 @@ namespace UnsubLib
                     var fileParts = file.Name.Split(new char[] { '.' });
                     if (!refdFiles.Contains(fileParts[0].ToLower()))
                     {
-                        Fs.TryDeleteFile(file);
+                        _ = Fs.TryDeleteFile(file);
                     }
                 }
             }
@@ -1164,7 +1176,7 @@ namespace UnsubLib
                     if ((DateTime.UtcNow.Subtract(file.LastAccessTimeUtc).TotalDays > 1)
                         && (!refdFiles.Contains(fileParts[0].ToLower())))
                     {
-                        Fs.TryDeleteFile(file);
+                        _ = Fs.TryDeleteFile(file);
                     }
                 }
             }
@@ -1173,7 +1185,7 @@ namespace UnsubLib
             files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
-                Fs.TryDeleteFile(file);
+                _ = Fs.TryDeleteFile(file);
             }
 
             sourceDir = new DirectoryInfo(SearchDirectory);
@@ -1183,61 +1195,22 @@ namespace UnsubLib
                 var fileParts = file.Name.Split(new char[] { '.' });
                 if (!refdFiles.Contains(fileParts[0].ToLower()))
                 {
-                    Fs.TryDeleteFile(file);
+                    _ = Fs.TryDeleteFile(file);
                 }
             }
-
-#if DEBUG
-            if (!System.Diagnostics.Debugger.IsAttached)
-            {
-#endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
-
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, JsonSerializer.Serialize(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
-
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-                }
-#if DEBUG
-            }
-#endif
 
             try
             {
-                await Data.CallFn(Conn, "CleanUnsubFiles");
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting Database CleanUnsubFiles");
+
+                var cleanResult = await Data.CallFn(Conn, "CleanUnsubFiles");
+
+                await _fw.Log(nameof(CleanUnusedFiles), $"Completed Database CleanUnsubFiles: {JsonSerializer.Serialize(cleanResult)}");
             }
             catch (Exception ex)
             {
                 await _fw.Error(nameof(CleanUnusedFiles), $"Database CleanUnsubFiles: {ex}");
             }
-        }
-
-        public async Task<string> CleanUnusedFilesServer()
-        {
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFilesServer), $"Starting CleanUnusedFilesServer");
-
-                var sourceDirLocal = new DirectoryInfo(ServerWorkingDirectory);
-                var filesLocal = sourceDirLocal.GetFiles("*", SearchOption.TopDirectoryOnly);
-                foreach (var file in filesLocal)
-                {
-                    _ = Fs.TryDeleteFile(file);
-                }
-
-                await _fw.Trace(nameof(CleanUnusedFilesServer), $"Completed CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFilesServer), $"CleanUnusedFilesServer: " + exClean.ToString());
-            }
-
-            return JsonSerializer.Serialize(new { Result = "Success" });
         }
 
         public async Task<string> LoadUnsubFiles(Entity dtve)
@@ -2113,13 +2086,31 @@ namespace UnsubLib
             var networkName = await network.EvalS("$meta.name");
             var parallelism = await network.EvalI("Credentials.Parallelism");
             var uri = new Uri(unsubUrl.url);
-            var authString = (await network.EvalD<string>("Credentials.DomainAuthStrings"))?.FirstOrDefault(d => string.Equals(d.Key, uri.Host, StringComparison.CurrentCultureIgnoreCase)).Value;
+
+            var authStrings = await network.EvalD("Credentials.DomainAuthStrings", false);
+            var authStringEntity = authStrings.FirstOrDefault(kvp => string.Equals(kvp.Key, uri.Host, StringComparison.CurrentCultureIgnoreCase)).Value;
+            string authScheme = null;
+            string authParameter = null;
+
+            if (authStringEntity != null)
+            {
+                if (authStringEntity.ValueType == EntityValueType.String)
+                {
+                    authScheme = "Basic";
+                    authParameter = await authStringEntity.EvalS("@");
+                }
+                else
+                {
+                    authScheme = await authStringEntity.EvalS("scheme");
+                    authParameter = await authStringEntity.EvalS("parameter");
+                }
+            }
 
             try
             {
                 try
                 {
-                    dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl.url, authString, ZipTester,
+                    dr = await ProtocolClient.DownloadUnzipUnbuffered(networkName, unsubUrl.url, authScheme, authParameter, f => ZipTester(networkName, f),
                       new Dictionary<string, Func<FileInfo, Task<Guid>>>()
                       {
                         { MD5HANDLER, f =>  Md5ZipHandler(f) },
@@ -2210,33 +2201,33 @@ namespace UnsubLib
             return restMatch; // which may be null - in which case we did not match a type
         }
 
-        public async Task<string> ZipTester(FileInfo f)
+        public async Task<string> ZipTester(string networkName, FileInfo f)
         {
             if (f.Length == 0)
             {
-                await _fw.Error(nameof(ZipTester), $"Zero-length file: {f.FullName}");
+                await _fw.Error($"{nameof(ZipTester)}-{networkName}", $"Zero-length file: {f.FullName}");
                 return UNKNOWNHANDLER;
             }
 
-            await _fw.Trace(nameof(ZipTester), $"File size before running {nameof(ZipTester)}: {f.Length} bytes");
+            await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"File size before running {nameof(ZipTester)}: {f.Length} bytes");
 
             if (f.Length < ZipFileMinBytes)
             {
-                await _fw.Trace(nameof(ZipTester), $"File length {f.Length} less than {ZipFileMinBytes} bytes");
+                await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"File length {f.Length} less than {ZipFileMinBytes} bytes");
             }
 
             // We read in xxx bytes, and ignore the last line, to avoid truncation
             var lines = await Fs.ReadLines(f.FullName, ZipFileReadBytes);
 
-            await _fw.Trace(nameof(ZipTester), $"Lines in file: {f.Length}, capped to {ZipFileReadBytes} bytes");
+            await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"Lines in file: {f.Length}, capped to {ZipFileReadBytes} bytes");
 
             var handler = await HandlerType(lines, f);
             if (handler == null)
             {
-                await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}");
+                await _fw.Error($"{nameof(ZipTester)}-{networkName}", $"Unknown file type: {f.FullName}");
             }
 
-            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler ?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {GetFileSize2(f.FullName).GetAwaiter().GetResult()}");
+            await _fw.Trace($"{nameof(ZipTester)}-{networkName}", $"Handling file {f.FullName} with {handler ?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {await GetFileSize2(f.FullName)}");
             return handler ?? UNKNOWNHANDLER;
         }
 
@@ -2288,7 +2279,11 @@ namespace UnsubLib
                 _queuedCampaigns = new HashSet<string>();
                 await foreach (var campaign in queued.EvalL("@"))
                 {
-                    _ = _queuedCampaigns.Add(await campaign.EvalS("CampaignUId"));
+                    var campaignId = await campaign.EvalS("CampaignUId", null);
+                    if (!string.IsNullOrWhiteSpace(campaignId))
+                    {
+                        _ = _queuedCampaigns.Add(campaignId);
+                    }
                 }
             }
         }

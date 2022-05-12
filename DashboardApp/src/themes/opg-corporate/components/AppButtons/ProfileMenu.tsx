@@ -1,5 +1,5 @@
 import { ClickParam } from "antd/lib/menu"
-import { Profile } from "../../../../state/iam/iam"
+import { Profile } from "../../../../state/iam/types"
 import { Avatar, Button, Icon, Menu, Popover } from "antd"
 import React from "react"
 import styles from "../Header/header.module.scss"

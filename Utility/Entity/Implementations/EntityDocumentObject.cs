@@ -79,6 +79,35 @@ namespace Utility.Entity.Implementations
             return Task.FromResult((false, (EntityDocument)default));
         }
 
+        public override async IAsyncEnumerable<Entity> ProcessEvaluatable()
+        {
+            if (_value is IEvaluatable evaluatable)
+            {
+                await foreach (var entity in InnerEvaluate(evaluatable, Entity))
+                {
+                    yield return entity;
+                }
+            }
+        }
+
+        private static async IAsyncEnumerable<Entity> InnerEvaluate(IEvaluatable evaluatable, Entity entity)
+        {
+            await foreach (var child in evaluatable.Evaluate(entity))
+            {
+                var hadChildren = false;
+                await foreach(var innerChild in child.Document.ProcessEvaluatable())
+                {
+                    hadChildren = true;
+                    yield return innerChild;
+                }
+
+                if (!hadChildren)
+                {
+                    yield return child;
+                }
+            }
+        }
+
         public override string ToString() => _value?.ToString();
 
         public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, _value, options);

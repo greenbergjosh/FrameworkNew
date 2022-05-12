@@ -10,7 +10,9 @@ export const Config = (props: any) => {
           <Link to={`/app/admin/global-configs/fe36eb41-f62e-461a-8ddc-f6b804feb9da`}>Global Configs</Link>
         </li>
         <li>
-          <Link to={`/app/admin/foo/bar/bah/global-configs/fe36eb41-f62e-461a-8ddc-f6b804feb9da`}>Foobarbah Global Configs</Link>
+          <Link to={`/app/admin/foo/bar/bah/global-configs/fe36eb41-f62e-461a-8ddc-f6b804feb9da`}>
+            Foobarbah Global Configs
+          </Link>
         </li>
         <li>
           <Link to={`/app/admin/foo/fe36eb41-f62e-461a-8ddc-f6b804feb9da`}>Foo</Link>

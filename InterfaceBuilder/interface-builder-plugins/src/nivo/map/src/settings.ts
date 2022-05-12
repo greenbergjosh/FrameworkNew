@@ -28,8 +28,7 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "valueKey",
                 defaultValue: "value",
                 bindable: true,
-                help:
-                  'The data must be an array of objects with the properties: { "percentage", "magnitude", "name", "latitude", "longitude" }.',
+                help: 'The data must be an array of objects with the properties: { "percentage", "magnitude", "name", "latitude", "longitude" }.',
               },
               {
                 key: "markerLimit",

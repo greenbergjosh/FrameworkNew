@@ -1,5 +1,5 @@
-import { HTTPRequestQueryConfig } from "../../../../data/Report"
-import { JSONRecord } from "../../../../data/JSON"
+import { HTTPRequestQueryConfig } from "../../../../api/ReportCodecs"
+import { JSONRecord } from "../../../../lib/JSONRecord"
 import { ExecuteInterfaceComponentState, LoadStatus, LOADSTATUSCODES, RemoteUrlFromStore } from "../../types"
 import { cheapHash } from "../../../../lib/json"
 import { notification } from "antd"

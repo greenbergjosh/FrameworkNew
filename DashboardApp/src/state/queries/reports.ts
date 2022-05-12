@@ -4,10 +4,10 @@ import * as record from "fp-ts/lib/Record"
 import { isArray, isEmpty, merge } from "lodash/fp"
 import { JSONFromString } from "io-ts-types"
 import json5 from "json5"
-import { Left, Right } from "../../data/Either"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
-import { JSONArray, JSONRecord } from "../../data/JSON"
-import { None, Some } from "../../data/Option"
+import { Left, Right } from "../../lib/Either"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
+import { JSONArray, JSONRecord } from "../../lib/JSONRecord"
+import { None, Some } from "../../lib/Option"
 import * as Store from "../store.types"
 import {
   HTTPRequestQueryConfig,
@@ -15,10 +15,11 @@ import {
   QueryConfig,
   QueryConfigCodec,
   ReportConfigCodec,
-} from "../../data/Report"
+} from "../../api/ReportCodecs"
 import { encodeGloballyPersistedParams } from "./persistedParams"
 import { tryCatch } from "fp-ts/lib/Option"
 import { NotifyConfig } from "../feedback"
+import { Params } from "./types"
 
 declare module "../store.types" {
   interface AppModels {
@@ -56,21 +57,21 @@ export interface Effects {
   executeQuery(payload: {
     resultURI: string
     query: QueryConfig
-    params: JSONRecord | JSONArray
+    params: Params
     notifyOptions?: NotifyOptions
   }): Promise<any>
 
   executeQueryUpdate(payload: {
     resultURI: string
     query: QueryConfig
-    params: JSONRecord | JSONArray
+    params: Params
     notifyOptions?: NotifyOptions
   }): Promise<any>
 
   executeHTTPRequestQuery(payload: {
     resultURI: string
     query: HTTPRequestQueryConfig
-    params: JSONRecord | JSONArray
+    params: Params
     notifyOptions?: NotifyOptions
   }): Promise<any>
 }
@@ -112,7 +113,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
       return dispatch.remoteDataClient
         .reportQueryGet({
           query: query.query,
-          params,
+          params: params || {},
         })
         .then((x) =>
           x.fold(
@@ -173,7 +174,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
       return dispatch.remoteDataClient
         .reportQueryUpdate({
           query: query.query,
-          params,
+          params: params || {},
         })
         .then((x) =>
           x.fold(
@@ -228,9 +229,12 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
         .httpRequest({
           uri: query.query,
           method: query.method,
-          body: query.body.format === "raw" ? prepareQueryBody(query, params) : new URLSearchParams(query.body.content),
+          body:
+            query.body.format === "raw"
+              ? prepareQueryBody(query, params || {})
+              : new URLSearchParams(query.body.content),
           headers: query.headers,
-          params: query.body.format === "raw" && query.body.lang === "json-tokenized" ? {} : params,
+          params: query.body.format === "raw" && query.body.lang === "json-tokenized" ? {} : params || {},
         })
         .then((x) =>
           x.fold(

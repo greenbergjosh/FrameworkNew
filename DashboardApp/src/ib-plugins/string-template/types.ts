@@ -1,5 +1,5 @@
 import { StringTemplateInterfaceComponentProps as ParentStringTemplateInterfaceComponentProps } from "@opg/interface-builder-plugins/lib/ant/string-template"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
 
 export interface StringTemplateInterfaceComponentProps extends ParentStringTemplateInterfaceComponentProps {
   serializeConfigId: PersistedConfig["id"]

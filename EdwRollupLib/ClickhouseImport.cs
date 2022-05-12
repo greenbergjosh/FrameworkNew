@@ -52,6 +52,7 @@ namespace EdwRollupLib
             _fw = fw;
         }
 
+        #region Nested
         public async Task RunAsync(DateTime startDate, DateTime endDate, IEnumerable<(Guid rsConfigId, Guid rsId, DateTime rsTs)> additionalReportingSequences = null)
         {
             if (_running)
@@ -59,7 +60,14 @@ namespace EdwRollupLib
                 throw new InvalidOperationException("Already running");
             }
 
+            var importType = await _config.GetS("Config.import_type", null);
+            if (importType != "nested")
+            {
+                throw new InvalidOperationException($"This import is not of type nested. It is of type {importType}");
+            }
+
             _running = true;
+
             _partitionPopulationProgress.Clear();
             _partitionCompletionProgress.Clear();
 
@@ -788,6 +796,210 @@ from datasets.{mergedTableName};";
         private static async Task<string> InsertColumn(Entity columnConfig, string nestedTableName = null) => $"    {(nestedTableName != null ? $"`{nestedTableName}." : "")}{await columnConfig.EvalS("name")}{(nestedTableName != null ? "`" : "")}";
 
         private static async Task<string> SelectColumn(Entity columnConfig, bool isArray = false) => isArray ? $"    groupArray({await columnConfig.EvalS("name")}) {await columnConfig.EvalS("name")}" : $"    {await columnConfig.EvalS("name")}";
+        #endregion
+        #endregion
+
+        #region Simple
+        public async Task RunAsync(IEnumerable<(Guid rsConfigId, Guid rsId, DateTime rsTs)> additionalReportingSequences = null)
+        {
+            if (_running)
+            {
+                throw new InvalidOperationException("Already running");
+            }
+
+            var importType = await _config.GetS("Config.import_type", null);
+            if (importType != "simple")
+            {
+                throw new InvalidOperationException($"This import is not of type simple. It is of type {importType}");
+            }
+
+            _running = true;
+
+            var rsId = Guid.NewGuid();
+            var rsTs = DateTime.UtcNow;
+
+            _reportingSequences = new() { [_rsConfigId] = (rsId, rsTs) };
+            if (additionalReportingSequences != null)
+            {
+                foreach (var rs in additionalReportingSequences)
+                {
+                    _reportingSequences[rs.rsConfigId] = (rs.rsId, rs.rsTs);
+                }
+            }
+
+            var edwBulkEvent = new EdwBulkEvent();
+            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = await _config.GetS("Name") }, _rsConfigId);
+            await _fw.EdwWriter.Write(edwBulkEvent);
+
+            await DropStartEvent("ImportProcess", null);
+            var start = DateTime.Now;
+
+            try
+            {
+                var withEventsMaker = new WithEventsMaker(DropStartEvent, DropEndEvent, DropErrorEvent);
+
+                var clickhouseConfig = await _config.GetE("Config.clickhouse");
+                var host = await clickhouseConfig.GetS("host");
+                var user = await clickhouseConfig.GetS("ssh.user");
+                var password = await clickhouseConfig.GetS("ssh.password");
+
+                _clickhouseUser = await clickhouseConfig.GetS("clickhouse.user");
+                _clickhousePassword = await clickhouseConfig.GetS("clickhouse.password");
+
+                using (_client = new SshClient(host, user, password))
+                {
+                    _client.Connect();
+
+                    await withEventsMaker.WithEvents(ExportFileSimple, null)();
+                    await withEventsMaker.WithEvents(ImportFileSimple, null)();
+                    await withEventsMaker.WithEvents(CleanupSimple, null)();
+                }
+            }
+            finally
+            {
+                var end = DateTime.Now;
+                await DropEndEvent(end - start, "ImportProcess", null);
+                _running = false;
+#if DEBUG
+                Console.WriteLine(end - start);
+#endif
+            }
+        }
+
+        private async Task ExportFileSimple()
+        {
+            var export = await _config.GetE("Config.export");
+
+            var connectionName = await export.GetS("connection_string");
+            var function = await export.GetS("function", null);
+            var table = await export.GetS("table", null);
+
+            var path = await export.GetS("source_path");
+            var filename = $"{await export.GetS("output_file_name")}.csv";
+            var exportPath = $"{path}/{filename}";
+
+            var result = await ExecutePostgresQuery(connectionName, "exportData", new
+            {
+                export_function = function,
+                export_table = table,
+                export_path = exportPath,
+                columns = await _config.GetL("Config.columns").Select(async c => new
+                {
+                    name = await c.GetS("name"),
+                    type = await c.GetS("source_type")
+                })
+            });
+
+            if (await result.GetS("result", null) != "success")
+            {
+                throw new DataException($"Error exporting table: {await _config.GetS("Name")} result: {result}");
+            }
+        }
+
+        private async Task ImportFileSimple()
+        {
+            var tableName = await _config.GetS("Config.merged_table_name");
+            var schemaName = await _config.GetS("Config.merged_table_schema");
+
+            var export = await _config.GetE("Config.export");
+            var path = await export.GetS("target_path");
+            var filename = $"{await export.GetS("output_file_name")}.csv";
+            var importPath = $"{path}/{filename}";
+
+            _ = await ExecuteSSHCommand($"sudo chmod 666 {importPath}");
+
+            _ = await ExecuteClickhouseQuery($"CREATE TABLE `{schemaName}`.`{tableName}_import` AS `{schemaName}`.`{tableName}`");
+
+            _ = await ExecuteClickhouseQuery($"INSERT INTO `{schemaName}`.`{tableName}_import` FORMAT CSVWithNames", importPath);
+
+            _ = await ExecuteClickhouseQuery($"EXCHANGE TABLES `{schemaName}`.`{tableName}_import` AND `{schemaName}`.`{tableName}`");
+
+            _ = await ExecuteClickhouseQuery($"DROP TABLE `{schemaName}`.`{tableName}_import`");
+        }
+
+        private async Task CleanupSimple()
+        {
+            var export = await _config.GetE("Config.export");
+            var path = await export.GetS("target_path");
+            var filename = $"{await export.GetS("output_file_name")}.csv";
+            var importPath = $"{path}/{filename}";
+
+            _ = await ExecuteSSHCommand($"rm {importPath}");
+        }
+
+        #region Helper Methods
+        private async Task DropStartEvent(string step, string stepContext)
+        {
+            var payload = new
+            {
+                job = await _config.GetS("Name"),
+                step,
+                stepContext,
+                eventType = "Start"
+            };
+
+            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonSerializer.Serialize(payload));
+            await DropEvent(payload);
+        }
+
+        private async Task DropEndEvent(TimeSpan elapsed, string step, string stepContext)
+        {
+            var payload = new
+            {
+                job = await _config.GetS("Name"),
+                step,
+                stepContext,
+                eventType = "End",
+                elapsed = elapsed.TotalSeconds
+            };
+
+            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonSerializer.Serialize(payload));
+            await DropEvent(payload);
+        }
+
+        private async Task DropErrorEvent(Exception ex, string step, string stepContext, bool alert)
+        {
+            var payload = new
+            {
+                job = await _config.GetS("Name"),
+                step,
+                stepContext,
+                eventType = "Error",
+                message = ex.ToString()
+            };
+
+            await _fw.Error($"{nameof(ClickhouseImport)}.{step}", JsonSerializer.Serialize(payload));
+            await DropEvent(payload);
+
+            if (alert)
+            {
+                var text = $"Clickhouse Import - {await _config.GetS("Name")} - ";
+
+                void AddField(string fieldName, object field)
+                {
+                    if (field != default)
+                    {
+                        text += $"{fieldName}: {field} ";
+                    }
+                }
+
+                AddField("Step", step);
+                AddField("Error", ex.Message);
+
+                var slackAlertUrl = await _fw.StartupConfiguration.GetS("Config.SlackAlertUrl", null);
+
+                if (!slackAlertUrl.IsNullOrWhitespace())
+                {
+                    _ = await ProtocolClient.HttpPostAsync(slackAlertUrl, JsonSerializer.Serialize(new
+                    {
+                        text
+                    }), "application/json");
+                }
+            }
+
+            _complete.SetException(ex);
+        }
+        #endregion
         #endregion
     }
 }

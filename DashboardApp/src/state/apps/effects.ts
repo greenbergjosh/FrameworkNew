@@ -2,7 +2,7 @@ import * as Store from "../store.types"
 import { AppsStoreModel } from "./types"
 import { isEmpty } from "lodash/fp"
 import { failure, pending, success } from "@devexperts/remote-data-ts"
-import { Left, Right } from "../../data/Either"
+import { Left, Right } from "../../lib/Either"
 import { NotifyConfig } from "../feedback"
 import qs from "query-string"
 
@@ -22,9 +22,9 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
       /*
        * USE REACT ROUTER TO GET APP
        * Example: /app/app-uri/group-uri/page-uri
-       * Example: /app/admin/global-configs/*
-       * Example: /app/admin/global-configs/:configId
-       * Example: /app/admin/global-configs/:configId/edit
+       * Example: /app/admin/global-config/*
+       * Example: /app/admin/global-config/:configId
+       * Example: /app/admin/global-config/:configId/edit
        */
       if (useAppPath) {
         pathSegments.shift() // remove "app"

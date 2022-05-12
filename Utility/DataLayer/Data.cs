@@ -37,7 +37,7 @@ namespace Utility.DataLayer
 
             try
             {
-                _configConn = new Connection(GlobalConfigConnName, DataLayerClientFactory.DataStoreInstance(dataLayerType), connStr);
+                _configConn = new Connection(GlobalConfigConnName, DataLayerClientFactory.DataStoreInstance(dataLayerType, ""), connStr);
                 _commandLineArgs = commandLineArgs;
 
                 _ = _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
@@ -47,9 +47,12 @@ namespace Utility.DataLayer
 
                 config = await GetConfigs(configKeys, commandLineArgs);
 
+                var appName = await config.GetS("Config.ErrorLogAppName", configKeys.Join("::"));
+                _configConn = new Connection(GlobalConfigConnName, DataLayerClientFactory.DataStoreInstance(dataLayerType, appName), connStr);
+
                 TraceLog(nameof(Initialize), $"{nameof(config)}\r\n{config}");
 
-                await AddConnectionStrings(await config.EvalE("ConnectionStrings"));
+                await AddConnectionStrings(await config.EvalE("ConnectionStrings"), appName);
 
                 var appName = await config.EvalS("AppName");
                 DataLayerClientFactory.AppName = appName;
@@ -58,7 +61,7 @@ namespace Utility.DataLayer
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKeys?.Join("::") ?? "No instance key(s) defined"} Config: {config?.ToString() ?? "No Config Found"} Original Exception: {e.Message}", e);
+                throw new Exception($"Failed to build {nameof(Data)} ConfigKey: {configKeys?.Join("::") ?? "No instance key(s) defined"} Config: {config?.ToString() ?? "No Config Found"} Original Exception: {e.Message}", e);
             }
         }
 
@@ -69,8 +72,9 @@ namespace Utility.DataLayer
             try
             {
                 var config = await GetConfigs(configKeys, _commandLineArgs);
+                var appName = await config.GetS("Config.ErrorLogAppName", configKeys.Join("::"));
 
-                await AddConnectionStrings(await config.EvalE("ConnectionStrings"), true);
+                await AddConnectionStrings(await config.EvalE("ConnectionStrings"), appName, true);
 
                 return config;
             }
@@ -81,7 +85,7 @@ namespace Utility.DataLayer
             }
         }
 
-        public static async Task AddConnectionStrings(Entity.Entity connectionStrings) => await AddConnectionStrings(connectionStrings, false);
+        public static async Task AddConnectionStrings(Entity.Entity connectionStrings, string appName) => await AddConnectionStrings(connectionStrings, appName, false);
 
         private static async Task<Entity.Entity> GetConfigRecordValue(string id, Connection configConn, string configFunc)
         {
@@ -91,7 +95,7 @@ namespace Utility.DataLayer
             return entity;
         }
 
-        private static async Task AddConnectionStrings(Entity.Entity connectionStrings, bool merge)
+        private static async Task AddConnectionStrings(Entity.Entity connectionStrings, string appName, bool merge)
         {
             if (connectionStrings != null && connectionStrings.IsObject)
             {
@@ -111,7 +115,7 @@ namespace Utility.DataLayer
 
                     var dataLayerType = await conf.EvalS("DataLayerType");
                     var connectionString = await conf.EvalS("ConnectionString");
-                    var conn = Connections.GetOrAdd(item.Key, s => new Connection(item.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType), connectionString));
+                    var conn = Connections.GetOrAdd(item.Key, s => new Connection(item.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType, appName), connectionString));
 
                     foreach (var sp in await conf.EvalD<string>("DataLayer"))
                     {

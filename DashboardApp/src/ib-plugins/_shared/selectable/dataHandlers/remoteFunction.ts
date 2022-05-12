@@ -2,7 +2,7 @@ import { tryCatch } from "fp-ts/lib/Option"
 import { isEmpty } from "lodash/fp"
 import { UserInterfaceProps } from "@opg/interface-builder"
 import { RemoteFunctionType, SelectableOption } from "../types"
-import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
+import { AdminUserInterfaceContextManager } from "../../../../contexts/AdminUserInterfaceContextManager.type"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import JSON5 from "json5"
 

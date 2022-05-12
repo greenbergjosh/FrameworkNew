@@ -1,14 +1,13 @@
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../../../api/GlobalConfigCodecs"
 import { Brand } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import jsonLogic from "json-logic-js"
 import { get, isNull } from "lodash/fp"
-import { RemoteConfigFromStore, ParsedConfig } from "../../../types"
-import { UserInterfaceProps } from "@opg/interface-builder"
-import { JSONRecord } from "../../../../../data/JSON"
+import { ParsedConfig, RemoteConfigFromStore } from "../../../types"
+import { JSONRecord, UserInterfaceProps } from "@opg/interface-builder"
 
 /**
  * From Query.tsx

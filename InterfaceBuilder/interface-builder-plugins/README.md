@@ -11,6 +11,7 @@
 ## Install
 ```bash
 yarn @opg/interface-builder
+yarn postinstall
 ```
 
 ## Usage

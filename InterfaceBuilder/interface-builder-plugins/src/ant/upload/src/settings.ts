@@ -255,20 +255,17 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                     {
                       label: "Microsoft Excel (xls, xlsx)",
                       value: ".xls,.xlsx",
-                      mime:
-                        "application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                      mime: "application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     },
                     {
                       label: "Microsoft PowerPoint (ppt, pptx)",
                       value: ".ppt,.pptx",
-                      mime:
-                        "application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                      mime: "application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation",
                     },
                     {
                       label: "Microsoft Word (doc, docx)",
                       value: ".doc,.docx",
-                      mime:
-                        "application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                      mime: "application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     },
                     {
                       label: "Adobe Portable Document Format (pdf)",

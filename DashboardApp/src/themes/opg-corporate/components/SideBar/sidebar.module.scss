@@ -18,13 +18,19 @@
       border: none !important;
     }
   }
-}
 
-.sidebarToggle {
-  flex: 0 1 auto;
-  align-self: auto;
-  line-height: $header-height;
-  height: $header-height;
+  // Mobile sider trigger
+  .ant-layout-sider-zero-width-trigger {
+    &:hover {
+      background: $opg-orange;
+    }
+    top: 0;
+    height: $header-height;
+    width: 40px;
+    line-height: $header-height;
+    border-radius: 0;
+    background: $opg-orange;
+  }
 }
 
 .sidebarHeader {
@@ -81,6 +87,13 @@
   flex: 0 1 auto;
   align-self: flex-start;
   padding: 6px;
+}
+
+.sidebarToggle {
+  flex: 0 1 auto;
+  align-self: auto;
+  line-height: $header-height;
+  height: $header-height;
 }
 
 /**************************************************************************

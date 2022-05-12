@@ -8,7 +8,7 @@ import {
 import { settings } from "./settings"
 import { RelationshipsInterfaceComponentProps, RelationshipsInterfaceComponentState } from "./types"
 import { ExecuteInterfaceComponentProps, LoadStatusCode } from "../execute/types"
-import { AdminUserInterfaceContext } from "../../data/AdminUserInterfaceContextManager"
+import { AdminUserInterfaceContext } from "../../contexts/AdminUserInterfaceContextManager"
 import { RelationshipTree } from "./RelationshipTree"
 import layoutDefinition from "./layoutDefinition"
 

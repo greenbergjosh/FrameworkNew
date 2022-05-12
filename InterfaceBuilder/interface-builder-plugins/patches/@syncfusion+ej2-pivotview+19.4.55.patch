@@ -1,0 +1,18 @@
+diff --git a/node_modules/@syncfusion/ej2-pivotview/src/common/actions/pivot-button.js b/node_modules/@syncfusion/ej2-pivotview/src/common/actions/pivot-button.js
+index 20f7918..402b408 100644
+--- a/node_modules/@syncfusion/ej2-pivotview/src/common/actions/pivot-button.js
++++ b/node_modules/@syncfusion/ej2-pivotview/src/common/actions/pivot-button.js
+@@ -1357,10 +1357,10 @@ var PivotButton = /** @class */ (function () {
+             this.removeDataSourceSettings(fieldName);
+         }
+         if (this.parent.allowDeferLayoutUpdate) {
+-            this.parent.engineModule.fieldList[filterItem.name].filterType = filterItem.type.toLowerCase();
+-            this.parent.engineModule.fieldList[filterItem.name].filter = [];
++            engineModule.fieldList[filterItem.name].filterType = filterItem.type.toLowerCase();
++            engineModule.fieldList[filterItem.name].filter = [];
+             for (var i = 0; i < filterItem.items.length; i++) {
+-                this.parent.engineModule.fieldList[filterItem.name].filter.push(filterItem.items[i]);
++                engineModule.fieldList[filterItem.name].filter.push(filterItem.items[i]);
+             }
+         }
+         var filterEventArgs = {

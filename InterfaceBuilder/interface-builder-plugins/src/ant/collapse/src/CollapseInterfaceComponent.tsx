@@ -16,6 +16,8 @@ import layoutDefinition from "./layoutDefinition"
 export interface SectionDefinition {
   title: string
   components: ComponentDefinition[]
+  extra?: ComponentDefinition[]
+  disabled?: boolean
 }
 
 export interface ICollapseInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -25,6 +27,7 @@ export interface ICollapseInterfaceComponentProps extends ComponentDefinitionNam
   userInterfaceData: UserInterfaceProps["data"]
 
   accordion?: boolean
+  bordered?: boolean
 }
 
 interface CollapseInterfaceComponentDisplayModeProps extends ICollapseInterfaceComponentProps {
@@ -48,13 +51,56 @@ export default class CollapseInterfaceComponent extends BaseInterfaceComponent<C
 
   static manageForm = settings
 
-  render(): JSX.Element {
-    const { accordion, onChangeData, sections, userInterfaceData, getRootUserInterfaceData, onChangeRootData } =
-      this.props
+  /**
+   *
+   * @param section
+   * @param sectionIndex
+   */
+  getExtra(section: SectionDefinition, sectionIndex: number) {
+    if (!section.extra && this.props.mode !== "edit") {
+      return null
+    }
     return (
-      <Collapse accordion={accordion}>
+      <div onClick={(e) => e.stopPropagation()}>
+        <DataPathContext path={`sections.${sectionIndex}.extra`}>
+          <ComponentRenderer
+            components={section.extra || []}
+            data={this.props.userInterfaceData}
+            getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+            onChangeRootData={this.props.onChangeRootData}
+            onChangeData={this.props.onChangeData}
+            onChangeSchema={(newSchema) => {
+              if (this.props.mode === "edit") {
+                const { onChangeSchema, userInterfaceSchema } = this.props
+                onChangeSchema &&
+                  userInterfaceSchema &&
+                  onChangeSchema(set(`sections.${sectionIndex}.extra`, newSchema, userInterfaceSchema))
+              }
+            }}
+          />
+        </DataPathContext>
+      </div>
+    )
+  }
+
+  render(): JSX.Element {
+    const {
+      accordion,
+      bordered,
+      onChangeData,
+      sections,
+      userInterfaceData,
+      getRootUserInterfaceData,
+      onChangeRootData,
+    } = this.props
+    return (
+      <Collapse accordion={accordion} bordered={bordered}>
         {sections.map((section, sectionIndex) => (
-          <Collapse.Panel key={sectionIndex} header={section.title}>
+          <Collapse.Panel
+            key={sectionIndex}
+            header={section.title}
+            extra={this.getExtra(section, sectionIndex)}
+            disabled={section.disabled}>
             <DataPathContext path={`sections.${sectionIndex}.components`}>
               <ComponentRenderer
                 components={section.components}

@@ -43,8 +43,7 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
                 ordinal: 11,
                 component: "toggle",
                 label: "Expose Queryable Fields",
-                help:
-                  "Make the queryable fields (root properties) available on the data model when the schema is loaded.",
+                help: "Make the queryable fields (root properties) available on the data model when the schema is loaded.",
                 defaultValue: false,
                 bindable: true,
               },

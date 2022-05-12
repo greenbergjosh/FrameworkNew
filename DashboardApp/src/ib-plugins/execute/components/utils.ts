@@ -1,11 +1,11 @@
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../api/GlobalConfigCodecs"
 import JSON5 from "json5"
-import { QueryConfig, QueryConfigCodec } from "../../../data/Report"
+import { QueryConfig, QueryConfigCodec } from "../../../api/ReportCodecs"
 import { reporter } from "io-ts-reporters"
 import { ExecuteInterfaceComponentState, FromStore, LoadStatus, LOADSTATUSCODES } from "../types"
-import { Right } from "../../../data/Either"
+import { Right } from "../../../lib/Either"
 import { tryCatch } from "fp-ts/lib/Option"
-import { JSONRecord } from "../../../data/JSON"
+import { JSONRecord } from "../../../lib/JSONRecord"
 import { merge, isEmpty } from "lodash/fp"
 
 /**

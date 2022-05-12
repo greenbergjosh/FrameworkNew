@@ -1,0 +1,90 @@
+// JavaScript source code
+[
+  {
+    "$meta": {
+      "id": "8d600000-b9d2-48d9-96d6-5f7d238e0000",
+      "name": "rlp_std_group_by",
+      "type": "Template"
+    },
+    "body": "SELECT [=cols=] from [=tables=]",
+    "symbol": "[=sel=]",
+    "aliases": {
+      "cols": {
+        "suppress": "bool|entity->bool",
+        "prepend": "string|entity->string",
+        "instruction": "entity->string"
+      }
+    }
+  },
+
+  {
+    "$meta": {
+      "id": "8d600000-b9d2-48d9-96d6-5f7d238e0001",
+      "name": "rlp_std_group_by",
+      "type": "GetterInstruction"
+    },
+    "query": "string that will be argument to Get()",
+    "default": "entity"
+  },
+
+  {
+    "$meta": {
+      "id": "8d600000-b9d2-48d9-96d6-5f7d238e0002",
+      "name": "rlp_std_group_by",
+      "type": "ConditionInstruction"
+    },
+
+    "cases": [
+      {
+        "antecedent": "string that will be argument to Get() and then test for Any()",
+        "consequent": "entity->string"
+      },
+      {
+        "consequent": "entity->string"
+      }
+    ]
+  },
+
+  {
+    "$meta": {
+      "id": "8d600000-b9d2-48d9-96d6-5f7d238e0003",
+      "name": "rlp_std_group_by",
+      "type": "ParallelGetInstruction"
+    },
+
+    "scopes": {
+      "scope_name": {
+        "scope": "entity",
+        "dominant": "bool|entity->bool",
+        "repeat_count": "int|entity->int",
+        "exhaustion_behavior": "restart|default",
+        "default": "entity"
+      }
+    }
+  },
+
+  {
+    "$meta": {
+      "id": "8d600000-b9d2-48d9-96d6-5f7d238e0004",
+      "name": "rlp_std_group_by",
+      "type": "RepetitionInstruction"
+    },
+
+    "template": "entity/production",
+    "separator": "entity->string",
+    "repeater": "ParallelGetInstruction"
+  },
+
+  {
+    "$meta": {
+      "id": "8d600000-b9d2-48d9-96d6-5f7d238e0005",
+      "name": "GenerateEDW",
+      "type": "TemplateCollection"
+    },
+
+    "templates": [
+      { "SkeletonSelect": "" },
+      { "SkeletonUpdate":  "" }
+    ]
+  }
+]

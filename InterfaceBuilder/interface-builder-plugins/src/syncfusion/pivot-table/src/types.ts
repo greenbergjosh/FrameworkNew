@@ -1,68 +1,90 @@
 import {
   ComponentDefinition,
   ComponentDefinitionNamedProps,
-  JSONRecord,
+  ComponentRenderMetaProps,
   UserInterfaceProps,
-  AbstractBaseInterfaceComponentType,
 } from "@opg/interface-builder"
 import { DataSourceSettingsModel } from "@syncfusion/ej2-pivotview/src/pivotview/model/datasourcesettings-model"
+import { IDataOptions } from "@syncfusion/ej2-pivotview"
 
-export interface IPivotTableInterfaceComponentProps extends ComponentDefinitionNamedProps {
+export interface DataSource extends DataSourceSettingsModel {
+  source: "model" | "view" | "settings"
+}
+
+export interface ModelDataSource extends DataSource {
+  source: "model"
+}
+
+export interface ViewDataSource extends IDataOptions {
+  source: "view"
+}
+
+export interface SettingsDataSource extends DataSource {
+  source: "settings"
+}
+
+/**
+ * Extra props used to configure pivotview
+ */
+export interface PivotTableSettings {
+  allowConditionalFormatting: boolean
+  allowExcelExport: boolean
+  allowNumberFormatting: boolean
+  allowPdfExport: boolean
+  enableValueSorting: boolean
+  enableVirtualization: boolean
+  height: number
+  heightKey: "auto" | "full" | "fieldlist" | "value"
+  openFieldList: boolean
+  showChartsMenu: boolean
+  showGrandTotalMenu: boolean
+  showGroupingBar: boolean
+  showMdxButton: boolean
+  showSubTotalMenu: boolean
+  showToolbar: boolean
+}
+
+/**
+ * Extra props used to configure FieldList
+ */
+export interface FieldListSettings {
+  useProxy?: boolean
+  proxyUrl?: string
+  allowCalculatedField?: boolean
+  allowDeferLayoutUpdate?: boolean
+}
+
+export interface DisplayModeProps extends PivotTableSettings, FieldListSettings {
+  modelDataSource?: ModelDataSource
+  name?: string
+  onChangeModelDataSource: (modelDataSource: ModelDataSource) => void
+  settingsDataSource: SettingsDataSource
+}
+
+export interface EditModeProps extends FieldListSettings {
+  modelDataSource?: ModelDataSource
+  name?: string
+  onChangeModelDataSource: (modelDataSource: ModelDataSource) => void
+  settingsDataSource: SettingsDataSource
+}
+
+export interface PivotTableInterfaceComponentProps
+  extends ComponentDefinitionNamedProps,
+    PivotTableSettings,
+    FieldListSettings {
   // Core props
-  component: "table"
   components: ComponentDefinition[]
-  onChangeData: UserInterfaceProps["onChangeData"]
-  userInterfaceData?: UserInterfaceProps["data"]
-  valueKey: string
   mode: UserInterfaceProps["mode"]
+  onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeSchema: ComponentRenderMetaProps["onChangeSchema"]
+  userInterfaceSchema?: ComponentDefinition
+  valueKey: string // location of ModelDataSource
 
   // Additional props
-  loadingKey?: string
-  columns: JSONRecord[]
-  dataSource: JSONRecord
-  expandAll: boolean
-  filters: JSONRecord[]
-  formatSettings: JSONRecord[]
-  rows: JSONRecord[]
-  values: JSONRecord[]
-  height?: number
+  overrideMode: UserInterfaceProps["mode"] | "default"
+  settingsDataSource: SettingsDataSource
 }
 
 export interface PivotTableInterfaceComponentState {
-  loading: boolean
-}
-
-export interface PivotTableInterfaceComponentDisplayModeProps extends IPivotTableInterfaceComponentProps {
-  mode: "display"
-}
-
-export interface PivotTableInterfaceComponentEditModeProps extends IPivotTableInterfaceComponentProps {
-  mode: "edit"
-  onChangeSchema?: (newSchema: ComponentDefinition) => void
-  userInterfaceSchema?: ComponentDefinition
-}
-
-export type PivotTableInterfaceComponentProps =
-  | PivotTableInterfaceComponentDisplayModeProps
-  | PivotTableInterfaceComponentEditModeProps
-
-export interface DisplayModeProps {
-  columns: DataSourceSettingsModel["columns"]
-  data: DataSourceSettingsModel["dataSource"]
-  expandAll: DataSourceSettingsModel["expandAll"]
-  filters: DataSourceSettingsModel["filters"]
-  formatSettings: DataSourceSettingsModel["formatSettings"]
-  rows: DataSourceSettingsModel["rows"]
-  values: DataSourceSettingsModel["values"]
-  height?: number
-}
-
-export interface EditModeProps {
-  getRootUserInterfaceData: UserInterfaceProps["getRootUserInterfaceData"]
-  getValue: AbstractBaseInterfaceComponentType["prototype"]["getValue"]
-  onChangeRootData: UserInterfaceProps["onChangeRootData"]
-  onChangeSchema?: (newSchema: ComponentDefinition) => void
-  setValue: AbstractBaseInterfaceComponentType["prototype"]["setValue"]
-  userInterfaceSchema?: ComponentDefinition
-  valueKey: string
+  modelDataSource?: ModelDataSource
 }

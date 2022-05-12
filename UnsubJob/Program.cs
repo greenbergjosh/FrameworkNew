@@ -130,7 +130,13 @@ namespace UnsubJob
 
             foreach (var network in networks)
             {
-                var name = await network.EvalS("$meta.name");
+                var name = await network.EvalS("Name");
+                var enabled = await network.EvalB("Credentials.Enabled", true);
+                if (!enabled)
+                {
+                    await Fw.Log(nameof(Main), $"Skipping({name}) because it is not enabled...");
+                    continue;
+                }
 
                 await Fw.Log(nameof(Main), $"Starting({name})...");
 

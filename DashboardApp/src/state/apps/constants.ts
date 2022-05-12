@@ -21,6 +21,7 @@ export const DEFAULT_APP_PAGE_CONFIG: AppPageConfig = {
   description: null,
   icon: null,
   disabled: false,
+  hideTitle: false,
   layout: [],
   parameters: {},
 }

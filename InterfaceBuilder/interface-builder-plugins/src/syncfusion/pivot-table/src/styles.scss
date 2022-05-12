@@ -1,0 +1,132 @@
+@import "~@opg/interface-builder/dist/styles/colors.scss";
+
+.pivotTableWrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/*******************************************************
+ *
+ * HACK TO FIX SYNCFUSION HEIGHT AND WIDTH
+ */
+
+:global {
+  .e-pivotview .e-pivot-toolbar {
+    // Fix for right aligned icon being cut off in toolbar.
+    width: auto !important;
+  }
+  :local(.height-auto) {
+  }
+  :local(.height-full) {
+    .e-pivotview .e-grid div.e-content {
+      height: var(--gridcontent-height) !important;
+    }
+    .e-pivotview .e-grid div.e-gridcontent {
+      height: var(--gridcontent-height) !important;
+    }
+  }
+  :local(.height-fieldlist) {
+    .e-pivotview .e-grid div.e-content {
+      height: var(--gridcontent-height) !important;
+    }
+    .e-pivotview .e-grid div.e-gridcontent {
+      height: var(--gridcontent-height) !important;
+    }
+  }
+  :local(.height-value) {
+  }
+}
+
+/*******************************************************
+ *
+ * RESIZABLE DRAWER
+ */
+
+:global {
+  :local(.resizableDrawer) {
+    border-top: solid 1px $ib-grey-light;
+    border-right: solid 1px $ib-grey-light;
+    border-bottom: solid 1px $ib-grey-light;
+
+    :local(.divider) {
+      background-color: #f4f7f9;
+      bottom: 0;
+      cursor: ew-resize;
+      left: 0;
+      margin-left: 1px;
+      padding: 4px 0 0;
+      position: absolute;
+      top: 0;
+      width: 5px;
+      z-index: 100;
+    }
+
+    .ant-drawer-content {
+      /* make the drawer clear the right side of the table */
+      border-left: solid 1px $ib-grey-light;
+      cursor: default;
+    }
+
+    .ant-drawer-close {
+      background-color: white;
+    }
+  }
+}
+
+/*
+ * Override Syncfusion's PivotView styles
+ */
+:global {
+  :local(.fieldListPanel) {
+    .e-pivotfieldlist-wrapper.e-static {
+      border: none;
+    }
+    .e-title-content {
+      display: none;
+    }
+  }
+}
+
+/*******************************************************
+ *
+ * HACK TO MAKE SYNCFUSION FIELD-LIST FLEX HEIGHT
+ */
+
+:global {
+  :local(.height-full) {
+    .ant-drawer-body {
+      height: 100%;
+    }
+
+    :local(.fieldListPanel) {
+      height: 100%;
+    }
+
+    .e-pivotfieldlist-wrapper {
+      .e-field-list-title {
+        flex: 0 0 auto;
+      }
+
+      &.e-static {
+        max-height: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .e-field-list-container {
+          flex: 0 1 auto;
+          display: flex;
+          flex-direction: column;
+
+          .e-field-table {
+            flex: 1 1 auto;
+
+            .e-field-list-tree-outer-div {
+              height: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+}

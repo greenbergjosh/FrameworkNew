@@ -1,14 +1,16 @@
-import { JSONArray, JSONRecord } from "../../data/JSON"
-import { ParameterItem, QueryConfig } from "../../data/Report"
+import { JSONRecord } from "../../lib/JSONRecord"
+import { ParameterItem, QueryConfig } from "../../api/ReportCodecs"
 import { get, isEmpty, set } from "lodash/fp"
+import { Params } from "./types"
 
 /**
- * Extract query parameters that need to be persisted
+ * Extract query parameters that need to be persisted.
+ * These are parameters that are stored without regard to any ConfigQuery.
  * @param queryParams
  * @param paramConfigs
  */
 export function encodeGloballyPersistedParams(
-  queryParams: JSONRecord | JSONArray,
+  queryParams: Params,
   paramConfigs: QueryConfig["parameters"]
 ): JSONRecord | undefined {
   if (isEmpty(paramConfigs) || isEmpty(queryParams) || Array.isArray(queryParams)) {
@@ -35,20 +37,25 @@ export function encodeGloballyPersistedParams(
   }
 
   // queryParams is an assoc array, so we need something iterable
-  const queryParamKeys = Object.keys(queryParams)
+  const queryParamKeys = Object.keys(queryParams || {})
   return queryParamKeys.reduce((acc: JSONRecord, key: string) => encode(key, acc), {})
 }
 
 /**
  * Extract persisted parameters and put them into a state object
- * @param globallyPersistedParams
+ * @param globallyPersistedParams - Parameters stored without regard to any ConfigQuery.
  * @param paramConfigs
  */
 export function decodeGloballyPersistedParams(
-  globallyPersistedParams: JSONRecord | JSONArray,
-  paramConfigs: QueryConfig["parameters"]
+  globallyPersistedParams: Params,
+  paramConfigs?: QueryConfig["parameters"]
 ): JSONRecord | undefined {
-  if (isEmpty(paramConfigs) || isEmpty(globallyPersistedParams) || Array.isArray(globallyPersistedParams)) {
+  if (
+    !paramConfigs ||
+    isEmpty(paramConfigs) ||
+    isEmpty(globallyPersistedParams) ||
+    Array.isArray(globallyPersistedParams)
+  ) {
     // If array: we don't know the shape of the array items, so we can't retrieve them
     return
   }

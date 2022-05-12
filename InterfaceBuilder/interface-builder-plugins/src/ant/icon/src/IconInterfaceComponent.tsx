@@ -4,7 +4,7 @@ import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder
 import { IconInterfaceComponentProps } from "./types"
 import { settings } from "./settings"
 import layoutDefinition from "./layoutDefinition"
-import { Icon } from "antd"
+import { Icon, Tooltip } from "antd"
 import { isEmpty } from "lodash/fp"
 
 const Span = styled.span`
@@ -30,6 +30,15 @@ export default class IconInterfaceComponent extends BaseInterfaceComponent<IconI
      */
     const iconName = !isEmpty(iconNameFromModel) ? iconNameFromModel : iconNameFromInput
 
+    if (!isEmpty(this.props.tooltip)) {
+      return (
+        <Span styleString={this.props.style} className={"container"}>
+          <Tooltip title={this.props.tooltip}>
+            <Icon type={iconName} />
+          </Tooltip>
+        </Span>
+      )
+    }
     return (
       <Span styleString={this.props.style} className={"container"}>
         <Icon type={iconName} />

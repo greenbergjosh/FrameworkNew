@@ -15,7 +15,7 @@ export function DisplayMode(props: DisplayModeProps): JSX.Element | null {
     if (!props.invisible) {
       addAvailableTab(props.tabKey)
     }
-  }, [props.tabKey, props.invisible, addAvailableTab])
+  }, [props.tabKey, props.invisible, addAvailableTab, activeTabKey, setActiveTabKey])
 
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     if (evt.target.checked) {

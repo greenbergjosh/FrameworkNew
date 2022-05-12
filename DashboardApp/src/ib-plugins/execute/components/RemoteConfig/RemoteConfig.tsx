@@ -2,10 +2,10 @@ import { Empty } from "antd"
 import { some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
-import { QueryConfig } from "../../../../data/Report"
-import { JSONRecord } from "../../../../data/JSON"
+import { QueryConfig } from "../../../../api/ReportCodecs"
+import { JSONRecord } from "../../../../lib/JSONRecord"
 import { getQueryConfig, getQueryFormValues } from "../utils"
-import { QueryForm } from "../../../../components/query/QueryForm"
+import { QueryForm } from "../../../_shared/query/QueryForm"
 import {
   LoadStatus,
   LoadStatusCode,
@@ -14,13 +14,13 @@ import {
   RemoteConfigFromStore,
   RemoteConfigProps,
 } from "../../types"
-import { QueryParams } from "../../../../components/query/QueryParams"
+import { QueryParams } from "../../../_shared/query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 import { AppDispatch } from "../../../../state/store.types"
 import { isEmpty, merge } from "lodash/fp"
-import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../../api/GlobalConfigCodecs"
 import { NotifyConfig } from "../../../../state/feedback"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {

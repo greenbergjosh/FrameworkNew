@@ -2,8 +2,8 @@ import { Alert, Collapse } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import React from "react"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
-import { AdminUserInterfaceContext } from "../../data/AdminUserInterfaceContextManager"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
+import { AdminUserInterfaceContext } from "../../contexts/AdminUserInterfaceContextManager"
 import { settings } from "./settings"
 import {
   BaseInterfaceComponent,

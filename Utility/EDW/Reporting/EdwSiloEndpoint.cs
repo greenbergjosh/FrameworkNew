@@ -11,10 +11,10 @@ namespace Utility.EDW.Reporting
 
         public string ConnectionString { get; }
 
-        public EdwSiloEndpoint(string dataLayerType, string connectionString)
+        public EdwSiloEndpoint(string dataLayerType, string connectionString, string appName)
         {
             ConnectionString = connectionString;
-            _dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
+            _dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType, appName);
         }
 
         public async Task<bool> Audit()

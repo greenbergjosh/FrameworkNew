@@ -1,26 +1,17 @@
 import React from "react"
-import { BaseInterfaceComponent, ComponentDefinitionNamedProps, LayoutDefinition } from "@opg/interface-builder"
-import { PivotTableInterfaceComponentProps, PivotTableInterfaceComponentState } from "./types"
-import { settings } from "./settings"
+import { BaseInterfaceComponent, LayoutDefinition, Undraggable } from "@opg/interface-builder"
 import layoutDefinition from "./layoutDefinition"
 import { DisplayMode } from "./components/DisplayMode"
 import { EditMode } from "./components/EditMode"
+import { ModelDataSource, PivotTableInterfaceComponentProps, PivotTableInterfaceComponentState } from "./types"
+import { settings } from "./settings"
+import { isEqual } from "lodash/fp"
 
 export default class PivotTableInterfaceComponent extends BaseInterfaceComponent<
   PivotTableInterfaceComponentProps,
   PivotTableInterfaceComponentState
 > {
-  constructor(props: PivotTableInterfaceComponentProps) {
-    super(props)
-
-    this.state = {
-      loading: false,
-    }
-  }
-  static defaultProps = {
-    userInterfaceData: {},
-    valueKey: "data",
-  }
+  static defaultProps = {}
 
   static getLayoutDefinition(): LayoutDefinition {
     return layoutDefinition
@@ -28,51 +19,140 @@ export default class PivotTableInterfaceComponent extends BaseInterfaceComponent
 
   static manageForm = settings
 
+  constructor(props: PivotTableInterfaceComponentProps) {
+    super(props)
+
+    this.state = {
+      modelDataSource: undefined,
+    }
+  }
+
+  componentDidMount() {
+    const nextModelDataSource = this.getValue(this.props.valueKey) as ModelDataSource | undefined
+    if (nextModelDataSource) {
+      this.setState({ modelDataSource: nextModelDataSource })
+    }
+  }
+
+  componentDidUpdate(prevProps: Readonly<PivotTableInterfaceComponentProps>): void {
+    const prevModelDataSource = this.getValue(
+      prevProps.valueKey,
+      prevProps.userInterfaceData,
+      prevProps.getRootUserInterfaceData
+    )
+    const nextModelDataSource = this.getValue(this.props.valueKey) as ModelDataSource | undefined
+    if (!isEqual(prevModelDataSource, nextModelDataSource)) {
+      this.setState({ modelDataSource: nextModelDataSource })
+    }
+  }
+
   /**
    *
    */
-  static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
+  static getSummary(props: Partial<PivotTableInterfaceComponentProps>): JSX.Element | undefined {
+    if (!props.settingsDataSource) {
+      return <div>ERROR: Can&rsquo;t read data connection settings.</div>
+    }
+    const { catalog, cube, providerType, url, localeIdentifier } = props.settingsDataSource
     return (
-      <>
+      <Undraggable>
         <div>
-          <strong>API Key:</strong> {props.valueKey}
+          <strong>Catalog:</strong> {catalog}
         </div>
         <div>
-          <strong>Loading Key:</strong> {props.loadingKey}
+          <strong>Cube:</strong> {cube}
         </div>
-      </>
+        <div>
+          <strong>Provider Type:</strong> {providerType}
+        </div>
+        <div>
+          <strong>URL:</strong> {url}
+        </div>
+        <div>
+          <strong>Locale:</strong> {localeIdentifier}
+        </div>
+      </Undraggable>
     )
   }
 
-  componentDidUpdate(prevProps: Readonly<PivotTableInterfaceComponentProps>): void {}
+  render(): JSX.Element | null {
+    const useProxy = this.props.useProxy || true
+    const proxyUrl = this.props.proxyUrl || "https://adminapi.data.techopg.com/cube"
+    const overrideMode = this.props.overrideMode !== "default" ? this.props.overrideMode : undefined
 
-  render(): JSX.Element {
-    const data = this.getValue(this.props.valueKey)
-
-    switch (this.props.mode) {
+    switch (overrideMode || this.props.mode) {
       case "display":
         return (
           <DisplayMode
-            columns={this.props.columns}
-            data={data}
-            expandAll={this.props.expandAll}
-            filters={this.props.filters}
-            formatSettings={this.props.formatSettings}
-            rows={this.props.rows}
-            values={this.props.values}
+            allowCalculatedField={this.props.allowCalculatedField}
+            allowConditionalFormatting={this.props.allowConditionalFormatting}
+            allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            allowExcelExport={this.props.allowExcelExport}
+            allowNumberFormatting={this.props.allowNumberFormatting}
+            allowPdfExport={this.props.allowPdfExport}
+            enableValueSorting={this.props.enableValueSorting}
+            enableVirtualization={this.props.enableVirtualization}
             height={this.props.height}
+            heightKey={this.props.heightKey}
+            modelDataSource={this.state.modelDataSource}
+            name={this.props.name}
+            onChangeModelDataSource={(newModelDataSource: ModelDataSource) => {
+              this.setValue([this.props.valueKey, newModelDataSource])
+            }}
+            openFieldList={this.props.openFieldList}
+            proxyUrl={proxyUrl}
+            settingsDataSource={this.props.settingsDataSource}
+            showChartsMenu={this.props.showChartsMenu}
+            showGrandTotalMenu={this.props.showGrandTotalMenu}
+            showGroupingBar={this.props.showGroupingBar}
+            showMdxButton={this.props.showMdxButton}
+            showSubTotalMenu={this.props.showSubTotalMenu}
+            showToolbar={this.props.showToolbar}
+            useProxy={useProxy}
           />
         )
       case "edit":
         return (
           <EditMode
-            onChangeSchema={this.props.onChangeSchema}
-            getRootUserInterfaceData={this.props.getRootUserInterfaceData}
-            onChangeRootData={this.props.onChangeRootData}
-            getValue={this.getValue.bind(this)}
-            setValue={this.setValue.bind(this)}
-            userInterfaceSchema={this.props.userInterfaceSchema}
-            valueKey={this.props.valueKey}
+            allowCalculatedField={this.props.allowCalculatedField}
+            allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            modelDataSource={this.state.modelDataSource}
+            name={this.props.name}
+            onChangeModelDataSource={(newModelDataSource) => {
+              this.setValue([this.props.valueKey, newModelDataSource])
+            }}
+            proxyUrl={proxyUrl}
+            settingsDataSource={this.props.settingsDataSource}
+            useProxy={useProxy}
+          />
+        )
+      default:
+        // "preview" mode
+        return (
+          <DisplayMode
+            allowCalculatedField={this.props.allowCalculatedField}
+            allowConditionalFormatting={this.props.allowConditionalFormatting}
+            allowDeferLayoutUpdate={this.props.allowDeferLayoutUpdate}
+            allowExcelExport={this.props.allowExcelExport}
+            allowNumberFormatting={this.props.allowNumberFormatting}
+            allowPdfExport={this.props.allowPdfExport}
+            enableValueSorting={this.props.enableValueSorting}
+            enableVirtualization={this.props.enableVirtualization}
+            height={this.props.height}
+            heightKey={this.props.heightKey}
+            modelDataSource={this.state.modelDataSource}
+            name={this.props.name}
+            onChangeModelDataSource={() => void 0}
+            openFieldList={this.props.openFieldList}
+            proxyUrl={proxyUrl}
+            settingsDataSource={this.props.settingsDataSource}
+            showChartsMenu={this.props.showChartsMenu}
+            showGrandTotalMenu={this.props.showGrandTotalMenu}
+            showGroupingBar={this.props.showGroupingBar}
+            showMdxButton={this.props.showMdxButton}
+            showSubTotalMenu={this.props.showSubTotalMenu}
+            showToolbar={this.props.showToolbar}
+            useProxy={useProxy}
           />
         )
     }

@@ -52,7 +52,8 @@ export function isDuration(formatKey = "default"): boolean {
  * @param formatKey (e.g., "P2")
  */
 export function getDurationFormatter(formatKey = "default"): DurationFormatter {
-  const regex = /(?<units>milliseconds|seconds|minutes|hours|days|weeks|months|years|durationLargestUnit|durationMixedUnit)(?<precision>\d{0,2})/gm
+  const regex =
+    /(?<units>milliseconds|seconds|minutes|hours|days|weeks|months|years|durationLargestUnit|durationMixedUnit)(?<precision>\d{0,2})/gm
   const match = regex.exec(formatKey)
   if (!match) {
     return durationFormats.default

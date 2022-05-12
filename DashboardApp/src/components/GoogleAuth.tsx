@@ -6,7 +6,13 @@ export const GoogleAuth = (): JSX.Element => {
   const [fromStore, dispatch] = useRematch((appState) => null)
 
   return (
-    <Button block={true} htmlType="button" icon="google" onClick={() => dispatch.iam.authViaGoogleOAuth()}>
+    <Button
+      block={true}
+      htmlType="button"
+      icon="google"
+      size="large"
+      type="primary"
+      onClick={() => dispatch.iam.authViaGoogleOAuth()}>
       Sign In With Google
     </Button>
   )

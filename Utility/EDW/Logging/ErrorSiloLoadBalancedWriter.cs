@@ -26,10 +26,12 @@ namespace Utility.EDW.Logging
         private static List<IEndpoint> _endpoints;
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
+            var appName = await config.GetS("Config.ErrorLogAppName", "");
+
             var endpoints = new List<IEndpoint>();
             await foreach (var silo in config.EvalL("ErrSilos"))
             {
-                endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
+                endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString"), appName));
             }
 
             _endpoints = endpoints;
@@ -38,12 +40,13 @@ namespace Utility.EDW.Logging
 
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
-            return _endpoints;
-            //var endpoints = new List<IEndpoint>();
-            //await foreach (var silo in config.EvalL("ErrSilos"))
-            //{
-            //    endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString")));
-            //}
+            var appName = await config.EvalS("Config.ErrorLogAppName", "");
+
+            var endpoints = new List<IEndpoint>();
+            foreach (var silo in await config.EvalL("Config.ErrSilos"))
+            {
+                endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString"), appName));
+            }
 
             //return endpoints;
         }

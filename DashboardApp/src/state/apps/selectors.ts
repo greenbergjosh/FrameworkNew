@@ -1,4 +1,4 @@
-import { AppConfig, AppEntity, AppPageConfig, AppPageModel, AppsStoreModel } from "./types"
+import { AppConfig, AppEntity, AppPageConfig, AppPageModel, AppPaths, AppsStoreModel, State } from "./types"
 import * as record from "fp-ts/lib/Record"
 import { getNotFoundPage } from "./utils/getNotFoundPage"
 import { DEFAULT_APP_CONFIG, DEFAULT_APP_PAGE_CONFIG } from "./constants"
@@ -7,6 +7,8 @@ import { hydrateNavigationNodes } from "./utils/hydrateNavigationNodes"
 import { getAppEntityFromPersistedConfig } from "./utils/getAppEntityFromPersistedConfig"
 import { getAppEntityByIdOrUri } from "./utils/getAppEntityByIdOrUri"
 import { AppSelectors } from "../store.types"
+import { Profile } from "../iam/types"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
 
 const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps) => ({
   /**
@@ -26,9 +28,9 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appPagePersistedConfigs(select) {
-    return createSelector(
+    return createSelector<any, any>(
       slice((state) => state.configs),
-      (configs) => {
+      (configs: State["configs"]) => {
         const persistedConfigs = configs.getOrElse([])
         return persistedConfigs.filter((cfg) => cfg.type === "App.Page").sort((a, b) => a.name.localeCompare(b.name))
       }
@@ -55,9 +57,9 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appConfigs(select: AppSelectors) {
-    return createSelector(
+    return createSelector<any, any>(
       slice((state) => state.configs),
-      (configs) => {
+      (configs: State["configs"]) => {
         const persistedConfigs = configs.getOrElse([])
         return persistedConfigs
           .filter((cfg) => cfg.type === "App")
@@ -72,11 +74,11 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appConfig(select) {
-    return createSelector(
+    return createSelector<any, any>(
       select.apps.appConfigs,
       select.apps.appPagePersistedConfigs,
       slice((state) => state.appPaths),
-      (appConfigs, appPagePersistedConfigs, appPaths) => {
+      (appConfigs: AppConfig[], appPagePersistedConfigs: PersistedConfig[], appPaths: AppPaths) => {
         const appConfig = getAppEntityByIdOrUri<AppConfig>(appConfigs, DEFAULT_APP_CONFIG, appPaths.appUri)
         if (appConfig && !isEmpty(appConfig) && !isEmpty(appPagePersistedConfigs)) {
           appConfig.views = hydrateNavigationNodes({
@@ -100,11 +102,11 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appPageConfig(select) {
-    return createSelector(
+    return createSelector<any, any>(
       select.apps.appConfig,
       select.apps.appPagePersistedConfigs,
       slice((state) => state.appPaths),
-      (appConfig, appPagePersistedConfigs, appPaths) => {
+      (appConfig: AppConfig, appPagePersistedConfigs: PersistedConfig[], appPaths: AppPaths) => {
         let appPageConfig: AppPageConfig = { ...DEFAULT_APP_PAGE_CONFIG }
 
         if (isEmpty(appPaths.pageUri)) {
@@ -139,12 +141,25 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
    * @param select
    */
   appPageModel(select) {
-    return createSelector(
+    return createSelector<any, any>(
       select.apps.appPageConfig,
       slice((state) => state.appPaths),
-      (appPageConfig, appPaths): AppPageModel => {
+      select.iam.profile,
+      (appPageConfig: AppPageConfig, appPaths: AppPaths, profile: Profile): AppPageModel => {
         return {
-          $app: { location: { parameters: appPageConfig.parameters, querystring: appPaths.querystring } },
+          $app: {
+            location: {
+              parameters: appPageConfig.parameters,
+              appRootPath: appPaths.appRootPath,
+              appUri: appPaths.appUri,
+              currentUrl: appPaths.currentUrl,
+              pagePathSegments: appPaths.pagePathSegments,
+              pageUri: appPaths.pageUri,
+              querystring: appPaths.querystring,
+              rootUri: appPaths.rootUri,
+            },
+            profile,
+          },
         }
       }
     )

@@ -1,9 +1,10 @@
 import { ComponentDefinition } from "@opg/interface-builder"
 import * as Store from "../store.types"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
 import { NotifyConfig } from "../feedback"
 import { RemoteData } from "@devexperts/remote-data-ts"
 import { WindowLocation } from "@reach/router"
+import { Profile } from "../iam/types"
 
 export interface AppEntity {
   id: string
@@ -32,6 +33,7 @@ export interface AppConfig extends AppEntity {
 }
 
 export interface AppPageConfig extends AppEntity {
+  hideTitle: boolean
   layout: ComponentDefinition[]
 }
 
@@ -42,8 +44,15 @@ export interface AppPageModel {
   $app: {
     location: {
       parameters: Record<string, string>
-      querystring: Record<string, string | number | boolean | (string | number | boolean)[] | null>
+      appRootPath: AppPaths["appRootPath"]
+      appUri: AppPaths["appUri"]
+      currentUrl: AppPaths["currentUrl"]
+      pagePathSegments: AppPaths["pagePathSegments"]
+      pageUri: AppPaths["pageUri"]
+      querystring: AppPaths["querystring"]
+      rootUri: AppPaths["rootUri"]
     }
+    profile: Profile
   }
 }
 
@@ -71,6 +80,7 @@ export type AppPaths = {
 export interface State {
   appPaths: AppPaths
   configs: RemoteData<Error, Array<PersistedConfig>>
+  appPageModel: AppPageModel
 }
 
 export interface Reducers {

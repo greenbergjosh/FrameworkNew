@@ -3,9 +3,9 @@ import {
   TableInterfaceComponentDisplayModeProps,
   TableInterfaceComponentState as ParentTableInterfaceComponentState,
 } from "@opg/interface-builder-plugins/lib/syncfusion/table"
-import { JSONRecord } from "../../data/JSON"
+import { JSONRecord } from "../../lib/JSONRecord"
 import { Option } from "fp-ts/lib/Option"
-import { ReportDetailsType } from "../../components/report/detailTemplate/types"
+import { ReportDetailsType } from "./report/detailTemplate/types"
 import { AbstractBaseInterfaceComponentType } from "@opg/interface-builder"
 
 interface AugmentedTableInterfaceComponentDisplayModeProps extends TableInterfaceComponentDisplayModeProps {

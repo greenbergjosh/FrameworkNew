@@ -116,8 +116,7 @@ export const LineChartManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "useTooltipFunction",
                 component: "toggle",
                 label: "Tooltip Custom Formatter",
-                help:
-                  "A function that receives the data point and returns a formatted string displayed as the tooltip of the data point.",
+                help: "A function that receives the data point and returns a formatted string displayed as the tooltip of the data point.",
                 bindable: true,
               },
               {

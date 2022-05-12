@@ -1,4 +1,3 @@
-import React from "react"
 import { getValue } from "../../lib/getValue"
 import { set } from "lodash/fp"
 import { v4 as uuid } from "uuid"
@@ -57,7 +56,7 @@ export abstract class BaseInterfaceComponent<
     return getDefaultsFromComponentDefinitions(this.manageForm(), this.getDefinitionDefaultValue)
   }
 
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   static getSummary(props: Partial<ComponentDefinitionNamedProps>): JSX.Element | undefined {
     return undefined
   }

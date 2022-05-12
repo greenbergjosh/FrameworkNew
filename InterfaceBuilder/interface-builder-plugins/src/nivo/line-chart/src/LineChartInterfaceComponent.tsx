@@ -35,7 +35,7 @@ export default class LineChartInterfaceComponent extends BaseInterfaceComponent<
     const nextValue = this.getValue(this.props.valueKey)
 
     if (!isEqual(prevValue, nextValue) || this.anyPropsChanged(prevProps, ["valueKey"])) {
-      const lineChartData: Serie[] = (this.getValue(this.props.valueKey) as unknown) as Serie[]
+      const lineChartData: Serie[] = this.getValue(this.props.valueKey) as unknown as Serie[]
       if (lineChartData) {
         this.setState({ lineChartData, loading: false })
       }
@@ -51,7 +51,7 @@ export default class LineChartInterfaceComponent extends BaseInterfaceComponent<
       this.createTooltipFunction()
     }
 
-    const lineChartData: Serie[] = (this.getValue(this.props.valueKey) as unknown) as Serie[]
+    const lineChartData: Serie[] = this.getValue(this.props.valueKey) as unknown as Serie[]
     if (lineChartData) {
       this.setState({ lineChartData, loading: false })
     }
@@ -63,7 +63,8 @@ export default class LineChartInterfaceComponent extends BaseInterfaceComponent<
       this.setState({ pointTooltipFunction: undefined })
     } else {
       const parsedTooltipFunction =
-        tooltipFunction || utils.parseLBM<LineChartInterfaceComponentProps, { serie: Serie }, string>(tooltipFunctionSrc)
+        tooltipFunction ||
+        utils.parseLBM<LineChartInterfaceComponentProps, { serie: Serie }, string>(tooltipFunctionSrc)
       let pointTooltipFunction: LineChartInterfaceComponentState["pointTooltipFunction"]
 
       if (parsedTooltipFunction && this.props.mode !== "edit") {

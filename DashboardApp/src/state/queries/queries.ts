@@ -1,30 +1,5 @@
-import { JSONArray, JSONRecord } from "../../data/JSON"
 import * as Store from "../store.types"
-
-declare module "../store.types" {
-  interface AppModels {
-    queries: {
-      state: State
-      reducers: Reducers
-      effects: Effects
-      selectors: Selectors
-    }
-  }
-}
-
-export interface State {
-  queryParamsByQuery: { [x: string]: JSONRecord | JSONArray }
-  queryGlobalParams: JSONRecord | JSONArray
-}
-
-export interface Reducers {
-  updateQueryParamsByQuery(payload: Partial<State["queryParamsByQuery"]>): State
-  updateQueryGlobalParams(payload: Partial<State["queryGlobalParams"]>): State
-}
-
-export interface Effects {}
-
-export interface Selectors {}
+import { Effects, Reducers, Selectors, State } from "./types"
 
 export const queries: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {

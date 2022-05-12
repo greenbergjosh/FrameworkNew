@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Quartz;
+using Renci.SshNet;
+using Renci.SshNet.Async;
 using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
@@ -97,7 +99,7 @@ namespace EdwRollupLib
         #region Dataflow Tasks
         private async Task<IEnumerable<Parameters>> PrepareThreadGroup(Parameters parameters)
         {
-            var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup());
+            var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup(), timeout: 900);
 
             if (await prepareThreadGroupResult.EvalS("status") != "ok")
             {
@@ -105,17 +107,17 @@ namespace EdwRollupLib
                 throw new Exception(description);
             }
 
-            var sessionId = await prepareThreadGroupResult.EvalS("session_id");
-            var workingSetTableName = await prepareThreadGroupResult.EvalS("working_set_table_name");
+            var sessionId = await prepareThreadGroupResult.EvalS("session_id", null);
+            var workingSetTableName = await prepareThreadGroupResult.EvalS("working_set_table_name", null);
 
             var threadGroupParameters = parameters with { SessionId = sessionId, WorkingSetTableName = workingSetTableName };
 
-            var message = await prepareThreadGroupResult.EvalS("message");
+            var message = await prepareThreadGroupResult.EvalS("message", null);
             if (!string.IsNullOrWhiteSpace(message))
             {
                 await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{await ThreadGroup.EvalS("$meta.name")} {Period}: {message}");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {ThreadGroup.EvalS("$meta.name")} {Period}: {message}");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.EvalS("$meta.name")} {Period}: {message}");
 #endif
                 return new[] { threadGroupParameters };
             }
@@ -139,11 +141,42 @@ namespace EdwRollupLib
 
         private static async Task<IEnumerable<Parameters>> ProcessReportSequence(Parameters parameters)
         {
-            var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs());
+            var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs(), timeout: 900);
 
-            if (!string.IsNullOrWhiteSpace(await processRsResult.EvalS("message")))
+            if (!string.IsNullOrWhiteSpace(await processRsResult.EvalS("message", null)))
             {
                 throw new Exception(await processRsResult.EvalS("message"));
+            }
+
+            var rs = await FrameworkWrapper.Entities.GetEntity(parameters.RsConfigId);
+
+            if (await rs.GetB("Config.export_to_clickhouse", false))
+            {
+                var clickhouseConfig = await rs.GetE("Config.clickhouse");
+
+                var rsName = await rs.GetS("Name");
+                var tableName = await clickhouseConfig.GetS("table.name", rsName);
+                var schema = await clickhouseConfig.GetS("table.schema", "datasets");
+
+                var query = $"INSERT INTO `{schema}`.`{tableName}` FORMAT CSVWithNames";
+
+                var host = await clickhouseConfig.GetS("host");
+                var sshUser = await clickhouseConfig.GetS("ssh.user");
+                var sshPassword = await clickhouseConfig.GetS("ssh.password");
+
+                var clickhouseUser = await clickhouseConfig.GetS("clickhouse.user");
+                var clickhousePassword = await clickhouseConfig.GetS("clickhouse.password");
+
+                var importPath = await clickhouseConfig.GetS("import_path");
+                var worksetNormalizedPayloadTable = await processRsResult.GetS("workset_normalized_payload_table");
+
+                var fullPath = $"{importPath}/{parameters.RsConfigId:N}/{worksetNormalizedPayloadTable[^8..]}";
+
+                _ = await ExecuteClickhouseQuery(host, sshUser, sshPassword, clickhouseUser, clickhousePassword, query, fullPath);
+
+                var deleteCommand = $"rm -f {fullPath}";
+
+                _ = await ExecuteSSHCommand(host, sshUser, sshPassword, deleteCommand);
             }
 
             var rollups = new List<Parameters>();
@@ -170,7 +203,7 @@ namespace EdwRollupLib
         {
             while (true)
             {
-                var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup());
+                var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup(), timeout: 900);
 
                 var status = await rollupResult.EvalS("status");
                 if (status == "deadlock detected")
@@ -234,7 +267,7 @@ namespace EdwRollupLib
                 trigger_frequency = TriggerFrequency
             });
 
-            public string ProcessRollup() => RollupArgs.ToString();
+            public string ProcessRollup() => JsonSerializer.Serialize(RollupArgs);
 
             public string Cleanup() => JsonSerializer.Serialize(new
             {
@@ -283,7 +316,8 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs.ToString() ?? "null"
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs),
+                parameters = input
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
@@ -302,7 +336,8 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs.ToString() ?? "null"
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs),
+                parameters = input
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
@@ -320,8 +355,9 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
-                rollupArgs = input?.RollupArgs.ToString() ?? "null",
-                message = ex.ToString()
+                rollupArgs = JsonSerializer.Serialize(input?.RollupArgs),
+                message = ex.ToString(),
+                parameters = input
             };
 
             await FrameworkWrapper.Error($"{nameof(RollupJob)}.{step}", JsonSerializer.Serialize(payload));
@@ -337,7 +373,7 @@ namespace EdwRollupLib
 
         private async Task<ITargetBlock<Parameters>> PrepareDataflow(CancellationToken cancellationToken)
         {
-            var degreesOfParallelism = int.Parse(await FrameworkWrapper.StartupConfiguration.EvalS("Parallelism") ?? "16");
+            var degreesOfParallelism = await FrameworkWrapper.StartupConfiguration.EvalI("Config.Parallelism", 16);
 
             var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = degreesOfParallelism, EnsureOrdered = false, BoundedCapacity = -1, CancellationToken = cancellationToken };
 
@@ -382,6 +418,38 @@ namespace EdwRollupLib
             {
                 text
             }), "application/json");
+        }
+
+        private static Task<string> ExecuteClickhouseQuery(string host, string sshUser, string sshPassword, string clickhouseUser, string clickhousePassword, string query, string pipeIn = null)
+        {
+            var commandText = $"clickhouse-client -u {clickhouseUser} --password {clickhousePassword} --query \"{query.Replace("`", "\\`")}\"";
+            if (!string.IsNullOrWhiteSpace(pipeIn))
+            {
+                commandText += $" < {pipeIn}";
+#if DEBUG
+                Console.WriteLine(query + " < " + pipeIn);
+                Console.WriteLine();
+
+            }
+            else
+            {
+                Console.WriteLine(query);
+                Console.WriteLine();
+#endif
+            }
+
+            return ExecuteSSHCommand(host, sshUser, sshPassword, commandText);
+        }
+
+        private static async Task<string> ExecuteSSHCommand(string host, string user, string password, string commandText)
+        {
+            using var client = new SshClient(host, user, password);
+            client.Connect();
+            using var command = client.CreateCommand(commandText);
+
+            var result = await command.ExecuteAsync();
+
+            return !string.IsNullOrWhiteSpace(command.Error) ? throw new Exception($"{command.Error}\r\nCommand:\r\n{commandText}") : result;
         }
         #endregion
     }

@@ -4,12 +4,13 @@ import { store } from "../state/store"
 import { Helmet } from "react-helmet"
 import { Button, Icon, PageHeader, Tooltip } from "antd"
 import { Link, Router } from "@reach/router"
-import { AdminUserInterfaceContextManagerProvider } from "../data/AdminUserInterfaceContextManager"
+import { AdminUserInterfaceContextManagerProvider } from "../contexts/AdminUserInterfaceContextManager"
 import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import BreadcrumbNav from "./BreadcrumbNav"
 import { ContentPanelProps } from "../themes/types"
 import { AppPageConfig, AppPaths } from "../state/apps"
 import { PageBeacon } from "./PageBeacon"
+import useWindowDimensions from "../hooks/useWindowDimensions"
 
 function RouteRenderer(
   props: {
@@ -45,15 +46,17 @@ function RouteRenderer(
 
 export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
   const [fromStore /*, dispatch*/] = useRematch((appState) => ({
-    globalConfigPath: appState.navigation.appRoutes.globalConfig.abs,
+    globalConfigPath: appState.navigation.routes.globalConfig.abs,
     appPageConfig: store.select.apps.appPageConfig(appState),
     appPaths: appState.apps.appPaths,
   }))
 
   const { appPageConfig, appPaths, globalConfigPath } = fromStore
+  const { width, height } = useWindowDimensions()
+  const isMobile = width < 768
 
   return (
-    <div style={{ padding: "8px 30px 30px 30px" }}>
+    <div style={{ padding: isMobile ? "8px 15px 15px 15px" : "8px 30px 30px 30px" }}>
       <Helmet>
         <title>{appPageConfig.title} | Channel Admin | OPG</title>
       </Helmet>
@@ -63,29 +66,31 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
         appRootPath={appPaths.appRootPath}
         pagePath={props.pagePath}
       />
-      <PageHeader
-        style={{ padding: "16px 0 20px 0" }}
-        title={
-          <>
-            {appPageConfig.icon && <Icon type={appPageConfig.icon} style={{ marginRight: 10 }} />}
-            {appPageConfig.id ? (
-              <Tooltip
-                title={
-                  <Link to={`${globalConfigPath}/${appPageConfig.id}`}>
-                    <Button type="link" icon="edit" size="small">
-                      Edit Page
-                    </Button>
-                  </Link>
-                }>
-                {appPageConfig.title}
-              </Tooltip>
-            ) : (
-              <>{appPageConfig.title}</>
-            )}
-          </>
-        }
-        subTitle={appPageConfig.description}
-      />
+      {!appPageConfig.hideTitle && (
+        <PageHeader
+          style={{ padding: "16px 0 20px 0" }}
+          title={
+            <>
+              {appPageConfig.icon && <Icon type={appPageConfig.icon} style={{ marginRight: 10 }} />}
+              {appPageConfig.id ? (
+                <Tooltip
+                  title={
+                    <Link to={`${globalConfigPath}/${appPageConfig.id}`}>
+                      <Button type="link" icon="edit" size="small">
+                        Edit Page
+                      </Button>
+                    </Link>
+                  }>
+                  {appPageConfig.title}
+                </Tooltip>
+              ) : (
+                <>{appPageConfig.title}</>
+              )}
+            </>
+          }
+          subTitle={appPageConfig.description}
+        />
+      )}
       <Router>
         <RouteRenderer
           components={(appPageConfig && appPageConfig.layout) || []}

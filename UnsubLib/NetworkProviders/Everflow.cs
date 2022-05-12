@@ -36,11 +36,10 @@ namespace UnsubLib.NetworkProviders
             var campaignIdPath = await network.EvalS("Credentials.CampaignIdPath");
             var campaignNamePath = await network.EvalS("Credentials.CampaignNamePath");
             var apiKey = await network.EvalS("Credentials.NetworkApiKey");
-
-            const int PAGESIZE = 100;
+            var pageSize = await network.GetI("Credentials.PageSize", 50);
             var currentPage = 1;
 
-            var url = new Uri(new Uri(await network.EvalS("Credentials.BaseUrl")), await network.EvalS("Credentials.GetCampaignsPath")).ToString() + $"?page_size={PAGESIZE}&page={currentPage}";
+            var url = new Uri(new Uri(await network.EvalS("Credentials.BaseUrl")), await network.EvalS("Credentials.GetCampaignsPath")).ToString() + $"?page_size={pageSize}&page={currentPage}";
 
             string respBody = null;
 
@@ -92,7 +91,7 @@ namespace UnsubLib.NetworkProviders
 
                     var paging = await campaigns.EvalE("paging");
                     var page = await paging.EvalI("page");
-                    var pageSize = await paging.EvalI("page_size");
+                    pageSize = await paging.EvalI("page_size");
                     var totalCount = await paging.EvalI("total_count");
 
                     if (page * pageSize >= totalCount)

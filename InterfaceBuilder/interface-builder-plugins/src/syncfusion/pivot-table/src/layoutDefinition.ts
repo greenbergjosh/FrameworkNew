@@ -1,10 +1,9 @@
 export default {
-  category: "Display",
+  category: "Chart",
   name: "pivot-table",
   title: "Pivot Table",
   icon: "table",
   componentDefinition: {
     component: "pivot-table",
-    columns: [],
   },
 }

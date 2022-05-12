@@ -61,7 +61,7 @@
     "no-unused-vars": "off",
     "no-use-before-define": 0,
     "no-useless-constructor": 0,
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "error",
     "react-hooks/rules-of-hooks": "error",
     "react/display-name": 0,
     "react/no-children-prop": 0,

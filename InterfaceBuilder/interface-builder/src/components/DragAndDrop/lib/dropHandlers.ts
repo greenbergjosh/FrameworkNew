@@ -1,6 +1,9 @@
 import { DraggableInnerProps, DroppableInnerProps } from "../../../components/DragAndDrop/types"
 import { DropTargetMonitor } from "react-dnd"
-import { findDraggableOrPlaceholder, isPlaceholderElement } from "../../../components/DragAndDrop/lib/placeholder-helpers"
+import {
+  findDraggableOrPlaceholder,
+  isPlaceholderElement,
+} from "../../../components/DragAndDrop/lib/placeholder-helpers"
 import { isShallowEqual } from "../../../lib/isShallowEqual"
 import { DraggedItemProps } from "../types"
 

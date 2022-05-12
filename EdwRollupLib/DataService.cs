@@ -65,7 +65,7 @@ namespace EdwRollupLib
             _scheduler.Context["exclusiveQueueCurrentlyRunningId"] = 0;
             _scheduler.Context["exclusiveLock"] = new object();
 
-            var rsConfigId = _fw.StartupConfiguration.EvalS("RsConfigId");
+            var rsConfigId = await _fw.StartupConfiguration.EvalS("RsConfigId");
 
             var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonSerializer.Serialize(new
             {
@@ -76,7 +76,7 @@ namespace EdwRollupLib
             {
                 var threadGroupName = await threadGroup.EvalS("Name");
 
-                if (await threadGroup.EvalB("paused"))
+                if (await threadGroup.EvalB("paused", false))
                 {
                     await _fw.Log("EdwRollupService.InitScheduler", $"{threadGroupName} is paused.");
 #if DEBUG
@@ -95,7 +95,7 @@ namespace EdwRollupLib
                 await foreach (var rollupGroupPeriod in threadGroup.EvalL("rollup_group_periods"))
                 {
                     var period = await rollupGroupPeriod.EvalS("period");
-                    var rollupFrequency = await rollupGroupPeriod.EvalS("rollup_frequency") ?? period;
+                    var rollupFrequency = await rollupGroupPeriod.EvalS("rollup_frequency", null) ?? period;
 
                     var jobDetail = JobBuilder.Create<RollupJob>()
                         .WithIdentity($"{threadGroupName}_{period}", "RollupJob")
@@ -129,7 +129,7 @@ namespace EdwRollupLib
 
             await foreach (var maintenanceTask in maintenanceTasks.EvalL(""))
             {
-                var enabled = await maintenanceTask.EvalB("enabled");
+                var enabled = await maintenanceTask.EvalB("enabled", true);
                 if (!enabled)
                 {
                     continue;
@@ -137,7 +137,7 @@ namespace EdwRollupLib
 
                 var name = await maintenanceTask.EvalS("Name");
                 var cronExpression = await maintenanceTask.EvalS("cron_expression");
-                var exclusive = await maintenanceTask.EvalB("exclusive");
+                var exclusive = await maintenanceTask.EvalB("exclusive", false);
 
                 IDictionary<string, object> parameters = new Dictionary<string, object>
                 {

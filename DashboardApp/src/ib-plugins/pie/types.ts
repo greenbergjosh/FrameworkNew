@@ -1,5 +1,5 @@
 import * as Pie from "@opg/interface-builder-plugins/lib/nivo/pie"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../api/GlobalConfigCodecs"
 
 export interface PieInterfaceComponentProps extends Pie.PieInterfaceComponentProps {
   sliceLabelValueFunctionConfigId: PersistedConfig["id"]

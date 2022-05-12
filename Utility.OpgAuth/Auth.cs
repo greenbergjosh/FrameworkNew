@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Utility.DataLayer;
+using Utility.Entity.Implementations;
 using Utility.OpgAuth.Sso;
 using Random = Utility.Crypto.Random;
 
@@ -36,7 +37,8 @@ namespace Utility.OpgAuth
                     }
                     else
                     {
-                        await Data.AddConnectionStrings(fw.Entity.Create(new Dictionary<string, Entity.Entity> { [ConnName] = conn.Value.ToString() }));
+                        var appName = await fw.StartupConfiguration.GetS("Config.ErrorLogAppName", "");
+                        await Data.AddConnectionStrings(fw.Entity.Create(new Dictionary<string, Entity.Entity> { [ConnName] = conn.Value.ToString() }), appName);
                         var ssoFailed = false;
 
                         SsoPlatforms.Clear();
@@ -160,11 +162,13 @@ namespace Utility.OpgAuth
             var saltHash = Random.GenerateRandomString(32, 32, Random.hex);
             var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(JsonSerializer.Serialize(new { loginPayload, platform.PlatformType, userDetails })));
 
-            //loginPayload.Set("platform", platform.PlatformType);
+            var loginPayloadStacked = new EntityDocumentStack();
+            loginPayloadStacked.Push(loginPayload);
+            loginPayloadStacked.Push(loginPayload.Create(new { platform = platform.PlatformType }));
 
             try
             {
-                var res = await Data.CallFn(ConnName, "RegisterSsoUser", JsonSerializer.Serialize(userDetails), JsonSerializer.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = loginPayload }));
+                var res = await Data.CallFn(ConnName, "RegisterSsoUser", JsonSerializer.Serialize(userDetails), JsonSerializer.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = loginPayload.Create(loginPayloadStacked) }));
                 return (await res.EvalS("t")).IsNullOrWhitespace()
                     ? throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res}")
                     : new UserDetails(loginToken: await res.EvalS("t"), name: await res.EvalS("name"), email: await res.EvalS("primaryemail"), phone: "", imageUrl: await res.EvalS("image"), id: null, raw: res.ToString());
@@ -178,7 +182,7 @@ namespace Utility.OpgAuth
         public static async Task<Entity.Entity> GetTokenUserDetails(string token)
         {
             var res = await Data.CallFn(ConnName, "GetTokenUserDetails", JsonSerializer.Serialize(new { t = token }));
-            var err = await res.EvalS("err");
+            var err = await res.EvalS("err", defaultValue: null);
 
             return !err.IsNullOrWhitespace()
                 ? throw new AuthException($"Failed to get user details from token: Token: {token} Error: {err}")
@@ -239,7 +243,7 @@ namespace Utility.OpgAuth
 
             var mergedPermissions = _fw.Entity.Create(permissions);
 
-            if (await mergedPermissions.EvalB(GOD_USER))
+            if (await mergedPermissions.EvalB(GOD_USER, false))
             {
                 return true;
             }
