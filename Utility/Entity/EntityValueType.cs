@@ -9,6 +9,7 @@
         Number,
         String,
         UUID,
-        Null
+        Null,
+        Unhandled
     }
 }

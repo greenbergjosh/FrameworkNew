@@ -17,12 +17,15 @@ namespace Utility.Entity.Implementations
             EntityValueType.Number,
             EntityValueType.String,
             EntityValueType.UUID,
-            EntityValueType.Undefined
+            EntityValueType.Undefined,
+            EntityValueType.Unhandled
         };
 
         public static EntityDocument Null { get; } = new EntityDocumentConstant(null, EntityValueType.Null);
 
         public static EntityDocument Undefined { get; } = new EntityDocumentConstant(null, EntityValueType.Undefined);
+
+        public static EntityDocument Unhandled { get; } = new EntityDocumentConstant(null, EntityValueType.Unhandled);
 
         public override EntityValueType ValueType => _valueType;
 

@@ -53,6 +53,8 @@ namespace Utility.Entity
         #region Properties
         public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
 
+        public static Entity Unhandled { get; } = new Entity(EntityDocumentConstant.Unhandled, null, new EntityConfig(null), null);
+
         public bool IsArray => Document?.IsArray ?? false;
 
         public bool IsObject => Document?.IsObject ?? false;

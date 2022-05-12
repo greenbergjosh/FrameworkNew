@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Utility.Evaluatable;
 
 namespace Utility.Entity
@@ -31,15 +32,20 @@ namespace Utility.Entity
         {
             get
             {
-                return (Entity baseEntity, Uri uri) =>
+                return async (Entity baseEntity, Uri uri) =>
                 {
-                    var retrieved = _wrapper.Retriever?.Invoke(baseEntity, uri);
-                    if (retrieved == null)
+                    if (_wrapper.Retriever != null)
                     {
-                        retrieved = _wrappedConfig.Retriever?.Invoke(baseEntity, uri);
+                        var retrieved = await _wrapper.Retriever(baseEntity, uri);
+                        if (retrieved.entities?.SingleOrDefault()?.ValueType == EntityValueType.Unhandled)
+                        {
+                            return await _wrappedConfig.Retriever(baseEntity, uri);
+                        }
+
+                        return retrieved;
                     }
 
-                    return retrieved;
+                    return await _wrappedConfig.Retriever(baseEntity, uri);
                 };
             }
         }
