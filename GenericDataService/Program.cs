@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
@@ -21,9 +22,9 @@ namespace GenericDataService
             {
                 FrameworkWrapper = await FrameworkWrapper.Create();
 
-                var filePath = await FrameworkWrapper.StartupConfiguration.GetS("Config.DataServiceAssemblyFilePath");
-                var assemblyDirs = await FrameworkWrapper.StartupConfiguration.GetL<string>("Config.AssemblyDirs");
-                var typeName = await FrameworkWrapper.StartupConfiguration.GetS("Config.DataServiceTypeName");
+                var filePath = await FrameworkWrapper.StartupConfiguration.EvalS("DataServiceAssemblyFilePath");
+                var assemblyDirs = await FrameworkWrapper.StartupConfiguration.EvalL<string>("AssemblyDirs").ToList();
+                var typeName = await FrameworkWrapper.StartupConfiguration.EvalS("DataServiceTypeName");
 
                 using (var dynamicContext = new AssemblyResolver(filePath, assemblyDirs))
                 {
@@ -37,7 +38,7 @@ namespace GenericDataService
 
                 await DataService.Config(FrameworkWrapper);
 
-                WwwRootPath = await FrameworkWrapper.StartupConfiguration.GetS("Config.PhysicalFileProviderPath", null);
+                WwwRootPath = await FrameworkWrapper.StartupConfiguration.EvalS("PhysicalFileProviderPath", defaultValue: null);
 
                 await HealthCheckHandler.Initialize(FrameworkWrapper);
             }

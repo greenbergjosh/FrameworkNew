@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 {
     internal sealed class QueryExpressionNode
     {
-        private readonly Query _query;
+        private readonly string _query;
         private readonly QueryExpressionNode _left;
         private QueryExpressionNode _right;
         private QueryExpressionType? _outputType;
@@ -18,7 +19,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
         public QueryExpressionNode(Entity value) => _value = value;
 
-        public QueryExpressionNode(Query query)
+        public QueryExpressionNode(string query)
         {
             _query = query;
             _outputType = QueryExpressionType.InstanceDependent;
@@ -31,7 +32,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
             _right = right;
         }
 
-        public async Task<Entity> Evaluate(Entity entity)
+        public async Task<Entity> Evaluate(Entity entity, Entity evaluationParameters)
         {
             if (_value != null)
             {
@@ -40,9 +41,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
 
             if (_query != null)
             {
-                var result = await entity.Get(_query);
-                // don't set _value; need to always eval
-                return result.SingleOrDefault() ?? Entity.Undefined;
+                return await entity.Evaluate(new Query(_query), evaluationParameters).SingleOrDefault() ?? Entity.Undefined;
             }
 
             if (OutputType == QueryExpressionType.Invalid)
@@ -50,7 +49,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
                 return default;
             }
 
-            var value = entity.Create(await Operator.Evaluate(_left, _right, entity), Operator.ToString());
+            var value = entity.Create(await Operator.Evaluate(_left, _right, entity, evaluationParameters), Operator.ToString(), null);
             if (OutputType != QueryExpressionType.InstanceDependent)
             {
                 _value = value;
@@ -76,15 +75,16 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions
                 return true;
             }
 
-            if (Query.TryParse(entity, query, ref index, true, out var path, out var _))
+            var startIndex = index;
+            if (Query.TryParse(entity, query, ref index, true, out var path))
             {
-                node = new QueryExpressionNode(path);
+                node = new QueryExpressionNode(query[startIndex..index].ToString());
                 return true;
             }
 
             if (Helpers.TryParseEntityDocument(query, ref index, out var entityDocument))
             {
-                node = new QueryExpressionNode(entity.Create(entityDocument, "@"));
+                node = new QueryExpressionNode(entity.Create(entityDocument, "@", null));
                 return true;
             }
 

@@ -30,7 +30,7 @@ namespace UnsubLib.UnsubFileProviders
             }
 
             var resGe = await network.Parse("application/json", body);
-            var download = await resGe?.GetS("download_link");
+            var download = await resGe?.EvalS("download_link");
 
             if (!download.IsNullOrWhitespace())
             {

@@ -28,9 +28,9 @@ namespace Utility.EDW.Reporting
             var appName = await config.GetS("Config.ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.GetL("Config.EdwSilos"))
+            await foreach (var silo in config.EvalL("EdwSilos"))
             {
-                endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString"), appName));
+                endpoints.Add(new EdwSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString"), appName));
             }
 
             return endpoints;
@@ -41,9 +41,9 @@ namespace Utility.EDW.Reporting
             var appName = await config.GetS("Config.ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.GetL("Config.EdwSilos"))
+            await foreach (var silo in config.EvalL("EdwSilos"))
             {
-                endpoints.Add(new EdwSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString"), appName));
+                endpoints.Add(new EdwSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString"), appName));
             }
 
             return endpoints;
@@ -99,16 +99,14 @@ namespace Utility.EDW.Reporting
 
         public static async Task<EdwSiloLoadBalancedWriter> InitializeEdwSiloLoadBalancedWriter(Entity.Entity config)
         {
-            var siloConns = await config.Get("Config.EdwSilos");
-
-            if (!siloConns.Any())
+            if (!await config.Eval("EdwSilos").Any())
             {
                 return null;
             }
 
-            var writeTimeoutSeconds = await config.GetI("Config.EdwWriteTimeout", 0);
-            var dataFilePath = Path.GetFullPath(await config.GetS("Config.EdwDataFilePath"));
-            var errorFilePath = Path.GetFullPath(await config.GetS("Config.EdwErrorFilePath"));
+            var writeTimeoutSeconds = await config.EvalI("EdwWriteTimeout", 0);
+            var dataFilePath = Path.GetFullPath(await config.EvalS("EdwDataFilePath"));
+            var errorFilePath = Path.GetFullPath(await config.EvalS("EdwErrorFilePath"));
 
             return new EdwSiloLoadBalancedWriter(60,
                 writeTimeoutSeconds,

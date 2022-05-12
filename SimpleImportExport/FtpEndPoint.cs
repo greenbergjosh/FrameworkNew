@@ -30,14 +30,14 @@ namespace SimpleImportExport
 
         public static async Task<FtpEndPoint> Create(Entity ge)
         {
-            var host = await ge.GetS("Host");
-            var basePath = await ge.GetS("BasePath");
-            var user = await ge.GetS("User");
-            var password = await ge.GetS("Password", null);
-            var keyPath = await ge.GetS("KeyPath", null);
-            var maxDepth = await ge.GetI("MaxDepth", 0);
-            var isSFtp = await ge.GetB("isSftp", false);
-            var isFtps = await ge.GetB("IsFtps", false);
+            var host = await ge.EvalS("Host");
+            var basePath = await ge.EvalS("BasePath");
+            var user = await ge.EvalS("User");
+            var password = await ge.EvalS("Password", defaultValue: null);
+            var keyPath = await ge.EvalS("KeyPath", defaultValue: null);
+            var maxDepth = await ge.EvalI("MaxDepth", 0);
+            var isSFtp = await ge.EvalB("isSftp", false);
+            var isFtps = await ge.EvalB("IsFtps", false);
 
             if (password.IsNullOrWhitespace())
             {
@@ -49,7 +49,7 @@ namespace SimpleImportExport
                 isSFtp = true;
             }
 
-            var port = (await ge.GetS("Port", null)).ParseInt();
+            var port = (await ge.EvalS("Port", defaultValue: null)).ParseInt();
 
             var endpoint = new FtpEndPoint(host, basePath, user, password, keyPath, port, maxDepth, isSFtp, isFtps);
             await endpoint.LoadPatterns(ge);

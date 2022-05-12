@@ -6,17 +6,13 @@ namespace Utility.Http
 {
     public static class HealthCheckHandler
     {
-        private static ScriptDescriptor _healthCheckHandler;
+        private static Guid _healthCheckHandlerLbmId;
 
         public static async Task Initialize(FrameworkWrapper fw)
         {
-            if (Guid.TryParse(await fw.StartupConfiguration.GetS("HealthCheckHandler", null), out var healthCheckLbmId))
+            if (Guid.TryParse(await fw.StartupConfiguration.EvalS("HealthCheckHandler", defaultValue: null), out var healthCheckHandlerLbmId))
             {
-                var lbm = await fw.Entities.GetEntity(healthCheckLbmId);
-                var code = await lbm.GetS("Config");
-
-                var sd = fw.RoslynWrapper.CompileAndCache(new ScriptDescriptor(healthCheckLbmId.ToString(), code));
-                _healthCheckHandler = sd;
+                _healthCheckHandlerLbmId = healthCheckHandlerLbmId;
             }
         }
 
@@ -26,9 +22,10 @@ namespace Utility.Http
             // to configure the AWS TargetGroup to pass "?m=HealthCheck" when running a health check.
             if (context.Request.Query["m"] == "HealthCheck" || context.UserAgent().Contains("HealthChecker"))
             {
-                if (_healthCheckHandler != null)
+                if (_healthCheckHandlerLbmId != default)
                 {
-                    return (bool)await fw.RoslynWrapper[_healthCheckHandler.Id.Value](new { context, fw }, new StateWrapper());
+                    var result = await fw.EvaluateEntity(_healthCheckHandlerLbmId, fw.Entity.Create(new { context, fw }));
+                    return result.Value<bool>();
                 }
                 else
                 {

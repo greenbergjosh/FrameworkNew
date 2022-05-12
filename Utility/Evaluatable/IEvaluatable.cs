@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 
 namespace Utility.Evaluatable
 {
     public interface IEvaluatable
     {
-        IAsyncEnumerable<Entity.Entity> Evaluate(Entity.Entity entity);
+        Task<EvaluateResponse> Evaluate(EvaluateRequest request);
     }
 }

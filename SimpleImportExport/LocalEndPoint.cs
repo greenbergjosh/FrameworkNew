@@ -21,7 +21,7 @@ namespace SimpleImportExport
 
         public static async Task<LocalEndPoint> Create(Entity ge, FrameworkWrapper fw)
         {
-            var baseDir = await ge.GetS("Path");
+            var baseDir = await ge.EvalS("Path");
 
             var endpoint = new LocalEndPoint(fw, baseDir);
             await endpoint.LoadPatterns(ge);

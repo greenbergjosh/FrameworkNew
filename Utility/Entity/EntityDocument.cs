@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
+using Utility.Evaluatable;
 
 namespace Utility.Entity
 {
@@ -28,51 +29,60 @@ namespace Utility.Entity
 
         public abstract int Length { get; }
 
-        public IEnumerable<Entity> EnumerateArray()
+        public async IAsyncEnumerable<Entity> EnumerateArray()
         {
             if (!IsArray)
             {
                 throw new InvalidOperationException($"Entity of type {ValueType} is not an array");
             }
 
-            foreach (var (item, index) in EnumerateArrayCore().Select((item, index) => (item, index)))
+            await foreach (var (item, index) in EnumerateArrayCore().Select((item, index) => (item, index)))
             {
-                yield return Entity.Create(item, $"{Entity.Query}[{index}]");
+                if (item.Entity != null)
+                {
+                    yield return item.Entity;
+                }
+                else
+                {
+                    yield return Entity.Create(item, $"{Entity.Query}[{index}]", Entity);
+                }
             }
         }
 
-        protected internal abstract IEnumerable<EntityDocument> EnumerateArrayCore();
+        protected internal abstract IAsyncEnumerable<EntityDocument> EnumerateArrayCore();
 
-        public IEnumerable<(string name, Entity value)> EnumerateObject()
+        public async IAsyncEnumerable<(string name, Entity value)> EnumerateObject()
         {
             if (!IsObject)
             {
                 throw new InvalidOperationException($"Entity of type {ValueType} is not an object");
             }
 
-            foreach (var (name, value) in EnumerateObjectCore())
+            await foreach (var (name, value) in EnumerateObjectCore())
             {
-                yield return (name, Entity.Create(value, $"{Entity.Query}.{name}"));
+                yield return (name, Entity.Create(value, $"{Entity.Query}.{name}", Entity));
             }
         }
 
+        protected internal abstract IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
         public abstract void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options);
-
-        protected internal abstract IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
 
         public static EntityDocument MapValue(object value) => value switch
         {
             null => new EntityDocumentConstant(null, EntityValueType.Null),
             bool => new EntityDocumentConstant(value, EntityValueType.Boolean),
-            string => new EntityDocumentConstant(value, EntityValueType.String),
-            int => new EntityDocumentConstant(value, EntityValueType.Number),
-            float => new EntityDocumentConstant(value, EntityValueType.Number),
             decimal => new EntityDocumentConstant(value, EntityValueType.Number),
+            float => new EntityDocumentConstant(value, EntityValueType.Number),
+            int => new EntityDocumentConstant(value, EntityValueType.Number),
+            long => new EntityDocumentConstant(value, EntityValueType.Number),
+            string => new EntityDocumentConstant(value, EntityValueType.String),
+            Guid => new EntityDocumentConstant(value, EntityValueType.UUID),
             IDictionary dictionary => new EntityDocumentDictionary(dictionary),
             IEnumerable array => EntityDocumentArray.Create(array),
+            IEvaluatable evaluatable => new EntityDocumentEvaluatable(evaluatable),
             Utility.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
-            _ => EntityDocumentObject.Create(value),// throw new Exception($"Type {value.GetType().Name} is not supported")
+            _ => EntityDocumentObject.Create(value),
         };
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -82,44 +92,39 @@ namespace Utility.Entity
             yield break;
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public virtual async IAsyncEnumerable<Entity> ProcessEvaluatable()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name, bool updateQueryAndRoot = true)
         {
-            yield break;
-        }
+            var result = await TryGetPropertyCore(name);
 
-        public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name)
-        {
-            if (TryGetPropertyCore(name, out var document))
+            if (result.found)
             {
-                return (true, Entity.Create(document, $"{Entity.Query}.{name}"));
+                return (true, Entity.Create(result.propertyEntityDocument, updateQueryAndRoot ? $"{Entity.Query}.{name}" : Entity.Query, updateQueryAndRoot ? Entity : result.propertyEntityDocument?.Entity?.Root ?? null));
             }
             else if (Entity.MissingPropertyHandler != null)
             {
                 var foundEntityDocument = await Entity.MissingPropertyHandler(Entity, name);
                 if (foundEntityDocument != null)
                 {
-                    return (true, Entity.Create(foundEntityDocument, $"{Entity.Query}.{name}"));
+                    return (true, Entity.Create(foundEntityDocument, updateQueryAndRoot ? $"{Entity.Query}.{name}" : foundEntityDocument?.Entity?.Query ?? "$", updateQueryAndRoot ? Entity : foundEntityDocument?.Entity.Root ?? null));
                 }
             }
 
             return (false, default);
         }
 
-        protected internal abstract bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument);
+        protected internal abstract Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name);
 
         public abstract T Value<T>();
 
-        public bool Equals(EntityDocument other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
+        public virtual bool Equals(EntityDocument other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
             && (ReferenceEquals(this, other)
                 || (other is not null && ValueType == other.ValueType && ValueType switch
                 {
-                    EntityValueType.Array => Length == other.Length && EnumerateArrayCore().SequenceEqual(other.EnumerateArrayCore()),
+                    EntityValueType.Array => Length == other.Length && EnumerateArrayCore().SequenceEqual(other.EnumerateArrayCore()).Result,
                     EntityValueType.Boolean => Value<bool>() == other.Value<bool>(),
                     EntityValueType.Null => true,
                     EntityValueType.Number => Value<decimal>() == other.Value<decimal>(),
-                    EntityValueType.Object => Length == other.Length && EnumerateObjectCore().SequenceEqual(other.EnumerateObjectCore()),
+                    EntityValueType.Object => Length == other.Length && EnumerateObjectCore().OrderBy(p => p.name).Result.SequenceEqual(other.EnumerateObjectCore().OrderBy(p => p.name).Result),
                     EntityValueType.String => Value<string>() == other.Value<string>(),
                     EntityValueType.Undefined => false,
                     _ => throw new InvalidOperationException($"Unknown {nameof(EntityValueType)} {ValueType}")

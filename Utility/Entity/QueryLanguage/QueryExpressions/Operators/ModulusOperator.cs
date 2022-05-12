@@ -11,9 +11,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                 ? QueryExpressionType.Invalid
                 : left.OutputType == QueryExpressionType.Number ? QueryExpressionType.Number : QueryExpressionType.Invalid;
 
-        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
+        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity, Entity evaluationParameters)
         {
-            var rightEntity = await right.Evaluate(entity);
+            var rightEntity = await right.Evaluate(entity, evaluationParameters);
             if (rightEntity.ValueType != EntityValueType.Number)
             {
                 return default;
@@ -25,7 +25,7 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                 return default;
             }
 
-            var leftEntity = await left.Evaluate(entity);
+            var leftEntity = await left.Evaluate(entity, evaluationParameters);
             return leftEntity.ValueType != EntityValueType.Number
                 ? default
                 : (EntityDocument)new EntityDocumentConstant(leftEntity.Value<decimal>() % rightValue, EntityValueType.Number);

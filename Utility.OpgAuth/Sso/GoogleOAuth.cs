@@ -15,7 +15,7 @@ namespace Utility.OpgAuth.Sso
         {
             try
             {
-                var validation = await GoogleJsonWebSignature.ValidateAsync(await authData.GetS("idToken"));
+                var validation = await GoogleJsonWebSignature.ValidateAsync(await authData.EvalS("idToken"));
 
                 return validation?.EmailVerified != true
                     ? throw new AuthException($"Account is unverified.\nPayload: {authData}\n\nResponse: {JsonSerializer.Serialize(validation)}")

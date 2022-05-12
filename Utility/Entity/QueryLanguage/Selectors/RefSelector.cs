@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal sealed class RefSelector : ISelector
+    internal sealed class RefSelector : Selector
     {
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request)
         {
-            foreach (var entity in entities)
+            await foreach (var target in targetEntity.Document.EnumerateArray())
             {
-                if (entity.Document.IsObject)
+                if (target.Document.IsObject)
                 {
-                    var (found, propertyEntity) = await entity.Document.TryGetProperty("$ref");
+                    var (found, propertyEntity) = await target.Document.TryGetProperty("$ref");
                     if (found)
                     {
                         yield return propertyEntity;

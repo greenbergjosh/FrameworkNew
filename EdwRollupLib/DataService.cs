@@ -65,18 +65,18 @@ namespace EdwRollupLib
             _scheduler.Context["exclusiveQueueCurrentlyRunningId"] = 0;
             _scheduler.Context["exclusiveLock"] = new object();
 
-            var rsConfigId = await _fw.StartupConfiguration.GetS("Config.RsConfigId");
+            var rsConfigId = await _fw.StartupConfiguration.EvalS("RsConfigId");
 
             var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonSerializer.Serialize(new
             {
                 ConfigType = "EDW.ThreadGroup"
             }), "");
 
-            foreach (var threadGroup in await threadGroups.GetL(""))
+            await foreach (var threadGroup in threadGroups.EvalL(""))
             {
-                var threadGroupName = await threadGroup.GetS("Name");
+                var threadGroupName = await threadGroup.EvalS("Name");
 
-                if (await threadGroup.GetB("Config.paused", false))
+                if (await threadGroup.EvalB("paused", false))
                 {
                     await _fw.Log("EdwRollupService.InitScheduler", $"{threadGroupName} is paused.");
 #if DEBUG
@@ -92,10 +92,10 @@ namespace EdwRollupLib
                     ["RsConfigId"] = rsConfigId
                 };
 
-                foreach (var rollupGroupPeriod in await threadGroup.GetL("Config.rollup_group_periods"))
+                await foreach (var rollupGroupPeriod in threadGroup.EvalL("rollup_group_periods"))
                 {
-                    var period = await rollupGroupPeriod.GetS("period");
-                    var rollupFrequency = await rollupGroupPeriod.GetS("rollup_frequency", null) ?? period;
+                    var period = await rollupGroupPeriod.EvalS("period");
+                    var rollupFrequency = await rollupGroupPeriod.EvalS("rollup_frequency", null) ?? period;
 
                     var jobDetail = JobBuilder.Create<RollupJob>()
                         .WithIdentity($"{threadGroupName}_{period}", "RollupJob")
@@ -127,17 +127,17 @@ namespace EdwRollupLib
                 ConfigType = "EDW.MaintenanceTask"
             }), "");
 
-            foreach (var maintenanceTask in await maintenanceTasks.GetL(""))
+            await foreach (var maintenanceTask in maintenanceTasks.EvalL(""))
             {
-                var enabled = await maintenanceTask.GetB("Config.enabled", true);
+                var enabled = await maintenanceTask.EvalB("enabled", true);
                 if (!enabled)
                 {
                     continue;
                 }
 
-                var name = await maintenanceTask.GetS("Name");
-                var cronExpression = await maintenanceTask.GetS("Config.cron_expression");
-                var exclusive = await maintenanceTask.GetB("Config.exclusive", false);
+                var name = await maintenanceTask.EvalS("Name");
+                var cronExpression = await maintenanceTask.EvalS("cron_expression");
+                var exclusive = await maintenanceTask.EvalB("exclusive", false);
 
                 IDictionary<string, object> parameters = new Dictionary<string, object>
                 {
@@ -260,7 +260,7 @@ namespace EdwRollupLib
                 else if (path == "/reset" && context.Request.Method == WebRequestMethods.Http.Post)
                 {
                     await ShutdownScheduler();
-                    _ = await _fw.ReInitialize();
+                    _ = await _fw.Reinitialize();
                     await InitScheduler();
                     Console.WriteLine($"{DateTime.Now}: Reset");
                     await context.WriteSuccessRespAsync(_defaultResponse);

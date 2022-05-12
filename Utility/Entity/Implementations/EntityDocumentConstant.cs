@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Utility.Entity.Implementations
 {
@@ -15,12 +16,16 @@ namespace Utility.Entity.Implementations
             EntityValueType.Null,
             EntityValueType.Number,
             EntityValueType.String,
-            EntityValueType.Undefined
+            EntityValueType.UUID,
+            EntityValueType.Undefined,
+            EntityValueType.Unhandled
         };
 
         public static EntityDocument Null { get; } = new EntityDocumentConstant(null, EntityValueType.Null);
 
         public static EntityDocument Undefined { get; } = new EntityDocumentConstant(null, EntityValueType.Undefined);
+
+        public static EntityDocument Unhandled { get; } = new EntityDocumentConstant(null, EntityValueType.Unhandled);
 
         public override EntityValueType ValueType => _valueType;
 
@@ -37,15 +42,31 @@ namespace Utility.Entity.Implementations
             _valueType = valueType;
         }
 
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
+        protected internal override IAsyncEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
-        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
+        protected internal override IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => throw new NotImplementedException();
 
-        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument) => throw new NotImplementedException();
+        protected internal override Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name) => throw new NotImplementedException();
 
         public override T Value<T>() => (T)_value;
 
-        public override string ToString() => _value?.ToString();
+        public override bool Equals(EntityDocument other)
+        {
+            if (other is EntityDocumentConstant otherConstant)
+            {
+                return ValueType != EntityValueType.Undefined && otherConstant.ValueType != EntityValueType.Undefined 
+                    && (
+                            (ValueType == EntityValueType.Null && _value is null && otherConstant.ValueType == EntityValueType.Null && otherConstant._value is null) 
+                            || _value.Equals(otherConstant._value)
+                       );
+            }
+            else
+            {
+                return base.Equals(other);
+            }
+        }
+
+        public override string ToString() => _value?.ToString() ?? "null";
 
         public override int GetHashCode() => _value?.GetHashCode() ?? base.GetHashCode();
 

@@ -43,7 +43,7 @@ namespace UnsubLib.NetworkProviders
 
     public static class Factory
     {
-        public static async Task<INetworkProvider> GetInstance(FrameworkWrapper fw, Entity network) => await network.GetS("Credentials.NetworkType") switch
+        public static async Task<INetworkProvider> GetInstance(FrameworkWrapper fw, Entity network) => await network.EvalS("Credentials.NetworkType") switch
         {
             "Affise" => new Affise(fw),
             "Amobee" => new Amobee(fw),

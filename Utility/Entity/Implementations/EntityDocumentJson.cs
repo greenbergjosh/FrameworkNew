@@ -56,31 +56,45 @@ namespace Utility.Entity.Implementations
         public static Task<EntityDocument> Parse(string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement));
 
         #region EntityDocument Implementation
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => _value.EnumerateArray().Select(item => new EntityDocumentJson(item));
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        protected internal override async IAsyncEnumerable<EntityDocument> EnumerateArrayCore()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            foreach (var item in _value.EnumerateArray().Select(item => new EntityDocumentJson(item)))
+            {
+                yield return item;
+            }
+        }
 
-        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore() => _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value)));
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        protected internal override async IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        {
+            foreach (var item in _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value))))
+            {
+                yield return item;
+            }
+        }
 
         public override async IAsyncEnumerable<Entity> ProcessReference()
         {
             if (_value.ValueKind == JsonValueKind.Object && _value.TryGetProperty("$ref", out var refProperty))
             {
-                foreach (var entity in await Entity.Get(refProperty.GetString()))
+                await foreach (var entity in Entity.Eval(refProperty.GetString()))
                 {
                     yield return entity;
                 }
             }
         }
 
-        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        protected internal override Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name)
         {
             if (_value.TryGetProperty(name, out var value))
             {
-                propertyEntityDocument = new EntityDocumentJson(value);
-                return true;
+                return Task.FromResult((true, (EntityDocument)new EntityDocumentJson(value)));
             }
 
-            propertyEntityDocument = default;
-            return false;
+            return Task.FromResult((false, (EntityDocument)default));
         }
 
         public override T Value<T>()

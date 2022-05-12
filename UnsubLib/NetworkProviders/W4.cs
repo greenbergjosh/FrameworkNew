@@ -19,11 +19,11 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Entity> GetCampaigns(Entity network)
         {
-            var networkId = await network.GetS("Id");
-            var networkName = await network.GetS("Name");
-            var apiKey = await network.GetS($"Credentials.NetworkApiKey");
-            var apiUrl = await network.GetS($"Credentials.NetworkApiUrl");
-            var limit = await network.GetI("Credentials.RequestLimitCount");
+            var networkId = await network.EvalS("$meta.id");
+            var networkName = await network.EvalS("$meta.name");
+            var apiKey = await network.EvalS($"Credentials.NetworkApiKey");
+            var apiUrl = await network.EvalS($"Credentials.NetworkApiUrl");
+            var limit = await network.EvalI("Credentials.RequestLimitCount");
             var offset = 0;
             var url = $"{apiUrl}?key_id={apiKey}&limit={limit}&offset={offset}&status=approved";
 
@@ -40,15 +40,15 @@ namespace UnsubLib.NetworkProviders
                     do
                     {
                         var ge = await network.Parse("application/json", body);
-                        var success = await ge.GetB("success");
+                        var success = await ge.EvalB("success");
 
                         if (!success)
                         {
-                            throw new InvalidOperationException(await ge.GetS("message"));
+                            throw new InvalidOperationException(await ge.EvalS("message"));
                         }
 
-                        var data = await ge.GetE("data");
-                        var results = (await data.GetL("results")).ToList();
+                        var data = await ge.EvalE("data");
+                        var results = await data.EvalL("results").ToList();
 
                         if (!results.Any())
                         {
@@ -82,7 +82,7 @@ namespace UnsubLib.NetworkProviders
                         PayloadType = "W4"
                     }), payload);
 
-                if (res == null || await res.GetS("result", null) == "failed")
+                if (res == null || await res.EvalS("result", defaultValue: null) == "failed")
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res}\r\nApi Response:\r\n{body ?? "null"}");
                     return null;
@@ -103,24 +103,24 @@ namespace UnsubLib.NetworkProviders
 
         public async Task<Uri> GetSuppressionLocationUrl(Entity network, string campaignId)
         {
-            var networkName = await network.GetS("Name");
-            var apiKey = await network.GetS("Credentials.NetworkApiKey");
-            var apiUrl = await network.GetS("Credentials.NetworkApiSuppressionUrl");
+            var networkName = await network.EvalS("$meta.name");
+            var apiKey = await network.EvalS("Credentials.NetworkApiKey");
+            var apiUrl = await network.EvalS("Credentials.NetworkApiSuppressionUrl");
             var url = $"{apiUrl}?key_id={apiKey}&campaign_id={campaignId}";
 
             try
             {
                 var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") }, 300);
                 var ge = await network.Parse("application/json", resp.body);
-                var success = await ge.GetB("success");
+                var success = await ge.EvalB("success");
 
                 if (!success)
                 {
-                    throw new InvalidOperationException(await ge.GetS("message"));
+                    throw new InvalidOperationException(await ge.EvalS("message"));
                 }
 
-                var data = await network.Parse("application/json", await ge.GetS("data"));
-                var suppressionUrl = await data.GetS("download_link");
+                var data = await ge.EvalE("data");
+                var suppressionUrl = await data.EvalS("download_link");
 
                 await _fw.Log(_logMethod, $"Got URL {networkName} {campaignId}:{url}:{suppressionUrl}:{resp.body}");
 

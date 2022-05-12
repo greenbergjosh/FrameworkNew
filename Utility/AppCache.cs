@@ -15,7 +15,7 @@ namespace Utility
         {
             var args = JsonSerializer.Serialize(new { name });
             var dataCacheKeys = await Data.CallFn(Conn, "getOrCreateCacheScope", args);
-            return Guid.Parse(await dataCacheKeys.GetS("result.id"));
+            return Guid.Parse(await dataCacheKeys.EvalS("result.id"));
         }
 
         public static async Task<IReadOnlyList<Entity.Entity>> GetCacheKeys(Guid cacheScopeId, params string[] keys)
@@ -33,8 +33,8 @@ namespace Utility
             var args = JsonSerializer.Serialize(rawArgs);
 
             var dataCacheKeys = await Data.CallFn(Conn, "getDataCaches", args);
-            var results = await dataCacheKeys.GetL("result");
-            return results?.ToList() ?? Enumerable.Empty<Entity.Entity>().ToList();
+            var results = await dataCacheKeys.EvalL("result").ToList();
+            return results ?? Enumerable.Empty<Entity.Entity>().ToList();
         }
 
         public static async Task AddDataCache(Guid cacheScopeId, DateTime? expires, params string[] keys)
@@ -68,7 +68,7 @@ namespace Utility
                 for(var i = 0; i < keys.Length; i++)
                 {
                     var key = keys[i];
-                    if (string.CompareOrdinal(await cacheKey.GetS($"x{i+1}"), key) == 0)
+                    if (string.CompareOrdinal(await cacheKey.EvalS($"x{i+1}"), key) == 0)
                     {
                         allMatched = false;
                         break;

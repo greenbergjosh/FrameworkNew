@@ -10,7 +10,7 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
         private ArrayElementIndexExpression(Index index) => _index = index;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async IAsyncEnumerable<int> GetIndexes(Entity entity)
+        public async IAsyncEnumerable<int> GetIndexes(Entity entity, Entity evaluationParameters)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             yield return _index.IsFromEnd ? entity.Document.Length - _index.Value : _index.Value;

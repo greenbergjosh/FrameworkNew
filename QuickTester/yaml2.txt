@@ -1,0 +1,677 @@
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f1c7
+  name: checked_transform_rs_element
+  type: Template
+
+parameter: p
+
+instructions:
+  agg_func:
+    type: ??
+    cases:
+      - antecedent: p.col.data_type[?(@=='BOOLEAN')]
+        consequent: BOOL_OR
+      - antecedent: true
+        consequent: MAX
+
+body: |
+  [=agg_func=]("[=p.col.alias=]") "[=p.col.alias=]"
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f123
+  name: checked_transform_parsed_rs_element
+  type: Template
+
+parameter: p
+
+instructions:
+  json_path_replaced:     p?json_path.replace('>>', '>')
+  json_path:              context://col?json_path
+  default_value:          context://col?default_value
+  data_type:              context://col?data_type
+  error_value:            context://col?error_value
+  alias:                  context://col?alias
+
+body: |
+  util.try_parse(CASE WHEN payload -> 'body' [=json_path_replaced=] IS NULL THEN NULL
+                      ELSE COALESCE(payload -> 'body' [=json_path=], '[=default_value=]') 
+                 END
+                 , '[=data_type=]'
+                 , '[=error_value=]'
+                )::[=data_type=] "[=alias=]"
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f124
+  name: checked_transform_all_keys_without_satisfaction
+  type: Template
+
+parameter: p
+
+instructions:
+  alias:                  context://col?alias
+
+body: |
+  "[=alias=]"
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: checked_transform_all_keys_with_satisfaction
+  type: Template
+
+parameter: p
+
+instructions:
+  alias:                      context://col?alias
+  satisfaction_default_value: context://col?satisfaction_default_value
+  data_type:                  context://col?data_type
+
+body: |
+  COALESCE("[=alias=]", CASE WHEN satisfaction_expires < NOW() THEN '[=satisfaction_default_value=]'::[=data_type=] END)"
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f126
+  name: checked_transform_all_keys
+  type: Template
+
+parameter: p
+
+instructions:
+  cond_satisfaction:
+    type: ??
+    cases:
+      - antecedent: context://col?satisfaction_default_value[?(@)]
+        consequent: checked_transform_all_keys_with_satisfaction
+      - antecedent: true
+        consequent: checked_transform_all_keys_without_satisfaction
+
+body: |
+  [=cond_satisfaction=]
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f127
+  name: checked_transform_all_keys_not_null
+  type: Template
+
+parameter: p
+
+instructions:
+
+body: |
+  [=checked_transform_all_keys=] IS NOT NULL
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f1c7
+  name: report_sequence_checked_transform_sql
+  type: Template
+
+vars:
+  &col:     config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*
+  
+instructions:
+  csep: &comma_sep
+    evaluate: repeat
+    prepend: ", "
+    separator: ", "
+    scopes:
+      - *col
+
+  asep: &and_sep
+    type: []
+    prepend: " AND "
+    separator: " AND "
+    scopes:
+      - *col
+
+  rs_name: context://sym?report_sequence_checked_transform_meta_rs_name
+
+  checked_transform_parsed_rs_elements:
+    <<: *comma_sep
+    repeat: [=checked_transform_parsed_rs_element=] 
+
+  checked_transform_rs_elements:
+    <<: *comma_sep
+
+  target_schema_column_name:
+    <<: *comma_sep
+
+  checked_transform_all_keys_not_null:
+    <<: *and_sep
+
+  checked_transform_all_keys:
+    <<: *comma_sep
+
+  checked_transform_tgt_and_excluded
+    <<: *comma_sep
+
+body: |
+  DROP TABLE IF EXISTS tmp_checked_pending_set;
+  CREATE TABLE tmp_checked_pending_set AS
+     (SELECT id,
+             MIN(ts)                           ts,
+             MIN(satisfaction_expires)         satisfaction_expires,
+             MIN(expires_interval)             expires_interval
+             [=checked_transform_rs_elements=]
+      FROM (
+             SELECT rs.id,
+                    rs.ts,
+                    NOW() +
+                    COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL)  satisfaction_expires,
+                    COALESCE(payload ->> 'agg_ttl_interval', '30d')                                expires_interval
+                    [=checked_transform_parsed_rs_elements=]
+             FROM tmp_staging_report_sequence_checked rs WHERE staging_ts < <max_ts_to_move>
+             UNION
+             SELECT rs.id,
+                    rs.ts,
+                    NOW() + COALESCE((payload ->> 'satisfaction_ttl_interval')::INTERVAL, '5d'::INTERVAL) satisfaction_expires,
+                    NULL::TEXT expires_interval
+                    [=checked_transform_parsed_rs_elements=]
+             FROM tmp_staging_report_sequence_checked_detail rs WHERE staging_ts < <max_ts_to_move>
+             UNION
+             SELECT pnd.id,
+                    pnd.ts,
+                    satisfaction_expires,
+                    expires_interval
+                    [=target_schema_column_name=]
+             FROM "<pending_target_schema>"."[=rs_name=]" pnd
+                  JOIN tmp_staging_report_sequence_checked rsc
+                       ON (pnd.id = rsc.id AND pnd.ts = rsc.ts)
+                  JOIN tmp_staging_report_sequence_checked_detail rscd
+                       ON (pnd.id = rscd.id AND pnd.ts = rscd.ts)
+                  WHERE rsc.staging_ts < <max_ts_to_move>
+                       AND rscd.staging_ts < <max_ts_to_move>
+                  <partition_where_clause>
+           ) src
+      GROUP BY id
+     );
+
+  CREATE UNIQUE INDEX uix_tmp_checked_pending_set ON tmp_checked_pending_set(id, ts);
+
+  INSERT INTO "<pending_target_schema>"."[=rs_name=]" 
+  AS tgt (id, ts, satisfaction_expires, expires_interval
+          [=target_schema_column_name=])
+  SELECT * FROM tmp_checked_pending_set
+  ON CONFLICT (id, ts) DO UPDATE
+     SET ts = COALESCE(tgt.ts, excluded.ts)
+         [=checked_transform_tgt_and_excluded=];
+
+  INSERT INTO warehouse.report_sequence_duplicates(id, ts)
+  SELECT id,
+         ts
+  FROM   "<pending_target_schema>"."[=rs_name=]" p
+  WHERE  ts IS NOT NULL
+         [=checked_transform_all_keys_not_null=]
+         AND EXISTS(SELECT 1 FROM "<target_schema>"."[=rs_name=]" tgt
+  WHERE  p.id = tgt.id <dups_partition_where_clause>);
+
+  WITH inserted AS (
+       INSERT INTO "<target_schema>"."[=rs_name=]"
+       (
+          id
+        , ts 
+          [=target_schema_column_name=]
+        , expires
+       )
+       SELECT   id
+              , ts
+              [=checked_transform_all_keys=]
+              , NOW() + expires_interval::INTERVAL
+       FROM "<pending_target_schema>"."[=rs_name=]"
+       WHERE ts IS NOT NULL
+             [=checked_transform_all_keys_not_null=]
+       ON CONFLICT DO NOTHING
+       RETURNING 1
+  )
+  INSERT INTO log.general(ts, reporter, message)
+  SELECT CLOCK_TIMESTAMP(),
+         'edw.check_and_normalize_report_sequence_satisfaction',
+         FORMAT('inserted %s rows', COUNT(*))
+  FROM inserted;
+
+  WITH deleted AS (
+       DELETE FROM "<pending_target_schema>"."[=rs_name=]"
+       WHERE ts IS NOT NULL
+       [=checked_transform_all_keys_not_null=]
+      RETURNING 1
+  )
+  INSERT
+  INTO log.general(ts, reporter, message)
+  SELECT CLOCK_TIMESTAMP(),
+         'edw.check_and_normalize_report_sequence_satisfaction',
+         FORMAT('deleted %s rows', COUNT(*))
+  FROM deleted;
+
+  DELETE
+  FROM "<pending_target_schema>"."[=rs_name=]"
+  WHERE NOW() > (satisfaction_expires + '6h'::INTERVAL);
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: target_schema_column_name
+  type: Template
+
+parameter: p
+
+instructions:
+  json_path:              context://col?json_path
+  default_value:          context://col?default_value
+  data_type:              context://col?data_type
+
+body: |
+  (COALESCE((payload -> 'body' [=json_path=]), '[=default_value=]'))::[=data_type=]
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f1c7
+  name: target_table_insert_sql
+  type: Template
+
+vars:
+  &col:     config://6312d62e-0db1-4954-8465-ebccf11bcf56?rs_elements.*
+  
+instructions:
+  csep: &comma_sep
+    evaluate: repeat
+    prepend: ", "
+    separator: ", "
+    scopes:
+      - *col
+
+  asep: &and_sep
+    type: []
+    prepend: " AND "
+    separator: " AND "
+    scopes:
+      - *col
+
+  rs_name: context://sym?report_sequence_checked_transform_meta_rs_name
+
+  checked_transform_all_keys_without_satisfaction:
+    <<: *comma_sep
+    repeat: checked_transform_parsed_rs_element    
+
+  target_schema_column_name:
+    <<: *comma_sep
+    repeat: target_schema_column_name
+
+body: |
+  INSERT INTO warehouse.report_sequence_duplicates(id, ts)
+  SELECT id, ts
+  FROM <report_sequence_set> rss
+  WHERE EXISTS (SELECT 1 FROM "<target_schema>"."[=rs_name=]" t WHERE t.id = rss.id);
+                                
+  INSERT INTO "<target_schema>"."[=rs_name=]" ([=checked_transform_all_keys_without_satisfaction=], expires) 
+  SELECT id, ts, payload, silo_id[=target_schema_column_name=]
+         ,NOW() + COALESCE(payload ->> 'agg_ttl_interval', '30d')::INTERVAL
+  FROM <report_sequence_set>
+  WHERE config_id = '<config_id>'
+  ON CONFLICT DO NOTHING
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: union_select
+  type: Template
+
+parameter: tbl
+
+body: |
+  SELECT id, ts FROM warehouse_report_sequence."[=tbl=]" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: lt_union_select
+  type: Template
+
+parameter: tbl
+
+body: |
+  SELECT id, ts FROM warehouse_report_sequence."[=tbl=]" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'
+  UNION
+  SELECT id, ts FROM warehouse_report_sequence."[=tbl=]_long_term" WHERE ts >= now()-'30d'::interval AND ts >= '<min_batch_ts>' AND ts <= '<max_batch_ts>'
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f1c7
+  name: union_query
+  type: Template
+
+vars:
+  &tbl:     context://sym?tg_table_names.*
+  
+instructions:
+  usep: &union_sep
+    evaluate: repeat
+    separator: " UNION "
+    scopes:
+      - *tbl
+
+  union_selects:
+    <<: *union_sep
+    repeat: union_select  
+
+body: |
+  [=union_selects=]
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f1c7
+  name: lt_union_query
+  type: Template
+
+vars:
+  &tbl:     context://sym?tg_table_names.*
+  
+instructions:
+  usep: &union_sep
+    evaluate: repeat
+    separator: " UNION "
+    scopes:
+      - *tbl
+
+  lt_union_selects:
+    <<: *union_sep
+    repeat: lt_union_select  
+
+body: |
+  [=lt_union_selects=]
+
+---
+
+$meta:
+  id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: delete_rscfg
+  type: Template
+
+instructions:
+  rsid:                      context://sym?rsid
+
+body: |
+  DELETE FROM edw.report_sequence_config WHERE id = '[=rsid=]::UUID
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: process_constants
+  type: Template
+
+instructions:
+  value:                      context://col?value
+  data_type:                  context://col?data_type
+  name:                       context://col?name
+
+symbol: |-
+  [=name=]
+
+body: |
+  '[=val=]'::[=data_type=] [=name=]
+  
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: rs_element
+  type: Template
+
+instructions:
+  alias:                      context://col?alias
+
+symbol: |-
+  [=alias=]
+
+body: |
+  rs.[=alias=]
+                    
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: rs_elements
+  type: Template
+
+instructions:
+  alias:                      context://col?alias
+
+body: |
+  [=rs_element=] "[=alias=]"
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: event_element
+  type: Template
+
+instructions:
+  alias:                      context://col?alias
+  json_path:                  context://col?json_path
+  satisfaction_default_value: context://col?satisfaction_default_value
+  data_type:                  context://col?data_type
+
+symbol: |-
+  [=alias=]
+
+body: |
+  COALESCE(event_payload -> 'body' [=json_path=], '[=satisfaction_default_value=]')::[=data_type=]
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: event_elements
+  type: Template
+
+instructions:
+  alias:                      context://col?alias
+
+body: |
+  [=event_element=] "[=alias=]"
+
+---
+
+  $meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: derived_element
+  type: Template
+
+instructions:
+  col_value:                  context://col?col_value
+  alias:                      context://col?alias
+  satisfaction_default_value: context://col?satisfaction_default_value
+  data_type:                  context://col?data_type
+
+symbol: |-
+  [=alias=]
+
+body: |
+  [=col_value=]::[=data_type=]
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: derived_elements
+  type: Template
+
+instructions:
+  alias:                      context://col?alias
+
+body: |
+  [=derived_element=] "[=alias=]"
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: select_sql_multiton_join
+  type: Template
+
+instructions:
+  tbl_name:                      config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?$meta.name
+
+body: |
+  
+  JOIN warehouse_report_sequence."[=tbl_name=]"
+    ON (ws.rs_id = rs.id AND ws.rs_ts = rs.ts)
+
+---
+
+$meta:
+  *id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: report_sequence_select_sql
+  type: Template
+
+vars:
+  &constants:        config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?constants.*
+  &event_elements:   config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?event_elements.*
+  &rs_elements:      config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?rs_elements.*
+  &derived_elements: config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?derived_elements.*
+
+instructions:
+  csep: &comma_sep
+    evaluate: repeat
+    prepend: ", "
+    separator: ", "
+    scopes:
+      - *col
+
+  asep: &and_sep
+    type: []
+    prepend: " AND "
+    separator: " AND "
+    scopes:
+      - *col
+
+  is_multiton: config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7?thread_group_id[?(@.thread_group_type!=""singleton"")]
+
+  process_constants:
+    repeat: process_constants  
+    scopes:
+      - *constants 
+
+  event_elements
+    <<: *comma_sep
+    repeat: event_elements
+    scopes:
+      - *event_elements
+
+  sing_mult_rs_cols:
+    type: ??
+    cases:
+      - antecedent: [=is_multiton=]
+        consequent: , rs.id rs_id, rs.ts rs_ts
+
+  rs_elements
+    <<: *comma_sep
+    repeat: rs_elements
+    scopes:
+      - *rs_elements
+
+  sing_mult_rs:
+    type: ??
+    cases:
+      - antecedent: [=is_multiton=]
+        consequent: [=rs_elements=]
+
+  derived_elements
+    <<: *comma_sep
+    repeat: derived_elements
+    scopes:
+      - *derived_elements
+
+  sing_mult_join:
+    type: ??
+    cases:
+      - antecedent: [=is_multiton=]
+        consequent: [=select_sql_multiton_join=]
+
+locals:
+  - process_constants
+
+body: |
+  SELECT event_id, event_ts [=sing_mult_rs_cols=] [=event_elements=] [=sing_mult_rs=] [=derived_elements=]
+  FROM satisfied_set ws [=sing_mult_join=]
+
+---
+
+$meta:
+  id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: maintenance_drop_staging_event_table
+  type: Template
+
+variables:
+  p
+
+instructions:
+  table_name:     p://tbl?table
+  partition_name: p://tbl?partition
+
+body: |
+  ALTER TABLE "staging"."[=table_name=]" DETACH PARTITION "staging"."[=partition_name=]";
+  DROP TABLE "staging"."[=partition_nme=]"
+
+---
+
+$meta:
+  id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: staging_event_table_maintenance
+  type: Template
+
+instructions:
+  partitions:                      context://f?edw.__list_old_staging_partitions()
+
+  partition_maintenance:
+    evaluate: repeat
+    separator: ;
+    repeat: maintenance_drop_staging_event_table
+    scopes:
+      - partitions
+
+body: |
+  [=partition_maintenance=]
+
+---
+
+
+$meta:
+  id:   3aeeb2b6-c006-4854-a679-00ea73a6f125
+  name: maintenance_create_partition
+  type: Template
+
+variables:
+  p
+
+instructions:
+  table_name:     p://tbl?table
+  partition_name: p://tbl?partition
+
+body: |
+  PERFORM edw.create_new_partitions_for_table('rollup', 'Admin Beacon_usage_statistics_detailed', '1 day')
+
+---
+
+
+
+---
+
+...

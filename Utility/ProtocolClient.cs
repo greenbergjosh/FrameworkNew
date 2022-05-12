@@ -743,9 +743,9 @@ namespace Utility
 
         public static async Task<Entity.Entity> HttpPostAsyncGe(Entity.Entity entity)
         {
-            var parms = await entity.GetD<string>("parms");
+            var parms = await entity.EvalD<string>("parms");
 
-            var resp = await HttpPostAsync(await entity.GetS("uri"), parms, !string.IsNullOrEmpty(await entity.GetS("timeout")) ? double.Parse(await entity.GetS("timeout")) : 60, await entity.GetS("mediaType") ?? "");
+            var resp = await HttpPostAsync(await entity.EvalS("uri"), parms, !string.IsNullOrEmpty(await entity.EvalS("timeout")) ? double.Parse(await entity.EvalS("timeout")) : 60, await entity.EvalS("mediaType") ?? "");
             return entity.Create(new { result = await entity.Parse("application/json", resp) });
         }
 
@@ -816,7 +816,7 @@ namespace Utility
 
         public static async Task<Entity.Entity> HttpGetAsync(Entity.Entity entity)
         {
-            var (success, body) = await HttpGetAsync(await entity.GetS("uri"), null, !string.IsNullOrEmpty(await entity.GetS("timeout")) ? double.Parse(await entity.GetS("timeout")) : 60);
+            var (success, body) = await HttpGetAsync(await entity.EvalS("uri"), null, !string.IsNullOrEmpty(await entity.EvalS("timeout")) ? double.Parse(await entity.EvalS("timeout")) : 60);
             return entity.Create(new { success, result = await entity.Parse("application/json", body) });
         }
 

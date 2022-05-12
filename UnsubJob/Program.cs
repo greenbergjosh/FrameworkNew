@@ -67,7 +67,7 @@ namespace UnsubJob
             {
                 var res = await unsub.GetNetworks(singleNetworkName);
 
-                networks = await res.GetL();
+                networks = await res.EvalL("@").ToList();
 
                 if (networks == null)
                 {
@@ -101,9 +101,9 @@ namespace UnsubJob
                         {
                             try
                             {
-                                await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.GetS("Name")}, {c})...");
+                                await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.EvalS("$meta.name")}, {c})...");
                                 await unsub.ScheduledUnsubJob(n, c, skipQueuedCheck);
-                                await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.GetS("Name")}, {c})...");
+                                await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.EvalS("$meta.name")}, {c})...");
                             }
                             catch (Exception e)
                             {
@@ -130,8 +130,8 @@ namespace UnsubJob
 
             foreach (var network in networks)
             {
-                var name = await network.GetS("Name");
-                var enabled = await network.GetB("Credentials.Enabled", true);
+                var name = await network.EvalS("Name");
+                var enabled = await network.EvalB("Credentials.Enabled", true);
                 if (!enabled)
                 {
                     await Fw.Log(nameof(Main), $"Skipping({name}) because it is not enabled...");
@@ -171,7 +171,7 @@ namespace UnsubJob
                     continue;
                 }
 
-                var unsubMethod = await network.GetS("Credentials.UnsubMethod");
+                var unsubMethod = await network.EvalS("Credentials.UnsubMethod");
 
                 if (unsubMethod == "ScheduledUnsubJob")
                 {
@@ -195,7 +195,7 @@ namespace UnsubJob
                         }
                     }
 
-                    if (await network.GetB("Credentials.IgnoreManualDirectory", false) != false)
+                    if (await network.EvalB("Credentials.IgnoreManualDirectory", false) != false)
                     {
                         try
                         {

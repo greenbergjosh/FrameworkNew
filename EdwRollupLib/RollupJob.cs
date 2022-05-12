@@ -42,9 +42,9 @@ namespace EdwRollupLib
 
             if (exclusiveQueueNextId != exclusiveQueueCurrentRunningId)
             {
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.EvalS("$meta.name")} {Period} aborting due to active exclusive maintenance task");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} aborting due to active exclusive maintenance task");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.EvalS("$meta.name")} {Period} aborting due to active exclusive maintenance task");
 #endif
                 return;
             }
@@ -52,9 +52,9 @@ namespace EdwRollupLib
             _rsId = Guid.NewGuid();
             _rsTs = DateTime.UtcNow;
 
-            var threadGroupId = Guid.Parse(await ThreadGroup.GetS("Id"));
+            var threadGroupId = Guid.Parse(await ThreadGroup.EvalS("$meta.id"));
 
-            var parameters = new Parameters(EdwConfigId, threadGroupId, await ThreadGroup.GetS("Name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
+            var parameters = new Parameters(EdwConfigId, threadGroupId, await ThreadGroup.EvalS("$meta.name"), Period, TriggerFrequency, "LOG", _rsId.ToString());
 
             try
             {
@@ -80,18 +80,18 @@ namespace EdwRollupLib
                 var end = DateTime.Now;
                 await DropEndEvent(parameters, end - start, "ThreadGroupProcess", null);
 
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Complete");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.EvalS("$meta.name")} {Period} Complete");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} Complete");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.EvalS("$meta.name")} {Period} Complete");
 #endif
             }
             catch (Exception ex)
             {
                 await DropErrorEvent(ex, parameters, "ThreadGroupProcess", null, false);
 
-                await FrameworkWrapper.Error($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Error: {ex}");
+                await FrameworkWrapper.Error($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.EvalS("$meta.name")} {Period} Error: {ex}");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period} Error: {ex}");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.EvalS("$meta.name")} {Period} Error: {ex}");
 #endif
             }
         }
@@ -101,30 +101,30 @@ namespace EdwRollupLib
         {
             var prepareThreadGroupResult = await Data.CallFn("edw", "prepareThreadGroup", parameters.PrepareThreadGroup(), timeout: 900);
 
-            if (await prepareThreadGroupResult.GetS("status") != "ok")
+            if (await prepareThreadGroupResult.EvalS("status") != "ok")
             {
-                var description = await prepareThreadGroupResult.GetS("description");
+                var description = await prepareThreadGroupResult.EvalS("description");
                 throw new Exception(description);
             }
 
-            var sessionId = await prepareThreadGroupResult.GetS("session_id", null);
-            var workingSetTableName = await prepareThreadGroupResult.GetS("working_set_table_name", null);
+            var sessionId = await prepareThreadGroupResult.EvalS("session_id", null);
+            var workingSetTableName = await prepareThreadGroupResult.EvalS("working_set_table_name", null);
 
             var threadGroupParameters = parameters with { SessionId = sessionId, WorkingSetTableName = workingSetTableName };
 
-            var message = await prepareThreadGroupResult.GetS("message", null);
+            var message = await prepareThreadGroupResult.EvalS("message", null);
             if (!string.IsNullOrWhiteSpace(message))
             {
-                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{await ThreadGroup.GetS("Name")} {Period}: {message}");
+                await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(PrepareThreadGroup)}", $"{await ThreadGroup.EvalS("$meta.name")} {Period}: {message}");
 #if DEBUG
-                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")} {Period}: {message}");
+                Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.EvalS("$meta.name")} {Period}: {message}");
 #endif
                 return new[] { threadGroupParameters };
             }
 
             var reportSequences = new List<Parameters>();
 
-            var rsConfigIds = (await prepareThreadGroupResult.GetL<string>("rs_config_ids")).Select(i => Guid.Parse(i));
+            var rsConfigIds = await prepareThreadGroupResult.EvalL<string>("rs_config_ids").Select(i => Guid.Parse(i)).ToList();
             if (!rsConfigIds.Any())
             {
                 throw new Exception($"No rs_config_ids, response: {prepareThreadGroupResult}");
@@ -143,9 +143,9 @@ namespace EdwRollupLib
         {
             var processRsResult = await Data.CallFn("edw", "processRs", parameters.ProcessRs(), timeout: 900);
 
-            if (!string.IsNullOrWhiteSpace(await processRsResult.GetS("message", null)))
+            if (!string.IsNullOrWhiteSpace(await processRsResult.EvalS("message", null)))
             {
-                throw new Exception(await processRsResult.GetS("message"));
+                throw new Exception(await processRsResult.EvalS("message"));
             }
 
             var rs = await FrameworkWrapper.Entities.GetEntity(parameters.RsConfigId);
@@ -181,13 +181,13 @@ namespace EdwRollupLib
 
             var rollups = new List<Parameters>();
 
-            var allRollupArgs = (await processRsResult.GetL("args")).ToList();
+            var allRollupArgs = await processRsResult.EvalL("args").ToList();
 
             if (allRollupArgs.Any())
             {
                 foreach (var rollupArgs in allRollupArgs)
                 {
-                    var rollupParameters = parameters with { RollupArgs = rollupArgs, RollupName = await rollupArgs.GetS("rollup_name"), RollupCount = allRollupArgs.Count };
+                    var rollupParameters = parameters with { RollupArgs = rollupArgs, RollupName = await rollupArgs.EvalS("rollup_name"), RollupCount = allRollupArgs.Count };
                     rollups.Add(rollupParameters);
                 }
             }
@@ -205,7 +205,7 @@ namespace EdwRollupLib
             {
                 var rollupResult = await Data.CallFn("edw", "processRollup", parameters.ProcessRollup(), timeout: 900);
 
-                var status = await rollupResult.GetS("status");
+                var status = await rollupResult.EvalS("status");
                 if (status == "deadlock detected")
                 {
                     continue;
@@ -233,9 +233,9 @@ namespace EdwRollupLib
             if (!string.IsNullOrWhiteSpace(parameters.WorkingSetTableName))
             {
                 var cleanupResult = await Data.CallFn("edw", "cleanup", parameters.Cleanup());
-                if (await cleanupResult.GetS("status") != "ok")
+                if (await cleanupResult.EvalS("status") != "ok")
                 {
-                    var error = await cleanupResult.GetS("error");
+                    var error = await cleanupResult.EvalS("error");
                     throw new Exception(error);
                 }
             }
@@ -286,7 +286,7 @@ namespace EdwRollupLib
             edwBulkEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid rsId, DateTime rsTs)> { [RsConfigId] = (_rsId, _rsTs) }, payload);
 
 #if DEBUG
-            Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.GetS("Name")}_{Period} {JsonSerializer.Serialize(payload)}");
+            Console.WriteLine($"{DateTime.Now}: {await ThreadGroup.EvalS("$meta.name")}_{Period} {JsonSerializer.Serialize(payload)}");
 #endif
 
             await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
@@ -295,13 +295,13 @@ namespace EdwRollupLib
         private async Task DropReportingSequence()
         {
             var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = await ThreadGroup.GetS("Name"), period = Period }, RsConfigId);
+            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { threadGroup = await ThreadGroup.EvalS("$meta.name"), period = Period }, RsConfigId);
 
             await FrameworkWrapper.EdwWriter.Write(edwBulkEvent);
 
-            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.GetS("Name")} {Period} Start");
+            await FrameworkWrapper.Log($"{nameof(RollupJob)}.{nameof(Execute)}", $"{await ThreadGroup.EvalS("$meta.name")} {Period} Start");
 #if DEBUG
-            Console.WriteLine($"{DateTime.Now}: {ThreadGroup.GetS("Name")} {Period} Start");
+            Console.WriteLine($"{DateTime.Now}: {ThreadGroup.EvalS("$meta.name")} {Period} Start");
 #endif
         }
 
@@ -373,7 +373,7 @@ namespace EdwRollupLib
 
         private async Task<ITargetBlock<Parameters>> PrepareDataflow(CancellationToken cancellationToken)
         {
-            var degreesOfParallelism = await FrameworkWrapper.StartupConfiguration.GetI("Config.Parallelism", 16);
+            var degreesOfParallelism = await FrameworkWrapper.StartupConfiguration.EvalI("Config.Parallelism", 16);
 
             var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = degreesOfParallelism, EnsureOrdered = false, BoundedCapacity = -1, CancellationToken = cancellationToken };
 
@@ -414,7 +414,7 @@ namespace EdwRollupLib
             AddField("RollupName", input?.RollupName);
             AddField("Error", ex.Message);
 
-            _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.GetS("Config.SlackAlertUrl"), JsonSerializer.Serialize(new
+            _ = await ProtocolClient.HttpPostAsync(await FrameworkWrapper.StartupConfiguration.EvalS("SlackAlertUrl"), JsonSerializer.Serialize(new
             {
                 text
             }), "application/json");

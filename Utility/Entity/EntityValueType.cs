@@ -8,6 +8,8 @@
         Boolean,
         Number,
         String,
-        Null
+        UUID,
+        Null,
+        Unhandled
     }
 }

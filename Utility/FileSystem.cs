@@ -48,7 +48,7 @@ namespace Utility
 
         public static string QuotePathParts(string path)
         {
-            var quotedPath = new StringBuilder("");
+            var quotedPath = new StringBuilder();
 
             var ps = path.Split('\\');
             for (var i = 0; i < ps.Length - 1; i++)

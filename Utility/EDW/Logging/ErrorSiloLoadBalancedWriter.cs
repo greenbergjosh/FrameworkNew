@@ -23,30 +23,32 @@ namespace Utility.EDW.Logging
                 selector, novalid, invalid, unhandled)
         { }
 
+        private static List<IEndpoint> _endpoints;
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
             var appName = await config.GetS("Config.ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.GetL("Config.ErrSilos"))
+            await foreach (var silo in config.EvalL("ErrSilos"))
             {
-                endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString"), appName));
+                endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString"), appName));
             }
 
+            _endpoints = endpoints;
             return endpoints;
         }
 
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
-            var appName = await config.GetS("Config.ErrorLogAppName", "");
+            var appName = await config.EvalS("Config.ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.GetL("Config.ErrSilos"))
+            foreach (var silo in await config.EvalL("Config.ErrSilos"))
             {
-                endpoints.Add(new ErrorSiloEndpoint(await silo.GetS("DataLayerType"), await silo.GetS("ConnectionString"), appName));
+                endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString"), appName));
             }
 
-            return endpoints;
+            //return endpoints;
         }
 
         public static Task InitiateWalkaway(object w, string errorFilePath)
@@ -96,8 +98,8 @@ namespace Utility.EDW.Logging
 
         public static async Task<ErrorSiloLoadBalancedWriter> InitializeErrorSiloLoadBalancedWriter(Entity.Entity config)
         {
-            var writeTimeoutSeconds = await config.GetI("Config.ErrorWriteTimeout", 0);
-            var path = await config.GetS("Config.ErrorFilePath", null);
+            var writeTimeoutSeconds = await config.EvalI("ErrorWriteTimeout", 0);
+            var path = await config.EvalS("ErrorFilePath", defaultValue: null);
             var errorFilePath = path.IsNullOrWhitespace() ? null : Path.GetFullPath(path);
 
             return new ErrorSiloLoadBalancedWriter(60,

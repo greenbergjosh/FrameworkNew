@@ -149,9 +149,9 @@ namespace GenericApi
                     ["requestInfo"] = new { r = 0, requestRsId, requestRsTimestamp, instanceName = _instanceName }
                 };
 
-                var identity = await request.GetS("i", null);
+                var identity = await request.EvalS("i", defaultValue: null);
 
-                foreach (var kvp in await request.GetD<Entity>(""))
+                foreach (var kvp in await request.EvalD("@"))
                 {
                     if (kvp.Key == "i")
                     {
@@ -207,11 +207,11 @@ namespace GenericApi
                                     continue;
                                 }
 
-                                var args = (await kvp.Value.Get("args")).FirstOrDefault()?.ToString();
-                                var payload = (await kvp.Value.Get("payload")).FirstOrDefault()?.ToString();
+                                var args = await kvp.Value.Eval("args").FirstOrDefault();
+                                var payload = (await kvp.Value.Eval("payload").FirstOrDefault())?.ToString();
                                 if (args == null && payload == null)
                                 {
-                                    args = kvp.Value.ToString();
+                                    args = kvp.Value;
                                 }
 
                                 result = await Data.CallFn(connectionName, command, args, payload);
@@ -221,23 +221,22 @@ namespace GenericApi
 
                         if (!processed && Program.Lbms.TryGetValue(method, out var lbm))
                         {
-                            if (!await lbm.GetB("skipAuth", false) && !await CheckAuth())
+                            if (!await lbm.EvalB("skipAuth", false) && !await CheckAuth())
                             {
                                 continue;
                             }
 
-                            var resultO = await _fw.RoslynWrapper.RunFunction(
-                                await lbm.GetS("id"),
-                                new
+                            result = await _fw.EvaluateEntity(
+                                await lbm.EvalGuid("id"),
+                                _fw.Entity.Create(new
                                 {
-                                    _httpContext = context,
+                                    httpContext = context,
                                     method,
                                     payload = kvp.Value,
-                                    _fw,
                                     requestRsId,
                                     requestRsTimestamp,
                                     dropEvent = (Func<object, Task<(Guid eventId, DateTime eventTimestamp)>>)(body => DropEvent(requestRsId, requestRsTimestamp, body))
-                                }, new StateWrapper()
+                                })
                             );
 
                             result = (Entity)resultO;
@@ -249,12 +248,14 @@ namespace GenericApi
                             throw new InvalidOperationException($"Unknown method {method}");
                         }
 
-                        var r = (await result?.Get("r")).FirstOrDefault();
-                        results[kvp.Key] = r != null ? result : new
-                        {
-                            r = 0,
-                            result
-                        };
+                        var r = await result?.Eval("r").FirstOrDefault();
+                        results[kvp.Key] = r != null
+                            ? result
+                            : (object)(new
+                            {
+                                r = 0,
+                                result
+                            });
 
                         _ = await DropEvent(requestRsId, requestRsTimestamp, new
                         {

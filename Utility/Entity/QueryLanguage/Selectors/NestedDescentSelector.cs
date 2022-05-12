@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
+using Utility.Evaluatable;
 
 namespace Utility.Entity.QueryLanguage.Selectors
 {
-    internal sealed class NestedDescentSelector : ISelector
+    internal sealed class NestedDescentSelector : Selector
     {
-        public async IAsyncEnumerable<Entity> Process(IEnumerable<Entity> entities)
+        protected override async IAsyncEnumerable<Entity> Load(EvaluatableSequenceBase selector, Entity targetEntity, EvaluateRequest request)
         {
-            foreach (var entity in entities)
+            await foreach (var target in targetEntity.Document.EnumerateArray())
             {
-                await foreach (var child in GetChildren(entity))
+                await foreach (var child in GetChildren(target))
                 {
                     yield return child;
                 }
@@ -20,7 +21,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
             if (entity.Document.IsObject)
             {
                 yield return entity;
-                foreach (var (name, value) in entity.Document.EnumerateObject())
+                await foreach (var (name, value) in entity.Document.EnumerateObject())
                 {
                     await foreach (var child in GetChildren(value))
                     {
@@ -31,7 +32,7 @@ namespace Utility.Entity.QueryLanguage.Selectors
             else if (entity.Document.IsArray)
             {
                 yield return entity;
-                foreach (var item in entity.Document.EnumerateArray())
+                await foreach (var item in entity.Document.EnumerateArray())
                 {
                     await foreach (var child in GetChildren(item))
                     {

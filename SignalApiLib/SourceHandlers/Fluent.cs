@@ -30,7 +30,7 @@ namespace SignalApiLib.SourceHandlers
 
         public static async Task<Fluent> Create(FrameworkWrapper fw)
         {
-            var traceLogRootPath = await fw.StartupConfiguration.GetS("Config.TraceLog");
+            var traceLogRootPath = await fw.StartupConfiguration.EvalS("TraceLog");
             return new Fluent(fw, traceLogRootPath);
         }
 
@@ -51,12 +51,12 @@ namespace SignalApiLib.SourceHandlers
 
             if (body.IsObject)
             {
-                if (await body.GetS("k") != Key)
+                if (await body.EvalS("k") != Key)
                 {
                     return null;
                 }
 
-                var token = await body.GetE("p");
+                var token = await body.EvalE("p");
 
                 IEnumerable<SourceData> payloads;
 
@@ -66,7 +66,7 @@ namespace SignalApiLib.SourceHandlers
                 }
                 else if (token.IsArray)
                 {
-                    var mutations = await (await token.GetL<Entity>("")).Select(async p => await Mutate(p));
+                    var mutations = await token.EvalL("@").Select(async p => await Mutate(p)).ToList();
                     payloads = mutations;
                 }
                 else
@@ -90,7 +90,7 @@ namespace SignalApiLib.SourceHandlers
                                 {
                                     var res = await Data.CallFn(MsConn, "SaveData", payload: dbp);
 
-                                    if (await res.GetS("Result") != "Success")
+                                    if (await res.EvalS("Result") != "Success")
                                     {
                                         await _fw.Error(LogCtx, $"MSSql write failed. Response: {res}");
                                         success = false;
@@ -108,7 +108,7 @@ namespace SignalApiLib.SourceHandlers
                                 {
                                     var res = await Data.CallFn(PgConn, "fluentLead", payload: dbp);
 
-                                    if (await res.GetS("Result") != "Success")
+                                    if (await res.EvalS("Result") != "Success")
                                     {
                                         await _fw.Error(LogCtx, $"PG write failed. Response: {res}");
                                         success = false;

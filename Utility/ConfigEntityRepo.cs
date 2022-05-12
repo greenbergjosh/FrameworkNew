@@ -56,32 +56,14 @@ namespace Utility
 
             var entity = await _entity.Parse("application/json", result);
 
-            id = (await entity.GetS("Id")).ParseGuid();
-            type = await entity.GetS("Type");
-            name = await entity.GetS("Name");
+            id = await entity.EvalGuid("$meta.id");
+            type = await entity.EvalS("$meta.type");
+            name = await entity.EvalS("$meta.name");
 
             if (!id.HasValue || type.IsNullOrWhitespace() || name.IsNullOrWhitespace())
             {
                 return null;
             }
-
-            object config;
-            if (type == "LBM.CS")
-            {
-                config = (await entity.GetS("Config")).Trim('"');
-            }
-            else
-            {
-                config = await _entity.Parse("application/json", await entity.GetS("Config"));
-            }
-
-            entity = _entity.Create(new
-            {
-                Id = await entity.GetS("Id"),
-                Name = name,
-                Type = type,
-                Config = config
-            });
 
 #if !DEBUG
             _ = _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);

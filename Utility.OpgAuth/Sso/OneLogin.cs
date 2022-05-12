@@ -19,10 +19,10 @@ namespace Utility.OpgAuth.Sso
         {
             try
             {
-                var token = await authData .GetS("accessToken");
+                var token = await authData .EvalS("accessToken");
 
-                var baseUrl = new Uri(await _config.GetS("baseUrl"));
-                var userDetailsPath = await _config.GetS("userDetailsPath");
+                var baseUrl = new Uri(await _config.EvalS("baseUrl"));
+                var userDetailsPath = await _config.EvalS("userDetailsPath");
 
                 var url = new Uri(baseUrl, userDetailsPath).ToString();
 
@@ -36,15 +36,15 @@ namespace Utility.OpgAuth.Sso
 
                 if (!success)
                 {
-                    var error = await ge.GetS("error");
-                    var description = await ge.GetS("error_description");
+                    var error = await ge.EvalS("error");
+                    var description = await ge.EvalS("error_description");
                     var message = $"{error}.\n{description}\nPayload: {authData}\n\nResponse: {body}";
                     throw new AuthException(message);
                 }
 
-                var subject = await ge.GetS("sub");
-                var name = await ge.GetS("name");
-                var email = await ge.GetS("email");
+                var subject = await ge.EvalS("sub");
+                var name = await ge.EvalS("name");
+                var email = await ge.EvalS("email");
 
                 var user = new UserDetails(subject, name, email, string.Empty, string.Empty, token, authData.ToString());
 

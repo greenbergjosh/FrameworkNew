@@ -12,36 +12,36 @@ namespace Utility.Entity.QueryLanguage.IndexExpressions
 
         private ItemQueryIndexExpression(QueryExpressionNode expression) => _expression = expression;
 
-        public async IAsyncEnumerable<int> GetIndexes(Entity entity)
+        public async IAsyncEnumerable<int> GetIndexes(Entity entity, Entity evaluationParameters)
         {
-            foreach (var (child, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
+            await foreach (var (child, index) in entity.Document.EnumerateArray().Select((item, index) => (item, index)))
             {
-                if (await Evaluate(child))
+                if (await Evaluate(child, evaluationParameters))
                 {
                     yield return index;
                 }
             }
         }
 
-        public async IAsyncEnumerable<string> GetProperties(Entity entity)
+        public async IAsyncEnumerable<string> GetProperties(Entity entity, Entity evaluationParameters)
         {
-            foreach (var (name, value) in entity.Document.EnumerateObject())
+            await foreach (var (name, value) in entity.Document.EnumerateObject())
             {
-                if (await Evaluate(value))
+                if (await Evaluate(value, evaluationParameters))
                 {
                     yield return name;
                 }
             }
         }
 
-        public async Task<bool> Evaluate(Entity entity)
+        public async Task<bool> Evaluate(Entity entity, Entity evaluationParameters)
         {
             if (_expression.OutputType is not QueryExpressionType.Boolean and not QueryExpressionType.InstanceDependent)
             {
                 return false;
             }
 
-            var result = await _expression.Evaluate(entity);
+            var result = await _expression.Evaluate(entity, evaluationParameters);
             return result.ValueType == EntityValueType.Boolean && result.Value<bool>();
         }
 

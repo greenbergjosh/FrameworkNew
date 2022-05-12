@@ -9,9 +9,9 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
 
         public QueryExpressionType GetOutputType(QueryExpressionNode left, QueryExpressionNode right) => QueryExpressionType.Boolean;
 
-        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity)
+        public async Task<EntityDocument> Evaluate(QueryExpressionNode left, QueryExpressionNode right, Entity entity, Entity evaluationParameters)
         {
-            var leftEntity = await left.Evaluate(entity);
+            var leftEntity = await left.Evaluate(entity, evaluationParameters);
 
             return new EntityDocumentConstant(leftEntity.ValueType != EntityValueType.Undefined, EntityValueType.Boolean);
         }

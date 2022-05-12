@@ -52,7 +52,10 @@ namespace Utility.DataLayer
 
                 TraceLog(nameof(Initialize), $"{nameof(config)}\r\n{config}");
 
-                await AddConnectionStrings(await config.GetE("Config.ConnectionStrings"), appName);
+                await AddConnectionStrings(await config.EvalE("ConnectionStrings"), appName);
+
+                var appName = await config.EvalS("AppName");
+                DataLayerClientFactory.AppName = appName;
 
                 return config;
             }
@@ -62,22 +65,22 @@ namespace Utility.DataLayer
             }
         }
 
-        public static async Task<Entity.Entity> ReInitialize(string[] configKeys)
+        public static async Task<Entity.Entity> Reinitialize(string[] configKeys)
         {
-            TraceLog(nameof(Initialize), "Reinitializing");
+            TraceLog(nameof(Reinitialize), "Reinitializing");
 
             try
             {
                 var config = await GetConfigs(configKeys, _commandLineArgs);
                 var appName = await config.GetS("Config.ErrorLogAppName", configKeys.Join("::"));
 
-                await AddConnectionStrings(await config.GetE("Config.ConnectionStrings"), appName, true);
+                await AddConnectionStrings(await config.EvalE("ConnectionStrings"), appName, true);
 
                 return config;
             }
             catch (Exception e)
             {
-                TraceLog(nameof(Initialize), $"Reinitialize failed: {e.UnwrapForLog()}");
+                TraceLog(nameof(Reinitialize), $"Reinitialize failed: {e.UnwrapForLog()}");
                 return null;
             }
         }
@@ -89,38 +92,32 @@ namespace Utility.DataLayer
             var confStr = await configConn.Client.CallStoredFunction(JsonSerializer.Serialize(new { InstanceId = id }), "{}", configFunc, configConn.ConnStr);
             var entity = await _entity.Parse("application/json", confStr);
 
-            return entity.Create(new
-            {
-                Id = await entity.GetS("Id"),
-                Name = await entity.GetS("Name"),
-                Type = await entity.GetS("Type"),
-                Config = await _entity.Parse("application/json", await entity.GetS("Config"))
-            });
+            return entity;
         }
 
         private static async Task AddConnectionStrings(Entity.Entity connectionStrings, string appName, bool merge)
         {
             if (connectionStrings != null && connectionStrings.IsObject)
             {
-                foreach (var o in await connectionStrings.GetD<string>())
+                foreach (var item in await connectionStrings.EvalD<string>("@"))
                 {
-                    if (Connections.ContainsKey(o.Key) && Connections[o.Key].Id == o.Value && !merge)
+                    if (Connections.ContainsKey(item.Key) && Connections[item.Key].Id == item.Value && !merge)
                     {
                         continue;
                     }
 
-                    if (Connections.ContainsKey(o.Key) && !merge)
+                    if (Connections.ContainsKey(item.Key) && !merge)
                     {
-                        throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Key}");
+                        throw new Exception($"Caught attempt to replace existing connection config with different value for {item.Key}");
                     }
 
-                    var conf = await GetConfigRecordValue(o.Value, _configConn, _configFunction);
+                    var conf = await GetConfigRecordValue(item.Value, _configConn, _configFunction);
 
-                    var dataLayerType = await conf.GetS("Config.DataLayerType");
-                    var connectionString = await conf.GetS("Config.ConnectionString");
-                    var conn = Connections.GetOrAdd(o.Key, s => new Connection(o.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType, appName), connectionString));
+                    var dataLayerType = await conf.EvalS("DataLayerType");
+                    var connectionString = await conf.EvalS("ConnectionString");
+                    var conn = Connections.GetOrAdd(item.Key, s => new Connection(item.Value, DataLayerClientFactory.DataStoreInstance(dataLayerType, appName), connectionString));
 
-                    foreach (var sp in await conf.GetD<string>("Config.DataLayer"))
+                    foreach (var sp in await conf.EvalD<string>("DataLayer"))
                     {
                         _ = conn.Functions.AddOrUpdate(sp.Key, sp.Value, (key, current) => current != sp.Value && !merge
                                   ? throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Key}, with existing value: {current}, new value: {sp.Value}")
@@ -159,25 +156,17 @@ namespace Utility.DataLayer
                 try
                 {
                     var current = await GetConfigRecordValue(key, configConn, configFunc);
-                    var usings = (await current.Get("Config.using")).FirstOrDefault();
+                    var usings = await current.Eval("using").FirstOrDefault();
                     var mergeConfig = current;
 
                     if (usings != null)
                     {
                         TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usings}");
 
-                        foreach (var u in (await usings.GetL<string>()).Select(u => u.Trim()))
+                        await foreach (var u in usings.EvalL<string>("@").Select(u => u.Trim()))
                         {
                             await LoadConfig(config, u);
                         }
-
-                        mergeConfig = _entity.Create(new
-                        {
-                            Id = await current.GetS("Id"),
-                            Name = await current.GetS("Name"),
-                            Type = await current.GetS("Type"),
-                            Config = await current.GetE("Config.config")
-                        });
                     }
 
                     TraceLog(nameof(GetConfigs), $"Merging configs\r\nCurrent\r\n{config}\r\n\r\n{key}\r\n{mergeConfig}");
@@ -203,29 +192,12 @@ namespace Utility.DataLayer
                 TraceLog(nameof(GetConfigs), $"Overriding configs from command line:\r\n{JsonSerializer.Serialize(commandLineArgs)}");
                 var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs).Build();
 
-                var commandLineDictionary = new Dictionary<string, string>(commandLineConfig.AsEnumerable());
+                var commandLineDictionary = new Dictionary<string, Entity.Entity>(commandLineConfig.AsEnumerable().Select(kvp => new KeyValuePair<string, Entity.Entity>(kvp.Key, kvp.Value)));
 
                 resolvedConfig.Push(_entity.Create(commandLineDictionary));
             }
 
             return _entity.Create(resolvedConfig);
-        }
-
-        public static Task<List<Dictionary<string, object>>> CallFn(string conName, string method, Dictionary<string, object> parameters, int timeout = 120)
-        {
-            try
-            {
-                var conn = Connections.GetValueOrDefault(conName);
-                var sp = conn?.Functions.GetValueOrDefault(method);
-
-                return sp.IsNullOrWhitespace()
-                    ? Task.FromResult<List<Dictionary<string, object>>>(null)
-                    : conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed {nameof(CallFnString)}({conName}, {method}, {JsonSerializer.Serialize(parameters)})", e);
-            }
         }
 
         public static async Task<Entity.Entity> CallFn(string conName, string method, object args, string payload = null, int timeout = 120)

@@ -33,7 +33,7 @@ namespace SignalApiLib
                 }
                 else
                 {
-                    var (found, _) = await s.TryGetS(pi.Name);
+                    var (found, _) = await s.TryEvalS(pi.Name);
                     if (found)
                     {
                         jprops = new[] { pi.Name };
@@ -42,7 +42,7 @@ namespace SignalApiLib
 
                 foreach (var jprop in jprops)
                 {
-                    var (found, value) = await s.TryGetS(jprop);
+                    var (found, value) = await s.TryEvalS(jprop);
                     if (found)
                     {
                         propsUsed.Add(jprop);
@@ -53,7 +53,7 @@ namespace SignalApiLib
             }
 
             var extraData = new Dictionary<string, Entity>();
-            foreach (var kvp in await s.GetD<Entity>(""))
+            foreach (var kvp in await s.EvalD("@"))
             {
                 if (!propsUsed.Contains(kvp.Key))
                 {

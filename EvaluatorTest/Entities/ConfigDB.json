@@ -1,0 +1,12 @@
+{
+  "0086226A-D81D-4C74-983D-24F232EBA731": {
+    "$meta": {
+      "id": "0086226A-D81D-4C74-983D-24F232EBA731",
+      "name": "Top Level Web Handler"
+    },
+    "$evaluate": {
+      "codeType":  "static",
+      "code": ""
+    }
+  }
+}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using Utility.Evaluatable;
+using System.Threading.Tasks;
 
 namespace Utility.Entity.Implementations
 {
@@ -42,9 +42,11 @@ namespace Utility.Entity.Implementations
 
         public override TOutput Value<TOutput>() => (TOutput)(object)_value;
 
-        protected internal override IEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
+        protected internal override IAsyncEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 
-        protected internal override IEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        protected internal override async IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             foreach (var (name, propertyInfo) in _readableProperties)
             {
@@ -61,23 +63,20 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        protected internal override bool TryGetPropertyCore(string name, out EntityDocument propertyEntityDocument)
+        protected internal override Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name)
         {
             if (_readableProperties.TryGetValue(name, out var propertyInfo))
             {
                 var propertyValue = propertyInfo.GetMethod.Invoke(_value, null);
-                propertyEntityDocument = MapValue(propertyValue);
-                return true;
+                return Task.FromResult((true, MapValue(propertyValue)));
             }
             else if (_readableFields.TryGetValue(name, out var fieldInfo))
             {
                 var fieldValue = fieldInfo.GetValue(_value);
-                propertyEntityDocument = MapValue(fieldValue);
-                return true;
+                return Task.FromResult((true, MapValue(fieldValue)));
             }
 
-            propertyEntityDocument = default;
-            return false;
+            return Task.FromResult((false, (EntityDocument)default));
         }
 
         public override async IAsyncEnumerable<Entity> ProcessEvaluatable()

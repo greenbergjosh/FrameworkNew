@@ -1,55 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Utility.Entity.Implementations;
 using Utility.Entity.QueryLanguage;
-using Utility.Entity.QueryLanguage.Selectors;
+using Utility.Evaluatable;
 
 namespace Utility.Entity
 {
+    #region Delegates
     public delegate Task<EntityDocument> EntityParser(Entity baseEntity, string contentType, string content);
+
     public delegate Task<(IEnumerable<Entity> entities, string query)> EntityRetriever(Entity baseEntity, Uri uri);
+
+    public delegate IAsyncEnumerable<Entity> FunctionHandler(IAsyncEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query, Entity evaluationParameters);
+
     public delegate Task<EntityDocument> MissingPropertyHandler(Entity entity, string propertyName);
-    public delegate IAsyncEnumerable<Entity> FunctionHandler(IEnumerable<Entity> entities, string functionName, IReadOnlyList<Entity> functionArguments, string query);
+
     public delegate bool TryParser<T>(string input, out T result) where T : struct;
-
-    public record EntityConfig(EntityParser Parser, EntityRetriever Retriever = null, MissingPropertyHandler MissingPropertyHandler = null, FunctionHandler FunctionHandler = null);
-
-    public class EntityConverter : JsonConverter<Entity>
-    {
-        public override Entity Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
-        public override void Write(Utf8JsonWriter writer, Entity value, JsonSerializerOptions options) => value.Document?.SerializeToJson(writer, options);
-    }
+    #endregion
 
     [JsonConverter(typeof(EntityConverter))]
-    public class Entity : IEquatable<Entity>
+    public class Entity : IEquatable<Entity>, IReadOnlyEntity
     {
-        private readonly EntityConfig _config;
+        #region Fields
+        private readonly IEntityConfig _config;
+        #endregion
 
-        public string Query { get; internal set; }
+        #region Constructors
+        private Entity(IEntityConfig config) => _config = config ?? throw new ArgumentNullException(nameof(config));
 
-        public Entity Root { get; init; }
-
-        internal EntityDocument Document { get; }
-
-        internal MissingPropertyHandler MissingPropertyHandler => _config.MissingPropertyHandler;
-
-        internal FunctionHandler FunctionHandler => _config.FunctionHandler;
-
-        public EntityValueType ValueType => Document?.ValueType ?? EntityValueType.Undefined;
-
-        public bool IsArray => Document?.IsArray ?? false;
-
-        public bool IsObject => Document?.IsObject ?? false;
-
-        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
-
-        private Entity(EntityConfig config) => _config = config ?? throw new ArgumentNullException(nameof(config));
-
-        private Entity(EntityDocument value, Entity root, EntityConfig config, string query)
+        protected Entity(EntityDocument value, Entity root, IEntityConfig config, string query)
         {
             if (value != null)
             {
@@ -66,110 +48,139 @@ namespace Utility.Entity
             Root = root?.Root ?? this;
             Query = query;
         }
+        #endregion
 
-        public static Entity Initialize(EntityConfig config) => new(config);
+        #region Properties
+        public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, new EntityConfig(null), null);
 
-        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), this, _config, query);
+        public static Entity Unhandled { get; } = new Entity(EntityDocumentConstant.Unhandled, null, new EntityConfig(null), null);
 
-        public Entity Clone(string query = "@") => Create(Document, query);
+        public bool IsArray => Document?.IsArray ?? false;
 
-        public async Task<Entity> Parse(string contentType, string content)
+        public bool IsObject => Document?.IsObject ?? false;
+
+        public string Query { get; internal set; }
+
+        public Entity Root { get; init; }
+
+        public EntityValueType ValueType => Document?.ValueType ?? EntityValueType.Undefined;
+
+        internal EntityDocument Document { get; }
+
+        internal Evaluator Evaluator => _config?.Evaluator;
+
+        internal FunctionHandler FunctionHandler => _config?.FunctionHandler;
+
+        internal MissingPropertyHandler MissingPropertyHandler => _config?.MissingPropertyHandler;
+
+        internal EntityRetriever Retriever => _config?.Retriever;
+        #endregion
+
+        #region Methods
+        public static Entity Initialize(IEntityConfig config) => new(config);
+
+        public IReadOnlyEntity AsReadOnly() => this;
+
+        public Entity Clone(string query) => Create(Document, query, Root);
+
+        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), null, _config, query);
+
+        internal Entity Create<T>(T value, string query, Entity root) => new(EntityDocument.MapValue(value), root, _config, query);
+
+        public bool Equals(Entity other) => Document?.Equals(other?.Document) ?? false;
+
+        public override bool Equals(object obj) => Equals(obj as Entity);
+
+        public async Task<T> Eval<T>(string query, Entity evaluationParameters = null) => (await EvalE(query, evaluationParameters)).Value<T>();
+
+        public IAsyncEnumerable<Entity> Eval(string query, Entity evaluationParameters = null) => Evaluate(query, evaluationParameters);
+
+        public async Task EvalVoid(string query, Entity evaluationParameters = null)
         {
-            var entityDocument = await _config.Parser(this, contentType, content);
-
-            return new Entity(entityDocument, null, _config, "$");
+            await foreach (var _ in Evaluate(query, evaluationParameters))
+            {
+            }
         }
 
-        public async Task<(bool success, Entity entity)> TryParse(string contentType, string content)
+        public Task<T> Eval<T>(string query, T defaultValue, Entity evaluationParameters = null) => GetWithDefault(query, evaluationParameters, defaultValue);
+
+        public async Task<string> EvalAsS(string query, string defaultValue = null, Entity evaluationParameters = null)
         {
-            try
-            {
-                return (true, await Parse(contentType, content));
-            }
-            catch
-            {
-                return (false, null);
-            }
-        }
-
-        internal Task<IEnumerable<Entity>> Get(Query query) => Evaluate(new[] { this }, query);
-
-        public async Task<T> Get<T>(string query = "@") => (await Evaluate(query)).Single().Value<T>();
-
-        public async Task<Entity> GetE(string query = "@") => (await Evaluate(query)).SingleOrDefault();
-
-        public async Task<bool> GetB(string query = "@") => (await GetE(query)).Value<bool>();
-
-        public Task<bool> GetB(string query = "@", bool defaultValue = false) => GetWithDefault(query, EntityValueType.Boolean, defaultValue);
-
-        public Task<IEnumerable<Entity>> Get(string query = "@") => Evaluate(query);
-
-        public async Task<string> GetS(string query = "@") => (await GetE(query)).Value<string>();
-
-        public async Task<string> GetAsS(string query = "@", string defaultValue = null)
-        {
-            var result = await GetE(query);
+            var result = await EvalE(query, evaluationParameters, null);
             return result?.ValueType == EntityValueType.String ? result.Value<string>() : result?.ToString() ?? defaultValue;
         }
 
-        public Task<string> GetS(string query = "@", string defaultValue = null) => GetWithDefault(query, EntityValueType.String, defaultValue);
+        public Task<bool> EvalB(string query, bool defaultValue, Entity evaluationParameters = null) => GetWithDefault(query, evaluationParameters, defaultValue);
 
-        public async Task<(bool found, string value)> TryGetS(string query = "@")
+        public Task<bool> EvalB(string query, Entity evaluationParameters = null) => Eval<bool>(query, evaluationParameters);
+
+        public Task<Dictionary<string, Entity>> EvalD(string query, Entity evaluationParameters = null, bool throwIfMissing = true) => EvalD<Entity>(query, evaluationParameters, throwIfMissing);
+
+        public async Task<Dictionary<string, TValue>> EvalD<TValue>(string query, Entity evaluationParameters = null, bool throwIfMissing = true)
         {
-            var result = (await Get(query)).FirstOrDefault();
-            return result != null && result.ValueType == EntityValueType.String ? (true, result.Value<string>()) : ((bool found, string value))(false, default);
-        }
-
-        public Task<IEnumerable<Entity>> GetL(string query = "@") => Get($"{query}.*");
-
-        public async Task<IEnumerable<T>> GetL<T>(string query = "@") => (await Get($"{query}.*")).Select(entity => entity.Value<T>());
-
-        public async Task<int> GetI(string query = "@") => (await GetE(query)).Value<int>();
-
-        public async Task<float> GetF(string query = "@") => (await GetE(query)).Value<float>();
-
-        public Task<int> GetI(string query = "@", int defaultValue = 0) => GetWithDefault(query, EntityValueType.Number, defaultValue);
-
-        public async Task<Guid> GetGuid(string query) => Guid.Parse(await GetS(query));
-
-        public Task<Guid?> GetGuid(string query, Guid? defaultValue) => ParseWithDefault(query, Guid.TryParse, defaultValue);
-
-        public Task<Dictionary<string, Entity>> GetD(string query = "@", bool throwIfMissing = true) => GetD<Entity>(query, throwIfMissing);
-
-        public async Task<Dictionary<string, TValue>> GetD<TValue>(string query = "@", bool throwIfMissing = true)
-        {
-            var entity = (await Get(query)).SingleOrDefault();
+            var entity = await Eval(query, evaluationParameters).SingleOrDefault();
 
             if (entity == null && !throwIfMissing)
             {
                 return new Dictionary<string, TValue>();
             }
 
-            return new Dictionary<string, TValue>(entity.Document.EnumerateObject().Select(item => new KeyValuePair<string, TValue>(item.name, item.value.Value<TValue>())));
+            return new Dictionary<string, TValue>(await entity.Document.EnumerateObject().Select(item => new KeyValuePair<string, TValue>(item.name, item.value.Value<TValue>())).ToList());
         }
 
-        private async Task<T> GetWithDefault<T>(string query, EntityValueType expectedValueType, T defaultValue = default)
-        {
-            var result = (await Get(query)).ToList();
-            return result.Count == 1 && result[0].ValueType == expectedValueType ? result[0].Value<T>() : defaultValue;
-        }
+        public Task<DateTime?> EvalDateTime(string query, DateTime? defaultValue, Entity evaluationParameters = null) => ParseWithDefault(query, evaluationParameters, DateTime.TryParse, defaultValue);
 
-        private async Task<T?> ParseWithDefault<T>(string query, TryParser<T> parser, T? defaultValue) where T : struct
-        {
-            var value = await GetS(query, null);
+        public async Task<DateTime> EvalDateTime(string query, Entity evaluationParameters = null) => DateTime.Parse(await Eval<string>(query, evaluationParameters));
 
-            if (value != null)
+        public Task<Entity> EvalE(string query, Entity defaultValue, Entity evaluationParameters = null) => Evaluate(query, evaluationParameters).FirstOrDefault(defaultValue);
+
+        public Task<Entity> EvalE(string query, Entity evaluationParameters = null) => Evaluate(query, evaluationParameters).Single();
+
+        public Task<float> EvalF(string query, Entity evaluationParameters = null) => Eval<float>(query, evaluationParameters);
+
+        public Task<float> EvalF(string query, float defaultValue, Entity evaluationParameters = null) => GetWithDefault(query, evaluationParameters, defaultValue);
+
+        public async Task<Guid> EvalGuid(string query, Entity evaluationParameters = null) => Guid.Parse(await Eval<string>(query, evaluationParameters));
+
+        public Task<Guid?> EvalGuid(string query, Guid? defaultValue, Entity evaluationParameters = null) => ParseWithDefault(query, evaluationParameters, Guid.TryParse, defaultValue);
+
+        public Task<int> EvalI(string query, Entity evaluationParameters = null) => Eval<int>(query, evaluationParameters);
+
+        public Task<int> EvalI(string query, int defaultValue, Entity evaluationParameters = null) => GetWithDefault(query, evaluationParameters, defaultValue);
+
+        public IAsyncEnumerable<Entity> EvalL(string query, Entity evaluationParameters = null) => Eval($"{query}.*", evaluationParameters);
+
+        public IAsyncEnumerable<T> EvalL<T>(string query, Entity evaluationParameters = null) => EvalL(query, evaluationParameters).Select(child => child.Value<T>());
+
+        public Task<long> EvalLong(string query, Entity evaluationParameters = null) => Eval<long>(query, evaluationParameters);
+
+        public Task<long> EvalLong(string query, long defaultValue, Entity evaluationParameters = null) => GetWithDefault(query, evaluationParameters, defaultValue);
+
+        public Task<string> EvalS(string query, Entity evaluationParameters = null) => Eval<string>(query, evaluationParameters);
+
+        public Task<string> EvalS(string query, string defaultValue, Entity evaluationParameters = null) => GetWithDefault(query, evaluationParameters, defaultValue);
+
+        public override int GetHashCode() => Document?.GetHashCode() ?? base.GetHashCode();
+
+        public async Task<Entity> Parse(string contentType, string content)
+        {
+            if (_config.Parser == null)
             {
-                if (parser(value, out var result))
-                {
-                    return result;
-                }
+                throw new InvalidOperationException("No parser was provided when initializing Entity");
             }
 
-            return defaultValue;
+            var entityDocument = await _config.Parser(this, contentType, content);
+
+            return new Entity(entityDocument, null, _config, "$");
         }
 
-        public T Value<T>() => Document is null ? default : typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();
+        public override string ToString() => Document?.ToString();
+
+        public async Task<(bool found, string value)> TryEvalS(string query, Entity evaluationParameters = null)
+        {
+            var result = await Eval(query, evaluationParameters).FirstOrDefault();
+            return result != null && result.ValueType == EntityValueType.String ? (true, result.Value<string>()) : (false, default);
+        }
 
         public bool TryGetValue<T>(out T value)
         {
@@ -191,95 +202,75 @@ namespace Utility.Entity
             }
         }
 
-        public override string ToString() => Document?.ToString();
-
-        private async Task<IEnumerable<Entity>> Evaluate(string query)
+        public async Task<(bool success, Entity entity)> TryParse(string contentType, string content)
         {
-            IEnumerable<Entity> entities;
-            Query parsedQuery;
-
-            if (string.IsNullOrWhiteSpace(query))
+            try
             {
-                query = "@";
+                return (true, await Parse(contentType, content));
             }
-
-            if (Uri.TryCreate(query, UriKind.Absolute, out var uri))
+            catch
             {
-                if (_config.Retriever is null)
+                return (false, null);
+            }
+        }
+
+        public T Value<T>() => Document is null ? default : typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();
+
+        public Entity Wrap(IEntityConfig config) => new(new EntityConfigSchemeWrapper(_config, config));
+
+        internal async IAsyncEnumerable<Entity> Evaluate(Query query, Entity parameters)
+        {
+            if (Evaluator is null && Document is EntityDocumentConstant)
+            {
+                if (query.IsLocal)
                 {
-                    throw new InvalidOperationException($"Absolute queries are not allowed unless a retriever has been provided.");
+                    yield return this;
                 }
 
-                var result = await _config.Retriever(this, uri);
-                entities = result.entities;
-
-                if (entities is null || !entities.Any())
-                {
-                    throw new InvalidOperationException("Absolute query did not return an entity");
-                }
-
-                parsedQuery = QueryLanguage.Query.Parse(this, string.IsNullOrWhiteSpace(result.query) ? "@" : result.query);
+                yield break;
             }
             else
             {
-                if (Document is null)
+                await foreach (var item in Evaluator.Evaluate(Create(query), Create(new { target = this, parameters }, "$", null)))
                 {
-                    throw new InvalidOperationException("Cannot run a relative query on a null entity");
+                    yield return item;
                 }
-
-                entities = new[] { this };
-                parsedQuery = QueryLanguage.Query.Parse(this, query);
             }
-
-            return await Evaluate(entities, parsedQuery);
         }
 
-        private static async Task<IEnumerable<Entity>> Evaluate(IEnumerable<Entity> rootEntities, Query query)
+        private IAsyncEnumerable<Entity> Evaluate(string query, Entity parameters) => Evaluate(new Query(query), parameters);
+
+        private async Task<T> GetWithDefault<T>(string query, Entity evaluationParameters, T defaultValue)
         {
-            var current = rootEntities;
+            var result = await Eval(query, evaluationParameters).SingleOrDefault();
 
-            for (var i = 0; i < query.Selectors.Count && current.Any(); i++)
-            {
-                var selector = query.Selectors[i];
-
-                var next = new List<Entity>();
-                await foreach (var child in selector.Process(current))
-                {
-                    var hadReference = false;
-                    if (i == query.Selectors.Count - 1 || query.Selectors[i + 1] is not RefSelector)
-                    {
-                        await foreach (var referenceChild in child.Document.ProcessReference())
-                        {
-                            referenceChild.Query = referenceChild.Query.Replace("$", child.Query);
-                            next.Add(referenceChild);
-                            hadReference = true;
-                        }
-                    }
-
-                    var hadEvaluatable = false;
-                    await foreach (var evaluatableChild in child.Document.ProcessEvaluatable())
-                    {
-                        evaluatableChild.Query = evaluatableChild.Query.Replace("$", child.Query);
-                        next.Add(evaluatableChild);
-                        hadEvaluatable = true;
-                    }
-
-                    if (!hadReference && !hadEvaluatable)
-                    {
-                        next.Add(child);
-                    }
-                }
-
-                current = next;
-            }
-
-            return current;
+            return result == null ? defaultValue : result.Value<T>();
         }
 
-        public bool Equals(Entity other) => Document?.Equals(other?.Document) ?? false;
+        private async Task<T?> ParseWithDefault<T>(string query, Entity evaluationParameters, TryParser<T> parser, T? defaultValue) where T : struct
+        {
+            var value = await Eval<string>(query, null, evaluationParameters);
 
-        public override bool Equals(object obj) => Equals(obj as Entity);
+            if (value != null)
+            {
+                if (parser(value, out var result))
+                {
+                    return result;
+                }
+            }
 
-        public override int GetHashCode() => Document?.GetHashCode() ?? base.GetHashCode();
+            return defaultValue;
+        }
+        #endregion
+
+        #region Operators
+        public static implicit operator Entity(bool value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(decimal value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(float value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(int value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(long value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(string value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(EntityDocument value) => new(value, value?.Entity?.Root, value?.Entity?._config, value?.Entity.Query);
+        #endregion
     }
 }

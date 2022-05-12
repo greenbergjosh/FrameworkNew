@@ -7,9 +7,9 @@ namespace QuickTester
 
         private static async Task Main()
         {
-            await ClickhouseImportTest.ImportTest();
             //await EdwGrammar3.Run();
             //await EntityTest.Run();
+            await EvaluatorTest.Run();
         }
     }
 }

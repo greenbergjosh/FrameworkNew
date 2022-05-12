@@ -1,9 +1,8 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Utility;
 using Utility.Entity;
-
-// email_events_merged
 
 namespace QuickTester
 {
@@ -19,28 +18,28 @@ namespace QuickTester
         public static async Task<string> GenerateClickhouseWhere(Entity ge)
         {
             string r;
-            var op = (await ge.GetD("")).Single().Key;
+            var op = (await ge.EvalD("@")).Single().Key;
             if (op is "and" or "or")
             {
-                r = await GenerateClickhouseNary(op, await ge.GetE(op));
+                r = await GenerateClickhouseNary(op, await ge.EvalE(op));
             }
             else if (op is "filter" or "!")
             {
-                r = await GenerateClickhouseUnary(op, await ge.GetE(op));
+                r = await GenerateClickhouseUnary(op, await ge.EvalE(op));
             }
             else if (op == "all")
             {
-                r = GenerateClickhouseIn(await ge.GetS($"{op}[0].var"), $"[{(await ge.GetL<string>($"{op}[1].in[1]")).Select(s => $"\"{s}\"").Join(",")}]");
+                r = GenerateClickhouseIn(await ge.EvalS($"{op}[0].var"), $"[{await ge.EvalL<string>($"{op}[1].in[1]").Select(s => $"\"{s}\"").Join(",")}]");
             }
             else
             {
-                r = GenerateClickhouseBinary(op, await ge.GetS($"{op}[0].var"), $"'{await ge.GetS($"{op}[1]")}'");   // used to pass true to second getS
+                r = GenerateClickhouseBinary(op, await ge.EvalS($"{op}[0].var"), $"'{await ge.EvalS($"{op}[1]")}'");   // used to pass true to second getS
             }
 
             return "(" + r + ")";
         }
 
-        public static async Task<string> GenerateClickhouseNary(string op, Entity ge) => (await (await ge.GetL("")).Select(async x => await GenerateClickhouseWhere(x))).Join(" " + op + " ");
+        public static async Task<string> GenerateClickhouseNary(string op, Entity ge) => await ge.EvalL("@").Select(async x => await GenerateClickhouseWhere(x)).Join(" " + op + " ");
 
         public static async Task<string> GenerateClickhouseUnary(string op, Entity ge)
         {
@@ -51,8 +50,8 @@ namespace QuickTester
             }
             else if (op == "filter")
             {
-                var vars = (await (await ge.Get("[0]..var")).Select(var => var.GetAsS(""))).Distinct().ToArray();
-                var whereClause = await GenerateClickhouseWhere(await ge.GetE("[0]"));
+                var vars = await ge.Eval("[0]..var").Select(async var => await var.EvalAsS("@")).Distinct().ToArray();
+                var whereClause = await GenerateClickhouseWhere(await ge.EvalE("[0]"));
                 for (var i = 0; i < vars.Length; i++)
                 {
                     whereClause = whereClause.Replace(vars[i], $"x.{i + 1}");

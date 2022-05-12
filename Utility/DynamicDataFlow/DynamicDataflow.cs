@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -51,32 +50,20 @@ namespace Utility.Dataflow
         #region Public Static Methods
         public static async Task<DynamicDataflow> Create(Entity.Entity config, FrameworkWrapper fw = null)
         {
-            var rw = fw?.RoslynWrapper;
-            if (rw == null)
-            {
-                var scripts = new List<ScriptDescriptor>();
-                var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DataflowScripts");
-                rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
-            }
-
-            var defaultDataflowBlockOptions = await config.GetE("defaultBlockOptions");
-            var defaultDataflowLinkOptions = await config.GetE("defaultLinkOptions");
-
-            var blocks = await config.GetL("blocks");
+            var defaultDataflowBlockOptions = await config.EvalE("defaultBlockOptions");
+            var defaultDataflowLinkOptions = await config.EvalE("defaultLinkOptions");
 
             var dataflowBlocks = new Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)>();
 
-            foreach (var block in blocks)
+            await foreach (var block in config.EvalL("blocks"))
             {
-                var id = int.Parse(await block.GetS("id"));
-                dataflowBlocks.Add(id, await CreateDataflowBlock(block, defaultDataflowBlockOptions, fw, rw));
+                var id = int.Parse(await block.EvalS("id"));
+                dataflowBlocks.Add(id, await CreateDataflowBlock(block, defaultDataflowBlockOptions, fw));
             }
 
-            var links = await config.GetL("links");
-
-            foreach (var link in links)
+            await foreach (var link in config.EvalL("links"))
             {
-                await CreateLink(link, dataflowBlocks, defaultDataflowLinkOptions, fw, rw);
+                await CreateLink(link, dataflowBlocks, defaultDataflowLinkOptions, fw);
             }
 
             return new DynamicDataflow(dataflowBlocks.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.block));
@@ -85,32 +72,32 @@ namespace Utility.Dataflow
 
         #region Private Static Methods
         #region DataflowBlock Methods
-        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateDataflowBlock(Entity.Entity block, Entity.Entity defaultDataflowBlockOptions, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateDataflowBlock(Entity.Entity block, Entity.Entity defaultDataflowBlockOptions, FrameworkWrapper fw)
         {
-            var blockType = await block.GetS("blockType");
+            var blockType = await block.EvalS("blockType");
 
             switch (blockType)
             {
                 case "Transform":
                     var transformOptions = await GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
-                    return await CreateTransformBlock(block, transformOptions, fw, rw);
+                    return await CreateTransformBlock(block, transformOptions, fw);
                 case "Action":
                     var actionOptions = await GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
-                    return await CreateActionBlock(block, actionOptions, fw, rw);
+                    return await CreateActionBlock(block, actionOptions, fw);
                 default:
                     throw new Exception($"Unsupported block type {blockType}");
             }
         }
 
-        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateActionBlock(Entity.Entity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateActionBlock(Entity.Entity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw)
         {
-            var inputType = Type.GetType(await block.GetS("inputType"));
+            var inputType = Type.GetType(await block.EvalS("inputType"));
 
             var funcMaker = typeof(DynamicDataflow).GetMethod(nameof(CreateAction), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(inputType);
 
-            var behaviorCode = await GetCode(await block.GetE("behavior"), fw);
+            var behaviorCode = await GetCode(await block.EvalE("behavior"));
 
-            var behavior = funcMaker.Invoke(null, new object[] { behaviorCode, rw });
+            var behavior = funcMaker.Invoke(null, new object[] { behaviorCode, fw });
 
             var constructor = typeof(ActionBlock<>).MakeGenericType(inputType).GetConstructor(new[] { behavior.GetType(), typeof(ExecutionDataflowBlockOptions) });
 
@@ -119,18 +106,18 @@ namespace Utility.Dataflow
             return (actionBlock, inputType, null);
         }
 
-        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateTransformBlock(Entity.Entity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateTransformBlock(Entity.Entity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw)
         {
-            var inputType = Type.GetType(await block.GetS("inputType"));
-            var outputType = Type.GetType(await block.GetS("outputType"));
+            var inputType = Type.GetType(await block.EvalS("inputType"));
+            var outputType = Type.GetType(await block.EvalS("outputType"));
 
             var funcType = typeof(Func<,>).MakeGenericType(inputType, outputType);
 
             var funcMaker = typeof(DynamicDataflow).GetMethod(nameof(CreateFunction), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(inputType, outputType);
 
-            var behaviorCode = await GetCode(await block.GetE("behavior"), fw);
+            var behaviorCode = await GetCode(await block.EvalE("behavior"));
 
-            var behavior = funcMaker.Invoke(null, new object[] { behaviorCode, rw });
+            var behavior = funcMaker.Invoke(null, new object[] { behaviorCode });
 
             var taskOutputType = typeof(Task<>).MakeGenericType(outputType);
 
@@ -141,18 +128,28 @@ namespace Utility.Dataflow
             return (transform, inputType, outputType);
         }
 
-        private static Func<TInput, Task> CreateAction<TInput>((Guid id, string code) behavior, RoslynWrapper rw)
+        private static Func<TInput, Task> CreateAction<TInput>((Guid id, string code) behavior, FrameworkWrapper fw)
         {
-            var sd = rw.CompileAndCache(new ScriptDescriptor(behavior.id, null, behavior.code));
-
-            return (TInput input) => rw[sd.Key](new { Input = input }, new StateWrapper());
+            if (behavior.id == default)
+            {
+                return (TInput input) => fw.EvaluateEntity(behavior.code, fw.Entity.Create(new { Input = input }));
+            }
+            else
+            {
+                return (TInput input) => fw.EvaluateEntity(behavior.id, fw.Entity.Create(new { Input = input }));
+            }
         }
 
-        private static Func<TInput, Task<TOutput>> CreateFunction<TInput, TOutput>((Guid id, string code) behavior, RoslynWrapper rw)
+        private static Func<TInput, Task<TOutput>> CreateFunction<TInput, TOutput>((Guid id, string code) behavior, FrameworkWrapper fw)
         {
-            var sd = rw.CompileAndCache(new ScriptDescriptor(behavior.id, null, behavior.code));
-
-            return async (TInput input) => (TOutput)await rw[sd.Key](new { Input = input }, new StateWrapper());
+            if (behavior.id == default)
+            {
+                return async (TInput input) => (await fw.EvaluateEntity(behavior.code, fw.Entity.Create(new { Input = input }))).Value<TOutput>();
+            }
+            else
+            {
+                return async (TInput input) => (await fw.EvaluateEntity(behavior.id, fw.Entity.Create(new { Input = input }))).Value<TOutput>();
+            }
         }
 
         private static async Task<ExecutionDataflowBlockOptions> GetExecutionDataflowBlockOptions(Entity.Entity options, Entity.Entity defaultDataflowBlockOptions)
@@ -170,14 +167,14 @@ namespace Utility.Dataflow
         #endregion
 
         #region Link Methods
-        private static async Task CreateLink(Entity.Entity edge, Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)> dataflowBlocks, Entity.Entity defaultDataflowLinkOptions, FrameworkWrapper fw, RoslynWrapper rw)
+        private static async Task CreateLink(Entity.Entity edge, Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)> dataflowBlocks, Entity.Entity defaultDataflowLinkOptions, FrameworkWrapper fw)
         {
             var dataflowLinkOptions = GetDataflowLinkOptions(edge, defaultDataflowLinkOptions);
 
-            var fromId = int.Parse(await edge.GetS("from"));
-            var toId = int.Parse(await edge.GetS("to"));
+            var fromId = int.Parse(await edge.EvalS("from"));
+            var toId = int.Parse(await edge.EvalS("to"));
 
-            var predicateCode = await GetCode(await edge.GetE("predicate"), fw);
+            var predicateCode = await GetCode(await edge.EvalE("predicate"));
 
             var source = dataflowBlocks[fromId];
             var target = dataflowBlocks[toId];
@@ -199,7 +196,7 @@ namespace Utility.Dataflow
             if (!string.IsNullOrWhiteSpace(predicateCode.code))
             {
                 var predicateMaker = typeof(DynamicDataflow).GetMethod(nameof(CreatePredicate), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(source.outputType);
-                var predicate = predicateMaker.Invoke(null, new object[] { predicateCode, rw });
+                var predicate = predicateMaker.Invoke(null, new object[] { predicateCode, fw });
 
                 var linkTo = typeof(DataflowBlock).GetMethods(BindingFlags.Public | BindingFlags.Static).Where(mi => mi.Name == nameof(DataflowBlock.LinkTo) && mi.GetParameters().Length == 4).Single().MakeGenericMethod(source.outputType);
                 _ = linkTo.Invoke(null, new object[] { source.block, target.block, dataflowLinkOptions, predicate });
@@ -211,11 +208,16 @@ namespace Utility.Dataflow
             }
         }
 
-        private static Predicate<TOutput> CreatePredicate<TOutput>((Guid id, string code) predicate, RoslynWrapper rw)
+        private static Predicate<TInput> CreatePredicate<TInput>((Guid id, string code) predicate, FrameworkWrapper fw)
         {
-            var sd = rw.CompileAndCache(new ScriptDescriptor(predicate.id, null, predicate.code));
-
-            return (TOutput input) => (bool)rw[sd.Key](new { Input = input }, new StateWrapper()).GetAwaiter().GetResult();
+            if (predicate.id == default)
+            {
+                return (TInput input) => fw.EvaluateEntity(predicate.code, fw.Entity.Create(new { Input = input })).GetAwaiter().GetResult().Value<bool>();
+            }
+            else
+            {
+                return (TInput input) => fw.EvaluateEntity(predicate.id, fw.Entity.Create(new { Input = input })).GetAwaiter().GetResult().Value<bool>();
+            }
         }
 
         private static async Task<DataflowLinkOptions> GetDataflowLinkOptions(Entity.Entity options, Entity.Entity defaultDataflowLinkOptions)
@@ -233,9 +235,9 @@ namespace Utility.Dataflow
         #region Option Methods
         private static async Task<int> GetOption(string name, Entity.Entity options, Entity.Entity defaultOptions, int defaultValue)
         {
-            if (!int.TryParse(await options.GetS(name), out var value))
+            if (!int.TryParse(await options.EvalS(name), out var value))
             {
-                if (!int.TryParse(await defaultOptions.GetS(name), out value))
+                if (!int.TryParse(await defaultOptions.EvalS(name), out value))
                 {
                     value = defaultValue;
                 }
@@ -246,9 +248,9 @@ namespace Utility.Dataflow
 
         private static async Task<bool> GetOption(string name, Entity.Entity options, Entity.Entity defaultOptions, bool defaultValue)
         {
-            if (!bool.TryParse(await options.GetS(name), out var value))
+            if (!bool.TryParse(await options.EvalS(name), out var value))
             {
-                if (!bool.TryParse(await defaultOptions.GetS(name), out value))
+                if (!bool.TryParse(await defaultOptions.EvalS(name), out value))
                 {
                     value = defaultValue;
                 }
@@ -258,20 +260,19 @@ namespace Utility.Dataflow
         }
         #endregion
 
-        public static async Task<(Guid id, string code)> GetCode(Entity.Entity entity, FrameworkWrapper fw)
+        private static async Task<(Guid id, string code)> GetCode(Entity.Entity entity)
         {
             if (entity == null)
             {
                 return (Guid.Empty, null);
             }
 
-            if (Guid.TryParse(await entity.GetS("entityId") ?? string.Empty, out var entityId))
+            if (Guid.TryParse(await entity.EvalS("entityId") ?? string.Empty, out var entityId))
             {
-                var lbm = await fw.Entities.GetEntity(entityId);
-                return (entityId, await lbm.GetS("Config"));
+                return (entityId, null);
             }
 
-            return (Guid.NewGuid(), await entity.GetS("code"));
+            return (default, await entity.EvalS("code"));
         }
         #endregion
     }
