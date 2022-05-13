@@ -1,9 +1,6 @@
-﻿using System;
-using System.Text.Json;
+﻿using EdwRollupLib;
 using System.Threading.Tasks;
-using EdwRollupLib;
 using Utility;
-using Utility.DataLayer;
 
 namespace QuickTester
 {
@@ -13,7 +10,7 @@ namespace QuickTester
         {
             var fw = await FrameworkWrapper.Create();
 
-            var config = await fw.Entities.GetEntity(Guid.Parse("5eec1fc3-dc63-4f37-b374-c9ecd2ca0186"));
+            var config = await fw.Entity.EvalE("config://5eec1fc3-dc63-4f37-b374-c9ecd2ca0186");
 
             var import = await ClickhouseImport.Create(config, fw);
 

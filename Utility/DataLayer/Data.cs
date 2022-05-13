@@ -47,15 +47,12 @@ namespace Utility.DataLayer
 
                 config = await GetConfigs(configKeys, commandLineArgs);
 
-                var appName = await config.GetS("Config.ErrorLogAppName", configKeys.Join("::"));
+                var appName = await config.EvalS("ErrorLogAppName", configKeys.Join("::"));
                 _configConn = new Connection(GlobalConfigConnName, DataLayerClientFactory.DataStoreInstance(dataLayerType, appName), connStr);
 
                 TraceLog(nameof(Initialize), $"{nameof(config)}\r\n{config}");
 
                 await AddConnectionStrings(await config.EvalE("ConnectionStrings"), appName);
-
-                var appName = await config.EvalS("AppName");
-                DataLayerClientFactory.AppName = appName;
 
                 return config;
             }
@@ -72,7 +69,7 @@ namespace Utility.DataLayer
             try
             {
                 var config = await GetConfigs(configKeys, _commandLineArgs);
-                var appName = await config.GetS("Config.ErrorLogAppName", configKeys.Join("::"));
+                var appName = await config.EvalS("ErrorLogAppName", configKeys.Join("::"));
 
                 await AddConnectionStrings(await config.EvalE("ConnectionStrings"), appName, true);
 

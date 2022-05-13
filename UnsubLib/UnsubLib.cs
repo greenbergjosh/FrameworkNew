@@ -1317,7 +1317,7 @@ namespace UnsubLib
                     }
                 }
 
-                //foreach (var x in await dtve.GetL("Diff"))
+                //foreach (var x in await dtve.EvalL("Diff"))
                 await Pw.ForEachAsync(await dtve.EvalL("Diff").ToList(), MaxParallelism, async x =>
                 {
                     var oldf = (await x.EvalS("oldf")).ToLower();

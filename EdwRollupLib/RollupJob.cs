@@ -148,27 +148,27 @@ namespace EdwRollupLib
                 throw new Exception(await processRsResult.EvalS("message"));
             }
 
-            var rs = await FrameworkWrapper.Entities.GetEntity(parameters.RsConfigId);
+            var rs = await FrameworkWrapper.Entity.EvalE($"config://{parameters.RsConfigId}");
 
-            if (await rs.GetB("Config.export_to_clickhouse", false))
+            if (await rs.EvalB("export_to_clickhouse", false))
             {
-                var clickhouseConfig = await rs.GetE("Config.clickhouse");
+                var clickhouseConfig = await rs.EvalE("clickhouse");
 
-                var rsName = await rs.GetS("Name");
-                var tableName = await clickhouseConfig.GetS("table.name", rsName);
-                var schema = await clickhouseConfig.GetS("table.schema", "datasets");
+                var rsName = await rs.EvalS("Name");
+                var tableName = await clickhouseConfig.EvalS("table.name", rsName);
+                var schema = await clickhouseConfig.EvalS("table.schema", "datasets");
 
                 var query = $"INSERT INTO `{schema}`.`{tableName}` FORMAT CSVWithNames";
 
-                var host = await clickhouseConfig.GetS("host");
-                var sshUser = await clickhouseConfig.GetS("ssh.user");
-                var sshPassword = await clickhouseConfig.GetS("ssh.password");
+                var host = await clickhouseConfig.EvalS("host");
+                var sshUser = await clickhouseConfig.EvalS("ssh.user");
+                var sshPassword = await clickhouseConfig.EvalS("ssh.password");
 
-                var clickhouseUser = await clickhouseConfig.GetS("clickhouse.user");
-                var clickhousePassword = await clickhouseConfig.GetS("clickhouse.password");
+                var clickhouseUser = await clickhouseConfig.EvalS("clickhouse.user");
+                var clickhousePassword = await clickhouseConfig.EvalS("clickhouse.password");
 
-                var importPath = await clickhouseConfig.GetS("import_path");
-                var worksetNormalizedPayloadTable = await processRsResult.GetS("workset_normalized_payload_table");
+                var importPath = await clickhouseConfig.EvalS("import_path");
+                var worksetNormalizedPayloadTable = await processRsResult.EvalS("workset_normalized_payload_table");
 
                 var fullPath = $"{importPath}/{parameters.RsConfigId:N}/{worksetNormalizedPayloadTable[^8..]}";
 
@@ -373,7 +373,7 @@ namespace EdwRollupLib
 
         private async Task<ITargetBlock<Parameters>> PrepareDataflow(CancellationToken cancellationToken)
         {
-            var degreesOfParallelism = await FrameworkWrapper.StartupConfiguration.EvalI("Config.Parallelism", 16);
+            var degreesOfParallelism = await FrameworkWrapper.StartupConfiguration.EvalI("Parallelism", 16);
 
             var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = degreesOfParallelism, EnsureOrdered = false, BoundedCapacity = -1, CancellationToken = cancellationToken };
 

@@ -36,7 +36,7 @@ namespace UnsubLib.NetworkProviders
             var campaignIdPath = await network.EvalS("Credentials.CampaignIdPath");
             var campaignNamePath = await network.EvalS("Credentials.CampaignNamePath");
             var apiKey = await network.EvalS("Credentials.NetworkApiKey");
-            var pageSize = await network.GetI("Credentials.PageSize", 50);
+            var pageSize = await network.EvalI("Credentials.PageSize", 50);
             var currentPage = 1;
 
             var url = new Uri(new Uri(await network.EvalS("Credentials.BaseUrl")), await network.EvalS("Credentials.GetCampaignsPath")).ToString() + $"?page_size={pageSize}&page={currentPage}";

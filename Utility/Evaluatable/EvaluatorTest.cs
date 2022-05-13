@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -98,30 +96,5 @@ namespace Utility.Evaluatable
         //    // call trampoline
         //    // return result
         //}
-
-        public async Task Main()
-        {
-            var fw = await FrameworkWrapper.Create();// entity config, eval config);
-
-            WebHost.CreateDefaultBuilder()
-                .Configure(app =>
-                {
-                    // configure application pipeline
-                    app.Run(async c =>
-                    {
-                        var entityWithRequestScope = fw.Entity.Wrap(null); // Retriever that handles request://
-
-                        Guid topLevelRequestHandlerEntityFromConfig = Guid.Empty;
-
-                        var result = entityWithRequestScope.Eval($"entity://{topLevelRequestHandlerEntityFromConfig}");
-
-                        await c.Response.WriteAsync("Hello World!");
-                    });
-                })
-                .Build().Run();
-            // Initialize memory, entity, etc...
-            // If this was a webAPI, translate HTTP request to eval request
-            // If a console app, translate input to eval request
-        }
     }
 }

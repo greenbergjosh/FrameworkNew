@@ -153,7 +153,7 @@ namespace Utility.Evaluatable
                         }
                     }
 
-                    if (!evaluationResult.Complete)
+                    if (evaluationResult?.Complete == false)
                     {
                         stack.Push((currentEntity, handled, memoryLocation));
                     }
@@ -162,7 +162,7 @@ namespace Utility.Evaluatable
                         _ = threadState.Remove(memoryLocation);
                     }
 
-                    var next = evaluationResult.Entity;
+                    var next = evaluationResult?.Entity;
                     if (next != null)
                     {
                         if (currentEntity.Equals(next))

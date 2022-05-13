@@ -42,20 +42,20 @@ namespace GenericApi
         {
             var requestHandlers = new List<(string handlerName, Guid handlerEntityId, Entity handlerParameters)>();
 
-            foreach (var config in await FrameworkWrapper.StartupConfiguration.GetL("Config.RequestHandlers"))
+            await foreach (var config in FrameworkWrapper.StartupConfiguration.EvalL("RequestHandlers"))
             {
-                var name = await config.GetS("name");
+                var name = await config.EvalS("name");
 
-                var handleRequestEntityId = await config.GetGuid("handleRequest.entityId");
-                var handleRequestParameters = await config.GetE("handleRequest.parameters");
+                var handleRequestEntityId = await config.EvalGuid("handleRequest.entityId");
+                var handleRequestParameters = await config.EvalE("handleRequest.parameters");
 
-                var initializeEntityId = await config.GetGuid("initialize.entityId", null);
+                var initializeEntityId = await config.EvalGuid("initialize.entityId", defaultValue: null);
                 if (initializeEntityId != null)
                 {
-                    await FrameworkWrapper.EvaluateEntity(initializeEntityId.Value, config.Create(new
+                    _ = await FrameworkWrapper.EvaluateEntity(initializeEntityId.Value, config.Create(new
                     {
                         handlerName = name,
-                        handlerParameters = await config.GetE("initialize.parameters")
+                        handlerParameters = await config.EvalE("initialize.parameters")
                     }));
                 }
 

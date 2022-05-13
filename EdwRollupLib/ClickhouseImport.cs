@@ -60,7 +60,7 @@ namespace EdwRollupLib
                 throw new InvalidOperationException("Already running");
             }
 
-            var importType = await _config.GetS("Config.import_type", null);
+            var importType = await _config.EvalS("import_type", null);
             if (importType != "nested")
             {
                 throw new InvalidOperationException($"This import is not of type nested. It is of type {importType}");
@@ -807,7 +807,7 @@ from datasets.{mergedTableName};";
                 throw new InvalidOperationException("Already running");
             }
 
-            var importType = await _config.GetS("Config.import_type", null);
+            var importType = await _config.EvalS("import_type", null);
             if (importType != "simple")
             {
                 throw new InvalidOperationException($"This import is not of type simple. It is of type {importType}");
@@ -828,7 +828,7 @@ from datasets.{mergedTableName};";
             }
 
             var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = await _config.GetS("Name") }, _rsConfigId);
+            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = await _config.EvalS("Name") }, _rsConfigId);
             await _fw.EdwWriter.Write(edwBulkEvent);
 
             await DropStartEvent("ImportProcess", null);
@@ -838,13 +838,13 @@ from datasets.{mergedTableName};";
             {
                 var withEventsMaker = new WithEventsMaker(DropStartEvent, DropEndEvent, DropErrorEvent);
 
-                var clickhouseConfig = await _config.GetE("Config.clickhouse");
-                var host = await clickhouseConfig.GetS("host");
-                var user = await clickhouseConfig.GetS("ssh.user");
-                var password = await clickhouseConfig.GetS("ssh.password");
+                var clickhouseConfig = await _config.EvalE("clickhouse");
+                var host = await clickhouseConfig.EvalS("host");
+                var user = await clickhouseConfig.EvalS("ssh.user");
+                var password = await clickhouseConfig.EvalS("ssh.password");
 
-                _clickhouseUser = await clickhouseConfig.GetS("clickhouse.user");
-                _clickhousePassword = await clickhouseConfig.GetS("clickhouse.password");
+                _clickhouseUser = await clickhouseConfig.EvalS("clickhouse.user");
+                _clickhousePassword = await clickhouseConfig.EvalS("clickhouse.password");
 
                 using (_client = new SshClient(host, user, password))
                 {
@@ -868,14 +868,14 @@ from datasets.{mergedTableName};";
 
         private async Task ExportFileSimple()
         {
-            var export = await _config.GetE("Config.export");
+            var export = await _config.EvalE("export");
 
-            var connectionName = await export.GetS("connection_string");
-            var function = await export.GetS("function", null);
-            var table = await export.GetS("table", null);
+            var connectionName = await export.EvalS("connection_string");
+            var function = await export.EvalS("function", null);
+            var table = await export.EvalS("table", null);
 
-            var path = await export.GetS("source_path");
-            var filename = $"{await export.GetS("output_file_name")}.csv";
+            var path = await export.EvalS("source_path");
+            var filename = $"{await export.EvalS("output_file_name")}.csv";
             var exportPath = $"{path}/{filename}";
 
             var result = await ExecutePostgresQuery(connectionName, "exportData", new
@@ -883,27 +883,27 @@ from datasets.{mergedTableName};";
                 export_function = function,
                 export_table = table,
                 export_path = exportPath,
-                columns = await _config.GetL("Config.columns").Select(async c => new
+                columns = await _config.EvalL("columns").Select(async c => new
                 {
-                    name = await c.GetS("name"),
-                    type = await c.GetS("source_type")
-                })
+                    name = await c.EvalS("name"),
+                    type = await c.EvalS("source_type")
+                }).ToList()
             });
 
-            if (await result.GetS("result", null) != "success")
+            if (await result.EvalS("result", null) != "success")
             {
-                throw new DataException($"Error exporting table: {await _config.GetS("Name")} result: {result}");
+                throw new DataException($"Error exporting table: {await _config.EvalS("Name")} result: {result}");
             }
         }
 
         private async Task ImportFileSimple()
         {
-            var tableName = await _config.GetS("Config.merged_table_name");
-            var schemaName = await _config.GetS("Config.merged_table_schema");
+            var tableName = await _config.EvalS("merged_table_name");
+            var schemaName = await _config.EvalS("merged_table_schema");
 
-            var export = await _config.GetE("Config.export");
-            var path = await export.GetS("target_path");
-            var filename = $"{await export.GetS("output_file_name")}.csv";
+            var export = await _config.EvalE("export");
+            var path = await export.EvalS("target_path");
+            var filename = $"{await export.EvalS("output_file_name")}.csv";
             var importPath = $"{path}/{filename}";
 
             _ = await ExecuteSSHCommand($"sudo chmod 666 {importPath}");
@@ -919,9 +919,9 @@ from datasets.{mergedTableName};";
 
         private async Task CleanupSimple()
         {
-            var export = await _config.GetE("Config.export");
-            var path = await export.GetS("target_path");
-            var filename = $"{await export.GetS("output_file_name")}.csv";
+            var export = await _config.EvalE("export");
+            var path = await export.EvalS("target_path");
+            var filename = $"{await export.EvalS("output_file_name")}.csv";
             var importPath = $"{path}/{filename}";
 
             _ = await ExecuteSSHCommand($"rm {importPath}");
@@ -932,7 +932,7 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = await _config.GetS("Name"),
+                job = await _config.EvalS("Name"),
                 step,
                 stepContext,
                 eventType = "Start"
@@ -946,7 +946,7 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = await _config.GetS("Name"),
+                job = await _config.EvalS("Name"),
                 step,
                 stepContext,
                 eventType = "End",
@@ -961,7 +961,7 @@ from datasets.{mergedTableName};";
         {
             var payload = new
             {
-                job = await _config.GetS("Name"),
+                job = await _config.EvalS("Name"),
                 step,
                 stepContext,
                 eventType = "Error",
@@ -973,7 +973,7 @@ from datasets.{mergedTableName};";
 
             if (alert)
             {
-                var text = $"Clickhouse Import - {await _config.GetS("Name")} - ";
+                var text = $"Clickhouse Import - {await _config.EvalS("Name")} - ";
 
                 void AddField(string fieldName, object field)
                 {
@@ -986,7 +986,7 @@ from datasets.{mergedTableName};";
                 AddField("Step", step);
                 AddField("Error", ex.Message);
 
-                var slackAlertUrl = await _fw.StartupConfiguration.GetS("Config.SlackAlertUrl", null);
+                var slackAlertUrl = await _fw.StartupConfiguration.EvalS("SlackAlertUrl", null);
 
                 if (!slackAlertUrl.IsNullOrWhitespace())
                 {

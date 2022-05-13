@@ -25,7 +25,7 @@ namespace Utility.EDW.Reporting
 
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
-            var appName = await config.GetS("Config.ErrorLogAppName", "");
+            var appName = await config.EvalS("ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
             await foreach (var silo in config.EvalL("EdwSilos"))
@@ -38,7 +38,7 @@ namespace Utility.EDW.Reporting
 
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
-            var appName = await config.GetS("Config.ErrorLogAppName", "");
+            var appName = await config.EvalS("ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
             await foreach (var silo in config.EvalL("EdwSilos"))

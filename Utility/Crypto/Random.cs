@@ -24,9 +24,9 @@ namespace Utility.Crypto
         public const string HEX = "0123456789ABCDEF";
 
         // DO NOT USE DIRECTLY, use RNG()
-        private static RNGCryptoServiceProvider _rng;
+        private static RandomNumberGenerator _rng;
 
-        public static RNGCryptoServiceProvider RNG() => _rng ?? (_rng = new RNGCryptoServiceProvider());
+        public static RandomNumberGenerator RNG() => _rng ??= RandomNumberGenerator.Create();
 
         #region Statics
 
@@ -146,10 +146,7 @@ namespace Utility.Crypto
 
             if (min > max)
             {
-                var t = min;
-
-                min = max;
-                max = t;
+                (max, min) = (min, max);
             }
 
             var randomBytes = new byte[4];
@@ -180,10 +177,7 @@ namespace Utility.Crypto
 
             if (min > max)
             {
-                var t = min;
-
-                min = max;
-                max = t;
+                (max, min) = (min, max);
             }
 
             var randomBytes = new byte[4 * count];
@@ -209,17 +203,14 @@ namespace Utility.Crypto
 
             if (min > max)
             {
-                var t = min;
-
-                min = max;
-                max = t;
+                (max, min) = (min, max);
             }
 
             var randomBytes = new byte[1];
 
             RNG().GetBytes(randomBytes);
 
-            return randomBytes[0];
+            return (byte)BytesToIntInRange(min, max, randomBytes);
         }
 
         public static short Number(short min, short max)
@@ -231,10 +222,7 @@ namespace Utility.Crypto
 
             if (min > max)
             {
-                var t = min;
-
-                min = max;
-                max = t;
+                (max, min) = (min, max);
             }
 
             var randomBytes = new byte[2];

@@ -26,7 +26,7 @@ app.MapGet("/", async (context) =>
         })
     }); // Retriever that handles request://
 
-    Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("0086226A-D81D-4C74-983D-24F232EBA731");
+    Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("0086226a-d81d-4c74-983d-24f232eba731");
 
     await foreach (var result in entityWithRequestScope.Eval($"config://{topLevelRequestHandlerEntityFromConfig}"))
     {
@@ -41,7 +41,7 @@ app.Run();
 Entity GetEntity(Entity baseEntity, Guid id)
 {
     var entities = JsonDocument.Parse(File.ReadAllText("Entities/ConfigDB.json")).RootElement;
-    var entity = entities.GetProperty(id.ToString().ToUpper());
+    var entity = entities.GetProperty(id.ToString());
 
     return baseEntity.Create(new EntityDocumentJson(entity));
 }

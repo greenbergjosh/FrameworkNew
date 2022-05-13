@@ -26,7 +26,7 @@ namespace Utility.EDW.Logging
         private static List<IEndpoint> _endpoints;
         public static async Task<IReadOnlyList<IEndpoint>> InitializeEndpoints(Entity.Entity config)
         {
-            var appName = await config.GetS("Config.ErrorLogAppName", "");
+            var appName = await config.EvalS("ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
             await foreach (var silo in config.EvalL("ErrSilos"))
@@ -40,15 +40,15 @@ namespace Utility.EDW.Logging
 
         public static async Task<IReadOnlyList<IEndpoint>> PollEndpoints(Entity.Entity config)
         {
-            var appName = await config.EvalS("Config.ErrorLogAppName", "");
+            var appName = await config.EvalS("ErrorLogAppName", "");
 
             var endpoints = new List<IEndpoint>();
-            foreach (var silo in await config.EvalL("Config.ErrSilos"))
+            await foreach (var silo in config.EvalL("ErrSilos"))
             {
                 endpoints.Add(new ErrorSiloEndpoint(await silo.EvalS("DataLayerType"), await silo.EvalS("ConnectionString"), appName));
             }
 
-            //return endpoints;
+            return endpoints;
         }
 
         public static Task InitiateWalkaway(object w, string errorFilePath)

@@ -15,7 +15,7 @@
 ////    {
 ////        public static async Task<string> GetS(this Entity e, string query, string defaultValue)
 ////        {
-////            var entity = await e.GetE(query);
+////            var entity = await e.EvalE(query);
 ////            if (entity == null)
 ////            {
 ////                return defaultValue;
@@ -345,7 +345,7 @@
 //            }
 //        }
 
-//        public static async Task<Entity> CallProduction(string productionName) => await CallProduction(await productions[productionName].GetS("Body"), await productions[productionName].GetS("Symbol"));
+//        public static async Task<Entity> CallProduction(string productionName) => await CallProduction(await productions[productionName].EvalS("Body"), await productions[productionName].EvalS("Symbol"));
 
 //        public static async Task<Entity> CallProduction(string body, string symbol)
 //        {
@@ -454,8 +454,8 @@
 //                {
 //                    var scopeDefinition = GetToken(scope[(scopeNameLength..)]);
 //                    var scopeInjection = await EvaluateToken(scopeDefinition);
-//                    var scopeEnumerable = await scopeInjection.GetE("value");
-//                    var scopeDefault = await scopeInjection.GetE("def");
+//                    var scopeEnumerable = await scopeInjection.EvalE("value");
+//                    var scopeDefault = await scopeInjection.EvalE("def");
 //                    scopeCollection[scopeName] = (scopeName, scopeEnumerable, scopeDefault, dominant, repeatCount, restart);
 //                }
 //            }
@@ -561,13 +561,13 @@
 //            string nsp = parts[0].Split("://")[1];
 //            if (nsn.Equals("context"))
 //            {
-//                string s = await E.GetS(parts[0], "");
+//                string s = await E.EvalS(parts[0], "");
 //                if (string.IsNullOrEmpty(s)) value = Entity.Undefined;
 //                else value = await CallProduction(s, null);
 //            }
 //            else
 //            {
-//                string s = await GetScope(nsn).GetS(nsp, "");
+//                string s = await GetScope(nsn).EvalS(nsp, "");
 //                if (string.IsNullOrEmpty(s)) value = Entity.Undefined;
 //                else value = await CallProduction(s, null);
 //            }
@@ -600,8 +600,8 @@
 //            var id = Guid.Parse(entityId);
 //            var entity = await fw.Entities.GetEntity(id);
 //            entity.Set("/Config/$id", id);
-//            entity.Set("/Config/$name", entity.GetS("/Name"));
-//            return new[] { await root.Parse("application/json", entity.GetS("/Config")) };
+//            entity.Set("/Config/$name", entity.EvalS("/Name"));
+//            return new[] { await root.Parse("application/json", entity.EvalS("/Config")) };
 //        }
 
 //        private static async Task<IEnumerable<Entity>> GetEntityType(Entity root, string entityType)
@@ -609,11 +609,11 @@
 //            var entities = await Data.CallFn("config", "SelectConfigsByType", new { type = entityType });
 
 //            var convertedEntities = new List<Entity>();
-//            foreach (var entity in entities.GetL("result"))
+//            foreach (var entity in entities.EvalL("result"))
 //            {
-//                entity.Set("/Config/$id", entity.GetS("/Id"));
-//                entity.Set("/Config/$name", entity.GetS("/Name"));
-//                var convertedEntity = await root.Parse("application/json", entity.GetS("@"));
+//                entity.Set("/Config/$id", entity.EvalS("/Id"));
+//                entity.Set("/Config/$name", entity.EvalS("/Name"));
+//                var convertedEntity = await root.Parse("application/json", entity.EvalS("@"));
 //                convertedEntities.Add(convertedEntity);
 //            }
 //            return convertedEntities;
@@ -677,7 +677,7 @@
 //                {
 //                    "entity" => (await GetEntity(fw, entity, uri.Host), UnescapeQueryString(uri)),
 //                    "entityType" => (await GetEntityType(entity, uri.Host), UnescapeQueryString(uri)),
-//                    "context" => (new[] { await ContextEntity.GetE(uri.Host) }, UnescapeQueryString(uri)),
+//                    "context" => (new[] { await ContextEntity.EvalE(uri.Host) }, UnescapeQueryString(uri)),
 //                    _ => throw new InvalidOperationException($"Unknown scheme: {uri.Scheme}")
 //                },
 //                MissingPropertyHandler: null,
@@ -724,21 +724,21 @@
 //            }
 
 //            // add_thread_group
-//            Entity e1 = await E.GetE("config://e97f0bac-2640-448c-b6f2-2a9a5510cc76");
+//            Entity e1 = await E.EvalE("config://e97f0bac-2640-448c-b6f2-2a9a5510cc76");
 //            context["g"] = e1;
 //            string sql1 = (await CallProduction("insert_thread_group_records")).Value<string>();
 //            string sql2 = (await CallProduction("create_tg_tables_and_indexes")).Value<string>();
 
 //            // end add_thread_group
 
-//            string s = await E.GetS("config://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId");
+//            string s = await E.EvalS("config://5f78294e-44b8-4ab9-a893-4041060ae0ea?RsConfigId");
 
-//            Entity e = await E.GetE("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
+//            Entity e = await E.EvalE("config://3aeeb2b6-c556-4854-a679-46ea73a6f1c7"); // 8d0a6ac0-d351-4ab7-b9db-020a37ca14ee");
 
 //            context["g"] = e;  // "g", Entity(g)
 //            // context://g?path    g.Get(path).Value<bool>()
 
-//            //string initial_production = "long_term_union"; //rlp.GetS("initial_production");
+//            //string initial_production = "long_term_union"; //rlp.EvalS("initial_production");
 //            //string sql = await CallProduction(initial_production);
 
 //            symbolTable.Add("config_name", "Path Session");
@@ -750,9 +750,9 @@
 //            foreach (Entity rlp in await e.Get("rollups.*"))
 //            {
 //                context["rollup"] = rlp;
-//                string name = await rlp.GetS("name");
-//                //string grammar = rlp.GetS("grammar");
-//                string initial_production = "rlp_std_group_by"; //rlp.GetS("initial_production");
+//                string name = await rlp.EvalS("name");
+//                //string grammar = rlp.EvalS("grammar");
+//                string initial_production = "rlp_std_group_by"; //rlp.EvalS("initial_production");
 //                string sql = (await CallProduction(initial_production)).Value<string>();
 //                context.Remove("rollup");
 //                d[name] = sql;

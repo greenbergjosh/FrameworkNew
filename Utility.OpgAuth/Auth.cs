@@ -37,7 +37,7 @@ namespace Utility.OpgAuth
                     }
                     else
                     {
-                        var appName = await fw.StartupConfiguration.GetS("Config.ErrorLogAppName", "");
+                        var appName = await fw.StartupConfiguration.EvalS("ErrorLogAppName", "");
                         await Data.AddConnectionStrings(fw.Entity.Create(new Dictionary<string, Entity.Entity> { [ConnName] = conn.Value.ToString() }), appName);
                         var ssoFailed = false;
 

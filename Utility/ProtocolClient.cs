@@ -20,6 +20,7 @@ using Renci.SshNet;
 using Renci.SshNet.Async;
 using Fs = Utility.FileSystem;
 
+#pragma warning disable SYSLIB0014 // Type or member is obsolete
 namespace Utility
 {
     public static class ProtocolClient
@@ -29,11 +30,12 @@ namespace Utility
         public static async Task DownloadFile(string downloadLink, string destinationDirectoryName, string destinationFileName)
         {
             var tmpLocation = $@"{destinationDirectoryName}\__dwnld.{destinationFileName}";
-            using (var wc = new WebClient())
-            {
-                await wc.DownloadFileTaskAsync(new Uri(downloadLink), tmpLocation)
-                    .ConfigureAwait(continueOnCapturedContext: false);
-            }
+
+            var client = GetHttpClient();
+
+            using var s = await client.GetStreamAsync(downloadLink).ConfigureAwait(continueOnCapturedContext: false);
+            using var fs = new FileStream(tmpLocation, FileMode.CreateNew);
+            await s.CopyToAsync(fs).ConfigureAwait(continueOnCapturedContext: false);
 
             File.Move(tmpLocation, $@"{destinationDirectoryName}\{destinationFileName}");
             _ = Task.Factory.StartNew(() => File.Delete(tmpLocation), TaskCreationOptions.LongRunning);
@@ -945,26 +947,27 @@ namespace Utility
         }
 
         private static HttpClient GetHttpClient(int maxConnectionsPerServer = 0, double timeoutSeconds = 0, DecompressionMethods decompressionMethods = DecompressionMethods.None, string proxyHostAndPort = null) => _httpClients.GetOrAdd((maxConnectionsPerServer, decompressionMethods, proxyHostAndPort, timeoutSeconds), (_) =>
-                                                                                                                                                                                                                                {
-                                                                                                                                                                                                                                    var handler = new HttpClientHandler()
-                                                                                                                                                                                                                                    {
-                                                                                                                                                                                                                                        AutomaticDecompression = decompressionMethods,
-                                                                                                                                                                                                                                        Proxy = string.IsNullOrWhiteSpace(proxyHostAndPort) ? null : new WebProxy(proxyHostAndPort)
-                                                                                                                                                                                                                                    };
+        {
+            var handler = new HttpClientHandler()
+            {
+                AutomaticDecompression = decompressionMethods,
+                Proxy = string.IsNullOrWhiteSpace(proxyHostAndPort) ? null : new WebProxy(proxyHostAndPort)
+            };
 
-                                                                                                                                                                                                                                    if (maxConnectionsPerServer > 0)
-                                                                                                                                                                                                                                    {
-                                                                                                                                                                                                                                        handler.MaxConnectionsPerServer = maxConnectionsPerServer;
-                                                                                                                                                                                                                                    }
+            if (maxConnectionsPerServer > 0)
+            {
+                handler.MaxConnectionsPerServer = maxConnectionsPerServer;
+            }
 
-                                                                                                                                                                                                                                    var client = new HttpClient(handler);
+            var client = new HttpClient(handler);
 
-                                                                                                                                                                                                                                    if (timeoutSeconds > 0)
-                                                                                                                                                                                                                                    {
-                                                                                                                                                                                                                                        client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
-                                                                                                                                                                                                                                    }
+            if (timeoutSeconds > 0)
+            {
+                client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+            }
 
-                                                                                                                                                                                                                                    return client;
-                                                                                                                                                                                                                                });
+            return client;
+        });
     }
 }
+#pragma warning restore SYSLIB0014 // Type or member is obsolete

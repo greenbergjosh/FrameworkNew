@@ -18,18 +18,17 @@ namespace Utility
 
         public static byte[] AsciiMD5HashAsByteArray(string input)
         {
-            var md5 = MD5.Create();
+            using var md5 = MD5.Create();
             var inputBytes = Encoding.ASCII.GetBytes(input);
             var hash = md5.ComputeHash(inputBytes);
             return hash;
         }
 
-        private static readonly MD5CryptoServiceProvider Md5Provider = new();
-
         public static string Utf8MD5HashAsHexString(string input)
         {
+            using var md5 = MD5.Create();
             var hash = new StringBuilder();
-            var bytes = Md5Provider.ComputeHash(new UTF8Encoding().GetBytes(input));
+            var bytes = md5.ComputeHash(new UTF8Encoding().GetBytes(input));
 
             for (var i = 0; i < bytes.Length; i++)
             {
@@ -41,7 +40,7 @@ namespace Utility
 
         public static byte[] CalculateSHA1Hash(string input)
         {
-            var sha1 = SHA1.Create();
+            using var sha1 = SHA1.Create();
             var inputBytes = Encoding.ASCII.GetBytes(input);
             var hash = sha1.ComputeHash(inputBytes);
             return hash;
@@ -49,33 +48,20 @@ namespace Utility
 
         public static string Base64EncodeForUrl(string s) => Convert.ToBase64String(Encoding.UTF8.GetBytes(s)).Replace('+', '-').Replace('/', '_').Replace('=', '~').Trim();
 
-        public static string Base64DecodeFromUrl(string s) => string.IsNullOrEmpty(s)
-                ? s
-                : Encoding.UTF8.GetString(
-                Convert.FromBase64String(s.Replace('-', '+').Replace('_', '/').Replace('~', '=')));
+        public static string Base64DecodeFromUrl(string s) => string.IsNullOrEmpty(s) ? s : Encoding.UTF8.GetString(Convert.FromBase64String(s.Replace('-', '+').Replace('_', '/').Replace('~', '=')));
 
         public static string CalculateMD5Hash(string input)
         {
-            string hash;
-
-            using (var md5 = MD5.Create())
-            {
-                hash = string.Concat(md5.ComputeHash(Encoding.ASCII.GetBytes(input))
-                  .Select(x => x.ToString("x2")));
-            }
+            using var md5 = MD5.Create();
+            var hash = string.Concat(md5.ComputeHash(Encoding.ASCII.GetBytes(input)).Select(x => x.ToString("x2")));
 
             return hash;
         }
 
         public static string CalculateSHA512Hash(string input)
         {
-            string hash;
-
-            using (var sha512 = SHA512.Create())
-            {
-                hash = string.Concat(sha512.ComputeHash(Encoding.ASCII.GetBytes(input))
-                  .Select(x => x.ToString("x2")));
-            }
+            using var sha512 = SHA512.Create();
+            var hash = string.Concat(sha512.ComputeHash(Encoding.ASCII.GetBytes(input)).Select(x => x.ToString("x2")));
 
             return hash;
         }

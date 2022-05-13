@@ -80,14 +80,14 @@ namespace GenericApi
             {
                 foreach (var requestHandler in Program.RequestHandlers)
                 {
-                    var handled = await _fw.EvaluateEntity<Entity>(requestHandler.handlerEntityId, _fw.Entity.Create(new
+                    var handled = await _fw.EvaluateEntity(requestHandler.handlerEntityId, _fw.Entity.Create(new
                     {
                         context,
                         requestHandler.handlerName,
                         requestHandler.handlerParameters
                     }));
 
-                    if (await handled.GetB("@"))
+                    if (await handled.EvalB("@"))
                     {
                         return;
                     }
@@ -239,7 +239,6 @@ namespace GenericApi
                                 })
                             );
 
-                            result = (Entity)resultO;
                             processed = true;
                         }
 
