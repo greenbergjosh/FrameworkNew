@@ -1,0 +1,197 @@
+﻿Entity(Id, Config)
+BinaryEntityRelationship(LEntityId, REntityId, RelationshipEntityId, Sequence)
+Entity('RelationshipEntityId', {LName, RName})
+
+Point to a specific EntityVersion
+Point to a specific Entity (use selection to choose a variant)
+The issue is that the EntityVariant is not able to be versioned
+The EntityVariant is two things: 1) selector 2) a UUID that identifies (equates) many entities
+Should not convolute these two things or convolute them with versioning
+Select from amongst the Entities who assign themselves to this Entity for this purpose
+
+GetS
+GetL
+GetD
+Get<T>
+GetE
+GetTupleS
+GetTuple<T1, T2, T3>
+
+RuntimeState
+  Request
+  StackFrame
+  Stack
+  Thread
+  Process
+  GlobalServices/Decorations
+Config
+ExternalConfig
+
+Whenever a request is made, a GenericState object is constructed by the Framework
+Fw.State : GenericState
+
+Fw.State.Get()
+  - where is the object/value coming from? A DB, an in-memory collection, redis? How can I uniformly jump across?
+  - does Get always start with an entityId? An entityName?
+  - Is there an ontology registered above all of this to store where entities are located?
+
+Ex. http://xyz.com?nm=1234567&a=1&b=2
+   Body: {"c":"3", "d":["v1", "v2"]}
+
+I would like to be able to access all of the state in the request directly. Do I need to "know" it came from the request?
+I can make the request an anonymous, temporary, entity. I can even assign it an id.  Now the request is an entity.
+If I put that request entity in the cache (in a performant location) then I can access it as I would any entity.
+Generally, it would be pretty to access entities by entityName, not entityId.
+
+TODO: When request is received, create Request Entity and place in cache. 
+
+Get("Request/QueryString/a/b/c/d")
+Get("Request/Body/c")
+
+If the body were XML or some other non-comformant format:
+
+IGenericEntity ge = Get("Request/Body", GenericEntityXml);
+// Now I can access using my familiar interface (but jumps to related entities is still undefined)
+
+The stack can also be pushed into the cache as a temporary entity (that will have to be serialized on a yield).
+
+TODO: When stack is created (or deserialized), create Stack Entity and place in cache
+
+The Stack and Request entities cannot actually be put in the cache with that name since every request will use the same name.
+They could be pushed into the cache with a unique id, but the relity is they just need to be interjected between the 
+cache and the caller.  They are temporary and in-memory for the duration of the request.
+
+Get("Parameters/p1") - only looks at the current stack frame to find p1
+Get("Stack/p1") - looks up the whole stack to find p1 starting from the current stack frame
+
+Thread state is stored on behalf of the thread. Multiple requests CANNOT be made against the thread in parallel.
+This state can be used, for instance, to store a collection of headers that are identified as execution goes down the tree.
+Alternatively, of course, the headers could be collected in a collection that is passed down and back up the call stack (pure).
+It is up to the author of the entities whether they wish to use pure functions of thread state.
+
+Get("Thread/Whatever/")
+
+Thread state will be serialized on yields.
+
+Process state is stored on behalf of the workflow as a whole.  Process state could be updated by multiple threads simultaneously.
+The different threads could be on different machines.  Process state can be stored in redis under a unique id. Can we ensure
+that redis will serialize access to process state? Do we care, in general, if the serialization is perfect?  Do we need to be 
+able to make transactional updates to process state (when updating multiple items)?  All of these questions can be answered
+orthogonally to the general idea that the interface will be:
+
+Get("Process/Whatever")
+
+All of these "Locations" in the state tree are automatically assigned to the request as soon as it comes in.  Among other things,
+this is exactly what the framework does to bootstrap the request.
+
+Config is external config structured using the GenericEntity model.
+To get an entity by id is trivial
+
+IGenericEntity ge = Get(id);
+
+If I want to get all entities of a certain type (say, all Campaigns), then I would have to have marked the entities as being of 
+that type. Or subjectively of that type.  Perhaps, I only use subjectively, and I can refer to as many types as I would like.
+I can optionally have the subject point to an additional entity that is the subjective implementation of that subject. If I don't
+point to the entity then I am simply using the name as a meta tag to allow this item to be pulled any time items of that type are requested.
+
+IEnumerable<IGenericEntity> ges = GetLBySubject("Campaign");  // returns all entities subjectively denoted Campaigns
+
+Subjectively 'being' something means that there is an entity to which I am associated via a 'Subjective' edge. That entity is the 
+implementation of my being as that thing.  The type of the subjective implementation can be a different type than the type of
+the entity that subjectively points to it.  That type is the interface type of the subject.  A single entity can subjectively 'be'
+many different things.
+
+So, Process, Thread, Parameters, Stack, and Request are keywords. They know not to go to the entity store.
+
+------ Implementation / Interface ----------------------
+RuntimeState
+  Request
+  StackFrame
+  Stack
+  Thread
+  Process
+  GlobalServices/Decorations
+Config
+ExternalConfig
+
+Entity(Id, Config)
+BinaryEntityRelationship(LEntityId, REntityId, LName, RName)
+
+GetS
+GetL
+GetD
+Get<T>
+GetE
+GetTupleS  - using something like cypher I can get more than one property value back at once
+GetTuple<T1, T2, T3>
+
+Ex. http://xyz.com?enitityId=1234567&a=1&b=2  ----> Fw.State : GenericState
+   Body: {"c":"3", "d":["v1", "v2"]}
+
+Get("Request/QueryString/a")
+Get("Request/Body/c")
+IGenericEntity ge = Get("Request/Body", GenericEntityXml);
+Get("Parameters/p1") - only looks at the current stack frame to find p1
+Get("Stack/p1") - looks up the whole stack to find p1 starting from the current stack frame
+Get("Thread/Whatever/")
+Get("Process/Whatever")
+IGenericEntity ge = Get(id);
+IEnumerable<IGenericEntity> ges = GetLBySubject("Campaign");
+
+ge.Evaluate("x/y/z", "parms")
+
+IGenericEntity ge = Get(id1);
+ge.Get("x/y/z");  // gets the value held in the z property
+  // if id1 = { "Entity" : { "Evaluate": { "Constant": {"x" : { "y": { "z": "value1" } } } } } }
+     // return "value1"
+  // if id1 = { "Entity" : { "Evaluate": { "Code": "Actual C# code here to be evaluated now" } } }
+     // evaluate the code passing it the path "x/y/z"
+  // if id1 = { "Entity" : { "Evaluate": { "EntityId": 15 } } }
+     // evaluate entityId=15 passing it the path "x/y/z"
+  // if id1 = { "Entity" : { "Evaluate": { "Constant": {"a" : { "b": { "c": "value1" } } } }, "Subjectively": [{ "x": "id2"}] } }
+     // evaluate entityId = id2 passing it the path "y/z"
+     // a direct value takes priority over a subject - name subjects so as not to conflict with direct values
+
+ge.Get("Car/Color");
+  // Assume ge is already a Person object; else we could do ge.Get("@IdOfPerson/Car/Color")
+  // We assume that Person has only one car - otherwise we would need to get a list here
+  // We find that person has no direct property called Car, nor is subjectively a Car itself
+  // So, we look at the relationship table - does this person entity appear in the relationship table with an associated Car property
+  // If yes, then we get that Car entity and pull it into the entity cache (by Id)
+  // We evaluate the Car entity by passing it the path "Color"
+
+IGenericEntity car = ge.Get("Car"); // this will return the entity itself if ge was a Person
+car.Get("Color");
+
+List<IGenericEntity> cars = ge.Get("Cars");
+IGenericEntity car = ge.Get("Car[0]");   // This gets into a query language - it changes nothing, simply requires further coding
+  // to handle the more specific path. In the end, the goal is to find an entity and call it. If the query had aggregate function the 
+  // goal would be to find multiple entities and then run an aggregate function over those entities. Again, changing nothing. simply
+  // means implementation of some query language to find entities and express aggregations.
+
+IGenericEntity ge = ge.Get(id1, vary=true, version=true);
+// vary and version could default to true or false, or the entity itself could have properties, vary and version, and they are respected
+// unless overridden by the call itself
+// vary says to run the selector over the associated sets of variants (a variant is a binary associated entity where the BA.label='Variant')
+// How does one entity point to another, to a variant, to a variant version?
+// Since a variant is simply an entity, I can always just point (associate to) that entity, likewise for version
+// On the other hand I can associate to the top level entity, which is set to respect variation/versioning and the evaluation of that
+// entity will automatically find (and delegate evaluation to) the appropriate variant/version
+
+
+// Postgres and SQL sprocs as LBM's, consider passing them the stack and allowing them to return enough info to continue evaluation
+// Note that a MethodSuite can have LBMs of any type (heterogeneous)
+Entity	Type				Value
+1		MethodSuite			{ "Name": "Signal", "Functions": { "getCampaigns": 2 } }
+2		LBM					{ "Type": "Postgres", "ConnectionStringId": 3, "Function": "path.get_campaigns" }
+3		ConnectionString	{ "ConnectionString": "Server=10...." }
+
+// Common use-case to be able to switch between two different databases
+1		MethodSuite			{ "Name": "Signal-Postgres", "Functions": { "getCampaigns": 2 } }
+2		LBM					{ "Type": "Postgres", "ConnectionStringId": 3, "Function": "path.get_campaigns" }
+3		ConnectionString	{ "ConnectionString": "Server=10...." }
+4		MethodSuite			{ "Name": "Signal-SQL", "Functions": { "getCampaigns": 5 } }
+5		LBM					{ "Type": "SQL", "ConnectionStringId": 6, "Function": "Path.GetCampaigns" }
+6		ConnectionString	{ "ConnectionString": "Server=14...." }
+
+

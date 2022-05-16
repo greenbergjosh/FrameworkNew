@@ -2,11 +2,43 @@
   "0086226a-d81d-4c74-983d-24f232eba731": {
     "$meta": {
       "id": "0086226a-d81d-4c74-983d-24f232eba731",
-      "name": "Top Level Web Handler"
+      "name": "Hello World DYNAMIC"
     },
     "$evaluate": {
-      "codeType": "static",
-      "code": "using Microsoft.AspNetCore.Http;\r\nvar response = await Entity.Eval<HttpResponse>(\"httpContext://Response\");\r\nawait response.WriteAsync(\"Hello World from Entity!\");\r\nreturn new Utility.Evaluatable.EvaluateResponse(Complete: true);"
+      "provider": "Dynamic",
+      "code": "using Microsoft.AspNetCore.Http;\r\nvar response = await Entity.Eval<HttpResponse>(\"object://httpContext/Response\");\r\nawait response.WriteAsync(\"Hello World from Dynamic Entity!\");\r\nreturn new Utility.Evaluatable.EvaluateResponse(Complete: true);"
+    }
+  },
+  "903ddbdf-8198-46f3-972c-66a0ce4b624f": {
+    "$meta": {
+      "id": "903ddbdf-8198-46f3-972c-66a0ce4b624f",
+      "name": "Hello World STATIC"
+    },
+    "$evaluate": {
+      "provider": "Static",
+      "typeName": "EvaluatorTest.Entities.EntityCode, EvaluatorTest",
+      "methodName": "HelloWorld"
+    }
+  },
+  "ab9c9297-4b2f-430d-a9b5-03b7ac4cb80b": {
+    "$meta": {
+      "id": "ab9c9297-4b2f-430d-a9b5-03b7ac4cb80b",
+      "name": "Top Level Handler"
+    },
+    "$evaluate": {
+      "provider": "Static",
+      "typeName": "EvaluatorTest.Entities.EntityCode, EvaluatorTest",
+      "methodName": "TopLevelWebHandler"
+    }
+  },
+  "7cf50701-a305-4fd5-a203-3f3dba9ccab0": {
+    "$meta": {
+      "id": "7cf50701-a305-4fd5-a203-3f3dba9ccab0",
+      "name": "Constant Entity 1"
+    },
+    "message": "Hello world from constant entity",
+    "$evaluate": {
+      "provider": "Constant"
     }
   }
 }

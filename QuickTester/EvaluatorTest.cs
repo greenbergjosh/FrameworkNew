@@ -111,11 +111,11 @@ namespace QuickTester
 
             public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
-                var index = await request.ReadLocation.EvalI("index", 0);
+                var index = 0;// await request.ReadLocation.EvalI("index", 0);
 
                 var current = _entities[index++];
 
-                request.WriteLocation["index"] = index;
+                //request.WriteLocation["index"] = index;
 
                 return new EvaluateResponse(
                     Entity: current,

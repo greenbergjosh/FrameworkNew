@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using Utility.EDW.Reporting;
 using Utility.Entity;
 using Utility.Entity.Implementations;
 using Utility.Evaluatable;
+using Utility.Evaluatable.CodeProviders;
 
 namespace Utility
 {
@@ -54,7 +56,13 @@ namespace Utility
                     fw.ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
                 }
 
-                evaluatorConfig ??= new EvaluatorConfig();
+                var evalProviders = new Dictionary<string, IEvalProvider>()
+                {
+                    ["Constant"] = new ConstantEvalProvider(),
+                    ["Static"] = new StaticCSharpEvalProvider()
+                };
+
+                evaluatorConfig ??= new EvaluatorConfig(evalProviders: evalProviders, defaultEvalProvider: evalProviders["Constant"]);
                 fw.Evaluator = Evaluator.Create(evaluatorConfig);
 
                 static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));
@@ -93,7 +101,7 @@ namespace Utility
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
                     fw.RoslynWrapper = new RoslynWrapper<EvaluateRequest, EvaluateResponse>(Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
-                    evaluatorConfig.RoslynWrapper ??= fw.RoslynWrapper;
+                    evalProviders["Dynamic"] = new DynamicCSharpEvalProvider(fw.RoslynWrapper);
                 }
 
                 fw.EdwWriter = await EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(fw.StartupConfiguration);
@@ -199,7 +207,7 @@ namespace Utility
                 parameters = stackedParameters
             });
 
-            var result = await RoslynWrapper.Evaluate(evaluatableId, await evaluatableEntity.EvalS("Code"), new EvaluateRequest(Entity: entity, Parameters: evaluationParameters, default, default));
+            var result = await RoslynWrapper.Evaluate(evaluatableId, await evaluatableEntity.EvalS("Code"), new EvaluateRequest(Entity: entity, Parameters: evaluationParameters));
 
             return result.Entity;
         }
@@ -212,7 +220,7 @@ namespace Utility
                 parameters
             });
 
-            var result = await RoslynWrapper.Evaluate(code, new EvaluateRequest(Entity: Entity.Create<object>(null), Parameters: evaluationParameters, default, default));
+            var result = await RoslynWrapper.Evaluate(code, new EvaluateRequest(Entity: Entity.Create<object>(null), Parameters: evaluationParameters));
 
             return result.Entity;
         }

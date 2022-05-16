@@ -14,19 +14,23 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.MapGet("/", async (context) =>
+app.MapFallback(async (context) =>
 {
     var entityWithRequestScope = fw.Entity.Wrap(new EntityConfig
     {
         Retriever = (entity, uri) => Task.FromResult<(IEnumerable<Entity> entities, string query)>(uri.Scheme switch
         {
-            "httpcontext" => (new[] { entity.Create(context) }, char.ToUpper(uri.Authority[0]) + uri.Authority[1..]),
+            "object" => uri.Authority switch
+            {
+                "httpcontext" => (new[] { entity.Create(context) }, uri.AbsolutePath[1..]),
+                _ => (new[] { Entity.Unhandled }, String.Empty)
+            },
             "config" => (new[] { GetEntity(entity, Guid.Parse(uri.Host)) }, Uri.UnescapeDataString(uri.Query.TrimStart('?'))),
             _ => (new[] { Entity.Unhandled }, String.Empty)
         })
-    }); // Retriever that handles request://
+    });
 
-    Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("0086226a-d81d-4c74-983d-24f232eba731");
+    Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("ab9c9297-4b2f-430d-a9b5-03b7ac4cb80b");
 
     _ = await entityWithRequestScope.Eval($"config://{topLevelRequestHandlerEntityFromConfig}").ToList();
 });
