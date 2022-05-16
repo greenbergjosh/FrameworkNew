@@ -6,7 +6,7 @@
     },
     "$evaluate": {
       "codeType": "static",
-      "code": ""
+      "code": "using Microsoft.AspNetCore.Http;\r\nvar response = await Entity.Eval<HttpResponse>(\"httpContext://Response\");\r\nawait response.WriteAsync(\"Hello World from Entity!\");\r\nreturn new Utility.Evaluatable.EvaluateResponse(Complete: true);"
     }
   }
 }

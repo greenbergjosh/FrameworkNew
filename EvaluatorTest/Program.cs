@@ -20,20 +20,15 @@ app.MapGet("/", async (context) =>
     {
         Retriever = (entity, uri) => Task.FromResult<(IEnumerable<Entity> entities, string query)>(uri.Scheme switch
         {
-            "httpContext" => (new[] { fw.Entity.Create(context) }, uri.AbsolutePath),
-            "config" => (new[] { GetEntity(fw.Entity, Guid.Parse(uri.Host)) }, Uri.UnescapeDataString(uri.Query.TrimStart('?'))),
+            "httpcontext" => (new[] { entity.Create(context) }, char.ToUpper(uri.Authority[0]) + uri.Authority[1..]),
+            "config" => (new[] { GetEntity(entity, Guid.Parse(uri.Host)) }, Uri.UnescapeDataString(uri.Query.TrimStart('?'))),
             _ => (new[] { Entity.Unhandled }, String.Empty)
         })
     }); // Retriever that handles request://
 
     Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("0086226a-d81d-4c74-983d-24f232eba731");
 
-    await foreach (var result in entityWithRequestScope.Eval($"config://{topLevelRequestHandlerEntityFromConfig}"))
-    {
-        await context.Response.WriteAsync($"{await result.EvalAsS("$meta.id")} - {await result.EvalAsS("$meta.name")}\r\n");
-    }
-
-    await context.Response.WriteAsync("Hello World!");
+    _ = await entityWithRequestScope.Eval($"config://{topLevelRequestHandlerEntityFromConfig}").ToList();
 });
 
 app.Run();
