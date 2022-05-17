@@ -59,6 +59,7 @@ namespace Utility
                 var evalProviders = new Dictionary<string, IEvalProvider>()
                 {
                     ["Constant"] = new ConstantEvalProvider(),
+                    ["Pfa"] = new PfaEvalProvider(),
                     ["Static"] = new StaticCSharpEvalProvider()
                 };
 

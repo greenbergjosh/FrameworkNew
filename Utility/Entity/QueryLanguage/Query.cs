@@ -144,7 +144,7 @@ namespace Utility.Entity.QueryLanguage
 
                 if (child.Evaluator != null)
                 {
-                    await foreach (var evaluationChild in child.Evaluator.Evaluate(child, null))
+                    await foreach (var evaluationChild in child.Evaluator.Evaluate(child, evaluationParameters))
                     {
                         if (!child.Equals(evaluationChild))
                         {

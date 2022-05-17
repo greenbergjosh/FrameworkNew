@@ -30,6 +30,15 @@ app.MapFallback(async (context) =>
         })
     });
 
+    var x = await entityWithRequestScope.Parse("application/json", @"{""$evaluate"": {
+      ""provider"": ""Static"",
+      ""typeName"": ""EvaluatorTest.Entities.EntityCode, EvaluatorTest"",
+      ""methodName"": ""HelloWorld""
+    }}");
+
+    var result = await fw.Evaluator.Evaluate2(x, null, default);
+    Console.WriteLine(result);
+
     Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("ab9c9297-4b2f-430d-a9b5-03b7ac4cb80b");
 
     _ = await entityWithRequestScope.Eval($"config://{topLevelRequestHandlerEntityFromConfig}").ToList();

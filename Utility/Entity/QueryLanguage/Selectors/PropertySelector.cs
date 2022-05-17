@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Utility.Entity.Implementations;
 using Utility.Evaluatable;
 
@@ -54,5 +56,16 @@ namespace Utility.Entity.QueryLanguage.Selectors
         }
 
         public override string ToString() => $".{_name ?? "*"}";
+
+        //public static async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
+        //{
+        //    var (found, propertyName) = await request.Parameters.Document.TryGetProperty("prop");
+        //    if (!found)
+        //    {
+        //        throw new InvalidOperationException($"`prop` is required");
+        //    }
+
+
+        //}
     }
 }

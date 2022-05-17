@@ -40,5 +40,81 @@
     "$evaluate": {
       "provider": "Constant"
     }
+  },
+  "50c1dc24-e370-412f-93ca-1f35dadbf950": {
+    "$meta": {
+      "id": "50c1dc24-e370-412f-93ca-1f35dadbf950",
+      "name": "Double"
+    },
+    "$evaluate": {
+      "provider": "Static",
+      "typeName": "EvaluatorTest.Entities.EntityCode, EvaluatorTest",
+      "methodName": "Double"
+    }
+  },
+  "3ca6a814-db89-4310-8302-eef2ba450ea8": {
+    "$meta": {
+      "id": "3ca6a814-db89-4310-8302-eef2ba450ea8",
+      "name": "Double 4"
+    },
+    "$evaluate": {
+      "provider": "Pfa",
+      "query": "config://50c1dc24-e370-412f-93ca-1f35dadbf950",
+      "parameters": {
+        "number": 4
+      }
+    }
+  },
+  "734a5bb8-ed74-4736-ac6d-fcd5736b082b": {
+    "$meta": {
+      "id": "734a5bb8-ed74-4736-ac6d-fcd5736b082b",
+      "name": "X"
+    },
+    "a": {
+      "b": 20
+    }
+  },
+  "e7ec3ad5-988a-491a-8ef0-1d3d3ee527af": {
+    "$meta": {
+      "id": "e7ec3ad5-988a-491a-8ef0-1d3d3ee527af",
+      "name": "Get Prop `a` from entity 123"
+    },
+    "$evaluate": {
+      "provider": "Pfa",
+      "query": "config://4c28277b-90da-4e2e-8180-6db96dcceca1",
+      "parameters": {
+        "prop": "a",
+        "target": {
+          "$ref": "config://734a5bb8-ed74-4736-ac6d-fcd5736b082b"
+        }
+      }
+    }
+  },
+  "6f0d4c93-5f36-46f5-8f19-8e67ccb7fa95": {
+    "$meta": {
+      "id": "6f0d4c93-5f36-46f5-8f19-8e67ccb7fa95",
+      "name": "Get Prop `b` from above prop selector"
+    },
+    "$evaluate": {
+      "provider": "Pfa",
+      "query": "config://4c28277b-90da-4e2e-8180-6db96dcceca1",
+      "parameters": {
+        "prop": "b",
+        "target": {
+          "$ref": "config://e7ec3ad5-988a-491a-8ef0-1d3d3ee527af"
+        }
+      }
+    }
+  },
+  "4c28277b-90da-4e2e-8180-6db96dcceca1": {
+    "$meta": {
+      "id": "4c28277b-90da-4e2e-8180-6db96dcceca1",
+      "name": "EntityPath PropertySelector"
+    },
+    "$evaluate": {
+      "provider": "Static",
+      "typeName": "Utility.Entity.QueryLanguage.Selectors.PropertySelector, Utility",
+      "methodName": "Evaluate"
+    }
   }
 }

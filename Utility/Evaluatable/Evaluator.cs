@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Utility.Evaluatable.CodeProviders;
 
 namespace Utility.Evaluatable
@@ -140,6 +141,91 @@ namespace Utility.Evaluatable
             if (!hadMutations)
             {
                 yield return entity;
+            }
+        }
+
+        public async Task<EvaluateResponse> Evaluate2(Entity.Entity entity, Entity.Entity parameters, Guid g)
+        {
+            if (entity == default)
+            {
+                throw new InvalidOperationException($"{nameof(entity)} cannot be null.");
+            }
+
+            // TODO: Setup memory
+            Entity.Entity evaluate = null;
+            var evaluateFound = false;
+
+            if (entity.IsObject)
+            {
+                (evaluateFound, evaluate) = await entity.Document.TryGetProperty("$evaluate");
+                if (evaluateFound)
+                {
+                    Guid evaluateG = default; // we only want a single response, so no memory
+                    var handledEvaluate = await Process(evaluate, evaluateG);
+                    if (!handledEvaluate.Complete)
+                    {
+                        throw new InvalidOperationException($"Iterating $evaluate is not supported, it must complete on first evaluation");
+                    }
+                    evaluate = handledEvaluate.Entity;
+                }
+            }
+
+            IEvalProvider provider;
+
+            if (evaluate == null)
+            {
+                provider = _config.DefaultEvalProvider;
+            }
+            else
+            {
+                var (providerNameFound, providerName) = await evaluate.Document.TryGetProperty("provider");
+                if (!providerNameFound)
+                {
+                    throw new InvalidOperationException($"`provider` missing in `$evaluate`");
+                }
+
+                Guid providerG = default; // we only want a single response, so no memory
+                var handledProvider = await Process(providerName, providerG);
+                if (!handledProvider.Complete)
+                {
+                    throw new InvalidOperationException($"Iterating $evaluate.provider is not supported, it must complete on first evaluation");
+                }
+                providerName = handledProvider.Entity;
+
+                if (!_config.EvalProviders.TryGetValue(providerName.Value<string>(), out provider))
+                {
+                    throw new InvalidOperationException($"No eval provider with the name `{providerName}`");
+                }
+            }
+
+            var evaluatableRequest = new EvaluateRequest(Entity: entity, Parameters: parameters);
+            var evaluationResult = await provider.Evaluate(evaluatableRequest);
+
+            if (provider is ConstantEvalProvider || evaluationResult.Entity == null)
+            {
+                // Base case
+                return evaluationResult;
+            }
+            else
+            {
+                // Setup memory
+                Guid childG = default;
+                return await Evaluate2(evaluationResult.Entity, parameters, childG);
+            }
+
+            async Task<EvaluateResponse> Process(Entity.Entity child, Guid g)
+            {
+                var response = await child.Document.ProcessReference(g);
+                if (response.Entity.ValueType != Entity.EntityValueType.Unhandled)
+                {
+                    // Do memory set up
+                    Guid nestedG = default;
+                    return await Process(response.Entity, nestedG);
+                }
+
+                // Set up memory for this call
+                Guid childG = default;
+                return await Evaluate2(child, parameters, childG);
             }
         }
     }

@@ -92,6 +92,11 @@ namespace Utility.Entity
             yield break;
         }
 
+        public virtual Task<EvaluateResponse> ProcessReference(Guid g)
+        {
+            return Task.FromResult(new EvaluateResponse(Complete: true, Entity.Unhandled));
+        }
+
         public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name, bool updateQueryAndRoot = true)
         {
             var result = await TryGetPropertyCore(name);

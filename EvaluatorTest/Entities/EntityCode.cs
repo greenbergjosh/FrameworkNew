@@ -19,6 +19,7 @@ namespace EvaluatorTest.Entities
             {
                 "/hellostatic" => (Guid.Parse("903ddbdf-8198-46f3-972c-66a0ce4b624f"), false),
                 "/hellodynamic" => (Guid.Parse("0086226a-d81d-4c74-983d-24f232eba731"), false),
+                "/double4" => (Guid.Parse("3ca6a814-db89-4310-8302-eef2ba450ea8"), true),
                 _ => (Guid.Parse("7cf50701-a305-4fd5-a203-3f3dba9ccab0"), true)
             };
 
@@ -31,6 +32,12 @@ namespace EvaluatorTest.Entities
             }
 
             return new EvaluateResponse(true, result.FirstOrDefault());
+        }
+
+        public static async Task<EvaluateResponse> Double(EvaluateRequest request)
+        {
+            var number = await request.Parameters.EvalI("number");
+            return new EvaluateResponse(true, number * 2, true);
         }
     }
 }
