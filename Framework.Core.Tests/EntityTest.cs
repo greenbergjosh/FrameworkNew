@@ -136,6 +136,7 @@ namespace Framework.Core.Tests
             var entities = JsonDocument.Parse(File.ReadAllText("ConfigDB.json")).RootElement;
             var entity = entities.GetProperty(id.ToString());
 
+            // This is equivalent to the scheme knowing which EntityEvalHandler to use.
             return baseEntity.Create(new EntityDocumentJson(entity), _entityEvalHandler);
         }
     }
@@ -144,6 +145,7 @@ namespace Framework.Core.Tests
     {
         public async Task<(string providerName, Entity.Entity providerParameters)> HandleEntity(Entity.Entity entity)
         {
+            // The EntityEvalHandler knows the shape of the stored entity and how to interpret that shape.
             var (evaluateFound, evaluate) = await entity.TryGetProperty("$evaluate");
             if (!evaluateFound)
             {
@@ -152,6 +154,8 @@ namespace Framework.Core.Tests
                     value = entity
                 }));
             }
+
+            // TODO: Look for $eref and any other special names
 
             var providerName = await evaluate.GetRequiredString("provider");
             return (providerName, evaluate);
