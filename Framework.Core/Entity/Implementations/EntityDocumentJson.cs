@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
-namespace Utility.Entity.Implementations
+namespace Framework.Core.Entity.Implementations
 {
     public sealed class EntityDocumentJson : EntityDocument
     {
@@ -12,7 +8,7 @@ namespace Utility.Entity.Implementations
         private readonly int _length;
         private readonly EntityValueType _valueType;
 
-        private static readonly Dictionary<Type, Func<JsonElement, object>> _valueMap = new()
+        private static readonly Dictionary<Type, Func<JsonElement, object?>> _valueMap = new()
         {
             [typeof(bool)] = element => element.GetBoolean(),
             [typeof(decimal)] = element => element.GetDecimal(),
@@ -36,7 +32,7 @@ namespace Utility.Entity.Implementations
             {
                 JsonValueKind.Array => _value.GetArrayLength(),
                 JsonValueKind.Object => _value.EnumerateObject().Count(),
-                JsonValueKind.String => _value.GetString().Length,
+                JsonValueKind.String => _value.GetString()?.Length ?? 0,
                 _ => -1
             };
 
@@ -77,17 +73,6 @@ namespace Utility.Entity.Implementations
             }
         }
 
-        public override async IAsyncEnumerable<Entity> ProcessReference()
-        {
-            if (_value.ValueKind == JsonValueKind.Object && _value.TryGetProperty("$ref", out var refProperty))
-            {
-                await foreach (var entity in Entity.Eval(refProperty.GetString()))
-                {
-                    yield return entity;
-                }
-            }
-        }
-
         protected internal override Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name)
         {
             if (_value.TryGetProperty(name, out var value))
@@ -95,16 +80,16 @@ namespace Utility.Entity.Implementations
                 return Task.FromResult((true, (EntityDocument)new EntityDocumentJson(value)));
             }
 
-            return Task.FromResult((false, (EntityDocument)default));
+            return Task.FromResult((false, EntityDocumentConstant.Null));
         }
 
-        public override T Value<T>()
+        public override T? Value<T>() where T : default
         {
             var targetType = typeof(T);
 
             return !_valueMap.TryGetValue(targetType, out var getter)
                 ? throw new Exception($"Unable to convert value to type {targetType}")
-                : (T)getter(_value);
+                : (T?)getter(_value);
         }
 
         public override void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, _value, options);

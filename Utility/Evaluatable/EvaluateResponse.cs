@@ -1,4 +1,6 @@
-﻿namespace Utility.Evaluatable
+﻿using System;
+
+namespace Utility.Evaluatable
 {
-    public record EvaluateResponse(bool Complete, Entity.Entity Entity = null, bool ProducedResult = false, Entity.Entity Child = null);
+    public record EvaluateResponse(bool Complete, Entity.Entity Entity, Guid InG = default, Guid OutG = default);
 }

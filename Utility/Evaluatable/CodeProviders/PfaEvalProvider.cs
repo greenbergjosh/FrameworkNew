@@ -12,10 +12,13 @@ namespace Utility.Evaluatable.CodeProviders
             var query = await request.Entity.EvalS("$evaluate.query");
             var parameters = await request.Entity.EvalE("$evaluate.parameters");
 
-            if (request.Parameters.Document is not EntityDocumentStack stack)
+            if (request.Parameters?.Document is not EntityDocumentStack stack)
             {
                 stack = new EntityDocumentStack();
-                stack.Push(request.Parameters.Document);
+                if (request.Parameters != null)
+                {
+                    stack.Push(request.Parameters.Document);
+                }
             }
 
             stack.Push(parameters.Document);

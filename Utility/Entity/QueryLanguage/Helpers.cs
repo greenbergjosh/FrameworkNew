@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Utility.Entity.Implementations;
 
-namespace Utility.Entity
+namespace Utility.Entity.QueryLanguage
 {
     internal static class Helpers
     {

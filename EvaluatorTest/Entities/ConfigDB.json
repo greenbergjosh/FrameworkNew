@@ -61,10 +61,13 @@
       "provider": "Pfa",
       "query": "config://50c1dc24-e370-412f-93ca-1f35dadbf950",
       "parameters": {
-        "number": 4
+        "number": {
+          "$ref": "config://3967cf30-803c-4b31-a8bc-5b98036ae940"
+        }
       }
     }
   },
+  "3967cf30-803c-4b31-a8bc-5b98036ae940": 4,
   "734a5bb8-ed74-4736-ac6d-fcd5736b082b": {
     "$meta": {
       "id": "734a5bb8-ed74-4736-ac6d-fcd5736b082b",
@@ -115,6 +118,17 @@
       "provider": "Static",
       "typeName": "Utility.Entity.QueryLanguage.Selectors.PropertySelector, Utility",
       "methodName": "Evaluate"
+    }
+  },
+  "458ad2e3-63dd-4d9c-af26-442eff688f66": {
+    "$meta": {
+      "id": "458ad2e3-63dd-4d9c-af26-442eff688f66",
+      "name": "Counter"
+    },
+    "$evaluate": {
+      "provider": "Static",
+      "typeName": "EvaluatorTest.Entities.EntityCode, EvaluatorTest",
+      "methodName": "Counter"
     }
   }
 }

@@ -19,6 +19,8 @@ namespace Utility.Entity.QueryLanguage.QueryExpressions.Operators
                 return default;
             }
 
+            // TODO: Short-circuit if leftEventity.Value<bool>() is false
+
             var rightEntity = await right.Evaluate(entity, evaluationParameters);
             return rightEntity.ValueType != EntityValueType.Boolean
                 ? default

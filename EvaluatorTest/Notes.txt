@@ -1,0 +1,34 @@
+﻿{ a: {$ref: b }}
+{ a: {$evaluate: }}
+
+b:
+1. Constant
+2. $ref
+3. $evaluate
+
+Entity Structure
+  FrameworkAware (e.g provider, code, meta, parameters)
+  FrameworkUnaware (e.g. Body)
+
+$ref is actually an evaluatable - 
+
+id, name, 
+  constant
+  p [ ], code(p)
+  p [ ], $ref: “a://{p}/k”
+  p [ ], constant=“sfsdfsd[=evaluate(55)=]”       // i dont fw should be aware, i think the eval itself should be aware
+  p [ ], body.x={evaluate: }
+  provider= {evaluate: }   // this one the fw should be aware of, equivalent $ref because $ref is evaluate
+
+if we query(body/x), the evaluate of x will be evaluated as part of the evaluation of that query
+however, if we evaluate the entity that contains the body.x properties in its body, evaluate will ignore them
+How about body, itself, and do we even have a framework aware prop called body - which if an evaluate would get evaluated
+
+id:
+name
+code {provider: {evaluate: .. sequence}}  // this is a sequence of functions to be called
+parameters: 
+
+
+{f, g, h}  {1, 2, 3}
+f(1), f(2), f(3), … h(3)

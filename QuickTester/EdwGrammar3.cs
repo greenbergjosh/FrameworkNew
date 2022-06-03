@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Utility;
 using Utility.Entity;
 using Utility.Evaluatable;
+using Utility.Evaluatable.MemoryProviders;
 
 namespace QuickTester
 {
@@ -187,7 +188,8 @@ namespace QuickTester
                 }
 
                 return new EvaluateResponse(
-                    Complete: true
+                    Complete: true,
+                    Entity: Entity.Undefined
                 );
             }
 
@@ -295,7 +297,8 @@ namespace QuickTester
                 else
                 {
                     return new EvaluateResponse(
-                        Complete: true
+                        Complete: true,
+                        Entity: Entity.Undefined
                     );
                 }
             }
@@ -382,6 +385,7 @@ namespace QuickTester
                     FunctionHandler: FunctionHandler
                 ),
                 evaluatorConfig: new EvaluatorConfig(
+                    memoryProvider: new InMemoryJsonSerializedMemoryProvider(),
                     entityMutator: ReplaceTemplates
                 )
             );

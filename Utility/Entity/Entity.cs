@@ -270,6 +270,7 @@ namespace Utility.Entity
         public static implicit operator Entity(int value) => new(EntityDocument.MapValue(value), null, null, null);
         public static implicit operator Entity(long value) => new(EntityDocument.MapValue(value), null, null, null);
         public static implicit operator Entity(string value) => new(EntityDocument.MapValue(value), null, null, null);
+        public static implicit operator Entity(Guid value) => new(EntityDocument.MapValue(value), null, null, null);
         public static implicit operator Entity(EntityDocument value) => new(value, value?.Entity?.Root, value?.Entity?._config, value?.Entity.Query);
         #endregion
     }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Utility;
 using Utility.Entity;
 using Utility.Evaluatable;
+using Utility.Evaluatable.MemoryProviders;
 
 namespace QuickTester
 {
@@ -74,7 +75,7 @@ namespace QuickTester
 
         private class NoResultEvaluator : IEvaluatable
         {
-            public Task<EvaluateResponse> Evaluate(EvaluateRequest request) => Task.FromResult(new EvaluateResponse(Complete: true));
+            public Task<EvaluateResponse> Evaluate(EvaluateRequest request) => Task.FromResult(new EvaluateResponse(Complete: true, Entity: Entity.Undefined));
         }
 
         private static async Task EvaluateNoResult(FrameworkWrapper fw)
@@ -109,7 +110,7 @@ namespace QuickTester
 
             public SequenceEvaluator(IReadOnlyList<Entity> entities) => _entities = entities;
 
-            public async Task<EvaluateResponse> Evaluate(EvaluateRequest request)
+            public Task<EvaluateResponse> Evaluate(EvaluateRequest request)
             {
                 var index = 0;// await request.ReadLocation.EvalI("index", 0);
 
@@ -117,10 +118,10 @@ namespace QuickTester
 
                 //request.WriteLocation["index"] = index;
 
-                return new EvaluateResponse(
+                return Task.FromResult(new EvaluateResponse(
                     Entity: current,
                     Complete: index == _entities.Count
-                );
+                ));
             }
         }
 
@@ -167,7 +168,7 @@ namespace QuickTester
                 }
             }
 
-            var fw = await FrameworkWrapper.Create(evaluatorConfig: new EvaluatorConfig(entityMutator: Mutate42));
+            var fw = await FrameworkWrapper.Create(evaluatorConfig: new EvaluatorConfig(memoryProvider: new InMemoryJsonSerializedMemoryProvider(), entityMutator: Mutate42));
 
             var constant10 = 10;
 

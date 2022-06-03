@@ -6,7 +6,7 @@ namespace Utility.Evaluatable.CodeProviders
     {
         public Task<EvaluateResponse> Evaluate(EvaluateRequest request)
         {
-            return Task.FromResult(new EvaluateResponse(true, request.Entity, true));
+            return Task.FromResult(new EvaluateResponse(true, request.Entity));
         }
     }
 }

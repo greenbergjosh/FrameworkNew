@@ -14,6 +14,7 @@ using Utility.Entity;
 using Utility.Entity.Implementations;
 using Utility.Evaluatable;
 using Utility.Evaluatable.CodeProviders;
+using Utility.Evaluatable.MemoryProviders;
 
 namespace Utility
 {
@@ -63,7 +64,7 @@ namespace Utility
                     ["Static"] = new StaticCSharpEvalProvider()
                 };
 
-                evaluatorConfig ??= new EvaluatorConfig(evalProviders: evalProviders, defaultEvalProvider: evalProviders["Constant"]);
+                evaluatorConfig ??= new EvaluatorConfig(memoryProvider: new InMemoryJsonSerializedMemoryProvider(), evalProviders: evalProviders, defaultEvalProvider: evalProviders["Constant"]);
                 fw.Evaluator = Evaluator.Create(evaluatorConfig);
 
                 static string UnescapeQueryString(Uri uri) => Uri.UnescapeDataString(uri.Query.TrimStart('?'));

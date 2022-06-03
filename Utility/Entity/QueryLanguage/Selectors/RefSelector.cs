@@ -9,13 +9,10 @@ namespace Utility.Entity.QueryLanguage.Selectors
         {
             await foreach (var target in targetEntity.Document.EnumerateArray())
             {
-                if (target.Document.IsObject)
+                var (found, propertyEntity) = await target.Document.TryGetProperty("$ref");
+                if (found)
                 {
-                    var (found, propertyEntity) = await target.Document.TryGetProperty("$ref");
-                    if (found)
-                    {
-                        yield return propertyEntity;
-                    }
+                    yield return propertyEntity;
                 }
             }
         }

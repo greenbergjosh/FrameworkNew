@@ -1,14 +1,9 @@
-﻿using System;
+﻿using Framework.Core.Entity.Implementations;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Utility.Entity.Implementations;
-using Utility.Evaluatable;
 
-namespace Utility.Entity
+namespace Framework.Core.Entity
 {
     public class EntityDocumentConverter : JsonConverter<EntityDocument>
     {
@@ -19,7 +14,7 @@ namespace Utility.Entity
     [JsonConverter(typeof(EntityDocumentConverter))]
     public abstract class EntityDocument : IEquatable<EntityDocument>
     {
-        public Entity Entity { get; internal set; }
+        public Entity? Entity { get; internal set; }
 
         public abstract EntityValueType ValueType { get; }
 
@@ -44,7 +39,7 @@ namespace Utility.Entity
                 }
                 else
                 {
-                    yield return Entity.Create(item, $"{Entity.Query}[{index}]", Entity);
+                    yield return Entity!.Create(item, $"{Entity.Query}[{index}]", Entity);
                 }
             }
         }
@@ -60,14 +55,15 @@ namespace Utility.Entity
 
             await foreach (var (name, value) in EnumerateObjectCore())
             {
-                yield return (name, Entity.Create(value, $"{Entity.Query}.{name}", Entity));
+                yield return (name, Entity!.Create(value, $"{Entity.Query}.{name}", Entity));
             }
         }
 
         protected internal abstract IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore();
+
         public abstract void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options);
 
-        public static EntityDocument MapValue(object value) => value switch
+        public static EntityDocument MapValue(object? value) => value switch
         {
             null => new EntityDocumentConstant(null, EntityValueType.Null),
             bool => new EntityDocumentConstant(value, EntityValueType.Boolean),
@@ -79,23 +75,11 @@ namespace Utility.Entity
             Guid => new EntityDocumentConstant(value, EntityValueType.UUID),
             IDictionary dictionary => new EntityDocumentDictionary(dictionary),
             IEnumerable array => EntityDocumentArray.Create(array),
-            IEvaluatable evaluatable => new EntityDocumentEvaluatable(evaluatable),
-            Utility.Entity.Entity => ((Entity)value).Document,
+            //IEvaluatable evaluatable => new EntityDocumentEvaluatable(evaluatable),
+            Core.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
             _ => EntityDocumentObject.Create(value),
         };
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public virtual async IAsyncEnumerable<Entity> ProcessReference()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-        {
-            yield break;
-        }
-
-        public virtual Task<EvaluateResponse> ProcessReference(Guid g)
-        {
-            return Task.FromResult(new EvaluateResponse(Complete: true, Entity.Unhandled));
-        }
 
         public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name, bool updateQueryAndRoot = true)
         {
@@ -105,26 +89,18 @@ namespace Utility.Entity
 
                 if (result.found)
                 {
-                    return (true, Entity.Create(result.propertyEntityDocument, updateQueryAndRoot ? $"{Entity.Query}.{name}" : Entity.Query, updateQueryAndRoot ? Entity : result.propertyEntityDocument?.Entity?.Root ?? null));
-                }
-                else if (Entity.MissingPropertyHandler != null)
-                {
-                    var foundEntityDocument = await Entity.MissingPropertyHandler(Entity, name);
-                    if (foundEntityDocument != null)
-                    {
-                        return (true, Entity.Create(foundEntityDocument, updateQueryAndRoot ? $"{Entity.Query}.{name}" : foundEntityDocument?.Entity?.Query ?? "$", updateQueryAndRoot ? Entity : foundEntityDocument?.Entity.Root ?? null));
-                    }
+                    return (true, Entity!.Create(result.propertyEntityDocument, updateQueryAndRoot ? $"{Entity.Query}.{name}" : Entity.Query, updateQueryAndRoot ? Entity : result.propertyEntityDocument?.Entity?.Root ?? Entity.Undefined));
                 }
             }
 
-            return (false, default);
+            return (false, Entity.Undefined);
         }
 
         protected internal abstract Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name);
 
-        public abstract T Value<T>();
+        public abstract T? Value<T>();
 
-        public virtual bool Equals(EntityDocument other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
+        public virtual bool Equals(EntityDocument? other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
             && (ReferenceEquals(this, other)
                 || (other is not null && ValueType == other.ValueType && ValueType switch
                 {
@@ -139,7 +115,7 @@ namespace Utility.Entity
                 })
         );
 
-        public override bool Equals(object obj) => Equals(obj as EntityDocument);
+        public override bool Equals(object? obj) => Equals(obj as EntityDocument);
 
         public override int GetHashCode() => base.GetHashCode();
     }

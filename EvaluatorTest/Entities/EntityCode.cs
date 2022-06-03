@@ -1,4 +1,5 @@
-﻿using Utility.Evaluatable;
+﻿using Utility.Entity;
+using Utility.Evaluatable;
 
 namespace EvaluatorTest.Entities
 {
@@ -8,7 +9,7 @@ namespace EvaluatorTest.Entities
         {
             var httpResponse = await request.Entity.Eval<HttpResponse>("object://httpContext/Response");
             await httpResponse.WriteAsync("Hello World from Static Entity!");
-            return new EvaluateResponse(Complete: true);
+            return new EvaluateResponse(Complete: true, Entity: Entity.Undefined);
         }
 
         public static async Task<EvaluateResponse> TopLevelWebHandler(EvaluateRequest request)
@@ -37,7 +38,24 @@ namespace EvaluatorTest.Entities
         public static async Task<EvaluateResponse> Double(EvaluateRequest request)
         {
             var number = await request.Parameters.EvalI("number");
-            return new EvaluateResponse(true, number * 2, true);
+            return new EvaluateResponse(true, number * 2);
+        }
+
+        public static Task<EvaluateResponse> Counter(EvaluateRequest request)
+        {
+            if (!request.Memory.Historical.TryGetValue("currentValue", out var currentValue))
+            {
+                currentValue = 0;
+            }
+
+            // NEsting
+            //request.Evaluator.Evaluate2("myVariable", x); // Evaluator has thread/process/task in context
+
+            var nextValue = currentValue.Value<int>() + 1;
+
+            request.Memory.Historical["currentValue"] = nextValue;
+
+            return Task.FromResult(new EvaluateResponse(Complete: false, Entity: nextValue));
         }
     }
 }

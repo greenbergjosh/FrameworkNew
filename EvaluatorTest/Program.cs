@@ -8,43 +8,34 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-var app = builder.Build();
+//var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//// Configure the HTTP request pipeline.
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
-app.MapFallback(async (context) =>
-{
-    var entityWithRequestScope = fw.Entity.Wrap(new EntityConfig
-    {
-        Retriever = (entity, uri) => Task.FromResult<(IEnumerable<Entity> entities, string query)>(uri.Scheme switch
-        {
-            "object" => uri.Authority switch
-            {
-                "httpcontext" => (new[] { entity.Create(context) }, uri.AbsolutePath[1..]),
-                _ => (new[] { Entity.Unhandled }, String.Empty)
-            },
-            "config" => (new[] { GetEntity(entity, Guid.Parse(uri.Host)) }, Uri.UnescapeDataString(uri.Query.TrimStart('?'))),
-            _ => (new[] { Entity.Unhandled }, String.Empty)
-        })
-    });
+//app.MapFallback(async (context) =>
+//{
+//    var entityWithRequestScope = fw.Entity.Wrap(new EntityConfig
+//    {
+//        Retriever = (entity, uri) => Task.FromResult<(IEnumerable<Entity> entities, string query)>(uri.Scheme switch
+//        {
+//            "object" => uri.Authority switch
+//            {
+//                "httpcontext" => (new[] { entity.Create(context) }, uri.AbsolutePath[1..]),
+//                _ => (new[] { Entity.Unhandled }, String.Empty)
+//            },
+//            "config" => (new[] { GetEntity(entity, Guid.Parse(uri.Host)) }, Uri.UnescapeDataString(uri.Query.TrimStart('?'))),
+//            _ => (new[] { Entity.Unhandled }, String.Empty)
+//        })
+//    });
 
-    var x = await entityWithRequestScope.Parse("application/json", @"{""$evaluate"": {
-      ""provider"": ""Static"",
-      ""typeName"": ""EvaluatorTest.Entities.EntityCode, EvaluatorTest"",
-      ""methodName"": ""HelloWorld""
-    }}");
+//    Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("ab9c9297-4b2f-430d-a9b5-03b7ac4cb80b");
 
-    var result = await fw.Evaluator.Evaluate2(x, null, default);
-    Console.WriteLine(result);
+//    _ = await entityWithRequestScope.Eval($"config://{topLevelRequestHandlerEntityFromConfig}").ToList();
+//});
 
-    Guid topLevelRequestHandlerEntityFromConfig = Guid.Parse("ab9c9297-4b2f-430d-a9b5-03b7ac4cb80b");
-
-    _ = await entityWithRequestScope.Eval($"config://{topLevelRequestHandlerEntityFromConfig}").ToList();
-});
-
-app.Run();
+//app.Run();
 
 Entity GetEntity(Entity baseEntity, Guid id)
 {
@@ -54,25 +45,37 @@ Entity GetEntity(Entity baseEntity, Guid id)
     return baseEntity.Create(new EntityDocumentJson(entity));
 }
 
+var entityWithRequestScope = fw.Entity.Wrap(new EntityConfig
+{
+    Retriever = (entity, uri) => Task.FromResult<(IEnumerable<Entity> entities, string query)>(uri.Scheme switch
+    {
+        "config" => (new[] { GetEntity(entity, Guid.Parse(uri.Host)) }, Uri.UnescapeDataString(uri.Query.TrimStart('?'))),
+        _ => (new[] { Entity.Unhandled }, String.Empty)
+    })
+});
 
+var x = GetEntity(entityWithRequestScope, Guid.Parse("458ad2e3-63dd-4d9c-af26-442eff688f66"));
 
+// Create process/thread
 
-//Eval("$.a.Items") => returns an array
+for (var i = 0; i < 5; i++)
+{
+    var result = await fw.Evaluator.Evaluate("myCounter", x, null);
 
-//EvalL("$.a.Items") => Eval("$.a.Items.*") => returns each item in the array
+    Console.WriteLine(result);
+}
 
-//Eval("$..Items") => returns 2 arrays
+for (var i = 0; i < 5; i++)
+{
+    var result = await fw.Evaluator.Evaluate("myCounter2", x, null);
 
-//EvalL("$..Items") => Eval("$..Items.*") => returns each item in each array
+    Console.WriteLine(result);
+}
 
-//Eval("Seq1") => returns each item in the array
+for (var i = 0; i < 5; i++)
+{
+    var result = await fw.Evaluator.Evaluate("myCounter", x, null);
 
-//EvalL("Seq1") => Eval("Seq1.*");
+    Console.WriteLine(result);
+}
 
-//EvalL("Seq1") => Eval(Eval("Seq1"), ".*");
-
-//Eval("Seq1.color");
-
-//Possible results:
-//    //[1, 2, 3] - return the array as single object
-//    //{ 1, false}, { 2, false}, { 3, false}, { null, true} - return one item per call

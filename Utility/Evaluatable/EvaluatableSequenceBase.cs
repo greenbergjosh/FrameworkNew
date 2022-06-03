@@ -36,7 +36,7 @@ namespace Utility.Evaluatable
                 );
             }
 
-            return new EvaluateResponse(Complete: true);
+            return new EvaluateResponse(Complete: true, Entity: Entity.Entity.Undefined);
         }
 
         protected abstract IAsyncEnumerable<Entity.Entity> Load(EvaluatableSequenceBase sequence, Entity.Entity targetEntity, EvaluateRequest request);
