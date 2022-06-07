@@ -5,15 +5,15 @@ namespace Framework.Core.Evaluatable.EvalProviders
 {
     public class StaticCSharpEvalProvider : IEvalProvider
     {
-        public async Task<EvaluateResponse> Evaluate(Entity.Entity parameters, EvaluateRequest request)
+        public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
-            var typeName = await parameters.GetRequiredString("typeName");
+            var typeName = await providerParameters.GetRequiredString("typeName");
             if (typeName == null)
             {
                 throw new InvalidOperationException($"typeName can not be null");
             }
 
-            var methodName = await parameters.GetRequiredString("methodName");
+            var methodName = await providerParameters.GetRequiredString("methodName");
             if (methodName == null)
             {
                 throw new InvalidOperationException($"methodName can not be null");

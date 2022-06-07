@@ -5,10 +5,10 @@ namespace Framework.Core.Evaluatable.EvalProviders
 {
     public class PfaEvalProvider : IEvalProvider
     {
-        public async Task<EvaluateResponse> Evaluate(Entity.Entity parameters, EvaluateRequest request)
+        public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
-            var query = await parameters.GetRequiredString("query");
-            var (parametersFound, entityParameters) = await parameters.TryGetProperty("parameters");
+            var query = await providerParameters.GetRequiredString("query");
+            var (parametersFound, entityParameters) = await providerParameters.TryGetProperty("parameters", request.Parameters);
 
             if (request.Parameters?.Document is not EntityDocumentStack stack)
             {

@@ -2,6 +2,6 @@
 {
     public interface IEntityEvalHandler
     {
-        Task<(string providerName, Entity providerParameters)> HandleEntity(Entity entity);
+        Task<(string providerName, Entity providerParameters)> HandleEntity(Entity entity, Entity parameters);
     }
 }

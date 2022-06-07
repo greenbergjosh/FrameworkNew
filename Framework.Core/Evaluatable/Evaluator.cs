@@ -1,4 +1,6 @@
-﻿namespace Framework.Core.Evaluatable
+﻿using Framework.Core.Evaluatable.EvalProviders;
+
+namespace Framework.Core.Evaluatable
 {
     public class Evaluator
     {

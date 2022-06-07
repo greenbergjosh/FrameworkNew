@@ -32,11 +32,6 @@ namespace Framework.Core.Entity
             Document = EntityDocumentConstant.Null;
         }
 
-        protected Entity(EntityDocument value, Entity? root, IEntityConfig config, string? query, IEntityEvalHandler evalHandler) : this(value, root, config, query)
-        {
-            EvalHandler = evalHandler;
-        }
-
         protected Entity(EntityDocument value, Entity? root, IEntityConfig config, string? query)
         {
             if (value != null)
@@ -53,7 +48,6 @@ namespace Framework.Core.Entity
 
             Root = root?.Root ?? this;
             Query = query;
-            EvalHandler = root?.EvalHandler ?? null;
         }
         #endregion
 
@@ -61,6 +55,8 @@ namespace Framework.Core.Entity
         public static Entity Undefined { get; } = new Entity(EntityDocumentConstant.Undefined, null, _emptyConfig, null);
 
         public static Entity Unhandled { get; } = new Entity(EntityDocumentConstant.Unhandled, null, _emptyConfig, null);
+
+        public bool CanEvaluate => _config.Evaluator != null;
 
         public bool IsArray => Document?.IsArray ?? false;
 
@@ -72,9 +68,7 @@ namespace Framework.Core.Entity
 
         public EntityValueType ValueType => Document?.ValueType ?? EntityValueType.Undefined;
 
-        private IEntityEvalHandler? EvalHandler { get; init; }
-
-        internal EntityDocument Document { get; }
+        public EntityDocument Document { get; }
         #endregion
 
         #region Methods
@@ -86,23 +80,21 @@ namespace Framework.Core.Entity
 
         public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), null, _config, query);
 
-        public Entity Create<T>(T value, IEntityEvalHandler evalHandler, string query = "$") => new(EntityDocument.MapValue(value), null, _config, query, evalHandler);
-
         internal Entity Create<T>(T value, string? query, Entity root) => new(EntityDocument.MapValue(value), root, _config, query);
 
         public async Task<EvaluateResponse> Evaluate(Entity parameters)
         {
-            if (EvalHandler == null)
-            {
-                throw new InvalidOperationException("This entity has no eval handler");
-            }
-
             if (_config.Evaluator == null)
             {
                 throw new InvalidOperationException("This entity has no evaluator");
             }
 
-            var (providerName, providerParameters) = await EvalHandler.HandleEntity(this);
+            if (Document.EvalHandler == null)
+            {
+                return new EvaluateResponse(true, this);
+            }
+
+            var (providerName, providerParameters) = await Document.EvalHandler.HandleEntity(this, parameters);
 
             return await _config.Evaluator.Evaluate(providerName, providerParameters, parameters);
         }
@@ -135,7 +127,18 @@ namespace Framework.Core.Entity
             }
         }
 
-        public Task<(bool found, Entity value)> TryGetProperty(string propertyName) => Document.TryGetProperty(propertyName);
+        public async Task<(bool found, Entity value)> TryGetProperty(string propertyName, Entity parameters)
+        {
+            var (found, value) = await Document.TryGetProperty(propertyName);
+            if (!found)
+            {
+                return (found, value);
+            }
+
+            var evaluatedValue = await value.Evaluate(parameters);
+
+            return (true, evaluatedValue.Entity);
+        }
 
         public T? Value<T>() => typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();
         #endregion

@@ -1,0 +1,84 @@
+{
+  "0086226a-d81d-4c74-983d-24f232eba731": 42,
+  "c3a5a51f-ff96-4a06-bfcc-18daaef2453b": {
+    "$evaluate": {
+      "provider": "Constant",
+      "value": 42
+    }
+  },
+  "c3a5a51e-ff96-4a06-bfcc-18daaef2453b": {
+    "$evaluate": {
+      "provider": "Constant",
+      "value": {
+        "$evaluate": {
+          "provider": "Constant",
+          "value": "Hello World"
+        }
+      }
+    }
+  },
+  "211a0e51-d9b3-4f12-8a88-293d72f29280": "Hello World",
+  "eb7944eb-2b9c-41a9-abfe-77c887370a83": {
+    "$evaluate": {
+      "provider": "Constant",
+      "value": "Hello World"
+    }
+  },
+  "0fd44eef-578a-4b3d-8ca8-2b89dc20ec30": {
+    "color": "red"
+  },
+  "c3041fc7-8de3-477d-b668-c550bc883a49": {
+    "$evaluate": {
+      "provider": "Constant",
+      "value": {
+        "color": "red"
+      }
+    }
+  },
+  "d6a1f3ab-0f8b-4de3-b8ab-54cebe9a5920": {
+    "$evaluate": {
+      "provider": "DynamicCSharp",
+      "code": "return new Framework.Core.Evaluatable.EvaluateResponse(true, Parameters.Create(42));"
+    }
+  },
+  "9f48b14b-8fd4-4eb2-a4ab-caa5828a128e": {
+    "$evaluate": {
+      "provider": "StaticCSharp",
+      "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+      "methodName": "Return42"
+    }
+  },
+  "7f984dad-e6e0-4f2d-ae0d-ecec9dcc10d0": {
+    "$evaluate": {
+      "provider": "StaticCSharp",
+      "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+      "methodName": "PlusOne"
+    }
+  },
+  "1ddd3def-e80b-4877-84e3-571e3736b87a": {
+    "$evaluate": {
+      "provider": "StaticCSharp",
+      "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+      "methodName": "ApplyParam1ToParam2"
+    }
+  },
+  "87846315-093d-48ad-a216-5b320b70186c": {
+    "$evaluate": {
+      "provider": "StaticCSharp",
+      "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+      "methodName": "ApplyParam1ToQuotedParam2"
+    }
+  },
+  "76157733-7ee0-4af3-af17-cdaffb31dbd8": {
+    "$evaluate": {
+      "provider": "Constant",
+      "value": {
+        "$evaluate": {
+          "provider": "StaticCSharp",
+          "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+          "methodName": "PlusOne"
+        }
+      }
+    }
+  }
+}

@@ -4,15 +4,11 @@
     {
         public static string Name => "Constant";
 
-        public async Task<EvaluateResponse> Evaluate(Entity.Entity parameters, EvaluateRequest request)
+        public Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
-            var (found, value) = await parameters.TryGetProperty("value");
-            if (!found)
-            {
-                throw new InvalidOperationException($"Expected parameter {nameof(value)}");
-            }
+            var value = providerParameters;
 
-            return new EvaluateResponse(true, value);
+            return Task.FromResult(new EvaluateResponse(true, value));
         }
     }
 }

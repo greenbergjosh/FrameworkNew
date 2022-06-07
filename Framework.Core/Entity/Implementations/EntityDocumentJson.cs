@@ -24,7 +24,7 @@ namespace Framework.Core.Entity.Implementations
 
         public override int Length => _length == -1 ? throw new InvalidOperationException($"ValueKind {_value.ValueKind} does not have a length") : _length;
 
-        public EntityDocumentJson(JsonElement root)
+        public EntityDocumentJson(JsonElement root, IEntityEvalHandler? evalHandler)
         {
             _value = root;
 
@@ -48,16 +48,18 @@ namespace Framework.Core.Entity.Implementations
                 JsonValueKind.Undefined => EntityValueType.Undefined,
                 _ => throw new InvalidOperationException($"{nameof(JsonValueKind)} {_value.ValueKind} does not map to a known {nameof(ValueType)}")
             };
+
+            EvalHandler = evalHandler;
         }
 
-        public static Task<EntityDocument> Parse(string json) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement));
+        public static Task<EntityDocument> Parse(string json, IEntityEvalHandler? evalHandler) => Task.FromResult<EntityDocument>(new EntityDocumentJson(JsonDocument.Parse(json).RootElement, evalHandler));
 
         #region EntityDocument Implementation
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         protected internal override async IAsyncEnumerable<EntityDocument> EnumerateArrayCore()
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            foreach (var item in _value.EnumerateArray().Select(item => new EntityDocumentJson(item)))
+            foreach (var item in _value.EnumerateArray().Select(item => new EntityDocumentJson(item, EvalHandler)))
             {
                 yield return item;
             }
@@ -67,7 +69,7 @@ namespace Framework.Core.Entity.Implementations
         protected internal override async IAsyncEnumerable<(string name, EntityDocument value)> EnumerateObjectCore()
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            foreach (var item in _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value))))
+            foreach (var item in _value.EnumerateObject().Select(property => (property.Name, (EntityDocument)new EntityDocumentJson(property.Value, EvalHandler))))
             {
                 yield return item;
             }
@@ -77,7 +79,7 @@ namespace Framework.Core.Entity.Implementations
         {
             if (_value.TryGetProperty(name, out var value))
             {
-                return Task.FromResult((true, (EntityDocument)new EntityDocumentJson(value)));
+                return Task.FromResult((true, (EntityDocument)new EntityDocumentJson(value, EvalHandler)));
             }
 
             return Task.FromResult((false, EntityDocumentConstant.Null));

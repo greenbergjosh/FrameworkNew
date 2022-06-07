@@ -8,9 +8,9 @@ namespace Framework.Core.Evaluatable.EvalProviders
 
         public DynamicCSharpEvalProvider(RoslynWrapper<EvaluateRequest, EvaluateResponse> roslyn) => _roslyn = roslyn;
 
-        public async Task<EvaluateResponse> Evaluate(Entity.Entity parameters, EvaluateRequest request)
+        public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
-            var code = await parameters.GetRequiredString("code");
+            var code = await providerParameters.GetRequiredString("code");
             return await _roslyn.Evaluate(code, request);
         }
     }

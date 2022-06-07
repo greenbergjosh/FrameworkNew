@@ -1,0 +1,1 @@
+﻿await new Framework.Core.Tests.Entity.EntityTest().EvaluatePlusOneFromConfigDb();

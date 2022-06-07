@@ -42,7 +42,7 @@ namespace Framework.Core.Evaluatable.MemoryProviders
 
                 var serialized = JsonSerializer.Serialize(memory);
                 var deserialized = JsonDocument.Parse(serialized).RootElement;
-                var document = new EntityDocumentJson(deserialized);
+                var document = new EntityDocumentJson(deserialized, baseEntity.Document.EvalHandler);
                 var entity = baseEntity.Create(document);
 
                 await foreach (var kvp in entity.Document.EnumerateObject())

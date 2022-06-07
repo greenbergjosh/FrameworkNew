@@ -14,7 +14,10 @@ namespace Framework.Core.Entity
     [JsonConverter(typeof(EntityDocumentConverter))]
     public abstract class EntityDocument : IEquatable<EntityDocument>
     {
+        #region Properties
         public Entity? Entity { get; internal set; }
+
+        internal IEntityEvalHandler? EvalHandler { get; init; }
 
         public abstract EntityValueType ValueType { get; }
 
@@ -23,7 +26,9 @@ namespace Framework.Core.Entity
         public bool IsObject => ValueType == EntityValueType.Object;
 
         public abstract int Length { get; }
+        #endregion
 
+        #region Methods
         public async IAsyncEnumerable<Entity> EnumerateArray()
         {
             if (!IsArray)
@@ -118,5 +123,6 @@ namespace Framework.Core.Entity
         public override bool Equals(object? obj) => Equals(obj as EntityDocument);
 
         public override int GetHashCode() => base.GetHashCode();
+        #endregion
     }
 }

@@ -8,7 +8,7 @@ namespace Framework.Core.Tests
     public class EvaluatorTest
     {
         private readonly Evaluator _evaluator;
-        private readonly Entity.Entity _entity;
+        private readonly Core.Entity.Entity _entity;
 
         public EvaluatorTest()
         {
@@ -24,7 +24,7 @@ namespace Framework.Core.Tests
 
             _evaluator = Evaluator.Create(new EvaluatorConfig(memoryProvider, evalProviders));
 
-            _entity = Entity.Entity.Initialize(new Entity.EntityConfig(_evaluator));
+            _entity = Core.Entity.Entity.Initialize(new Core.Entity.EntityConfig(_evaluator));
         }
 
         [TestMethod]
@@ -33,12 +33,9 @@ namespace Framework.Core.Tests
             var constant = _entity.Create(42);
 
             var providerName = "Constant";
-            var providerParameters = _entity.Create(new
-            {
-                value = constant
-            });
+            var providerParameters = constant;
 
-            var response = await _evaluator.Evaluate(providerName, providerParameters, Entity.Entity.Undefined);
+            var response = await _evaluator.Evaluate(providerName, providerParameters, Core.Entity.Entity.Undefined);
 
             Assert.IsTrue(response.Complete);
             Assert.AreEqual(constant.Value<int>(), response.Entity.Value<int>());
@@ -59,7 +56,7 @@ namespace Framework.Core.Tests
 using Framework.Core.Evaluatable;
 using Framework.Core.Entity;
 
-var (found, param1) = await Parameters.TryGetProperty(""param1"");
+var (found, param1) = await Parameters.TryGetProperty(""param1"", Parameters);
 if (found)
 {
     return new EvaluateResponse(true, param1.Value<int>() + 1);
