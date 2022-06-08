@@ -11,7 +11,11 @@ namespace Framework.Core.Entity.Implementations
 
         public override EntityValueType ValueType => EntityValueType.Object;
 
-        public EntityDocumentDictionary(IDictionary dictionary) => _dictionary = dictionary;
+        public EntityDocumentDictionary(IDictionary dictionary, IEntityEvalHandler? evalHandler = null)
+        {
+            _dictionary = dictionary;
+            EvalHandler = evalHandler;
+        }
 
         protected internal override IAsyncEnumerable<EntityDocument> EnumerateArrayCore() => throw new NotImplementedException();
 

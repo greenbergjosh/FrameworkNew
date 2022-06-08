@@ -7,16 +7,16 @@ namespace Framework.Core.Entity.Implementations
     {
         public override EntityValueType ValueType => EntityValueType.Object;
 
-        public static EntityDocument Create(object value)
+        public static EntityDocument Create(object value, IEntityEvalHandler? evalHandler)
         {
             var valueType = value.GetType();
 
-            var constructor = typeof(EntityDocumentObject<>).MakeGenericType(valueType).GetConstructor(new[] { valueType });
+            var constructor = typeof(EntityDocumentObject<>).MakeGenericType(valueType).GetConstructor(new[] { valueType, typeof(IEntityEvalHandler) });
 
-            return (EntityDocument)constructor!.Invoke(new object[] { value });
+            return (EntityDocument)constructor!.Invoke(new object?[] { value, evalHandler });
         }
 
-        public static EntityDocumentObject Create<T>(T value) where T : notnull => new EntityDocumentObject<T>(value);
+        public static EntityDocumentObject Create<T>(T value, IEntityEvalHandler? evalHandler) where T : notnull => new EntityDocumentObject<T>(value, evalHandler);
     }
 
     internal sealed class EntityDocumentObject<T> : EntityDocumentObject where T : notnull
@@ -26,12 +26,14 @@ namespace Framework.Core.Entity.Implementations
         private readonly Dictionary<string, FieldInfo> _readableFields;
         private readonly int _length;
 
-        public EntityDocumentObject(T value)
+        public EntityDocumentObject(T value, IEntityEvalHandler? evalHandler)
         {
             _value = value;
             _readableProperties = new Dictionary<string, PropertyInfo>(value.GetType().GetProperties().Where(p => p.CanRead && p.GetMethod is not null).Select(p => new KeyValuePair<string, PropertyInfo>(p.Name, p)));
             _readableFields = new Dictionary<string, FieldInfo>(value.GetType().GetFields().Select(f => new KeyValuePair<string, FieldInfo>(f.Name, f)));
             _length = _readableProperties.Count + _readableFields.Count;
+
+            EvalHandler = evalHandler;
         }
 
         public override int Length => _length;

@@ -78,9 +78,9 @@ namespace Framework.Core.Entity
 
         public Entity Clone(string query) => Create(Document, query, Root);
 
-        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value), null, _config, query);
+        public Entity Create<T>(T value, string query = "$") => new(EntityDocument.MapValue(value, Document?.EvalHandler), null, _config, query);
 
-        internal Entity Create<T>(T value, string? query, Entity root) => new(EntityDocument.MapValue(value), root, _config, query);
+        internal Entity Create<T>(T value, string? query, Entity root) => new(EntityDocument.MapValue(value, Document?.EvalHandler), root, _config, query);
 
         public async Task<EvaluateResponse> Evaluate(Entity parameters)
         {

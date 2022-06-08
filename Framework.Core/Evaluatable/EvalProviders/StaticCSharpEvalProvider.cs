@@ -8,16 +8,7 @@ namespace Framework.Core.Evaluatable.EvalProviders
         public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
             var typeName = await providerParameters.GetRequiredString("typeName");
-            if (typeName == null)
-            {
-                throw new InvalidOperationException($"typeName can not be null");
-            }
-
             var methodName = await providerParameters.GetRequiredString("methodName");
-            if (methodName == null)
-            {
-                throw new InvalidOperationException($"methodName can not be null");
-            }
 
             var type = Type.GetType(typeName);
             if (type == null)

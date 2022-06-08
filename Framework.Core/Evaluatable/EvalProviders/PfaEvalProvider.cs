@@ -5,15 +5,20 @@ namespace Framework.Core.Evaluatable.EvalProviders
 {
     public class PfaEvalProvider : IEvalProvider
     {
+        public static string Name => "Pfa";
+
+        // The Pfa provider expects two parameters:
+        // entity: A quoted instance of the entity that will be evaluated
+        // parameters: The (potentially partially applied) parameters to pass to `entity`
         public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
-            var query = await providerParameters.GetRequiredString("query");
-            var (parametersFound, entityParameters) = await providerParameters.TryGetProperty("parameters", request.Parameters);
+            var entity = await providerParameters.GetRequiredProperty("entity", request.Parameters);
+            var entityParameters = await providerParameters.GetRequiredProperty("parameters", request.Parameters);
 
-            if (request.Parameters?.Document is not EntityDocumentStack stack)
+            if (request.Parameters.Document is not EntityDocumentStack stack)
             {
                 stack = new EntityDocumentStack();
-                if (request.Parameters != null)
+                if (request.Parameters.ValueType != Entity.EntityValueType.Undefined)
                 {
                     stack.Push(request.Parameters.Document);
                 }
@@ -21,11 +26,11 @@ namespace Framework.Core.Evaluatable.EvalProviders
 
             stack.Push(entityParameters.Document);
 
-            var result = Entity.Entity.Undefined;// await request.Entity.Eval(query, request.Entity.Create(stack)).ToList();
+            var result = await entity.Evaluate(entity.Create(stack));
 
             _ = stack.Pop();
 
-            return new EvaluateResponse(true, result);
+            return result;
         }
     }
 }

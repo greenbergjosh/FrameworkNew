@@ -68,7 +68,9 @@ namespace Framework.Core.Entity
 
         public abstract void SerializeToJson(Utf8JsonWriter writer, JsonSerializerOptions options);
 
-        public static EntityDocument MapValue(object? value) => value switch
+        public EntityDocument MapValue(object? value) => MapValue(value, EvalHandler);
+
+        public static EntityDocument MapValue(object? value, IEntityEvalHandler? evalHandler = null) => value switch
         {
             null => new EntityDocumentConstant(null, EntityValueType.Null),
             bool => new EntityDocumentConstant(value, EntityValueType.Boolean),
@@ -78,12 +80,11 @@ namespace Framework.Core.Entity
             long => new EntityDocumentConstant(value, EntityValueType.Number),
             string => new EntityDocumentConstant(value, EntityValueType.String),
             Guid => new EntityDocumentConstant(value, EntityValueType.UUID),
-            IDictionary dictionary => new EntityDocumentDictionary(dictionary),
-            IEnumerable array => EntityDocumentArray.Create(array),
-            //IEvaluatable evaluatable => new EntityDocumentEvaluatable(evaluatable),
+            IDictionary dictionary => new EntityDocumentDictionary(dictionary, evalHandler),
+            IEnumerable array => EntityDocumentArray.Create(array, evalHandler),
             Core.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
-            _ => EntityDocumentObject.Create(value),
+            _ => EntityDocumentObject.Create(value, evalHandler),
         };
 
         public async Task<(bool found, Entity propertyEntity)> TryGetProperty(string name, bool updateQueryAndRoot = true)

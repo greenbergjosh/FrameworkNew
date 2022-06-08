@@ -80,5 +80,79 @@
         }
       }
     }
+  },
+  "a6a6f0d9-7703-444a-957a-6a1f6acf6567": {
+    "$evaluate": {
+      "provider": "Pfa",
+      "entity": {
+        "$evaluate": {
+          "provider": "Constant",
+          "value": {
+            "$evaluate": {
+              "provider": "StaticCSharp",
+              "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+              "methodName": "PlusOne"
+            }
+          }
+        }
+      },
+      "parameters": {
+        "param1": 41
+      }
+    }
+  },
+  "71a86345-d21f-4213-ada4-9b0ff59d5c5d": {
+    "$evaluate": {
+      "provider": "Pfa",
+      "entity": {
+        "$evaluate": {
+          "provider": "Constant",
+          "value": {
+            "$evaluate": {
+              "provider": "StaticCSharp",
+              "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+              "methodName": "Sum"
+            }
+          }
+        }
+      },
+      "parameters": {
+        "left": 2
+      }
+    }
+  },
+  "a979ee89-43d1-40bd-b9f6-01210522a8cc": {
+    "$evaluate": {
+      "provider": "Pfa",
+      "entityId": "7f984dad-e6e0-4f2d-ae0d-ecec9dcc10d0",
+      "parameters": {
+        "param1": 41
+      }
+    }
+  },
+  "95a0bee5-74c4-419c-a714-f37c60525e2e": {
+    "$evaluate": {
+      "provider": "StaticCSharp",
+      "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+      "methodName": "LinearEquation"
+    }
+  },
+  "85ce1cb7-de2b-42ab-82ea-7ae0e4e84796": {
+    "$evaluate": {
+      "provider": "Pfa",
+      "entityId": "95a0bee5-74c4-419c-a714-f37c60525e2e",
+      "parameters": {
+        "m": 8
+      }
+    }
+  },
+  "bd1c69d5-54ae-47d3-a5bd-4b70cdf78997": {
+    "$evaluate": {
+      "provider": "Pfa",
+      "entityId": "85ce1cb7-de2b-42ab-82ea-7ae0e4e84796",
+      "parameters": {
+        "x": 5
+      }
+    }
   }
 }

@@ -1,4 +1,5 @@
-﻿using Framework.Core.Evaluatable;
+﻿using Framework.Core.Entity;
+using Framework.Core.Evaluatable;
 
 namespace Framework.Core.Tests.Entity
 {
@@ -11,53 +12,27 @@ namespace Framework.Core.Tests.Entity
 
         public static async Task<EvaluateResponse> PlusOne(EvaluateRequest evaluateRequest)
         {
-            var (found, param1) = await evaluateRequest.Parameters.TryGetProperty("param1", evaluateRequest.Parameters);
-            if (found)
-            {
-                return new EvaluateResponse(true, param1.Value<int>() + 1);
-            }
-            else
-            {
-                return new EvaluateResponse(false, Core.Entity.Entity.Undefined);
-            }
+            var param1 = await evaluateRequest.Parameters.GetRequiredProperty("param1", evaluateRequest.Parameters);
+            return new EvaluateResponse(true, param1.Value<int>() + 1);
         }
 
         public static async Task<EvaluateResponse> ApplyParam1ToParam2(EvaluateRequest evaluateRequest)
         {
-            var (param1Found, param1) = await evaluateRequest.Parameters.TryGetProperty("param1", evaluateRequest.Parameters);
-            if (!param1Found)
-            {
-                throw new InvalidOperationException("`param1` is required");
-            }
+            var param1 = await evaluateRequest.Parameters.GetRequiredProperty("param1", evaluateRequest.Parameters);
 
-            var (param2Found, param2) = await evaluateRequest.Parameters.TryGetProperty("param2", evaluateRequest.Parameters.Create(new
+            var param2 = await evaluateRequest.Parameters.GetRequiredProperty("param2", evaluateRequest.Parameters.Create(new
             {
                 param1
             }));
 
-            if (param2Found)
-            {
-                return new EvaluateResponse(true, param2);
-            }
-            else
-            {
-                return new EvaluateResponse(false, Core.Entity.Entity.Undefined);
-            }
+            return new EvaluateResponse(true, param2);
         }
 
         public static async Task<EvaluateResponse> ApplyParam1ToQuotedParam2(EvaluateRequest evaluateRequest)
         {
-            var (param1Found, param1) = await evaluateRequest.Parameters.TryGetProperty("param1", evaluateRequest.Parameters);
-            if (!param1Found)
-            {
-                throw new InvalidOperationException("`param1` is required");
-            }
+            var param1 = await evaluateRequest.Parameters.GetRequiredProperty("param1", evaluateRequest.Parameters);
 
-            var (param2Found, param2) = await evaluateRequest.Parameters.TryGetProperty("param2", evaluateRequest.Parameters);
-            if (!param2Found)
-            {
-                throw new InvalidOperationException("`param2` is required");
-            }
+            var param2 = await evaluateRequest.Parameters.GetRequiredProperty("param2", evaluateRequest.Parameters);
 
             var result = await param2.Evaluate(param1.Create(new
             {
@@ -65,6 +40,27 @@ namespace Framework.Core.Tests.Entity
             }));
 
             return result;
+        }
+
+        public static async Task<EvaluateResponse> Sum(EvaluateRequest evaluateRequest)
+        {
+            var left = await evaluateRequest.Parameters.GetRequired<int>("left", evaluateRequest.Parameters);
+            var right = await evaluateRequest.Parameters.GetRequired<int>("right", evaluateRequest.Parameters);
+
+            var sum = left + right;
+
+            return new EvaluateResponse(true, evaluateRequest.Parameters.Create(sum));
+        }
+
+        public static async Task<EvaluateResponse> LinearEquation(EvaluateRequest evaluateRequest)
+        {
+            var m = await evaluateRequest.Parameters.GetRequired<int>("m", evaluateRequest.Parameters);
+            var x = await evaluateRequest.Parameters.GetRequired<int>("x", evaluateRequest.Parameters);
+            var b = await evaluateRequest.Parameters.GetRequired<int>("b", evaluateRequest.Parameters);
+
+            var y = (m * x) + b;
+
+            return new EvaluateResponse(true, evaluateRequest.Parameters.Create(y));
         }
     }
 }

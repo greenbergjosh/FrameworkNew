@@ -7,15 +7,15 @@ namespace Framework.Core.Entity.Implementations
     {
         public override EntityValueType ValueType => EntityValueType.Array;
 
-        public static EntityDocumentArray Create(IEnumerable array)
+        public static EntityDocumentArray Create(IEnumerable array, IEntityEvalHandler? evalHandler)
         {
             var enumerableType = array.GetType().GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 
             var genericType = enumerableType.GetGenericArguments().Single();
 
-            var constructor = typeof(EntityDocumentArray<>).MakeGenericType(genericType).GetConstructor(new[] { enumerableType });
+            var constructor = typeof(EntityDocumentArray<>).MakeGenericType(genericType).GetConstructor(new[] { enumerableType, typeof(IEntityEvalHandler) });
 
-            return (EntityDocumentArray)constructor!.Invoke(new object[] { array });
+            return (EntityDocumentArray)constructor!.Invoke(new object?[] { array, evalHandler });
         }
     }
 
@@ -25,7 +25,11 @@ namespace Framework.Core.Entity.Implementations
 
         public override int Length => _array.Count();
 
-        public EntityDocumentArray(IEnumerable<T> array) => _array = array;
+        public EntityDocumentArray(IEnumerable<T> array, IEntityEvalHandler? evalHandler)
+        {
+            _array = array;
+            EvalHandler = evalHandler;
+        }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         protected internal override async IAsyncEnumerable<EntityDocument> EnumerateArrayCore()

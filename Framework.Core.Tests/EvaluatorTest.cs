@@ -56,15 +56,8 @@ namespace Framework.Core.Tests
 using Framework.Core.Evaluatable;
 using Framework.Core.Entity;
 
-var (found, param1) = await Parameters.TryGetProperty(""param1"", Parameters);
-if (found)
-{
-    return new EvaluateResponse(true, param1.Value<int>() + 1);
-}
-else
-{
-    return new EvaluateResponse(false, Entity.Undefined);
-}
+var param1 = await Parameters.GetRequired<int>(""param1"", Parameters);
+return new EvaluateResponse(true, param1 + 1);
 "
             });
 
