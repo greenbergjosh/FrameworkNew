@@ -18,7 +18,7 @@ namespace Framework.Core.Evaluatable.EvalProviders
             if (request.Parameters.Document is not EntityDocumentStack stack)
             {
                 stack = new EntityDocumentStack();
-                if (request.Parameters.ValueType != Entity.EntityValueType.Undefined)
+                if (request.Parameters.ValueType != EntityValueType.Undefined)
                 {
                     stack.Push(request.Parameters.Document);
                 }

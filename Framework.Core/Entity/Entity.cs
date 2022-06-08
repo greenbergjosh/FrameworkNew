@@ -82,21 +82,14 @@ namespace Framework.Core.Entity
 
         internal Entity Create<T>(T value, string? query, Entity root) => new(EntityDocument.MapValue(value, Document?.EvalHandler), root, _config, query);
 
-        public async Task<EvaluateResponse> Evaluate(Entity parameters)
+        public Task<EvaluateResponse> Evaluate(Entity parameters)
         {
             if (_config.Evaluator == null)
             {
                 throw new InvalidOperationException("This entity has no evaluator");
             }
 
-            if (Document.EvalHandler == null)
-            {
-                return new EvaluateResponse(true, this);
-            }
-
-            var (providerName, providerParameters) = await Document.EvalHandler.HandleEntity(this, parameters);
-
-            return await _config.Evaluator.Evaluate(providerName, providerParameters, parameters);
+            return _config.Evaluator.Evaluate(this, parameters);
         }
 
         public bool Equals(Entity? other) => Document.Equals(other?.Document);

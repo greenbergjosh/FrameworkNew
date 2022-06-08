@@ -298,24 +298,27 @@ namespace Framework.Core.Tests.Entity
 
     public class StandardJsonEntityEvalHandler : IEntityEvalHandler
     {
-        public async Task<(string providerName, Core.Entity.Entity providerParameters)> HandleEntity(Core.Entity.Entity entity, Core.Entity.Entity parameters)
+        public async Task<(string providerName, Core.Entity.Entity providerParameters)> HandleEntity(Core.Entity.Entity entity)
         {
+            // TODO: Look for $eref and any other special names
+            //var isEref = false;
+            //if (isEref)
+            //{
+            //    var resolvedEntity = entity.Evaluator.ResolveEntity("someScheme://...");
+            //    return (ConstantEvalProvider.Name, entity);
+            //}
+
             // The EntityEvalHandler knows the shape of the stored entity and how to interpret that shape.
-            var (evaluateFound, evaluate) = await entity.TryGetProperty("$evaluate", parameters);
+            var (evaluateFound, evaluate) = await entity.Document.TryGetProperty("$evaluate");
             if (!evaluateFound)
             {
                 // No evalute, so use the constant provider
                 return (ConstantEvalProvider.Name, entity);
             }
 
-            // TODO: Look for $eref and any other special names
-
-            var providerName = await evaluate.GetRequiredString("provider", parameters);
+            var providerName = await evaluate.Document.GetRequiredString("provider");
             if (providerName == ConstantEvalProvider.Name)
             {
-                // Go to the document directly because we want to avoid evaluation/recursion of this property.
-                // This gives us a base-case for evaluation, and also gives us free quoting by wrapping an entity
-                // in a Constant provider.
                 var (valueFound, value) = await evaluate.Document.TryGetProperty("value");
                 if (!valueFound)
                 {
@@ -327,14 +330,14 @@ namespace Framework.Core.Tests.Entity
             else if (providerName == PfaEvalProvider.Name)
             {
                 // This is short-hand for pointing to another entity in the current "database"
-                var (entityIdFound, entityId) = await evaluate.TryGetProperty("entityId", parameters);
+                var (entityIdFound, entityId) = await evaluate.Document.TryGetProperty("entityId");
                 if (entityIdFound)
                 {
                     var targetEntity = GetFromConfigDb(entity, entityId.Value<Guid>());
                     return (providerName, entity.Create(new
                     {
                         entity = QuoteEntity(targetEntity),
-                        parameters = await evaluate.GetRequiredProperty("parameters", parameters)
+                        parameters = await evaluate.Document.GetRequiredProperty("parameters")
                     }));
                 }
             }
