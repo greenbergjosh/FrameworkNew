@@ -5,6 +5,8 @@ namespace Framework.Core.Evaluatable.EvalProviders
 {
     public class StaticCSharpEvalProvider : IEvalProvider
     {
+        public static string Name => "StaticCSharp";
+
         public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
             var typeName = await providerParameters.GetRequiredString("typeName");

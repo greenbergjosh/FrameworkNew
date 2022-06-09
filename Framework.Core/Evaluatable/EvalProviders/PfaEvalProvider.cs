@@ -8,7 +8,7 @@ namespace Framework.Core.Evaluatable.EvalProviders
         public static string Name => "Pfa";
 
         // The Pfa provider expects two parameters:
-        // entity: A quoted instance of the entity that will be evaluated
+        // entity: Returns the un-evaluated entity that will be evaluated
         // parameters: The (potentially partially applied) parameters to pass to `entity`
         public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {

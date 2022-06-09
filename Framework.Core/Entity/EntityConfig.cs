@@ -1,4 +1,4 @@
 ﻿namespace Framework.Core.Entity
 {
-    public record EntityConfig(Evaluatable.Evaluator? Evaluator) : IEntityConfig;
+    public record EntityConfig(Evaluatable.Evaluator? Evaluator, EntityResolver? EntityResolver) : IEntityConfig;
 }

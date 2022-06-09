@@ -24,7 +24,7 @@ namespace Framework.Core.Tests
 
             _evaluator = Evaluator.Create(new EvaluatorConfig(memoryProvider, evalProviders));
 
-            _entity = Core.Entity.Entity.Initialize(new Core.Entity.EntityConfig(_evaluator));
+            _entity = Core.Entity.Entity.Initialize(new Core.Entity.EntityConfig(_evaluator, null));
         }
 
         [TestMethod]

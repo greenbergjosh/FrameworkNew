@@ -21,7 +21,7 @@ namespace Framework.Core.Entity
     {
         #region Fields
         private readonly IEntityConfig _config;
-        private static readonly IEntityConfig _emptyConfig = new EntityConfig(null);
+        private static readonly IEntityConfig _emptyConfig = new EntityConfig(null, null);
         #endregion
 
         #region Constructors
@@ -82,14 +82,31 @@ namespace Framework.Core.Entity
 
         internal Entity Create<T>(T value, string? query, Entity root) => new(EntityDocument.MapValue(value, Document?.EvalHandler), root, _config, query);
 
-        public Task<EvaluateResponse> Evaluate(Entity parameters)
+        public async Task<EvaluateResponse> Evaluate(Entity parameters)
         {
             if (_config.Evaluator == null)
             {
                 throw new InvalidOperationException("This entity has no evaluator");
             }
 
-            return _config.Evaluator.Evaluate(this, parameters);
+            if (Document.EvalHandler == null)
+            {
+                return new EvaluateResponse(true, this);
+            }
+
+            var (providerName, providerParameters) = await Document.EvalHandler.HandleEntity(this);
+
+            return await _config.Evaluator.Evaluate(providerName, providerParameters, parameters);
+        }
+
+        public Task<Entity> ResolveEntity(Uri uri)
+        {
+            if (_config.EntityResolver == null)
+            {
+                return Task.FromResult(Entity.Undefined);
+            }
+
+            return _config.EntityResolver(this, uri);
         }
 
         public bool Equals(Entity? other) => Document.Equals(other?.Document);

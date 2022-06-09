@@ -19,19 +19,5 @@ namespace Framework.Core.Evaluatable
 
             return provider.Evaluate(providerParameters, new EvaluateRequest(this, evaluationParameters));
         }
-
-        public async Task<EvaluateResponse> Evaluate(Entity.Entity entity, Entity.Entity parameters)
-        {
-            if (entity.Document.EvalHandler == null)
-            {
-                return new EvaluateResponse(true, entity);
-            }
-
-            // TODO: Set up memory and hand it to both the EntityEvalHandler and the EvalProvider
-
-            var (providerName, providerParameters) = await entity.Document.EvalHandler.HandleEntity(entity);
-
-            return await Evaluate(providerName, providerParameters, parameters);
-        }
     }
 }

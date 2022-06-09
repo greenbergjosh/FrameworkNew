@@ -25,7 +25,10 @@
     }
   },
   "0fd44eef-578a-4b3d-8ca8-2b89dc20ec30": {
-    "color": "red"
+    "color": "red",
+    "a": {
+      "b": 5
+    }
   },
   "c3041fc7-8de3-477d-b668-c550bc883a49": {
     "$evaluate": {
@@ -154,5 +157,44 @@
         "x": 5
       }
     }
+  },
+  "51f30765-f903-4001-a938-98b0ea097c2b": {
+    "$evaluate": {
+      "provider": "Pfa",
+      "entityId": "85ce1cb7-de2b-42ab-82ea-7ae0e4e84796",
+      "parameters": {
+        "x": {
+          "$evaluate": {
+            "provider": "Pfa",
+            "entityId": "71a86345-d21f-4213-ada4-9b0ff59d5c5d",
+            "parameters": {
+              "right": 3
+            }
+          }
+        }
+      }
+    }
+  },
+  "e46e6c2c-66bd-4546-850b-83813ace2638": {
+    "$evaluate": {
+      "provider": "Constant",
+      "value": 41
+    }
+  },
+  "1184373c-e8cb-479e-b2bd-c8c38a087a40": {
+    "$evaluate": {
+      "provider": "Pfa",
+      "entity": {
+        "$qeref": "config://7f984dad-e6e0-4f2d-ae0d-ecec9dcc10d0"
+      },
+      "parameters": {
+        "param1": {
+          "$eref": "config://1017b085-b0df-4c51-b8c0-12b326070288"
+        }
+      }
+    }
+  },
+  "1017b085-b0df-4c51-b8c0-12b326070288": {
+    "$eref": "config://e46e6c2c-66bd-4546-850b-83813ace2638"
   }
 }

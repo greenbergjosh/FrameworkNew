@@ -17,7 +17,7 @@ namespace Framework.Core.Entity
         #region Properties
         public Entity? Entity { get; internal set; }
 
-        internal IEntityEvalHandler? EvalHandler { get; init; }
+        public IEntityEvalHandler? EvalHandler { get; init; }
 
         public abstract EntityValueType ValueType { get; }
 
