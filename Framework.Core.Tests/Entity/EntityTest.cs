@@ -372,6 +372,10 @@ namespace Framework.Core.Tests.Entity
             ValidateHandler(storage1AB, _storage1);
             ValidateHandler(storage2AB, _storage2);
 
+            var storage1AExtra = await storage1A.GetRequiredProperty("extra");
+
+            ValidateHandler(storage1AExtra, _storage2);
+
             static void ValidateHandler(Core.Entity.Entity entity, IEntityEvalHandler expectedHandler)
             {
                 Assert.IsNotNull(entity.Document.EvalHandler);
