@@ -2,7 +2,7 @@
 
 namespace Framework.Core.Evaluatable.EvalProviders
 {
-    public class DynamicCSharpEvalProvider : IEvalProvider
+    public class DynamicCSharpEvalProvider
     {
         public static string Name => "DynamicCSharp";
 

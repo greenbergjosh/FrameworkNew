@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Framework.Core.Entity
+﻿namespace Framework.Core.Entity
 {
     public static class EntityExtensions
     {
@@ -62,6 +60,5 @@ namespace Framework.Core.Entity
             var value = propertyValue.Value<T>();
             return value ?? defaultValue;
         }
-
     }
 }

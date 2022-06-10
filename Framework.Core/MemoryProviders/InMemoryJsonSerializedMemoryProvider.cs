@@ -14,8 +14,10 @@ namespace Framework.Core.Evaluatable.MemoryProviders
                 throw new ArgumentException($"Cannot access memory at location {g}");
             }
 
-            _storage[g] = new Dictionary<string, Entity.Entity>();
-            return Task.FromResult(_storage[g]);
+            IDictionary<string, Entity.Entity> memory = new Dictionary<string, Entity.Entity>();
+            _storage[g] = memory;
+
+            return Task.FromResult(memory);
         }
 
         public Task Serialize(Guid g, IDictionary<string, Entity.Entity> memory)

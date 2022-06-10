@@ -24,13 +24,13 @@ namespace Framework.Core.Tests.Entity
 
             var roslynWrapper = new RoslynWrapper<EvaluateRequest, EvaluateResponse>("");
 
-            var evalProviders = new Dictionary<string, IEvalProvider>
+            var evalProviders = new Dictionary<string, EvalProvider>
             {
-                [ConstantEvalProvider.Name] = new ConstantEvalProvider(),
-                [DynamicCSharpEvalProvider.Name] = new DynamicCSharpEvalProvider(roslynWrapper),
-                [StaticCSharpEvalProvider.Name] = new StaticCSharpEvalProvider(),
-                [PfaEvalProvider.Name] = new PfaEvalProvider(),
-                [ERefEvalProvider.Name] = new ERefEvalProvider()
+                [ConstantEvalProvider.Name] = ConstantEvalProvider.Evaluate,
+                [DynamicCSharpEvalProvider.Name] = new DynamicCSharpEvalProvider(roslynWrapper).Evaluate,
+                [StaticCSharpEvalProvider.Name] = StaticCSharpEvalProvider.Evaluate,
+                [PfaEvalProvider.Name] = PfaEvalProvider.Evaluate,
+                [ERefEvalProvider.Name] = ERefEvalProvider.Evaluate
             };
 
             _evaluator = Evaluator.Create(new EvaluatorConfig(memoryProvider, evalProviders));
@@ -421,28 +421,18 @@ namespace Framework.Core.Tests.Entity
             if (!evaluateFound)
             {
                 // No evalute, so use the constant provider
-                return (ConstantEvalProvider.Name, entity);
+                return (ConstantEvalProvider.Name, entity.Create(new { value = entity }));
             }
 
             var providerName = await evaluate.Document.GetRequiredString("provider");
-            if (providerName == ConstantEvalProvider.Name)
-            {
-                var (valueFound, value) = await evaluate.Document.TryGetProperty("value");
-                if (!valueFound)
-                {
-                    throw new InvalidOperationException("`value` is required.");
-                }
-
-                return (ConstantEvalProvider.Name, value);
-            }
-            else if (providerName == PfaEvalProvider.Name)
+            if (providerName == PfaEvalProvider.Name)
             {
                 // This is short-hand for pointing to another entity in the current "database"
                 var (entityIdFound, entityId) = await evaluate.Document.TryGetProperty("entityId");
                 if (entityIdFound)
                 {
                     var targetEntity = GetFromConfigDb(entity, entityId.Value<Guid>());
-                    return (providerName, entity.Create(new
+                    return (PfaEvalProvider.Name, entity.Create(new
                     {
                         entity = targetEntity,
                         parameters = await evaluate.Document.GetRequiredProperty("parameters")

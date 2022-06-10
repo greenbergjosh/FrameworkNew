@@ -1,6 +1,4 @@
-﻿using Framework.Core.Evaluatable.EvalProviders;
-
-namespace Framework.Core.Evaluatable
+﻿namespace Framework.Core.Evaluatable
 {
     public class Evaluator
     {
@@ -17,7 +15,7 @@ namespace Framework.Core.Evaluatable
                 throw new InvalidOperationException($"No provider with name {providerName}");
             }
 
-            return provider.Evaluate(providerParameters, new EvaluateRequest(this, evaluationParameters));
+            return provider(providerParameters, new EvaluateRequest(this, evaluationParameters));
         }
     }
 }

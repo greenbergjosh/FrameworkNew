@@ -3,14 +3,14 @@ using Framework.Core.Entity.Implementations;
 
 namespace Framework.Core.Evaluatable.EvalProviders
 {
-    public class PfaEvalProvider : IEvalProvider
+    public static class PfaEvalProvider
     {
         public static string Name => "Pfa";
 
         // The Pfa provider expects two parameters:
         // entity: The entity that will be evaluated
         // parameters: The (potentially partially applied) parameters to pass to `entity`
-        public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
+        public static async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
             var entity = await providerParameters.Document.GetRequiredProperty("entity");
             var entityParameters = await providerParameters.GetRequiredProperty("parameters", request.Parameters);

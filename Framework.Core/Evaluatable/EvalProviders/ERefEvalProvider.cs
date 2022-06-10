@@ -2,11 +2,11 @@
 
 namespace Framework.Core.Evaluatable.EvalProviders
 {
-    public class ERefEvalProvider : IEvalProvider
+    public static class ERefEvalProvider
     {
         public static string Name => "ERef";
 
-        public async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
+        public static async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
             var url = await providerParameters.GetRequiredString("url", request.Parameters);
 

@@ -16,10 +16,10 @@ namespace Framework.Core.Tests
 
             var roslynWrapper = new RoslynWrapper<EvaluateRequest, EvaluateResponse>("");
 
-            var evalProviders = new Dictionary<string, IEvalProvider>
+            var evalProviders = new Dictionary<string, EvalProvider>
             {
-                ["Constant"] = new ConstantEvalProvider(),
-                ["Dynamic"] = new DynamicCSharpEvalProvider(roslynWrapper)
+                ["Constant"] = ConstantEvalProvider.Evaluate,
+                ["Dynamic"] = new DynamicCSharpEvalProvider(roslynWrapper).Evaluate
             };
 
             _evaluator = Evaluator.Create(new EvaluatorConfig(memoryProvider, evalProviders));
@@ -33,7 +33,7 @@ namespace Framework.Core.Tests
             var constant = _entity.Create(42);
 
             var providerName = "Constant";
-            var providerParameters = constant;
+            var providerParameters = _entity.Create(new { value = constant });
 
             var response = await _evaluator.Evaluate(providerName, providerParameters, Core.Entity.Entity.Undefined);
 

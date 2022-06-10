@@ -1,17 +1,18 @@
-﻿namespace Framework.Core.Evaluatable.EvalProviders
+﻿using Framework.Core.Entity;
+
+namespace Framework.Core.Evaluatable.EvalProviders
 {
-    public class ConstantEvalProvider : IEvalProvider
+    public static class ConstantEvalProvider
     {
         public static string Name => "Constant";
 
-        // The Constant provider expects providerParameters to be the constant value to return.
-        // This avoids the need to do any evaluation of a property (for example: providerParameters.TryGetProperty("value")
-        // and gives us our base case to avoid infinite recursion. (Since the above TryGetProperty would eventually evaluate
-        // to a Constant again.
-        public Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
+        // The Constant provider expects the parameter "value" to contain the constant value.
+        // It goes directly to the EntityDocument to avoid evaluation, thus providing a base-case
+        // for evaluation.
+        public static async Task<EvaluateResponse> Evaluate(Entity.Entity providerParameters, EvaluateRequest request)
         {
-            var value = providerParameters;
-            return Task.FromResult(new EvaluateResponse(true, value));
+            var value = await providerParameters.Document.GetRequiredProperty("value");
+            return new EvaluateResponse(true, value);
         }
     }
 }
