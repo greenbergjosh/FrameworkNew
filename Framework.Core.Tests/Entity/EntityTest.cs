@@ -336,7 +336,7 @@ namespace Framework.Core.Tests.Entity
         [TestMethod]
         public async Task EvaluateEref()
         {
-            // Pfa is a quoted eref to the PlusOne entity with an eref-chained param1: 41
+            // Pfa is an eref to the PlusOne entity with an eref-chained param1: 41
             var plus1EntityId = Guid.Parse("1184373c-e8cb-479e-b2bd-c8c38a087a40");
 
             var plus1 = _storage1.GetFromConfigDb(_entity, plus1EntityId);
@@ -372,6 +372,7 @@ namespace Framework.Core.Tests.Entity
             ValidateHandler(storage1AB, _storage1);
             ValidateHandler(storage2AB, _storage2);
 
+            // The "extra" property is an eref to config2 schema
             var storage1AExtra = await storage1A.GetRequiredProperty("extra");
 
             ValidateHandler(storage1AExtra, _storage2);
@@ -443,7 +444,7 @@ namespace Framework.Core.Tests.Entity
                     var targetEntity = GetFromConfigDb(entity, entityId.Value<Guid>());
                     return (providerName, entity.Create(new
                     {
-                        entity = QuoteEntity(targetEntity),
+                        entity = targetEntity,
                         parameters = await evaluate.Document.GetRequiredProperty("parameters")
                     }));
                 }
@@ -459,18 +460,6 @@ namespace Framework.Core.Tests.Entity
 
             // This is equivalent to the scheme knowing which EntityEvalHandler to use.
             return baseEntity.Create(new EntityDocumentJson(entity, this));
-        }
-
-        private static Core.Entity.Entity QuoteEntity(Core.Entity.Entity entity)
-        {
-            return entity.Create(new Dictionary<string, Core.Entity.Entity>
-            {
-                ["$evaluate"] = entity.Create(new
-                {
-                    provider = ConstantEvalProvider.Name,
-                    value = entity
-                })
-            });
         }
     }
 }

@@ -42,7 +42,7 @@
     }
   },
   "1e987c23-fdae-41dc-9b8a-7d31a0ac4967": {
-    "foo":  "bar"
+    "foo": "bar"
   },
   "d6a1f3ab-0f8b-4de3-b8ab-54cebe9a5920": {
     "$evaluate": {
@@ -95,14 +95,9 @@
       "provider": "Pfa",
       "entity": {
         "$evaluate": {
-          "provider": "Constant",
-          "value": {
-            "$evaluate": {
-              "provider": "StaticCSharp",
-              "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
-              "methodName": "PlusOne"
-            }
-          }
+          "provider": "StaticCSharp",
+          "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+          "methodName": "PlusOne"
         }
       },
       "parameters": {
@@ -115,14 +110,9 @@
       "provider": "Pfa",
       "entity": {
         "$evaluate": {
-          "provider": "Constant",
-          "value": {
-            "$evaluate": {
-              "provider": "StaticCSharp",
-              "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
-              "methodName": "Sum"
-            }
-          }
+          "provider": "StaticCSharp",
+          "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+          "methodName": "Sum"
         }
       },
       "parameters": {
@@ -191,7 +181,7 @@
     "$evaluate": {
       "provider": "Pfa",
       "entity": {
-        "$qeref": "config://7f984dad-e6e0-4f2d-ae0d-ecec9dcc10d0"
+        "$eref": "config://7f984dad-e6e0-4f2d-ae0d-ecec9dcc10d0"
       },
       "parameters": {
         "param1": {
