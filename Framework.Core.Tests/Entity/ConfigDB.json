@@ -71,6 +71,13 @@
       "methodName": "ApplyParam1ToParam2"
     }
   },
+  "111d3def-e80b-4877-84e3-571e3736b87a": {
+    "$evaluate": {
+      "provider": "StaticCSharp",
+      "typeName": "Framework.Core.Tests.Entity.EntityCode, Framework.Core.Tests",
+      "methodName": "ApplyParam2ToParam1"
+    }
+  },
   "87846315-093d-48ad-a216-5b320b70186c": {
     "$evaluate": {
       "provider": "StaticCSharp",

@@ -27,13 +27,32 @@ namespace Framework.Core.Tests.Entity
 
             return new EvaluateResponse(true, param2);
         }
+        /*
+     * The scheme:
+     *   1. Entity location
+     *   2. Entity handler
+     */
+        /*
+             * var p1 = c("rqst://parameters?param1");
+             * var p2 = c("rqst://parameters?param2");
+             * return p2(p1);
+             */
+        // This is the actual strategy of the 'apply' evaluatable
+        // It's expression should be as close to param2(param1) as possible
+        // Using https://stackoverflow.com/questions/2450153/overloading-function-call-operator-in-c-sharp
+        //  it should be possible to make Entity support a delegate that syntactically looks like overloading ()
+        public static async Task<EvaluateResponse> ApplyParam2ToParam1(dynamic c)
+        {
+            var p1 = await c("param1");
+            var p2 = await c("param2");
+            return await p2(new { param1=p1 });
+        }
 
         public static async Task<EvaluateResponse> ApplyParam1ToQuotedParam2(EvaluateRequest evaluateRequest)
         {
             var param1 = await evaluateRequest.Parameters.GetRequiredProperty("param1", evaluateRequest.Parameters);
 
             var param2 = await evaluateRequest.Parameters.GetRequiredProperty("param2", evaluateRequest.Parameters);
-
             var result = await param2.Evaluate(param1.Create(new
             {
                 param1

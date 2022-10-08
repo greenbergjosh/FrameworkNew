@@ -195,6 +195,103 @@ namespace Framework.Core.Tests.Entity
         }
 
         [TestMethod]
+        public async Task EvaluateApplyParam2ToParam1()
+        {
+            var applyParam2ToParam1EntityId = Guid.Parse("111d3def-e80b-4877-84e3-571e3736b87a");
+            var quotedPlusOneEntityId = Guid.Parse("76157733-7ee0-4af3-af17-cdaffb31dbd8");
+
+            var applyParam2ToParam1Entity = _storage1.GetFromConfigDb(_entity, applyParam2ToParam1EntityId);
+            var quotedPlusOneEntity = _storage1.GetFromConfigDb(_entity, quotedPlusOneEntityId);
+
+            var param1 = _random.Next();
+
+            var parameters = _entity.Create(new
+            {
+                param1,
+                param2 = quotedPlusOneEntity
+            });
+
+            var result = await applyParam2ToParam1Entity.Evaluate(parameters);
+
+            Assert.IsTrue(result.Complete);
+            Assert.AreEqual(param1 + 1, result.Entity.Value<int>());
+        }
+
+        [TestMethod]
+        public async Task EvaluateApplyParam2ToParam1Syntax()
+        {
+            // Get an entity from storage without evaluation
+            dynamic applyParam2ToParam1Entity = await _entity["config://111d3def-e80b-4877-84e3-571e3736b87a"];
+            var quotedPlusOneEntity = await _entity["config://76157733-7ee0-4af3-af17-cdaffb31dbd8"];
+
+            var param1 = _random.Next();
+            // Evaluate an entity (passing in parameters)
+            // The evaluate response contains the g-pair, the result, what else? Is the response an Entity?
+            var result = await applyParam2ToParam1Entity(new { param1, param2 = quotedPlusOneEntity });
+
+            //www.codetraveler.io/NDCOslo-AsyncAwait
+
+            // The above code is an imperative approach to using the framework
+            // We are getting the parameter 'quotedPlusOneEntity' explicitly, and then passing it to another explicit entity
+            // A single query should be able to express this
+            // _entity(query)
+            // _entity is the entry point into the entire system, it's not really an entity unless we somehow identify
+            //   it as the topmost entity of all eval trees
+            // If it is an entity, it doesn't seem to have a representation in any underlying storage
+            // We still need to
+            // 1. Convert incoming request to eval (could be done in many ways, not really part of framework)
+            // 2. Calltable
+            // 3. QueryLanguage provider
+            // 4. Sref, eref providers
+
+            // Request enters the system (in this function we are building the request, but normally we'd convert some
+            //      request structure (e.g. http querystring) into a request)
+            // Get the top level entity required for the request (the top level may be a well-known entity or it may be
+            //      an entity implied/determined/specified by the request structure)
+            //   The getter [] has a plugin for caching
+            //   The getter [] uses the
+            //      Scheme and implied Resolver to find the entity storage location
+            //      The Handler to lift the storage format into Entity
+            // Get any other entities implied by the request structure
+            // Kick off the evaluation of top level entities (up to the app to determine if one or more top levels)
+            //   The result of the top level evaluation is a pair of g's, a resultEntity, and other flags (e.g. completed)
+            //   The evaluation of an entity is always delegated to the entity's Provider
+
+            // Where does the query language fit in?
+            //  The query language is just a provider (does eref subsume qref? should they be separate?)
+            // How are parameters passed and intepreted?
+            //  1. No passing of reference to entity
+            //  2. Shared entities are named, not passed on stack - creator manages lifetime of shared entity (and hence history)
+
+            // The handler/resolver/mapthunk is eta
+            // What is mu? It is the composition of entities operator
+            // [] 3 -> [3]
+            // [[3]] -> [3]    [] [] 3 -> [3]   [[2,3],[4,5]] -> [2,3,4,5]    [ [[a],[b]], [[c],[d]] ]
+            // x
+            //  provider:
+            //  entity:
+            // Once an object is lifted into entity it can be evaluated (by its provider)
+            // What would it mean to lift a lifted entity - that would be mu
+            // It is an entity of an entity which we can intepret
+            // Is the provider (and possibly the function it points to) our map operation?
+            // Are we applying a function to something hat has been lifted into entity?
+            // Map, Lift, Flatten
+            // 1=>e(1), 2=>e(2), plus1=>e(plus1)    plus1::int->int
+            // plus1 1 == 2
+            // e(plus1) e(1) == e(2)    e(plus1)::e(int)->e(int)
+            // A handler lifts 1 to e(1) and, potentially a different handler, lifts plus1 to e(plus1)
+            // If I want to apply plus1 to 1, I lift both then apply
+            // If I have an entity that points to other entities, thereby forming a tree of entities, I can evalaute that tree
+            // I would like mu to result in the hypothetical entity that would behave the same as having evaluated the tree
+
+            Assert.IsTrue(result.Complete);
+            Assert.AreEqual(param1 + 1, result.Entity.Value<int>());
+        }
+
+        // Get entity (may not be strictly necessary in general, just evaluate the incoming query string)
+        // Evaluate entity (again, just passing query to _entity will delegate to the specific entity as required)
+
+        [TestMethod]
         public async Task EvaluateApplyParam1ToParam2()
         {
             var applyParam1ToParam2EntityId = Guid.Parse("1ddd3def-e80b-4877-84e3-571e3736b87a");
@@ -443,6 +540,7 @@ namespace Framework.Core.Tests.Entity
             return (providerName, evaluate);
         }
 
+        // This is called by the resolver
         public Core.Entity.Entity GetFromConfigDb(Core.Entity.Entity baseEntity, Guid id)
         {
             var entities = JsonDocument.Parse(File.ReadAllText("Entity/ConfigDB.json")).RootElement;

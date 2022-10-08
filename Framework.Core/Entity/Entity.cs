@@ -1,6 +1,7 @@
 ﻿using Framework.Core.Entity.Implementations;
 using Framework.Core.Evaluatable;
 using System.Text.Json.Serialization;
+using System.Dynamic;
 
 namespace Framework.Core.Entity
 {
@@ -17,7 +18,7 @@ namespace Framework.Core.Entity
     #endregion
 
     [JsonConverter(typeof(EntityConverter))]
-    public class Entity : IEquatable<Entity>, IReadOnlyEntity
+    public class Entity : DynamicObject, IEquatable<Entity>, IReadOnlyEntity
     {
         #region Fields
         private readonly IEntityConfig _config;
@@ -97,6 +98,22 @@ namespace Framework.Core.Entity
             var (providerName, providerParameters) = await Document.EvalHandler.HandleEntity(this);
 
             return await _config.Evaluator.Evaluate(providerName, providerParameters, parameters);
+        }
+
+#pragma warning disable CS8610 // Nullability of reference types in type of parameter doesn't match overridden member.
+        public override bool TryInvoke(InvokeBinder binder, object[] args, out object result)
+#pragma warning restore CS8610 // Nullability of reference types in type of parameter doesn't match overridden member.
+        {
+            result = Evaluate(Create(args[0]));
+            return true;
+        }
+
+        // Need to parse scheme://entityid
+        // This goes no further than that, no query language support, just resolution
+        // We are not evaluating an entity, just getting one
+        public Task<Entity> this[string index]
+        {
+            get { return ResolveEntity(new System.Uri(index)); }
         }
 
         public Task<Entity> ResolveEntity(Uri uri)

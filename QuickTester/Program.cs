@@ -9,7 +9,8 @@ namespace QuickTester
         {
             //await EdwGrammar3.Run();
             //await EntityTest.Run();
-            await EvaluatorTest.Run();
+            //await EvaluatorTest.Run();
+            await RoslynWrapperTester.Run();
         }
     }
 }
