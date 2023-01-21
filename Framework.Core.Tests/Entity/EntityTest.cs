@@ -5,6 +5,11 @@ using Framework.Core.Evaluatable.EvalProviders;
 using Framework.Core.Evaluatable.MemoryProviders;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+
+// Storage and an Entity seem the same. Getting an entity from an entity is the same
+// as getting an entity from storage - both use the []
+// Alternatively there is evaluation of an entity which uses ()
 
 namespace Framework.Core.Tests.Entity
 {
@@ -55,6 +60,17 @@ namespace Framework.Core.Tests.Entity
             Assert.AreEqual("This entity has no evaluator", exception.Message);
         }
 
+        /*
+         * dynamic applyParam2ToParam1Entity = await _entity["config://111d3def-e80b-4877-84e3-571e3736b87a"];
+            var quotedPlusOneEntity = await _entity["config://76157733-7ee0-4af3-af17-cdaffb31dbd8"];
+
+            var param1 = _random.Next();
+            // Evaluate an entity (passing in parameters)
+            // The evaluate response contains the g-pair, the result, what else? Is the response an Entity?
+            var result = await applyParam2ToParam1Entity(new { param1, param2 = quotedPlusOneEntity });
+
+         */
+
         [TestMethod]
         public void GetEntityFromConfigDb()
         {
@@ -65,6 +81,7 @@ namespace Framework.Core.Tests.Entity
             Assert.AreEqual(42, entity.Value<int>());
         }
 
+        
         [TestMethod]
         public async Task EvaluateConstantShorthandIntEntityFromConfigDb()
         {
@@ -79,6 +96,16 @@ namespace Framework.Core.Tests.Entity
         }
 
         [TestMethod]
+        public async Task GetAndEvaluateConstantShorthandIntEntityFromConfigDbSyntax()
+        {
+            dynamic entity = await _entity["config://0086226a-d81d-4c74-983d-24f232eba731"];
+            var result = await entity(_undefined);
+            Assert.IsTrue(result.Complete);
+            Assert.AreEqual(42, entity.Value<int>());
+            Assert.AreEqual(42, result.Entity.Value<int>());
+        }
+
+        [TestMethod]
         public async Task EvaluateConstantIntEntityFromConfigDb()
         {
             var entityId = Guid.Parse("c3a5a51f-ff96-4a06-bfcc-18daaef2453b");
@@ -88,6 +115,16 @@ namespace Framework.Core.Tests.Entity
             var result = await entity.Evaluate(_undefined);
 
             Assert.IsTrue(result.Complete);
+            Assert.AreEqual(42, result.Entity.Value<int>());
+        }
+
+        [TestMethod]
+        public async Task EvaluateConstantIntEntityFromConfigDbSyntax()
+        {
+            dynamic entity = await _entity["config://c3a5a51f-ff96-4a06-bfcc-18daaef2453b"];
+            var result = await entity(_undefined);
+            Assert.IsTrue(result.Complete);
+            Assert.AreEqual(42, entity.Value<int>());
             Assert.AreEqual(42, result.Entity.Value<int>());
         }
 
@@ -257,6 +294,8 @@ namespace Framework.Core.Tests.Entity
             //   The result of the top level evaluation is a pair of g's, a resultEntity, and other flags (e.g. completed)
             //   The evaluation of an entity is always delegated to the entity's Provider
 
+            // Resolver --> Handler --> EvalProvider
+
             // Where does the query language fit in?
             //  The query language is just a provider (does eref subsume qref? should they be separate?)
             // How are parameters passed and intepreted?
@@ -290,6 +329,37 @@ namespace Framework.Core.Tests.Entity
 
         // Get entity (may not be strictly necessary in general, just evaluate the incoming query string)
         // Evaluate entity (again, just passing query to _entity will delegate to the specific entity as required)
+        [TestMethod]
+        public async Task EvaluateLeet4v7()
+        {
+            ///////////////////////////////////
+            // var m = new Meme(); // place A and B in scope
+
+            // If the entity is an array, it should support indexers
+            // We could make the base entity type support indexer syntax
+            //   (like javascript, but with obvious return self for primitives and index 0)
+            // This is separate from evalpath syntax which could also be used to get an item from a particular index
+            // Assigning meme paths to local parms should have a simple, dynamic syntax (e.g. to simplify swapping A and B here)
+            var entityId = Guid.Parse("37aba1f7-fc25-418c-b0b3-a08d53058d75");
+            var storage1Entity = _storage1.GetFromConfigDb(_entity, entityId);
+            var A = await storage1Entity.GetRequiredProperty("A");
+            var B = await storage1Entity.GetRequiredProperty("B");
+            int i = 1;
+
+            //if (A.Length > B.Length)
+            //{
+            //    var tmp = A;
+            //    A = B;
+            //    B = A;
+            //}
+
+
+            // Evaluate config entity that defines binding between median and traversal
+            // Here, the config entity is just known - not exposing it outside of this method (e.g. as web endpoint)
+
+            //return st.median;
+
+        }
 
         [TestMethod]
         public async Task EvaluateApplyParam1ToParam2()
@@ -479,75 +549,6 @@ namespace Framework.Core.Tests.Entity
                 Assert.IsNotNull(entity.Document.EvalHandler);
                 Assert.AreEqual(expectedHandler, entity.Document.EvalHandler);
             }
-        }
-    }
-
-    [DebuggerDisplay("{Name,nq} StandardJsonEntityEvalHandler")]
-    public class StandardJsonEntityEvalHandler : IEntityEvalHandler
-    {
-        public string Name { get; init; }
-
-        public StandardJsonEntityEvalHandler(string name)
-        {
-            Name = name;
-        }
-
-        // The EntityEvalHandler knows the shape of the stored entity and how to interpret that shape.
-        public async Task<(string providerName, Core.Entity.Entity providerParameters)> HandleEntity(Core.Entity.Entity entity)
-        {
-            var (erefFound, eref) = await entity.Document.TryGetProperty("$eref");
-            if (erefFound)
-            {
-                return (ERefEvalProvider.Name, entity.Create(new
-                {
-                    url = eref
-                }));
-            }
-
-            var (qErefFound, qEref) = await entity.Document.TryGetProperty("$qeref");
-            if (qErefFound)
-            {
-                return (ERefEvalProvider.Name, entity.Create(new
-                {
-                    url = qEref,
-                    quoted = true
-                }));
-            }
-
-            var (evaluateFound, evaluate) = await entity.Document.TryGetProperty("$evaluate");
-            if (!evaluateFound)
-            {
-                // No evalute, so use the constant provider
-                return (ConstantEvalProvider.Name, entity.Create(new { value = entity }));
-            }
-
-            var providerName = await evaluate.Document.GetRequiredString("provider");
-            if (providerName == PfaEvalProvider.Name)
-            {
-                // This is short-hand for pointing to another entity in the current "database"
-                var (entityIdFound, entityId) = await evaluate.Document.TryGetProperty("entityId");
-                if (entityIdFound)
-                {
-                    var targetEntity = GetFromConfigDb(entity, entityId.Value<Guid>());
-                    return (PfaEvalProvider.Name, entity.Create(new
-                    {
-                        entity = targetEntity,
-                        parameters = await evaluate.Document.GetRequiredProperty("parameters")
-                    }));
-                }
-            }
-
-            return (providerName, evaluate);
-        }
-
-        // This is called by the resolver
-        public Core.Entity.Entity GetFromConfigDb(Core.Entity.Entity baseEntity, Guid id)
-        {
-            var entities = JsonDocument.Parse(File.ReadAllText("Entity/ConfigDB.json")).RootElement;
-            var entity = entities.GetProperty(id.ToString());
-
-            // This is equivalent to the scheme knowing which EntityEvalHandler to use.
-            return baseEntity.Create(new EntityDocumentJson(entity, this));
         }
     }
 }

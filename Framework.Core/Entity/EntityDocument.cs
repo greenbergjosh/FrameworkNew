@@ -29,6 +29,8 @@ namespace Framework.Core.Entity
         #endregion
 
         #region Methods
+        // My preference is to have only Enumerate (no distinction between arrays, objects, or even primitives)
+        // Gut tells me .Select returning items of type EntityDocument is off somehow
         public async IAsyncEnumerable<Entity> EnumerateArray()
         {
             if (!IsArray)
@@ -72,7 +74,7 @@ namespace Framework.Core.Entity
 
         public static EntityDocument MapValue(object? value, IEntityEvalHandler? evalHandler = null) => value switch
         {
-            null => new EntityDocumentConstant(null, EntityValueType.Null),
+            null => new EntityDocumentConstant(null, EntityValueType.Null),  // Do we want EntityValueType.Null or Entity.Undefined
             bool => new EntityDocumentConstant(value, EntityValueType.Boolean),
             decimal => new EntityDocumentConstant(value, EntityValueType.Number),
             float => new EntityDocumentConstant(value, EntityValueType.Number),
@@ -80,7 +82,7 @@ namespace Framework.Core.Entity
             long => new EntityDocumentConstant(value, EntityValueType.Number),
             string => new EntityDocumentConstant(value, EntityValueType.String),
             Guid => new EntityDocumentConstant(value, EntityValueType.UUID),
-            IDictionary dictionary => new EntityDocumentDictionary(dictionary, evalHandler),
+            IDictionary dictionary => new EntityDocumentDictionary(dictionary, evalHandler),  // Why are Dictionary and Array different
             IEnumerable array => EntityDocumentArray.Create(array, evalHandler),
             Core.Entity.Entity => ((Entity)value).Document,
             EntityDocument entityDocument => entityDocument,
@@ -105,6 +107,30 @@ namespace Framework.Core.Entity
         protected internal abstract Task<(bool found, EntityDocument propertyEntityDocument)> TryGetPropertyCore(string name);
 
         public abstract T? Value<T>();
+
+        public async Task<T> GetPropertyValue<T>(string propertyName)
+        {
+            var valueEntity = await GetRequiredProperty(propertyName);
+
+            var value = valueEntity.Value<T>();
+            if (value == null)
+            {
+                throw new InvalidOperationException($"{propertyName} can not be null");
+            }
+
+            return value;
+        }
+
+        public async Task<Entity> GetRequiredProperty(string propertyName)
+        {
+            var (found, value) = await TryGetProperty(propertyName);
+            if (!found)
+            {
+                throw new InvalidOperationException($"Expected property {propertyName}");
+            }
+
+            return value;
+        }
 
         public virtual bool Equals(EntityDocument? other) => ValueType != EntityValueType.Undefined && other?.ValueType != EntityValueType.Undefined
             && (ReferenceEquals(this, other)

@@ -43,8 +43,12 @@ namespace Framework.Core.Tests.Entity
         //  it should be possible to make Entity support a delegate that syntactically looks like overloading ()
         public static async Task<EvaluateResponse> ApplyParam2ToParam1(dynamic c)
         {
-            var p1 = await c("param1");
-            var p2 = await c("param2");
+            //var p1 = await c("param1");
+            //var p2 = await c("param2");
+            //var p1 = await c["param1"];
+            //var p2 = await c["param2"];
+            var p1 = c["param1"];
+            var p2 = c["param2"];
             return await p2(new { param1=p1 });
         }
 
@@ -61,21 +65,41 @@ namespace Framework.Core.Tests.Entity
             return result;
         }
 
-        public static async Task<EvaluateResponse> Sum(EvaluateRequest evaluateRequest)
-        {
-            var left = await evaluateRequest.Parameters.GetRequired<int>("left", evaluateRequest.Parameters);
-            var right = await evaluateRequest.Parameters.GetRequired<int>("right", evaluateRequest.Parameters);
+        //public static async Task<EvaluateResponse> Sum(EvaluateRequest evaluateRequest)
+        //{
+        //    var left = await evaluateRequest.Parameters.GetRequired<int>("left", evaluateRequest.Parameters);
+        //    var right = await evaluateRequest.Parameters.GetRequired<int>("right", evaluateRequest.Parameters);
 
+        //    var sum = left + right;
+
+        //    return new EvaluateResponse(true, evaluateRequest.Parameters.Create(sum));
+        //}
+
+        //public static async Task<EvaluateResponse> Sum(dynamic c)
+        //{
+        //    //var left = (await c["left"]).Value<int>();
+        //    //var right = (await c["right"]).Value<int>();
+
+        //    var left = c["left"].Value<int>();
+        //    var right = c["right"].Value<int>();
+
+        //    var sum = left + right;
+
+        //    return new EvaluateResponse(true, c.Parameters.Create(sum));
+        //}
+
+        public static async Task<EvaluateResponse> Sum(int left, int right, dynamic c)
+        {
             var sum = left + right;
 
-            return new EvaluateResponse(true, evaluateRequest.Parameters.Create(sum));
+            return new EvaluateResponse(true, c.Parameters.Create(sum));
         }
 
         public static async Task<EvaluateResponse> LinearEquation(EvaluateRequest evaluateRequest)
         {
-            var m = await evaluateRequest.Parameters.GetRequired<int>("m", evaluateRequest.Parameters);
-            var x = await evaluateRequest.Parameters.GetRequired<int>("x", evaluateRequest.Parameters);
-            var b = await evaluateRequest.Parameters.GetRequired<int>("b", evaluateRequest.Parameters);
+            var m = await evaluateRequest.Parameters.GetPropertyValue<int>("m", evaluateRequest.Parameters);
+            var x = await evaluateRequest.Parameters.GetPropertyValue<int>("x", evaluateRequest.Parameters);
+            var b = await evaluateRequest.Parameters.GetPropertyValue<int>("b", evaluateRequest.Parameters);
 
             var y = (m * x) + b;
 

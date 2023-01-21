@@ -3,6 +3,11 @@ using Framework.Core.Evaluatable;
 using System.Text.Json.Serialization;
 using System.Dynamic;
 
+// Values seem to get lifted three times, first into Document, then Entity, then Evaluatable
+//  All of the lifting is invisible to the user of an Entity (which appears to be evaluatable) (and contains a document)
+// Notice there is no enumeration here
+// GetProperty is a form of evaluation
+// GetValue is extracting the value from the Entity
 namespace Framework.Core.Entity
 {
     #region Delegates
@@ -111,9 +116,11 @@ namespace Framework.Core.Entity
         // Need to parse scheme://entityid
         // This goes no further than that, no query language support, just resolution
         // We are not evaluating an entity, just getting one
+        // Adding support for getting using integer and using property name (from objects such as parameters)
         public Task<Entity> this[string index]
         {
-            get { return ResolveEntity(new System.Uri(index)); }
+            //get { return ResolveEntity(new System.Uri(index)); }
+            get { return index.Contains("://") ? ResolveEntity(new System.Uri(index)) : this.GetRequiredProperty(index); }
         }
 
         public Task<Entity> ResolveEntity(Uri uri)
@@ -134,6 +141,7 @@ namespace Framework.Core.Entity
 
         public override string? ToString() => Document.ToString();
 
+        public T? Value<T>() => typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();
         public bool TryGetValue<T>(out T? value)
         {
             if (Document is null)
@@ -154,6 +162,21 @@ namespace Framework.Core.Entity
             }
         }
 
+        public Task<T> GetPropertyValue<T>(string propertyName) => GetPropertyValue<T>(propertyName, Entity.Undefined);
+
+        public async Task<T> GetPropertyValue<T>(string propertyName, Entity parameters)
+        {
+            var valueEntity = await GetRequiredProperty(propertyName, parameters);
+
+            var value = valueEntity.Value<T>();
+            if (value == null)
+            {
+                throw new InvalidOperationException($"{propertyName} can not be null");
+            }
+
+            return value;
+        }
+
         public async Task<(bool found, Entity value)> TryGetProperty(string propertyName, Entity parameters)
         {
             var (found, value) = await Document.TryGetProperty(propertyName);
@@ -167,7 +190,18 @@ namespace Framework.Core.Entity
             return (true, evaluatedValue.Entity);
         }
 
-        public T? Value<T>() => typeof(T) == typeof(Entity) ? (T)(object)Create(Document) : Document.Value<T>();
+        public Task<Entity> GetRequiredProperty(string propertyName) => GetRequiredProperty(propertyName, Entity.Undefined);
+
+        public async Task<Entity> GetRequiredProperty(string propertyName, Entity parameters)
+        {
+            var (found, value) = await TryGetProperty(propertyName, parameters);
+            if (!found)
+            {
+                throw new InvalidOperationException($"Expected property {propertyName}");
+            }
+
+            return value;
+        }
         #endregion
 
         #region Operators

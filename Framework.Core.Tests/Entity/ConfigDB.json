@@ -1,11 +1,13 @@
 {
   "0086226a-d81d-4c74-983d-24f232eba731": 42,
+
   "c3a5a51f-ff96-4a06-bfcc-18daaef2453b": {
     "$evaluate": {
       "provider": "Constant",
       "value": 42
     }
   },
+
   "c3a5a51e-ff96-4a06-bfcc-18daaef2453b": {
     "$evaluate": {
       "provider": "Constant",
@@ -17,6 +19,7 @@
       }
     }
   },
+
   "211a0e51-d9b3-4f12-8a88-293d72f29280": "Hello World",
   "eb7944eb-2b9c-41a9-abfe-77c887370a83": {
     "$evaluate": {
@@ -199,5 +202,18 @@
   },
   "1017b085-b0df-4c51-b8c0-12b326070288": {
     "$eref": "config://e46e6c2c-66bd-4546-850b-83813ace2638"
+  },
+  "37aba1f7-fc25-418c-b0b3-a08d53058d74": {
+    "$evaluate": {
+      "provider": "Constant",
+      "value": {
+        "A": [ 10, 20, 25, 26, 50, 51, 60 ],
+        "B": [ 11, 13, 29, 32, 33, 34, 53, 59 ]
+      }
+    }
+  },
+  "37aba1f7-fc25-418c-b0b3-a08d53058d75": {
+    "A": [ 10, 20, 25, 26, 50, 51, 60 ],
+    "B": [ 11, 13, 29, 32, 33, 34, 53, 59 ]
   }
 }

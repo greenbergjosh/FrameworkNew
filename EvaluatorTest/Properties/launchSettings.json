@@ -12,11 +12,10 @@
     "EvaluatorTest": {
       "commandName": "Project",
       "launchBrowser": true,
+      "applicationUrl": "https://localhost:7003;http://localhost:5003",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:7003;http://localhost:5003",
-      "dotnetRunMessages": true
+      }
     },
     "IIS Express": {
       "commandName": "IISExpress",

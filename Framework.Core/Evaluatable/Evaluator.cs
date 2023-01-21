@@ -10,12 +10,12 @@
 
         public Task<EvaluateResponse> Evaluate(string providerName, Entity.Entity providerParameters, Entity.Entity evaluationParameters)
         {
-            if (!EvaluatorConfig.EvalProviders.TryGetValue(providerName, out var provider))
+            if (!EvaluatorConfig.EvalProviders.TryGetValue(providerName, out var evaluate))
             {
                 throw new InvalidOperationException($"No provider with name {providerName}");
             }
 
-            return provider(providerParameters, new EvaluateRequest(this, evaluationParameters));
+            return evaluate(providerParameters, new EvaluateRequest(this, evaluationParameters));
         }
     }
 }
